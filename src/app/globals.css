@@ -254,3 +254,14 @@ svg.cv { width:100%; height:auto; display:block; touch-action:none; }
 .df-split { display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start; padding:2px 2px 0; }
 .df-split > .df-chart { flex:1 1 300px; min-width:0; }
 .df-split > .df-table { flex:1.6 1 430px; min-width:0; }
+
+/* panel cambiario / volumen */
+.cbo-head { padding:2px 14px 10px; }
+.cbo-kpi { display:inline-flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+.cbo-kpi .k { font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); font-weight:700; }
+.cbo-kpi .v { font-size:var(--fs-xl); font-weight:700; color:var(--ink); }
+.volcell { display:flex; align-items:center; gap:9px; }
+.vbar { position:relative; height:7px; border-radius:3px; flex:1; min-width:70px; overflow:hidden;
+  background:color-mix(in srgb,var(--ink-3) 15%, transparent); }
+.vbar > i { position:absolute; left:0; top:0; bottom:0; border-radius:3px; }
+.vpct { font-family:var(--font-mono); font-size:12px; color:var(--ink-2); min-width:44px; text-align:right; }

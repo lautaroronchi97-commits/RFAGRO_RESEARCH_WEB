@@ -6,10 +6,10 @@ const NAV: { label: string; href: string; active?: boolean; disabled?: boolean }
   { label: "Arbitrajes", href: "#arbitrajes", active: true },
   { label: "Dólar futuro", href: "#dolar-futuro" },
   { label: "Dólar linked", href: "#dolar-linked" },
+  { label: "Cambiario", href: "#cambiario" },
   { label: "Pases", href: "#", disabled: true },
   { label: "Implícitas", href: "#", disabled: true },
   { label: "Sintéticos", href: "#", disabled: true },
-  { label: "Cambiario", href: "#", disabled: true },
 ];
 
 export function SiteHeader() {

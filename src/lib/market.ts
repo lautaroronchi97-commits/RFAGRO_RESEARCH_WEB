@@ -289,3 +289,39 @@ export async function getDolarLinked(): Promise<DolarLinkedData> {
 
   return { mep, oficial, bonos, updatedAt: now };
 }
+
+/* ---------- Módulo 7: Panel cambiario / volumen de rueda (MAE) ---------- */
+
+export type VolCat = { nombre: string; grupo: string; volumenUsd: number; share: number };
+
+export type VolumenData = {
+  cats: VolCat[];
+  oficial: number | null; // oficial mayorista MAE
+  oficialVarPct: number | null;
+  updatedAt: number;
+};
+
+type VolRow = { nombre: string; grupo: string; volumen: number; share: number; moneda: string };
+
+export async function getVolumenCambiario(): Promise<VolumenData> {
+  const [vol, forr] = await Promise.all([
+    safeJson<VolRow[]>("https://api.marketdata.mae.com.ar/api/mercado/volumen-categoria/USD"),
+    safeJson<MaeForRow[]>("https://api.marketdata.mae.com.ar/api/mercado/resumen/FOR"),
+  ]);
+
+  const cats: VolCat[] = (vol ?? []).map((v) => ({
+    nombre: v.nombre,
+    grupo: v.grupo,
+    volumenUsd: v.volumen,
+    share: v.share,
+  }));
+
+  const ust = forr?.find((r) => r.ticker === "UST$T");
+
+  return {
+    cats,
+    oficial: ust?.ultimo ?? null,
+    oficialVarPct: ust?.variacion ?? null,
+    updatedAt: Date.now(),
+  };
+}

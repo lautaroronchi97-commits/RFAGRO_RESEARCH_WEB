@@ -4,6 +4,7 @@ import { Cinta } from "@/components/cinta";
 import { ArbitrajesTable } from "@/components/arbitrajes-table";
 import { DolarFuturoPanel } from "@/components/dolar-futuro-panel";
 import { DolarLinkedPanel } from "@/components/dolar-linked-panel";
+import { PanelCambiario } from "@/components/panel-cambiario";
 import { SiteFooter } from "@/components/site-footer";
 
 // Revalida los datos de la cinta cada 60s (caché corto).
@@ -21,6 +22,7 @@ export default async function Home() {
           <ArbitrajesTable />
           <DolarFuturoPanel />
           <DolarLinkedPanel />
+          <PanelCambiario />
         </div>
       </main>
       <div className="awn" aria-hidden="true" />
