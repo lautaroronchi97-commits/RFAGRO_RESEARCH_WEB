@@ -107,3 +107,55 @@ export async function getCintaData(): Promise<CintaData> {
 
   return { items, updatedAt: Date.now() };
 }
+
+/* ---------- Módulo 3: Curva de dólar futuro (MAE DDF) ---------- */
+
+const MESES = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
+
+type MaeDDFRow = { ticker: string; ultimo: number; variacion: number; cantidad: number };
+
+export type DFPosicion = {
+  ticker: string;
+  label: string; // p.ej. JUL26
+  ultimo: number;
+  varPct: number; // variación diaria en %
+  volumen: number; // contratos / nominales
+  fecha: number; // epoch (para ordenar la curva)
+};
+
+export type DolarFuturoData = {
+  spot: number | null; // dólar mayorista
+  posiciones: DFPosicion[];
+  updatedAt: number;
+};
+
+export async function getDolarFuturo(): Promise<DolarFuturoData> {
+  const [ddf, cripto] = await Promise.all([
+    safeJson<MaeDDFRow[]>("https://api.marketdata.mae.com.ar/api/mercado/resumen/DDF"),
+    safeJson<Criptoya>("https://criptoya.com/api/dolar"),
+  ]);
+
+  const posiciones: DFPosicion[] = (ddf ?? [])
+    .map((r) => {
+      const m = /(\d{2})(\d{4})$/.exec(r.ticker);
+      const mm = m ? Number(m[1]) : 0;
+      const yy = m ? Number(m[2]) : 0;
+      const label = m ? `${MESES[mm - 1]}${String(yy).slice(2)}` : r.ticker;
+      const fecha = m ? new Date(yy, mm - 1, 1).getTime() : 0;
+      return {
+        ticker: r.ticker,
+        label,
+        ultimo: r.ultimo,
+        varPct: r.variacion,
+        volumen: r.cantidad ?? 0,
+        fecha,
+      };
+    })
+    .sort((a, b) => a.fecha - b.fecha);
+
+  return {
+    spot: cripto?.mayorista?.price ?? null,
+    posiciones,
+    updatedAt: Date.now(),
+  };
+}

@@ -228,3 +228,24 @@ table.tbl { width:100%; border-collapse:collapse; min-width:640px; }
   html { scroll-behavior:smooth; }
   .toggle,.nav a,.rueda,.tbl tbody tr td { transition:background .16s ease, color .16s ease, border-color .16s ease; }
 }
+
+/* ---- Gráfico de curva (dólar futuro) ---- */
+.chart-wrap { padding:8px 12px 6px; position:relative; }
+svg.cv { width:100%; height:auto; display:block; touch-action:none; }
+.cv-grid { stroke:var(--line); stroke-width:1; }
+.cv-axis { fill:var(--ink-3); font-family:var(--font-mono); font-size:10px; }
+.cv-area { fill:color-mix(in srgb, var(--leaf) 15%, transparent); stroke:none; }
+.cv-line { fill:none; stroke:var(--brand-deep); stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+.cv-dot { fill:var(--brand-deep); }
+.cv-end { fill:var(--gold); stroke:var(--panel); stroke-width:2; }
+.cv-cross { stroke:var(--ink-3); stroke-width:1; stroke-dasharray:3 3; }
+.cv-focus { fill:var(--gold); stroke:var(--panel); stroke-width:2; }
+.cv-tip { position:absolute; z-index:5; pointer-events:none; transform:translate(-50%,-120%);
+  background:var(--ink); color:var(--panel); font-family:var(--font-mono); font-size:11.5px; font-weight:600;
+  padding:4px 8px; border-radius:6px; white-space:nowrap; box-shadow:0 8px 20px -8px rgba(0,0,0,.5); }
+.cv-tip .tt-x { color:var(--gold); }
+.cv-legend { display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:2px 14px 12px;
+  font-size:var(--fs-2xs); color:var(--ink-2); }
+.cv-legend .lk { display:inline-flex; align-items:center; gap:6px; text-transform:uppercase; letter-spacing:.05em; font-weight:600; }
+.cv-legend .sw { width:14px; height:3px; border-radius:2px; background:var(--brand-deep); }
+.cv-legend .sw.g { width:9px; height:9px; border-radius:50%; background:var(--gold); }
