@@ -192,3 +192,51 @@ export async function getDolarFuturo(): Promise<DolarFuturoData> {
 
   return { spot, posiciones, updatedAt: now };
 }
+
+/* ---------- Módulo 4: Dólar linked (data912) ---------- */
+
+type NoteRow = { symbol: string; c: number; px_bid: number; px_ask: number; pct_change: number };
+
+export type DLBono = {
+  symbol: string;
+  px: number; // ARS por 100 nominal
+  tcImpl: number; // TC implícito = Px/100
+  difMep: number | null; // MEP − TC implícito
+  difOficial: number | null; // oficial − TC implícito
+  varPct: number;
+};
+
+export type DolarLinkedData = {
+  mep: number | null;
+  oficial: number | null;
+  bonos: DLBono[];
+  updatedAt: number;
+};
+
+export async function getDolarLinked(): Promise<DolarLinkedData> {
+  const [notes, dolar] = await Promise.all([
+    safeJson<NoteRow[]>("https://data912.com/live/arg_notes"),
+    safeJson<DolarApi>("https://dolarapi.com/v1/dolares"),
+  ]);
+
+  const mep = dolar?.find((d) => d.casa === "bolsa")?.venta ?? null;
+  const oficial = dolar?.find((d) => d.casa === "oficial")?.venta ?? null;
+
+  const bonos: DLBono[] = (notes ?? [])
+    .filter((n) => /^D\d/.test(n.symbol)) // serie "D" = dólar-linked del Tesoro
+    .map((n) => {
+      const px = n.c || (n.px_bid + n.px_ask) / 2;
+      const tcImpl = px / 100;
+      return {
+        symbol: n.symbol,
+        px,
+        tcImpl,
+        difMep: mep != null ? mep - tcImpl : null,
+        difOficial: oficial != null ? oficial - tcImpl : null,
+        varPct: n.pct_change,
+      };
+    })
+    .sort((a, b) => a.symbol.localeCompare(b.symbol));
+
+  return { mep, oficial, bonos, updatedAt: Date.now() };
+}
