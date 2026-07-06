@@ -202,8 +202,12 @@ export type DLBono = {
   px: number; // ARS por 100 nominal
   tcImpl: number; // TC implícito = Px/100
   difMep: number | null; // MEP − TC implícito
-  difOficial: number | null; // oficial − TC implícito
+  spreadOficial: number | null; // Oficial − TC implícito (spread vs oficial)
   varPct: number;
+  dias: number | null;
+  tnaPct: number | null; // TNA USD implícita (vs oficial, base 365)
+  temPct: number | null;
+  teaPct: number | null;
 };
 
 export type DolarLinkedData = {
@@ -213,6 +217,21 @@ export type DolarLinkedData = {
   updatedAt: number;
 };
 
+// Código de mes en tickers argentinos (LECAP/bonos): E F M A Y J L G S O N D
+const MONTH_LETTER: Record<string, number> = {
+  E: 0, F: 1, M: 2, A: 3, Y: 4, J: 5, L: 6, G: 7, S: 8, O: 9, N: 10, D: 11,
+};
+
+// Vencimiento inferido del ticker, p.ej. D30S6 → 30/sep/2026, D31L6 → 31/jul/2026
+function vencFromTicker(sym: string): number | null {
+  const m = /^D(\d{2})([EFMAYJLGSOND])(\d)$/.exec(sym);
+  if (!m) return null;
+  const day = Number(m[1]);
+  const month = MONTH_LETTER[m[2]];
+  const year = 2020 + Number(m[3]);
+  return new Date(year, month, day).getTime();
+}
+
 export async function getDolarLinked(): Promise<DolarLinkedData> {
   const [notes, dolar] = await Promise.all([
     safeJson<NoteRow[]>("https://data912.com/live/arg_notes"),
@@ -221,22 +240,42 @@ export async function getDolarLinked(): Promise<DolarLinkedData> {
 
   const mep = dolar?.find((d) => d.casa === "bolsa")?.venta ?? null;
   const oficial = dolar?.find((d) => d.casa === "oficial")?.venta ?? null;
+  const now = Date.now();
 
   const bonos: DLBono[] = (notes ?? [])
     .filter((n) => /^D\d/.test(n.symbol)) // serie "D" = dólar-linked del Tesoro
     .map((n) => {
       const px = n.c || (n.px_bid + n.px_ask) / 2;
       const tcImpl = px / 100;
+      const venc = vencFromTicker(n.symbol);
+      const dias = venc ? Math.max(1, Math.round((venc - now) / 86400000)) : null;
+
+      // TNA/TEM/TEA implícitas — vs oficial, base 365 (misma lógica que futuros)
+      let tnaPct: number | null = null;
+      let temPct: number | null = null;
+      let teaPct: number | null = null;
+      if (oficial && oficial > 0 && tcImpl > 0 && dias) {
+        const directa = oficial / tcImpl - 1;
+        tnaPct = directa * (365 / dias) * 100;
+        const tea = Math.pow(oficial / tcImpl, 365 / dias) - 1;
+        teaPct = tea * 100;
+        temPct = (Math.pow(1 + tea, 1 / 12) - 1) * 100;
+      }
+
       return {
         symbol: n.symbol,
         px,
         tcImpl,
         difMep: mep != null ? mep - tcImpl : null,
-        difOficial: oficial != null ? oficial - tcImpl : null,
+        spreadOficial: oficial != null ? oficial - tcImpl : null,
         varPct: n.pct_change,
+        dias,
+        tnaPct,
+        temPct,
+        teaPct,
       };
     })
-    .sort((a, b) => a.symbol.localeCompare(b.symbol));
+    .sort((a, b) => (a.dias ?? 1e12) - (b.dias ?? 1e12));
 
-  return { mep, oficial, bonos, updatedAt: Date.now() };
+  return { mep, oficial, bonos, updatedAt: now };
 }
