@@ -249,3 +249,8 @@ svg.cv { width:100%; height:auto; display:block; touch-action:none; }
 .cv-legend .lk { display:inline-flex; align-items:center; gap:6px; text-transform:uppercase; letter-spacing:.05em; font-weight:600; }
 .cv-legend .sw { width:14px; height:3px; border-radius:2px; background:var(--brand-deep); }
 .cv-legend .sw.g { width:9px; height:9px; border-radius:50%; background:var(--gold); }
+
+/* dólar futuro: gráfico + tabla lado a lado (apilan en mobile) */
+.df-split { display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start; padding:2px 2px 0; }
+.df-split > .df-chart { flex:1 1 300px; min-width:0; }
+.df-split > .df-table { flex:1.6 1 430px; min-width:0; }

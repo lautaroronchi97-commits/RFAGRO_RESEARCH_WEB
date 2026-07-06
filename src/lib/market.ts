@@ -121,6 +121,11 @@ export type DFPosicion = {
   varPct: number; // variación diaria en %
   volumen: number; // contratos / nominales
   fecha: number; // epoch (para ordenar la curva)
+  dias: number | null; // días al vencimiento
+  directaPct: number | null; // tasa directa del período
+  tnaPct: number | null; // TNA implícita
+  temPct: number | null; // TEM implícita
+  teaPct: number | null; // TEA implícita
 };
 
 export type DolarFuturoData = {
@@ -129,11 +134,21 @@ export type DolarFuturoData = {
   updatedAt: number;
 };
 
+/**
+ * Tasas implícitas — metodología A3 (spot mayorista, base 365):
+ *   directa = Futuro/Spot − 1
+ *   TNA     = (Futuro/Spot − 1) × 365/días
+ *   TEA     = (Futuro/Spot)^(365/días) − 1
+ *   TEM     = (1 + TEA)^(1/12) − 1
+ */
 export async function getDolarFuturo(): Promise<DolarFuturoData> {
   const [ddf, cripto] = await Promise.all([
     safeJson<MaeDDFRow[]>("https://api.marketdata.mae.com.ar/api/mercado/resumen/DDF"),
     safeJson<Criptoya>("https://criptoya.com/api/dolar"),
   ]);
+
+  const spot = cripto?.mayorista?.price ?? null;
+  const now = Date.now();
 
   const posiciones: DFPosicion[] = (ddf ?? [])
     .map((r) => {
@@ -142,6 +157,23 @@ export async function getDolarFuturo(): Promise<DolarFuturoData> {
       const yy = m ? Number(m[2]) : 0;
       const label = m ? `${MESES[mm - 1]}${String(yy).slice(2)}` : r.ticker;
       const fecha = m ? new Date(yy, mm - 1, 1).getTime() : 0;
+      // vencimiento ≈ último día del mes del contrato (A3 vence el último día hábil)
+      const venc = m ? new Date(yy, mm, 0).getTime() : 0;
+      const dias = venc ? Math.max(1, Math.round((venc - now) / 86400000)) : null;
+
+      let directaPct: number | null = null;
+      let tnaPct: number | null = null;
+      let temPct: number | null = null;
+      let teaPct: number | null = null;
+      if (spot && spot > 0 && dias && r.ultimo > 0) {
+        const ratio = r.ultimo / spot;
+        directaPct = (ratio - 1) * 100;
+        tnaPct = (ratio - 1) * (365 / dias) * 100;
+        const tea = Math.pow(ratio, 365 / dias) - 1;
+        teaPct = tea * 100;
+        temPct = (Math.pow(1 + tea, 1 / 12) - 1) * 100;
+      }
+
       return {
         ticker: r.ticker,
         label,
@@ -149,13 +181,14 @@ export async function getDolarFuturo(): Promise<DolarFuturoData> {
         varPct: r.variacion,
         volumen: r.cantidad ?? 0,
         fecha,
+        dias,
+        directaPct,
+        tnaPct,
+        temPct,
+        teaPct,
       };
     })
     .sort((a, b) => a.fecha - b.fecha);
 
-  return {
-    spot: cripto?.mayorista?.price ?? null,
-    posiciones,
-    updatedAt: Date.now(),
-  };
+  return { spot, posiciones, updatedAt: now };
 }

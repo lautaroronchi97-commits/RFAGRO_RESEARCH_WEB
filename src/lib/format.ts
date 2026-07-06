@@ -30,6 +30,12 @@ export function sfmt(value: number | null | undefined, decimals = 2): string {
   return `${sign}${s}`;
 }
 
+/** Formato de tasa: 12,8% (sin forzar el signo +, negativo con −). */
+export function rfmt(value: number | null | undefined, decimals = 1): string {
+  if (value === null || value === undefined || Number.isNaN(value)) return "—";
+  return `${nfmt(value, decimals).replace("-", "−")}%`;
+}
+
 export type Dir = "up" | "down" | "flat";
 
 export function dirOf(value: number | null | undefined): Dir {

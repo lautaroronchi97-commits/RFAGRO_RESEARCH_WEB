@@ -16,13 +16,9 @@ export default async function Home() {
       <SiteHeader />
       <Cinta data={cinta} />
       <main className="wrap">
-        <div className="dash">
-          <div className="col col-main">
-            <ArbitrajesTable />
-          </div>
-          <div className="col col-side">
-            <DolarFuturoPanel />
-          </div>
+        <div className="col">
+          <ArbitrajesTable />
+          <DolarFuturoPanel />
         </div>
       </main>
       <div className="awn" aria-hidden="true" />
