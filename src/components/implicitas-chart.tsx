@@ -4,7 +4,7 @@ import { useState } from "react";
 import { nfmt } from "@/lib/format";
 
 type Pt = { x: number; y: number };
-type Serie = { name: string; color: string; points: Pt[] };
+type Serie = { name: string; color: string; points: Pt[]; line?: boolean };
 
 const W = 760;
 const H = 300;
@@ -54,7 +54,9 @@ export function ImplicitasChart({ series }: { series: Serie[] }) {
           const dpath = pts.map((p, i) => `${i ? "L" : "M"}${X(p.x).toFixed(1)},${Y(p.y).toFixed(1)}`).join(" ");
           return (
             <g key={si}>
-              {pts.length > 1 && <path className="ic-line" style={{ stroke: s.color }} d={dpath} />}
+              {s.line !== false && pts.length > 1 && (
+                <path className="ic-line" style={{ stroke: s.color }} d={dpath} />
+              )}
               {pts.map((p, pi) => (
                 <circle
                   key={pi}

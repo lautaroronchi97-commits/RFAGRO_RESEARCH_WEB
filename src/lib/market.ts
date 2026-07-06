@@ -325,3 +325,38 @@ export async function getVolumenCambiario(): Promise<VolumenData> {
     updatedAt: Date.now(),
   };
 }
+
+/* ---------- Módulo 6: LECAPs (data912) — base para sintéticos ---------- */
+
+export type Lecap = {
+  symbol: string;
+  px: number;
+  varPct: number;
+  dias: number | null;
+  venc: number | null;
+};
+
+export type LecapsData = { lecaps: Lecap[]; updatedAt: number };
+
+export async function getLecaps(): Promise<LecapsData> {
+  const notes = await safeJson<NoteRow[]>("https://data912.com/live/arg_notes");
+  const now = Date.now();
+
+  const lecaps: Lecap[] = (notes ?? [])
+    .filter((n) => /^S\d/.test(n.symbol) && !n.symbol.endsWith("D")) // LECAP en pesos (serie S)
+    .map((n) => {
+      const m = /^S(\d{2})([EFMAYJLGSOND])(\d)$/.exec(n.symbol);
+      const venc = m ? new Date(2020 + Number(m[3]), MONTH_LETTER[m[2]], Number(m[1])).getTime() : null;
+      const dias = venc ? Math.max(0, Math.round((venc - now) / 86400000)) : null;
+      return {
+        symbol: n.symbol,
+        px: n.c || (n.px_bid + n.px_ask) / 2,
+        varPct: n.pct_change,
+        dias,
+        venc,
+      };
+    })
+    .sort((a, b) => (a.venc ?? 1e15) - (b.venc ?? 1e15));
+
+  return { lecaps, updatedAt: now };
+}

@@ -29,7 +29,7 @@ export async function ImplicitasPanel() {
   const series = [
     { name: "Dólar futuro", color: "var(--brand-deep)", points: futPts },
     { name: "Dólar linked", color: "var(--gold-text)", points: linkPts },
-    { name: "Granos (ej.)", color: "var(--c-gran)", points: granPts },
+    { name: "Granos (ej.)", color: "var(--c-gran)", points: granPts, line: false },
   ];
 
   return (

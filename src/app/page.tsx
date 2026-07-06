@@ -2,9 +2,11 @@ import { getCintaData } from "@/lib/market";
 import { SiteHeader } from "@/components/site-header";
 import { Cinta } from "@/components/cinta";
 import { ArbitrajesTable } from "@/components/arbitrajes-table";
+import { PasesPanel } from "@/components/pases-panel";
 import { DolarFuturoPanel } from "@/components/dolar-futuro-panel";
 import { DolarLinkedPanel } from "@/components/dolar-linked-panel";
 import { ImplicitasPanel } from "@/components/implicitas-panel";
+import { SinteticosPanel } from "@/components/sinteticos-panel";
 import { PanelCambiario } from "@/components/panel-cambiario";
 import { SiteFooter } from "@/components/site-footer";
 
@@ -21,9 +23,11 @@ export default async function Home() {
       <main className="wrap">
         <div className="col">
           <ArbitrajesTable />
+          <PasesPanel />
           <DolarFuturoPanel />
           <DolarLinkedPanel />
           <ImplicitasPanel />
+          <SinteticosPanel />
           <PanelCambiario />
         </div>
       </main>

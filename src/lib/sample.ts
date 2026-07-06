@@ -54,3 +54,33 @@ export const arbitrajes: ArbGroup[] = [
     ],
   },
 ];
+
+/** Pases (spreads entre posiciones consecutivas). Ejemplo hasta conectar A3. */
+export type PaseRow = { spread: string; comprador: number; ultimo: number; vendedor: number };
+export type PaseGroup = { grano: Grano; rows: PaseRow[] };
+
+export const pases: PaseGroup[] = [
+  {
+    grano: "Soja",
+    rows: [
+      { spread: "ENE26 / MAY26", comprador: 6.5, ultimo: 6.8, vendedor: 7.0 },
+      { spread: "MAY26 / JUL26", comprador: 4.2, ultimo: 4.5, vendedor: 4.6 },
+      { spread: "JUL26 / NOV26", comprador: 9.0, ultimo: 9.0, vendedor: 9.2 },
+    ],
+  },
+  {
+    grano: "Maíz",
+    rows: [
+      { spread: "JUL26 / SEP26", comprador: 2.3, ultimo: 2.4, vendedor: 2.5 },
+      { spread: "SEP26 / DIC26", comprador: 4.8, ultimo: 4.9, vendedor: 5.0 },
+      { spread: "JUL26 / DIC26", comprador: 7.2, ultimo: 7.9, vendedor: 7.4 },
+    ],
+  },
+  {
+    grano: "Trigo",
+    rows: [
+      { spread: "JUL26 / DIC26", comprador: 3.7, ultimo: 4.3, vendedor: 5.0 },
+      { spread: "DIC26 / JUL27", comprador: 5.1, ultimo: 5.4, vendedor: 5.6 },
+    ],
+  },
+];
