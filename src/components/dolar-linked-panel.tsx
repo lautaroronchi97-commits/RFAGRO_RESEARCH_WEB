@@ -22,7 +22,7 @@ export async function DolarLinkedPanel() {
       <PanelHead
         glyph={<IconLink />}
         title="Dólar linked"
-        sub={`TC implícito + TNA USD (vs oficial ${data.oficial ? nfmt(data.oficial, 1) : "—"})`}
+        sub={`TC implícito + TNA USD (vs oficial MAE ${data.oficial ? nfmt(data.oficial, 1) : "—"})`}
         stamp="data912 · ~vivo"
       />
       <div className="table-scroll">
@@ -73,8 +73,8 @@ export async function DolarLinkedPanel() {
       </div>
       <div className="panel-note">
         <span>
-          <span className="k">Real</span> data912. TC implícito = Px÷100 · Spread of. = Oficial − TC
-          implícito · TNA/TEM/TEA vs oficial, base 365 (vto inferido del ticker). Dif. MEP = MEP − TC implícito.
+          <span className="k">Real</span> data912. TC implícito = Px÷100 · Spread of. = Oficial MAE − TC
+          implícito · TNA/TEM/TEA vs oficial MAE, base 365 (vto inferido del ticker). Dif. MEP = MEP − TC implícito.
         </span>
       </div>
     </Panel>

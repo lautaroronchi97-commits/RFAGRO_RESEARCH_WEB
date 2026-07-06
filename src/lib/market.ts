@@ -113,6 +113,17 @@ export async function getCintaData(): Promise<CintaData> {
 const MESES = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
 
 type MaeDDFRow = { ticker: string; ultimo: number; variacion: number; cantidad: number };
+type MaeForRow = { ticker: string; ultimo: number; variacion: number };
+
+/**
+ * Dólar oficial mayorista MAE (A3500 del día) = ticker "UST$T" en resumen/FOR.
+ * Es la referencia para dólar futuro (spot) y dólar linked (ajuste).
+ */
+export async function getMaeOficial(): Promise<number | null> {
+  const rows = await safeJson<MaeForRow[]>("https://api.marketdata.mae.com.ar/api/mercado/resumen/FOR");
+  const ust = rows?.find((r) => r.ticker === "UST$T") ?? rows?.find((r) => r.ticker?.startsWith("UST$"));
+  return ust?.ultimo ?? null;
+}
 
 export type DFPosicion = {
   ticker: string;
@@ -142,12 +153,11 @@ export type DolarFuturoData = {
  *   TEM     = (1 + TEA)^(1/12) − 1
  */
 export async function getDolarFuturo(): Promise<DolarFuturoData> {
-  const [ddf, cripto] = await Promise.all([
+  const [ddf, spot] = await Promise.all([
     safeJson<MaeDDFRow[]>("https://api.marketdata.mae.com.ar/api/mercado/resumen/DDF"),
-    safeJson<Criptoya>("https://criptoya.com/api/dolar"),
+    getMaeOficial(),
   ]);
 
-  const spot = cripto?.mayorista?.price ?? null;
   const now = Date.now();
 
   const posiciones: DFPosicion[] = (ddf ?? [])
@@ -233,13 +243,13 @@ function vencFromTicker(sym: string): number | null {
 }
 
 export async function getDolarLinked(): Promise<DolarLinkedData> {
-  const [notes, dolar] = await Promise.all([
+  const [notes, dolar, oficial] = await Promise.all([
     safeJson<NoteRow[]>("https://data912.com/live/arg_notes"),
     safeJson<DolarApi>("https://dolarapi.com/v1/dolares"),
+    getMaeOficial(), // dólar oficial mayorista MAE (A3500)
   ]);
 
   const mep = dolar?.find((d) => d.casa === "bolsa")?.venta ?? null;
-  const oficial = dolar?.find((d) => d.casa === "oficial")?.venta ?? null;
   const now = Date.now();
 
   const bonos: DLBono[] = (notes ?? [])
