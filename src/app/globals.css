@@ -265,3 +265,20 @@ svg.cv { width:100%; height:auto; display:block; touch-action:none; }
   background:color-mix(in srgb,var(--ink-3) 15%, transparent); }
 .vbar > i { position:absolute; left:0; top:0; bottom:0; border-radius:3px; }
 .vpct { font-family:var(--font-mono); font-size:12px; color:var(--ink-2); min-width:44px; text-align:right; }
+
+/* implícitas combinadas (multi-serie) */
+:root { --c-gran:#3E86A0; }
+.ic-wrap { padding:8px 12px 2px; position:relative; }
+svg.ic { width:100%; height:auto; display:block; touch-action:none; }
+.ic-grid { stroke:var(--line); stroke-width:1; }
+.ic-zero { stroke:var(--line-2); stroke-width:1; }
+.ic-axis { fill:var(--ink-3); font-family:var(--font-mono); font-size:10px; }
+.ic-line { fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+.ic-dot { stroke:var(--panel); stroke-width:1.5; cursor:pointer; }
+.ic-legend { display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:4px 14px 12px; font-size:var(--fs-2xs); color:var(--ink-2); }
+.ic-legend .lk { display:inline-flex; align-items:center; gap:6px; text-transform:uppercase; letter-spacing:.05em; font-weight:600; }
+.ic-legend .sw { width:14px; height:3px; border-radius:2px; }
+.ic-tip { position:absolute; z-index:6; pointer-events:none; transform:translate(-50%,-120%); background:var(--ink);
+  color:var(--panel); font-family:var(--font-mono); font-size:11px; font-weight:600; padding:5px 8px; border-radius:6px;
+  white-space:nowrap; box-shadow:0 8px 20px -8px rgba(0,0,0,.5); }
+.ic-tip b { color:var(--gold); }
