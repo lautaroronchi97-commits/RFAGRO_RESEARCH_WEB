@@ -40,6 +40,48 @@ Agrupando los ~20 ítems, aparecen exactamente **4 capacidades** de infraestruct
 Nada de la lista exige tiempo real tick-a-tick (eso queda en eTrader/Excel), y eso es la
 clave de que esto pueda ser barato.
 
+## 2.bis Lo que YA existe (descubierto el 07/07/2026)
+
+No partimos de cero: la cuenta de Supabase (org **chona97**) ya tiene el proyecto
+**`lineup-argentina`** (región São Paulo, la más cercana a Argentina), alimentado por
+scrapers externos (`lineup-dashboard`, `update_djve.py`). Tablas con datos reales:
+
+| Tabla | Filas | Última actualización | Contenido |
+|---|---|---|---|
+| `lineup` | ~494 mil | 2026-06-17 (⏸ scraper frenado) | Line-up diario de buques (ISA Agents): puerto, buque, cargo, toneladas, ETA/ETB/ETS, `es_agro`. |
+| `djve` | ~7,3 mil | **2026-07-07 (🟢 al día)** | DJVE (Ley 21.453) desde MAGyP: año, producto, toneladas, fechas, razón social. |
+| `compras` | 715 | 2026-06-16 (⏸ scraper frenado) | Compras por grano/campaña/sector: toneladas, a fijar, precio prom. USD, **% cosecha**. |
+
+Las tres tablas tienen **RLS con lectura anónima** (pensadas para exponer a un frontend).
+**Decisión tomada:** consolidar RF AGRO sobre este proyecto (no crear uno nuevo).
+
+**Primer paso ya hecho:** la web lee `djve` (vía la vista `djve_resumen`, ver
+`supabase/migrations/`) y la muestra en el panel **DJVE — Ventas al exterior** con datos
+reales. Es la primera pieza que une los dos mundos (web ↔ base histórica).
+
+> Pendiente operativo: los scrapers de `lineup` y `compras` están frenados desde mediados
+> de junio. Antes de armar esos paneles hay que ver por qué (dónde corren y reactivarlos).
+
+## 2.ter Modelo de datos objetivo (según la lista de Lautaro)
+
+Lo que Lautaro quiere guardar con historia, y su estado:
+
+| Dato a guardar | Estado | Fuente probable |
+|---|---|---|
+| Historia A3: posiciones de futuros (granos) | ❌ falta | A3/Cocos DDA (cron) → tabla nueva `futuros_snap` |
+| Históricos de pizarras (soja/maíz/trigo) | ❌ falta | CAC-BCR (scrape) → `pizarra` |
+| Históricos de tipo de cambio | ❌ falta | MAE (`UST$T`) + dólares → `tc` |
+| Históricos Chicago (CBOT: maíz/trigo/soja fut.) | ❌ falta | **fuente a definir con Lautaro** → `cbot` |
+| DJVE | ✅ conectado | MAGyP (`djve`) — ya en la web |
+| Line up de buques | 🟡 hay datos, scraper frenado | ISA Agents (`lineup`) |
+| Volúmenes negociados por día | ❌ falta | A3/MAE (cron) → `volumen_dia` |
+| SIO Granos | ❓ a evaluar | SIO Granos (ver si se puede scrapear) |
+| Camiones en puerto | ❌ falta | fuente a definir → `camiones` |
+
+Patrón para cada uno: **un job de ingesta + una tabla + (una vista) + un panel**. Los
+snapshots intradía siguen la política de retención del punto 4; los cierres/series diarias
+quedan para siempre.
+
 ## 3. Arquitectura objetivo
 
 Es la **misma dirección que ya está aprobada en Fase C** (Supabase + cron), confirmada y

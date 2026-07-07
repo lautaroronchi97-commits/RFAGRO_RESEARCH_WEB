@@ -8,6 +8,7 @@ import { DolarLinkedPanel } from "@/components/dolar-linked-panel";
 import { ImplicitasPanel } from "@/components/implicitas-panel";
 import { SinteticosPanel } from "@/components/sinteticos-panel";
 import { PanelCambiario } from "@/components/panel-cambiario";
+import { DjvePanel } from "@/components/djve-panel";
 import { SiteFooter } from "@/components/site-footer";
 import { RefreshOnFocus } from "@/components/refresh-on-focus";
 
@@ -32,6 +33,7 @@ export default async function Home() {
           <ImplicitasPanel />
           <SinteticosPanel />
           <PanelCambiario />
+          <DjvePanel />
         </div>
       </main>
       <div className="awn" aria-hidden="true" />

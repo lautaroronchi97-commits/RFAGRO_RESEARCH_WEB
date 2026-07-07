@@ -167,6 +167,8 @@ table.tbl { width:100%; border-collapse:collapse; min-width:640px; }
 .tbl tbody td.sym { color:var(--ink); font-weight:600; letter-spacing:.01em; }
 .tbl tbody td.dim { color:var(--ink-2); }
 .tbl tbody tr:hover td { background:var(--panel-2); }
+.tbl tbody tr.tot td { font-weight:700; color:var(--ink); border-top:1px solid var(--line-2);
+  border-bottom:none; background:var(--panel-2); }
 .tbl tbody tr.grp td { background:var(--panel-3); border-bottom:1px solid var(--line-2); padding:6px 12px; }
 .grp-cell { display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
 .grp-cell .gname { font-family:var(--font-ui); font-weight:700; font-size:var(--fs-xs);
