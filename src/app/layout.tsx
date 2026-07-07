@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   title: "RF AGRO · Pizarra electrónica de granos",
   description:
     "Research de mercado de granos de Argentina: arbitrajes pizarra vs A3, dólar futuro, tasas implícitas. RF AGRO — Consultora de granos.",
+  // noindex mientras haya datos de ejemplo en pantalla; se revierte al conectar A3+CAC
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({

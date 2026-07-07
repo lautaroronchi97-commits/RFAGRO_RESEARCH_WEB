@@ -2,8 +2,8 @@ import { WheatMark } from "./icons";
 import { RuedaClock } from "./rueda-clock";
 import { ThemeToggle } from "./theme-toggle";
 
-const NAV: { label: string; href: string; active?: boolean; disabled?: boolean }[] = [
-  { label: "Arbitrajes", href: "#arbitrajes", active: true },
+const NAV: { label: string; href: string; disabled?: boolean }[] = [
+  { label: "Arbitrajes", href: "#arbitrajes" },
   { label: "Dólar futuro", href: "#dolar-futuro" },
   { label: "Dólar linked", href: "#dolar-linked" },
   { label: "Pases", href: "#pases" },
@@ -29,12 +29,7 @@ export function SiteHeader() {
 
         <nav className="nav" aria-label="Secciones">
           {NAV.map((n) => (
-            <a
-              key={n.label}
-              href={n.href}
-              aria-current={n.active ? "page" : undefined}
-              aria-disabled={n.disabled ? "true" : undefined}
-            >
+            <a key={n.label} href={n.href} aria-disabled={n.disabled ? "true" : undefined}>
               {n.label}
             </a>
           ))}

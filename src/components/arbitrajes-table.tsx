@@ -4,6 +4,7 @@ import { nfmt, sfmt, pfmt, dirOf, arrowOf } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
 import { IconArb, GlyphSoja, GlyphMaiz, GlyphTrigo } from "./icons";
 import { InfoTip } from "./infotip";
+import { SourceStamp, metaEjemplo } from "./source-stamp";
 
 function glyphFor(g: Grano) {
   if (g === "Soja") return <GlyphSoja />;
@@ -24,7 +25,7 @@ export function ArbitrajesTable() {
         glyph={<IconArb />}
         title="Arbitrajes"
         sub="Pizarra (disponible) vs A3 (futuro)"
-        stamp="cierre 05/07 · 18:30"
+        stamp={<SourceStamp meta={metaEjemplo("pendiente A3 + CAC")} />}
       />
       <div className="table-scroll">
         <table className="tbl">

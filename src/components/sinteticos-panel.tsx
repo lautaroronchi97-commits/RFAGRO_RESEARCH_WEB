@@ -1,6 +1,7 @@
 import { getLecaps } from "@/lib/market";
 import { nfmt, pfmt, dirOf, arrowOf } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
+import { SourceStamp } from "./source-stamp";
 
 function IconSint() {
   return (
@@ -14,7 +15,7 @@ function IconSint() {
 const cls = (v: number | null) => (v == null ? "neu2" : v > 0 ? "pos" : v < 0 ? "neg" : "neu2");
 
 export async function SinteticosPanel() {
-  const { lecaps } = await getLecaps();
+  const { lecaps, meta } = await getLecaps();
 
   return (
     <Panel id="sinteticos">
@@ -22,7 +23,7 @@ export async function SinteticosPanel() {
         glyph={<IconSint />}
         title="Sintéticos · LECAPs"
         sub="LECAP + dólar futuro vs futuro directo"
-        stamp="data912 · ~vivo"
+        stamp={<SourceStamp meta={meta} />}
       />
       <div className="table-scroll">
         <table className="tbl" style={{ minWidth: 420 }}>

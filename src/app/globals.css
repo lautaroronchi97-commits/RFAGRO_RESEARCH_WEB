@@ -17,7 +17,7 @@
 
   /* ---- LIGHT (marca / clientes) ---- */
   --bg:#EDF2E3; --panel:#FBFCF8; --panel-2:#F3F7EA; --panel-3:#E7EFD8;
-  --ink:#16241A; --ink-2:#47583F; --ink-3:#6E7F63;
+  --ink:#16241A; --ink-2:#47583F; --ink-3:#5A6B50;
   --line:#DCE5CD; --line-2:#C6D5B1;
   --brand-rf:#2F6E34; --brand-agro:#4E9C3A; --brand-deep:#2F6E34; --leaf:#5CAF46;
   --gold:#EFBF2E; --gold-ink:#16241A; --gold-text:#97700A;
@@ -29,21 +29,9 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg:#080C09; --panel:#101913; --panel-2:#16211A; --panel-3:#182619;
-    --ink:#E9F1E3; --ink-2:#A6B8A0; --ink-3:#71836A; --line:#1E2C21; --line-2:#27392B;
-    --brand-rf:#6FB544; --brand-agro:#98CE66; --brand-deep:#98CE66; --leaf:#5CAF46;
-    --gold:#EFBF2E; --gold-ink:#0A0F0B; --gold-text:#EFBF2E;
-    --pos:#37D982; --neg:#FF5C5C; --neu:#7C8F77;
-    --pos-weak:rgba(55,217,130,.15); --neg-weak:rgba(255,92,92,.15);
-    --focus:#98CE66;
-    --shadow:0 1px 0 rgba(0,0,0,.5), 0 14px 30px -18px rgba(0,0,0,.8);
-    --ribbon-bg:#0C140E; --ribbon-ink:#EAF3E0; --ribbon-line:rgba(255,255,255,.07);
-    color-scheme: dark;
-  }
-}
-
+/* El tema es un MODO explícito (claro = clientes, oscuro "rueda" = trader),
+   no una preferencia del SO: next-themes pone data-theme antes del primer paint.
+   Única fuente de verdad de los tokens dark: el selector de abajo. */
 :root[data-theme="dark"] {
   --bg:#080C09; --panel:#101913; --panel-2:#16211A; --panel-3:#182619;
   --ink:#E9F1E3; --ink-2:#A6B8A0; --ink-3:#71836A; --line:#1E2C21; --line-2:#27392B;
@@ -72,7 +60,7 @@ body {
   -webkit-font-smoothing:antialiased;
   font-variant-numeric: tabular-nums;
 }
-.num, .mono { font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+.mono { font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
 a { color:inherit; text-decoration:none; }
 :focus-visible { outline:2px solid var(--focus); outline-offset:2px; border-radius:2px; }
 button { font:inherit; color:inherit; background:none; border:none; }
@@ -149,9 +137,7 @@ button { font:inherit; color:inherit; background:none; border:none; }
 .rd.flat { color:var(--neu); background:color-mix(in srgb,var(--neu) 16%, transparent); }
 
 /* ---- Dashboard grid + panels ---- */
-.dash { display:grid; gap:14px; margin-top:14px; grid-template-columns:minmax(0,2.05fr) minmax(0,1fr); align-items:start; }
 .col { display:flex; flex-direction:column; gap:14px; min-width:0; }
-@media (max-width:960px){ .dash { grid-template-columns:1fr; } }
 .panel { background:var(--panel); border:1px solid var(--line); border-radius:9px;
   box-shadow:var(--shadow); overflow:hidden; scroll-margin-top:64px; }
 .panel-hd { display:flex; align-items:center; gap:10px; padding:11px 14px 10px; flex-wrap:wrap; }
@@ -163,7 +149,6 @@ button { font:inherit; color:inherit; background:none; border:none; }
   color:var(--ink-3); font-weight:600; }
 .stamp { margin-left:auto; display:inline-flex; align-items:center; gap:5px; font-family:var(--font-mono);
   font-size:var(--fs-2xs); color:var(--ink-3); white-space:nowrap; }
-.stamp .sdot { width:5px; height:5px; border-radius:50%; background:var(--pos); }
 .panel-note { padding:0 14px 11px; font-size:var(--fs-2xs); color:var(--ink-3);
   display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
 .panel-note .k { background:var(--gold); color:var(--gold-ink); padding:1px 6px; border-radius:3px;
@@ -206,7 +191,7 @@ table.tbl { width:100%; border-collapse:collapse; min-width:640px; }
   width:max-content; max-width:230px; background:var(--ink); color:var(--panel); font-family:var(--font-ui);
   font-size:11px; font-weight:500; line-height:1.35; letter-spacing:0; text-transform:none;
   padding:7px 9px; border-radius:7px; box-shadow:0 8px 22px -8px rgba(0,0,0,.5);
-  opacity:0; visibility:hidden; transition:opacity .12s, transform .12s; z-index:30; white-space:normal; text-align:left; }
+  opacity:0; visibility:hidden; z-index:30; white-space:normal; text-align:left; }
 .infotip:hover .infotip-pop, .infotip:focus-visible .infotip-pop, .infotip:focus-within .infotip-pop {
   opacity:1; visibility:visible; transform:translateX(-50%) translateY(0); }
 
@@ -227,11 +212,12 @@ table.tbl { width:100%; border-collapse:collapse; min-width:640px; }
 @media (prefers-reduced-motion: no-preference){
   html { scroll-behavior:smooth; }
   .toggle,.nav a,.rueda,.tbl tbody tr td { transition:background .16s ease, color .16s ease, border-color .16s ease; }
+  .infotip .infotip-pop { transition:opacity .12s, transform .12s; }
 }
 
 /* ---- Gráfico de curva (dólar futuro) ---- */
 .chart-wrap { padding:8px 12px 6px; position:relative; }
-svg.cv { width:100%; height:auto; display:block; touch-action:none; }
+svg.cv { width:100%; height:auto; display:block; touch-action:pan-y; }
 .cv-grid { stroke:var(--line); stroke-width:1; }
 .cv-axis { fill:var(--ink-3); font-family:var(--font-mono); font-size:10px; }
 .cv-area { fill:color-mix(in srgb, var(--leaf) 15%, transparent); stroke:none; }
@@ -269,7 +255,7 @@ svg.cv { width:100%; height:auto; display:block; touch-action:none; }
 /* implícitas combinadas (multi-serie) */
 :root { --c-gran:#3E86A0; }
 .ic-wrap { padding:8px 12px 2px; position:relative; }
-svg.ic { width:100%; height:auto; display:block; touch-action:none; }
+svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
 .ic-grid { stroke:var(--line); stroke-width:1; }
 .ic-zero { stroke:var(--line-2); stroke-width:1; }
 .ic-axis { fill:var(--ink-3); font-family:var(--font-mono); font-size:10px; }
@@ -282,3 +268,16 @@ svg.ic { width:100%; height:auto; display:block; touch-action:none; }
   color:var(--panel); font-family:var(--font-mono); font-size:11px; font-weight:600; padding:5px 8px; border-radius:6px;
   white-space:nowrap; box-shadow:0 8px 20px -8px rgba(0,0,0,.5); }
 .ic-tip b { color:var(--gold); }
+
+/* ---- SourceStamp (frescura honesta) ---- */
+.st-badge { font-weight:800; font-size:9px; letter-spacing:.08em; padding:1px 5px; border-radius:3px; }
+.st-real { color:var(--pos); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--pos) 40%, transparent); }
+.st-parcial { color:var(--gold-text); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--gold) 55%, transparent); }
+.st-ejemplo { color:var(--ink-3); box-shadow:inset 0 0 0 1px var(--line-2); }
+.st-warn { color:var(--gold-text); cursor:help; }
+
+/* chip "ej." en la cinta (dato de ejemplo) */
+.rib-ej { font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  color:color-mix(in srgb, var(--ribbon-ink) 60%, transparent);
+  border:1px dashed color-mix(in srgb, var(--ribbon-ink) 35%, transparent);
+  padding:0 4px; border-radius:3px; }

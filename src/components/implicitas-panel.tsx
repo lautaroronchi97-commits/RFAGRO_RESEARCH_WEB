@@ -2,6 +2,7 @@ import { getDolarFuturo, getDolarLinked } from "@/lib/market";
 import { arbitrajes } from "@/lib/sample";
 import { Panel, PanelHead } from "./panel";
 import { ImplicitasChart } from "./implicitas-chart";
+import { SourceStamp } from "./source-stamp";
 
 function IconLayers() {
   return (
@@ -15,6 +16,13 @@ function IconLayers() {
 
 export async function ImplicitasPanel() {
   const [fut, link] = await Promise.all([getDolarFuturo(), getDolarLinked()]);
+
+  const meta = {
+    source: "MAE + data912",
+    updatedAt: Math.max(fut.meta.updatedAt ?? 0, link.meta.updatedAt ?? 0) || null,
+    status: "parcial" as const, // granos siguen siendo ejemplo
+    problemas: [...fut.meta.problemas, ...link.meta.problemas, "granos: ejemplo hasta conectar A3"],
+  };
 
   const futPts = fut.posiciones
     .filter((p) => p.tnaPct != null && p.dias != null)
@@ -38,7 +46,7 @@ export async function ImplicitasPanel() {
         glyph={<IconLayers />}
         title="Implícitas combinadas"
         sub="TNA USD por plazo — dólar futuro · linked · granos"
-        stamp="MAE + data912"
+        stamp={<SourceStamp meta={meta} />}
       />
       <ImplicitasChart series={series} />
       <div className="panel-note">

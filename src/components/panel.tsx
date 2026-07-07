@@ -30,12 +30,7 @@ export function PanelHead({
       {glyph && <span className="ph-glyph">{glyph}</span>}
       <h2>{title}</h2>
       {sub && <span className="ph-sub">{sub}</span>}
-      {stamp && (
-        <span className="stamp">
-          <span className="sdot" aria-hidden="true" />
-          {stamp}
-        </span>
-      )}
+      {stamp}
     </div>
   );
 }

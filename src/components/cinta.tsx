@@ -18,6 +18,11 @@ export function Cinta({ data }: { data: CintaData }) {
                     {arrowOf(dir)} {pfmt(it.change, 2)}
                   </span>
                 )}
+                {it.sample && (
+                  <span className="rib-ej" title="Dato de ejemplo — pendiente pizarra CAC-BCR">
+                    ej.
+                  </span>
+                )}
               </span>
             );
           })}

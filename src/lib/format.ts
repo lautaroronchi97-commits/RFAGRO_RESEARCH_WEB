@@ -5,7 +5,9 @@ export function nfmt(value: number | null | undefined, decimals = 2): string {
   return new Intl.NumberFormat("es-AR", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  }).format(value);
+  })
+    .format(value)
+    .replace("-", "−"); // glifo menos tipográfico (U+2212) unificado en toda la app
 }
 
 /** Porcentaje con signo explícito: +1,2% / −0,5% */

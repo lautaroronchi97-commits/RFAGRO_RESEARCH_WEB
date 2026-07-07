@@ -2,6 +2,7 @@ import * as React from "react";
 import { getVolumenCambiario } from "@/lib/market";
 import { nfmt, pfmt, dirOf, arrowOf } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
+import { SourceStamp } from "./source-stamp";
 
 function IconFx() {
   return (
@@ -29,7 +30,7 @@ export async function PanelCambiario() {
         glyph={<IconFx />}
         title="Panel cambiario"
         sub="Volumen de rueda por segmento (MAE · USD)"
-        stamp="MAE · ~15 min"
+        stamp={<SourceStamp meta={data.meta} />}
       />
       <div className="cbo-head">
         <span className="cbo-kpi">

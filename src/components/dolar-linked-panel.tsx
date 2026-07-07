@@ -1,6 +1,7 @@
 import { getDolarLinked } from "@/lib/market";
 import { nfmt, pfmt, sfmt, rfmt, dirOf, arrowOf } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
+import { SourceStamp } from "./source-stamp";
 
 function IconLink() {
   return (
@@ -23,7 +24,7 @@ export async function DolarLinkedPanel() {
         glyph={<IconLink />}
         title="Dólar linked"
         sub={`TC implícito + TNA USD (vs oficial MAE ${data.oficial ? nfmt(data.oficial, 1) : "—"})`}
-        stamp="data912 · ~vivo"
+        stamp={<SourceStamp meta={data.meta} />}
       />
       <div className="table-scroll">
         <table className="tbl" style={{ minWidth: 720 }}>

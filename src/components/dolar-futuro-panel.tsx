@@ -2,6 +2,7 @@ import { getDolarFuturo } from "@/lib/market";
 import { nfmt, pfmt, rfmt, dirOf, arrowOf } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
 import { DolarFuturoChart } from "./dolar-futuro-chart";
+import { SourceStamp } from "./source-stamp";
 
 function IconCurve() {
   return (
@@ -27,7 +28,7 @@ export async function DolarFuturoPanel() {
         glyph={<IconCurve />}
         title="Dólar futuro"
         sub="Curva + tasas implícitas (A3 · spot mayorista)"
-        stamp="MAE · ~15 min"
+        stamp={<SourceStamp meta={data.meta} />}
       />
       <div className="df-split">
         <div className="df-chart">

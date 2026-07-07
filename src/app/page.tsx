@@ -9,6 +9,7 @@ import { ImplicitasPanel } from "@/components/implicitas-panel";
 import { SinteticosPanel } from "@/components/sinteticos-panel";
 import { PanelCambiario } from "@/components/panel-cambiario";
 import { SiteFooter } from "@/components/site-footer";
+import { RefreshOnFocus } from "@/components/refresh-on-focus";
 
 // Revalida los datos de la cinta cada 60s (caché corto).
 export const revalidate = 60;
@@ -18,6 +19,8 @@ export default async function Home() {
 
   return (
     <>
+      <h1 className="sr">RF AGRO — Pizarra electrónica de granos</h1>
+      <RefreshOnFocus />
       <SiteHeader />
       <Cinta data={cinta} />
       <main className="wrap">
