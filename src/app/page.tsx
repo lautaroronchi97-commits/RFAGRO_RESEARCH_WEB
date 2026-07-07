@@ -11,6 +11,7 @@ import { PanelCambiario } from "@/components/panel-cambiario";
 import { DjvePanel } from "@/components/djve-panel";
 import { CierresPanel } from "@/components/cierres-panel";
 import { CalcDiferido } from "@/components/calc-diferido";
+import { CalcArbitraje } from "@/components/calc-arbitraje";
 import { SiteFooter } from "@/components/site-footer";
 import { RefreshOnFocus } from "@/components/refresh-on-focus";
 
@@ -32,6 +33,7 @@ export default async function Home() {
           <PasesPanel />
           <CierresPanel />
           <CalcDiferido />
+          <CalcArbitraje />
           <DolarFuturoPanel />
           <DolarLinkedPanel />
           <ImplicitasPanel />

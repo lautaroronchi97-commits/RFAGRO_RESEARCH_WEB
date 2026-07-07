@@ -26,6 +26,16 @@ export function ymd(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
+/** Hoy en zona horaria de Córdoba, como "YYYY-MM-DD". */
+export function hoyCordoba(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Argentina/Cordoba",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
 /** "YYYY-MM-DD" → Date a mediodía UTC (estable ante zonas horarias). */
 export function parseYmd(s: string): Date {
   return new Date(`${s}T12:00:00Z`);
