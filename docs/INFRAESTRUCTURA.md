@@ -66,21 +66,52 @@ reales. Es la primera pieza que une los dos mundos (web ↔ base histórica).
 
 Lo que Lautaro quiere guardar con historia, y su estado:
 
-| Dato a guardar | Estado | Fuente probable |
+| Dato a guardar | Estado | Fuente (identificada 07/07/2026) |
 |---|---|---|
-| Historia A3: posiciones de futuros (granos) | ❌ falta | A3/Cocos DDA (cron) → tabla nueva `futuros_snap` |
-| Históricos de pizarras (soja/maíz/trigo) | ❌ falta | CAC-BCR (scrape) → `pizarra` |
-| Históricos de tipo de cambio | ❌ falta | MAE (`UST$T`) + dólares → `tc` |
-| Históricos Chicago (CBOT: maíz/trigo/soja fut.) | ❌ falta | **fuente a definir con Lautaro** → `cbot` |
+| Historia A3: posiciones de futuros (granos) | ❌ falta, **fuente lista** | **CEM API** `/api/v2/closing-prices` → settlement, OHLC, OI, volumen, tasa implícita por posición/día |
+| Históricos de pizarras (soja/maíz/trigo) | ❌ falta, **fuente lista** | **CEM API** `/api/v2/spot-prices` (o CAC-BCR como override manual) |
+| Históricos de tipo de cambio | ❌ falta | CEM (`DLR` en closing-prices) + MAE (`UST$T` oficial) |
+| Históricos Chicago (CBOT: maíz/trigo/soja fut.) | ❌ falta, **fuente lista** | skills gauss: `barchart` / `investing` / `yahoo-finance` |
 | DJVE | ✅ conectado | MAGyP (`djve`) — ya en la web |
 | Line up de buques | 🟡 hay datos, scraper frenado | ISA Agents (`lineup`) |
-| Volúmenes negociados por día | ❌ falta | A3/MAE (cron) → `volumen_dia` |
+| Volúmenes negociados por día | ❌ falta, **fuente lista** | **CEM API** `/api/v2/daily-trading-volume` + `/market-position-data` |
+| Pases / spreads calendario | ❌ falta, **fuente lista** | **CEM API** `/api/v2/spread` |
+| Metales, petróleo, Merval, SPY, EWZ | ❌ falta, **fuente lista** | skills gauss: `yahoo-finance` / `investing` / `data912` |
 | SIO Granos | ❓ a evaluar | SIO Granos (ver si se puede scrapear) |
-| Camiones en puerto | ❌ falta | fuente a definir → `camiones` |
+| Camiones en puerto | ❌ falta | fuente a definir |
 
 Patrón para cada uno: **un job de ingesta + una tabla + (una vista) + un panel**. Los
 snapshots intradía siguen la política de retención del punto 4; los cierres/series diarias
 quedan para siempre.
+
+## 2.quater Fuentes identificadas (07/07/2026)
+
+### CEM — Centro de Estadísticas de Mercado (Matba ROFEX)
+`https://cem.matbarofex.com.ar` es un SPA; los datos salen de una **API REST pública,
+sin autenticación, documentada en Swagger**:
+
+- Backend: `https://apicem.matbarofex.com.ar` · spec: `/swagger/v1/swagger.json` · rutas `/api/v2/...`
+- **`GET /api/v2/closing-prices`** — el histórico de A3 por posición/día: `dateTime`, `symbol`,
+  `settlement`, `open/high/low/close`, `openInterest` (+ change), `volume`, `tradeCount`,
+  `impliedRate`, `previousClose`, `product`. Params: `underlying`, `symbol`, `product`,
+  `segment`, `from`, `to`, `page`, `pageSize`, `sort`, `sortDir` (¡en MAYÚSCULAS: `ASC`/`DESC`!).
+- `GET /api/v2/spot-prices` — pizarra/disponible histórico.
+- `GET /api/v2/daily|monthly|yearly-trading-volume` — volúmenes negociados.
+- `GET /api/v2/market-position-data` — posición de mercado (open interest agregado).
+- `GET /api/v2/spread` — pases/spreads calendario.
+- `GET /api/v2/products`, `/symbols`, `/ports`, `/deliveries` — catálogos y entregas.
+- `GET /api/v2/downloads/*` — exportables (CSV/Excel) de casi todo lo anterior.
+- Sin cap ni token documentado. Conviene cachear e ingestar por cron, no por visita.
+
+### Skills de gauss (github.com/gauss314/skills)
+Catálogo de ~32 skills, uno por API. Los que usamos/usaremos:
+- **Argentina:** `primary` (A3/Matba ROFEX — mismo protocolo que Cocos/xOMS; históricos vía
+  `/rest/data/getTrades`), `data912` (ya en uso), `mae`, `bcra-macro`, `byma`, `indec`.
+- **Globales (resuelven CBOT/metales/índices):** `barchart`, `investing`, `yahoo-finance`,
+  `marketwatch`, `cboe-data`.
+
+Nota: para históricos de A3 el **CEM es mejor que `getTrades`** — trae el cierre/ajuste ya
+consolidado por día (no hay que reconstruirlo trade a trade) y no necesita credenciales.
 
 ## 3. Arquitectura objetivo
 
