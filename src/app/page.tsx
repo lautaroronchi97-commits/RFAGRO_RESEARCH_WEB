@@ -12,7 +12,7 @@ import { DjvePanel } from "@/components/djve-panel";
 import { CierresPanel } from "@/components/cierres-panel";
 import { CalcDiferido } from "@/components/calc-diferido";
 import { CalcArbitraje } from "@/components/calc-arbitraje";
-import { CalcOpciones } from "@/components/calc-opciones";
+import { CalcEstrategias } from "@/components/calc-estrategias";
 import { CalcFijar } from "@/components/calc-fijar";
 import { CalcCostos } from "@/components/calc-costos";
 import { CalcPorcentaje } from "@/components/calc-porcentaje";
@@ -39,7 +39,7 @@ export default async function Home() {
           <CierresPanel />
           <CalcDiferido />
           <CalcArbitraje />
-          <CalcOpciones />
+          <CalcEstrategias />
           <CalcFijar />
           <CalcPorcentaje />
           <CalcPases />
