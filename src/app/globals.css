@@ -210,6 +210,10 @@ table.tbl { width:100%; border-collapse:collapse; min-width:640px; }
   padding:6px 12px; border-radius:7px; border:1px dashed var(--line-2); background:transparent;
   color:var(--brand-deep); cursor:pointer; }
 .calc-add:hover { background:var(--panel-2); border-color:var(--brand-3); }
+.cell-in.sm { max-width:64px; }
+.cell-wrap { display:inline-flex; align-items:center; gap:5px; justify-content:flex-end; }
+.tna-tag { font-family:var(--font-ui); font-size:9px; font-weight:700; letter-spacing:.04em;
+  color:var(--trigo-deep, var(--brand-deep)); background:var(--panel-3); padding:1px 4px; border-radius:3px; }
 
 .chip { display:inline-flex; align-items:center; gap:4px; font-family:var(--font-mono); font-weight:700;
   font-size:12px; padding:2px 7px; border-radius:4px; min-width:74px; justify-content:flex-end; }
