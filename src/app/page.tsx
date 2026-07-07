@@ -13,6 +13,7 @@ import { CierresPanel } from "@/components/cierres-panel";
 import { CalcDiferido } from "@/components/calc-diferido";
 import { CalcArbitraje } from "@/components/calc-arbitraje";
 import { CalcOpciones } from "@/components/calc-opciones";
+import { CalcFijar } from "@/components/calc-fijar";
 import { SiteFooter } from "@/components/site-footer";
 import { RefreshOnFocus } from "@/components/refresh-on-focus";
 
@@ -36,6 +37,7 @@ export default async function Home() {
           <CalcDiferido />
           <CalcArbitraje />
           <CalcOpciones />
+          <CalcFijar />
           <DolarFuturoPanel />
           <DolarLinkedPanel />
           <ImplicitasPanel />

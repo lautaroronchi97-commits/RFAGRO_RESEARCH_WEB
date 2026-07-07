@@ -200,6 +200,16 @@ table.tbl { width:100%; border-collapse:collapse; min-width:640px; }
 .calc-meta { display:flex; flex-direction:column; gap:3px; font-family:var(--font-mono);
   font-size:var(--fs-2xs); color:var(--ink-2); text-align:right; }
 .calc-meta b { color:var(--ink); font-weight:700; }
+.cell-in { font-family:var(--font-mono); font-size:12.5px; padding:4px 6px; border-radius:5px;
+  border:1px solid var(--line-2); background:var(--panel-2); color:var(--ink); width:100%; max-width:130px; }
+.cell-in.num { text-align:right; max-width:90px; }
+.cell-in:focus { outline:none; border-color:var(--brand-3); }
+.cell-del { border:none; background:none; color:var(--ink-3); font-size:15px; cursor:pointer; padding:2px 6px; line-height:1; }
+.cell-del:hover { color:var(--neg); }
+.calc-add { align-self:flex-start; font-family:var(--font-ui); font-size:var(--fs-xs); font-weight:700;
+  padding:6px 12px; border-radius:7px; border:1px dashed var(--line-2); background:transparent;
+  color:var(--brand-deep); cursor:pointer; }
+.calc-add:hover { background:var(--panel-2); border-color:var(--brand-3); }
 
 .chip { display:inline-flex; align-items:center; gap:4px; font-family:var(--font-mono); font-weight:700;
   font-size:12px; padding:2px 7px; border-radius:4px; min-width:74px; justify-content:flex-end; }
