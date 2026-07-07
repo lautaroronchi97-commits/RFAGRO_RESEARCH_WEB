@@ -15,6 +15,8 @@ import { CalcArbitraje } from "@/components/calc-arbitraje";
 import { CalcOpciones } from "@/components/calc-opciones";
 import { CalcFijar } from "@/components/calc-fijar";
 import { CalcCostos } from "@/components/calc-costos";
+import { CalcPorcentaje } from "@/components/calc-porcentaje";
+import { CalcPases } from "@/components/calc-pases";
 import { SiteFooter } from "@/components/site-footer";
 import { RefreshOnFocus } from "@/components/refresh-on-focus";
 
@@ -39,6 +41,8 @@ export default async function Home() {
           <CalcArbitraje />
           <CalcOpciones />
           <CalcFijar />
+          <CalcPorcentaje />
+          <CalcPases />
           <CalcCostos />
           <DolarFuturoPanel />
           <DolarLinkedPanel />
