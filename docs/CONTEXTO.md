@@ -71,15 +71,37 @@ futuros `SOJ.ROS/JUL26`, pases `MAI.ROS/SEP26/DIC26`, dólar `DLR/JUL26`; opcion
 disponible = `/DISPO`. **Límites:** no hay cap diario documentado; A3 recomienda WebSocket para MD en vivo;
 el caché de Next ya acota las llamadas (una regeneración por ventana, no por usuario). Todo hoy es **REST**.
 
-## Pendientes (orden sugerido para retomar)
-1. **Bajar** el endpoint de prueba `src/app/api/a3-check/route.ts` si sigue (ya se removió el 06/07).
-2. **Enchufar Arbitrajes + Pases a A3 real** (segmento DDA) + **pizarra CAC** (scrape) con override manual.
-3. **Cron (Vercel) + Supabase**: snapshots → histórico + acotar llamadas A3 + guardar el override manual de pizarra.
-4. **Sintéticos**: pedir a Lautaro la tabla de "pago final por letra" → TIR + sintético (LECAP + dólar fut vs futuro directo).
-5. Pizarra en la cinta desde CAC (hoy ejemplo).
-6. Vista productor (tarjetas vendé/esperá), PWA instalable, calculadora US$/tn → camión/hectárea.
-7. Pasada de "afinar estética".
-8. Compras netas BCRA (vía X / carga manual) para el módulo 7.
+## Auditoría integral (07/07/2026) — hecha, Fase 0+A aplicada
+Se auditó todo (arquitectura/datos, UI/UX, seguridad/repo) + plan por fases revisado por experto.
+**Ya aplicado** (commit `fff4f40`): React.cache() dedup de fetches (16→6 por regeneración), Result
+tipado + guards, stamps honestos (SourceStamp REAL/PARCIAL/EJEMPLO + "datos al HH:MM"), refresh
+al volver a la pestaña, tema sin bloque @media duplicado, contraste AA, touch-action:pan-y,
+headers de seguridad, robots noindex (mientras haya EJEMPLO), README real, CI (GitHub Actions),
+favicon de marca. **Cero credenciales en historial de git (verificado).**
+
+### Flujo de deploy (NUEVO — Fase 0)
+- Rama **`main` = producción** en Vercel; el trabajo va en ramas `claude/*` → **Preview URL**;
+  publicar = PR → merge a `main` (GitHub UI). Los pushes a ramas ya NO tocan producción
+  (vigente cuando Lautaro complete el switch en Vercel: Settings → Environments → Production
+  Branch → `main`). Env vars sensibles con scope **Production only**.
+- Vercel Hobby es no-comercial → decidir upgrade a Pro ANTES de poner datos reales frente a clientes (C2).
+
+## Pendientes (orden para retomar — plan completo en la conversación de auditoría)
+**Fase B (estructura):**
+1. B1 Resiliencia: tarjetas de degradación por panel desde el Result ("fuente caída" vs "sin datos");
+   error.tsx como defensa extra. OJO: bajo ISR estático Suspense NO streamea — verificar en build de prod.
+2. B2 Extraer `dates.ts` (hoyCordoba/diasHasta UTC-noon/ultimoDiaHabil), `tickers.ts`, `rates.ts`.
+   [LAUTARO] 1 ejemplo numérico por fórmula como fixture.
+3. B3 Tests (Vitest): rates → tickers → dates; a CI.
+4. B4a Mobile tablas (.hide-sm/.hide-md + fade/hint) · B4b ChartFrame compartido + tabla fallback de
+   implícitas + `noUncheckedIndexedAccess` · B4c InfoTip popover accesible.
+**Fase C (piedra angular):**
+5. C1 Supabase + cron por GitHub Actions (`snapshots` + `kv`; SOLO el cron llama a A3; token A3 en kv;
+   workflow con `workflow_dispatch` y schedule `*/30 13-21 * * 1-5` UTC — corre desde la rama default).
+6. C2 Arbitrajes + Pases REALES (snapshots + INTRATE [LAUTARO ejemplo numérico] + pizarra CAC con override).
+7. C3 Sintéticos TIR ([LAUTARO] tabla "pago final por letra").
+8. C4 Vista productor, PWA, calculadora, estética, charts históricos (re-evaluar Recharts), robots→index,
+   compras BCRA manual.
 
 ## Comandos
 - `npm run dev` (real en sandbox: `NODE_USE_ENV_PROXY=1 npm run dev`) · `npm run build` · push a la rama → deploy.
