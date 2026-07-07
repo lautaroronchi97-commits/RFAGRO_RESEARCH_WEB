@@ -178,6 +178,29 @@ table.tbl { width:100%; border-collapse:collapse; min-width:640px; }
 .grp-cell .gglyph svg { width:15px; height:15px; }
 .pos { color:var(--pos); } .neg { color:var(--neg); } .neu2 { color:var(--neu); }
 
+/* ---- Calculadoras ---- */
+.calc { padding:14px 16px; display:flex; flex-direction:column; gap:14px; }
+.calc-field { display:flex; flex-direction:column; gap:4px; }
+.calc-field > span { font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.05em;
+  color:var(--ink-3); font-weight:700; }
+.calc-field input, .calc-field select { font-family:var(--font-mono); font-size:14px;
+  padding:8px 10px; border-radius:7px; border:1px solid var(--line-2); background:var(--panel-2);
+  color:var(--ink); width:100%; }
+.calc-field input:focus, .calc-field select:focus { outline:none; border-color:var(--brand-3);
+  box-shadow:0 0 0 2px color-mix(in srgb, var(--brand-3) 22%, transparent); }
+.calc-mode { max-width:260px; }
+.calc-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+.calc-out { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px;
+  padding:12px 14px; border-radius:9px; background:var(--panel-3); border:1px solid var(--line-2); }
+.calc-res { display:flex; flex-direction:column; gap:2px; }
+.calc-res-lbl { font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); font-weight:700; }
+.calc-res-val { font-family:var(--font-mono); font-size:26px; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--brand-deep); line-height:1.1; }
+.calc-res-sub { font-family:var(--font-mono); font-size:var(--fs-2xs); color:var(--ink-2); }
+.calc-meta { display:flex; flex-direction:column; gap:3px; font-family:var(--font-mono);
+  font-size:var(--fs-2xs); color:var(--ink-2); text-align:right; }
+.calc-meta b { color:var(--ink); font-weight:700; }
+
 .chip { display:inline-flex; align-items:center; gap:4px; font-family:var(--font-mono); font-weight:700;
   font-size:12px; padding:2px 7px; border-radius:4px; min-width:74px; justify-content:flex-end; }
 .chip.up { color:var(--pos); background:var(--pos-weak); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pos) 24%, transparent); }
