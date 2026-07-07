@@ -9,6 +9,7 @@ import { ImplicitasPanel } from "@/components/implicitas-panel";
 import { SinteticosPanel } from "@/components/sinteticos-panel";
 import { PanelCambiario } from "@/components/panel-cambiario";
 import { DjvePanel } from "@/components/djve-panel";
+import { CierresPanel } from "@/components/cierres-panel";
 import { SiteFooter } from "@/components/site-footer";
 import { RefreshOnFocus } from "@/components/refresh-on-focus";
 
@@ -28,6 +29,7 @@ export default async function Home() {
         <div className="col">
           <ArbitrajesTable />
           <PasesPanel />
+          <CierresPanel />
           <DolarFuturoPanel />
           <DolarLinkedPanel />
           <ImplicitasPanel />
