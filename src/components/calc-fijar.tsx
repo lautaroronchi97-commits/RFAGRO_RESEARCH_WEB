@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { Panel, PanelHead } from "./panel";
-import { sfmt, rfmt } from "@/lib/format";
-import { evaluarFijar, type PosCurva } from "@/lib/fijar";
+import { sfmt, rfmt, nfmt } from "@/lib/format";
+import { evaluarFijar, type PosCurva, type Lado, type FilaFijar } from "@/lib/fijar";
 import { hoyCordoba, parseYmd } from "@/lib/habiles";
 
 function IconFijar() {
@@ -20,6 +20,13 @@ function num(v: string): number {
   return Number.isFinite(n) ? n : NaN;
 }
 
+const MESES = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
+function mesCorto(iso: string): string {
+  const m = iso.match(/^(\d{4})-(\d{2})/);
+  if (!m) return iso || "—";
+  return `${MESES[Number(m[2]) - 1] ?? m[2]}${m[1].slice(2)}`;
+}
+
 const CURVA_INI: PosCurva[] = [
   { vto: "2026-07-31", precio: 328 },
   { vto: "2026-09-30", precio: 333 },
@@ -27,9 +34,53 @@ const CURVA_INI: PosCurva[] = [
   { vto: "2027-04-30", precio: 350 },
 ];
 
+/** Gráfico de barras del delta (disponible − futuro) por plazo. */
+function DeltaChart({ filas }: { filas: FilaFijar[] }) {
+  if (filas.length === 0) return null;
+  const W = Math.max(280, filas.length * 74);
+  const H = 150;
+  const padT = 18;
+  const padB = 24;
+  const h = H - padT - padB;
+  const vals = filas.map((f) => f.delta);
+  const maxV = Math.max(0, ...vals);
+  const minV = Math.min(0, ...vals);
+  const range = maxV - minV || 1;
+  const y = (v: number) => padT + ((maxV - v) / range) * h;
+  const zeroY = y(0);
+  const bw = W / filas.length;
+
+  return (
+    <div className="chart-wrap">
+      <svg className="cv" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Gráfico del delta por plazo">
+        <line x1={0} y1={zeroY} x2={W} y2={zeroY} stroke="var(--line-2)" strokeWidth={1} />
+        {filas.map((f, i) => {
+          const cx = i * bw + bw / 2;
+          const barW = Math.min(40, bw * 0.5);
+          const yv = y(f.delta);
+          const top = Math.min(zeroY, yv);
+          const height = Math.max(1, Math.abs(yv - zeroY));
+          const pos = f.delta >= 0;
+          return (
+            <g key={i}>
+              <rect x={cx - barW / 2} y={top} width={barW} height={height} rx={2}
+                fill={pos ? "var(--pos)" : "var(--neg)"} opacity={0.85} />
+              <text x={cx} y={pos ? top - 5 : top + height + 12} textAnchor="middle" fontSize={11}
+                fill="var(--ink-2)" fontFamily="var(--font-mono)">{sfmt(f.delta, 1)}</text>
+              <text x={cx} y={H - 7} textAnchor="middle" fontSize={10} fill="var(--ink-3)"
+                fontFamily="var(--font-mono)">{mesCorto(f.vto)}</text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
 export function CalcFijar() {
-  const [base, setBase] = React.useState("320");
-  const [delta, setDelta] = React.useState("2");
+  const [disp, setDisp] = React.useState("320");
+  const [lado, setLado] = React.useState<Lado>("compro");
+  const [tasa, setTasa] = React.useState("10");
   const [curva, setCurva] = React.useState<{ vto: string; precio: string }[]>(
     CURVA_INI.map((p) => ({ vto: p.vto, precio: String(p.precio) })),
   );
@@ -39,47 +90,63 @@ export function CalcFijar() {
   const agregar = () => setCurva((c) => [...c, { vto: "", precio: "" }]);
   const quitar = (i: number) => setCurva((c) => c.filter((_, j) => j !== i));
 
+  const disponible = num(disp);
+  const tasaComp = num(tasa);
   const hoyMs = parseYmd(hoyCordoba()).getTime();
-  const filas = evaluarFijar(
-    num(base),
-    num(delta),
-    curva.map((f) => ({ vto: f.vto, precio: num(f.precio) })),
-    hoyMs,
-    (vto) => (vto ? parseYmd(vto).getTime() : null),
-  );
+  const vtoMs = (vto: string) => (vto ? parseYmd(vto).getTime() : null);
+
+  // Fila alineada a cada renglón de la curva (null si el renglón es inválido).
+  const filas = curva.map((f) => {
+    const precio = num(f.precio);
+    if (!f.vto || !Number.isFinite(precio) || precio <= 0) return null;
+    const [r] = evaluarFijar(disponible, lado, tasaComp, [{ vto: f.vto, precio }], hoyMs, vtoMs);
+    return r ?? null;
+  });
+  const validas = filas.filter((f): f is FilaFijar => f !== null);
 
   return (
     <Panel id="calc-fijar">
-      <PanelHead glyph={<IconFijar />} title="Cotizador — negocios a fijar" sub="Curva de futuros · resultado y TNA por plazo" />
+      <PanelHead glyph={<IconFijar />} title="Cotizador — negocios a fijar" sub="Delta disponible vs curva de futuros" />
 
       <div className="calc">
         <div className="calc-grid">
           <label className="calc-field">
-            <span>Precio a pagar (USD)</span>
-            <input inputMode="decimal" value={base} onChange={(e) => setBase(e.target.value)} />
+            <span>Disponible (USD)</span>
+            <input inputMode="decimal" value={disp} onChange={(e) => setDisp(e.target.value)} />
           </label>
           <label className="calc-field">
-            <span>Delta esperado (USD)</span>
-            <input inputMode="decimal" value={delta} onChange={(e) => setDelta(e.target.value)} />
+            <span>Negocio</span>
+            <select value={lado} onChange={(e) => setLado(e.target.value as Lado)}>
+              <option value="compro">Compro a fijar</option>
+              <option value="vendo">Vendo a fijar</option>
+            </select>
+          </label>
+          <label className="calc-field">
+            <span>Tasa comparación (TNA %)</span>
+            <input inputMode="decimal" value={tasa} onChange={(e) => setTasa(e.target.value)} />
           </label>
         </div>
 
+        <DeltaChart filas={validas} />
+
         <div className="table-scroll">
-          <table className="tbl" style={{ minWidth: 620 }}>
+          <table className="tbl" style={{ minWidth: 700 }}>
             <thead>
               <tr>
                 <th className="l" scope="col">Vencimiento</th>
-                <th scope="col">Futuro (USD)</th>
+                <th scope="col">Futuro</th>
                 <th scope="col">Días</th>
-                <th scope="col">Result. bruto</th>
-                <th scope="col">Result. neto</th>
-                <th scope="col">TNA USD</th>
+                <th scope="col">Delta</th>
+                <th scope="col">TNA impl.</th>
+                <th scope="col">Resultado</th>
+                <th scope="col">Precio a tu tasa</th>
                 <th scope="col" aria-label="quitar" />
               </tr>
             </thead>
             <tbody>
               {curva.map((f, i) => {
                 const r = filas[i];
+                const bateTasa = r && Number.isFinite(r.tna) && r.tna > tasaComp;
                 return (
                   <tr key={i}>
                     <td className="l">
@@ -89,9 +156,10 @@ export function CalcFijar() {
                       <input className="cell-in num" inputMode="decimal" value={f.precio} onChange={(e) => setFila(i, "precio", e.target.value)} />
                     </td>
                     <td className="dim">{r ? r.dias : "—"}</td>
-                    <td className={r && r.resultadoBruto > 0 ? "pos" : r && r.resultadoBruto < 0 ? "neg" : "dim"}>{r ? sfmt(r.resultadoBruto, 2) : "—"}</td>
-                    <td className={r ? (r.gana ? "pos" : "neg") : "dim"}>{r ? sfmt(r.resultadoNeto, 2) : "—"}</td>
-                    <td className="dim">{r ? rfmt(r.tna, 1) : "—"}</td>
+                    <td className="dim">{r ? sfmt(r.delta, 2) : "—"}</td>
+                    <td className={bateTasa ? "pos" : "dim"}>{r ? rfmt(r.tna, 1) : "—"}</td>
+                    <td className={r ? (r.favorable ? "pos" : "neg") : "dim"}>{r ? sfmt(r.resultado, 2) : "—"}</td>
+                    <td className="dim">{r && Number.isFinite(r.precioTasa) ? nfmt(r.precioTasa, 2) : "—"}</td>
                     <td>
                       <button type="button" className="cell-del" onClick={() => quitar(i)} aria-label="Quitar posición">×</button>
                     </td>
@@ -106,10 +174,11 @@ export function CalcFijar() {
 
       <div className="panel-note">
         <span>
-          <span className="k">A fijar</span>: resultado bruto = futuro − precio a pagar · resultado neto = bruto −
-          delta esperado (delta positivo = malo) · TNA USD = (futuro/pagar − 1) × 365/días. Verde = plazo donde
-          ganás; rojo = donde perdés. La simulación toma el <b>precio de futuros</b>, que puede diferir del spot al
-          fijar. El delta esperado hoy se carga a mano; en producción viene del proyecto de fijaciones.
+          <span className="k">A fijar</span> Delta = disponible − futuro (sin costo de oportunidad) · TNA impl. =
+          (futuro/disponible − 1) × 365/días · Resultado = compro a fijar → futuro − disponible; vendo a fijar →
+          disponible − futuro (verde = a favor). <b>Comparador</b>: la TNA impl. se pinta verde cuando supera tu
+          tasa; "Precio a tu tasa" = futuro teórico si el carry rindiera exactamente esa tasa. Toma el precio de
+          <b> futuros</b>, que puede diferir del spot al fijar (riesgo de base).
         </span>
       </div>
     </Panel>

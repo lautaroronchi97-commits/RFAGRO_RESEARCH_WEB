@@ -1,33 +1,38 @@
 /**
- * Cotizador de negocios "a fijar": se compra a un precio y se fija contra la
- * CURVA de futuros A3 en algún plazo. Muestra en qué posición se gana y en cuál
- * se pierde, y la TNA USD implícita por plazo.
+ * Cotizador de negocios "a fijar": se parte de un DISPONIBLE (spot) y se compara
+ * contra la CURVA de futuros A3. Solo se analizan los DELTAS (sin costo de
+ * oportunidad) y se agrega un comparador contra una TASA editable.
  *
- *   resultado_bruto = precio_futuro − precio_a_pagar
- *   resultado_neto  = resultado_bruto − delta_esperado   (delta positivo = MALO)
- *   TNA USD         = (precio_futuro / precio_a_pagar − 1) × 365/días
+ *   delta        = disponible − futuro                       (delta puro)
+ *   TNA impl.    = (futuro / disponible − 1) × 365/días      (tasa del carry)
+ *   resultado    = compro a fijar → futuro − disponible
+ *                  vendo a fijar  → disponible − futuro       (verde = a favor)
+ *   precio_tasa  = disponible × (1 + tasa/100 × días/365)     (futuro teórico a tu tasa)
  *
- * Nota: la simulación toma el PRECIO DE FUTUROS, que puede diferir del spot al
- * momento de fijar (riesgo de base). El `delta_esperado` intenta capturar eso;
- * en producción viene del proyecto de análisis de fijaciones.
+ * Convención del negocio (docs/negocio): delta POSITIVO = malo para quien compró.
+ * La simulación toma el precio de FUTUROS, que puede diferir del spot al fijar
+ * (riesgo de base).
  */
 
 export type PosCurva = { vto: string; precio: number };
+export type Lado = "compro" | "vendo";
 
 export type FilaFijar = {
   vto: string;
   precio: number;
   dias: number;
-  resultadoBruto: number;
-  resultadoNeto: number;
-  tna: number;
-  gana: boolean;
+  delta: number; // disponible − futuro
+  tna: number; // TNA implícita del carry
+  resultado: number; // según lado (verde si > 0)
+  precioTasa: number; // futuro teórico a la tasa de comparación
+  favorable: boolean;
 };
 
 /** `hoyMs` = epoch de hoy; `vtoMs(vto)` convierte la fecha de la posición a epoch. */
 export function evaluarFijar(
-  base: number,
-  deltaEsperado: number,
+  disponible: number,
+  lado: Lado,
+  tasaComp: number,
   curva: PosCurva[],
   hoyMs: number,
   vtoMs: (vto: string) => number | null,
@@ -37,9 +42,12 @@ export function evaluarFijar(
     .map((p) => {
       const t = vtoMs(p.vto);
       const dias = t ? Math.max(0, Math.round((t - hoyMs) / 86400000)) : 0;
-      const resultadoBruto = p.precio - base;
-      const resultadoNeto = resultadoBruto - deltaEsperado;
-      const tna = base > 0 && dias > 0 ? (p.precio / base - 1) * (365 / dias) * 100 : NaN;
-      return { vto: p.vto, precio: p.precio, dias, resultadoBruto, resultadoNeto, tna, gana: resultadoNeto > 0 };
+      const delta = disponible - p.precio;
+      const tna =
+        disponible > 0 && dias > 0 ? (p.precio / disponible - 1) * (365 / dias) * 100 : NaN;
+      const resultado = lado === "compro" ? p.precio - disponible : disponible - p.precio;
+      const precioTasa =
+        disponible > 0 && dias > 0 ? disponible * (1 + (tasaComp / 100) * (dias / 365)) : NaN;
+      return { vto: p.vto, precio: p.precio, dias, delta, tna, resultado, precioTasa, favorable: resultado > 0 };
     });
 }
