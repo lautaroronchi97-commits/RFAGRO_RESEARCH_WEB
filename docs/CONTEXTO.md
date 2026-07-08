@@ -49,7 +49,7 @@ Marca: **RF AGRO** (nunca "CONSULTAR"). Glifos trigo/soja/maíz, cinta tipo piza
 | # | Módulo | Estado |
 |---|--------|--------|
 | 0 | Cinta | REAL (dólares). Pizarra en la cinta = ejemplo (falta usar CAC). |
-| 1 | Arbitrajes | **EJEMPLO** (`src/lib/sample.ts`). Futuros ya en Supabase; falta la **pizarra disponible USD** (NO está en `futuros_cierres`) → scrape CAC / override manual. |
+| 1 | Arbitrajes | **REAL** (`arbitrajes-cierres.ts`): futuro (ajuste A3/CEM) vs pizarra USD de CAC (`pizarra.ts`, scrape + override `PIZARRA_OVERRIDE`). Spread + tasa directa reales. Falta **TNA USD** (regla de vto). |
 | 2 | Pases | **REAL** (settlement CEM vía Supabase, `pases-cierres.ts`): spread de ajuste + tasa directa por posición viva. Falta TNA (días entre vtos) y comprador/vendedor. |
 | 3 | Dólar futuro | REAL (MAE) + TNA/TEM/TEA. |
 | 4 | Dólar linked | REAL (data912) + TNA/TEM/TEA + spread oficial MAE. |
