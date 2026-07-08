@@ -52,6 +52,12 @@ export function DolarFuturoChart({ points }: { points: Pt[] }) {
   return (
     <div className="chart-wrap">
       <svg viewBox={`0 0 ${W} ${H}`} className="cv" role="img" aria-label="Curva de precios de dólar futuro por posición">
+        <defs>
+          <linearGradient id="cvGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop className="cv-grad-a" offset="0" />
+            <stop className="cv-grad-b" offset="1" />
+          </linearGradient>
+        </defs>
         {yTicks.map((t, k) => (
           <g key={k}>
             <line className="cv-grid" x1={pad.l} y1={Y(t)} x2={W - pad.r} y2={Y(t)} />
@@ -60,7 +66,7 @@ export function DolarFuturoChart({ points }: { points: Pt[] }) {
             </text>
           </g>
         ))}
-        <path d={area} className="cv-area" />
+        <path d={area} className="cv-area" fill="url(#cvGrad)" />
         <path d={line} className="cv-line" />
         {points.map((p, i) => (
           <text key={`x${i}`} className="cv-axis" x={X(i)} y={H - 8} textAnchor="middle">
