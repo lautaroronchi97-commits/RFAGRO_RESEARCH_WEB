@@ -151,6 +151,40 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
   las cotizaciones de pase de la rueda + su volumen requieren el feed en vivo de A3 (cron 60s a definir).
 - Limpieza: se quitó `pases` de ejemplo de `src/lib/sample.ts` (código muerto).
 
+### Hecho (cont.) — pizarra editable, calculadoras, estrategias, noticias
+- **Pizarra editable en Arbitrajes** (`arbitrajes-editable.tsx`, client): el disponible USD arranca con
+  CAC y es editable con el precio del día → recalcula spread/tasa directa/**TNA en vivo** (días fijos del
+  vto). Botón ↺ para volver al valor de CAC. El wrapper server pasa los datos al client.
+- **Sección Calculadoras** (`page.tsx`): página agrupada en **Granos · Calculadoras · Dólar y tasas**
+  (`.sec-title`), + **Noticias** arriba de todo.
+- **Pago diferido → pesos** (`calc-diferido.tsx`): labels ARS + tasa pesos; el cálculo por interés simple
+  no cambia (Lautaro: "está perfecto").
+- **Negocios con pagos** (nueva, `calc-negocios-pago.tsx`): disponible USD = futuro ÷ (1 + tasa × días/365),
+  interés simple; días del pago (hoy + 5 hábiles, editable) al vto; pesos = ⌊disponible × TC⌋ (TC a mano).
+  Editables: futuro, vto, días de pago, tasa USD, TC. (Descuento simple confirmado por Lautaro.)
+- **Carry implícito entre dos posiciones** (era "arbitraje disp/fut", `calc-arbitraje.tsx`): rename +
+  relabel cercana/lejana; mismo cálculo (lejana/cercana − 1, TNA, spread).
+- **Cotizador a fijar** (`calc-fijar.tsx` + `fijar.ts`): **solo deltas** (disponible − futuro), SIN costo
+  de oportunidad; toggle **compro/vendo a fijar** (signo del resultado); **comparador con tasa editable**
+  (TNA impl. vs tu tasa, verde si la supera; + "precio a tu tasa"); **tabla + gráfico del delta** (barras).
+- **Cotizador por porcentaje** (`calc-porcentaje.tsx`): relabel (posición vendida / de fijación) + celda
+  **Aforo (%)** que resta al **porcentaje lleno** (a cliente).
+- **Cotizador con pases** (`calc-pases.tsx`): relabel (vendida / plazo de fijación) + **Quita (USD)** sobre
+  el **spread lleno** (a cliente).
+- **Estrategias con opciones** (`estrategias.ts` + `calc-estrategias.tsx`): reescrita como estrategias
+  combinadas. Catálogo de ~27 estrategias (`docs/ESTRATEGIAS_CATALOGO.md`) mapeadas a **patas** (futuro/call/
+  put, compra/venta, cttos); **menú con explicación al seleccionarla**; precio base + paso generan las patas;
+  patas editables; **gráfico de payoff con breakevens** + línea del precio base; resumen (máx ganancia/pérdida,
+  prima neta) + tabla de escenarios por strike. El collar quedó como un preset.
+- **Noticias** (`noticias.ts` + `noticias-panel.tsx`): agregador con link-out (sin republicar texto).
+  Scrape del **resumen de diarios de BCR** (categorizado: agronegocios/economía/región/internacionales, con
+  link a la fuente) + **RSS** de InfoCampo, Bichos de Campo y Ámbito (de `FUENTES.md`). Parser verificado
+  contra HTML+RSS reales. Cache 30 min, degrada solo. Panel arriba de todo.
+- **Docs nuevos persistidos**: `FUENTES.md` (directorio de fuentes del agro), `docs/negocio/` (base de
+  conocimiento del correacopio, con **REGLAS DEL DELTA** en 02 §6 / 03 §2), `ESTRATEGIAS_CATALOGO.md`.
+- **CI corre lint**: `npm run lint` es parte del workflow `ci.yml` → correr `lint` + `typecheck` + `build`
+  antes de pushear (una vez falló por `react/no-unescaped-entities` con comillas literales en JSX).
+
 ### Fuentes validadas con request real (para lo que sigue)
 - **Capacidad de pago = FAS Teórico** de BCR: `bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-1`
   (HTML por grano: FOB, retenciones, gastos, **FAS Teórico u$s**) + PDF de metodología. Base según Lautaro;
@@ -174,9 +208,28 @@ Actions corren SOLO desde la rama default → nunca se disparó automático. Las
 son del backfill manual. **Para activarlo (lo hace Lautaro):** (1) mergear el workflow a `main`; (2) cargar
 secrets del repo `SUPABASE_URL` y `SUPABASE_SERVICE_KEY` (Settings → Secrets and variables → Actions).
 
-### Pendiente de decisión de Lautaro (bloquea)
-- **Arbitrajes reales**: regla de **vencimiento** por posición (para días→TNA) + fuente de **pizarra USD**
-  (CAC scrape vs FAS teórico BCR vs override manual). Con eso Arbitrajes sale igual que Pases.
-- **Capacidad de pago**: su propio modelo (fórmula + ejemplo numérico) además del FAS teórico de base.
-- **Noticias**: qué fuente usamos (scrapear el resumen de BCR es su contenido editorial; mejor RSS de los
-  medios originales o curaduría propia).
+### Resuelto en la sesión (ya no bloquea)
+- **Vencimiento por posición** (para días→TNA): sale del CEM `/api/v2/symbols` (`maturityDate`) → tabla
+  `vencimientos`. No hizo falta regla manual.
+- **Pizarra USD** de arbitrajes: **CAC-BCR** (scrape) + override `PIZARRA_OVERRIDE`; y editable en el panel.
+- **Capacidad de pago**: **FAS teórico Up River (Rosario)** de BCR como base + override `CAPACIDAD_OVERRIDE`.
+- **Noticias**: **BCR resumen + RSS** (InfoCampo, Bichos de Campo, Ámbito), link-out.
+- **Cotizador a fijar**: solo deltas, sin costo de oportunidad, con comparador de tasa (confirmado).
+- **Pago diferido**: pesos, interés simple (confirmado).
+
+### Pendientes al cierre (para retomar)
+1. **Cron de cierres (2 min de Lautaro)**: mergear `ingest-cierres.yml` a la rama default + cargar secrets
+   `SUPABASE_URL` / `SUPABASE_SERVICE_KEY`. Sin esto los cierres quedan al 3/7 (los `schedule` de Actions
+   corren solo desde la rama default). Ídem para armar el resto de los crons (rueda, pizarra, ingest_log).
+2. **Auto-curva A3 en las calculadoras**: que traigan la curva real por producto (desde `futuros_cierres`)
+   en vez de precios a mano (hoy todas las calcs cargan precios manualmente).
+3. **Feed A3 en vivo (cron 60s)**: cotizaciones de pase de la rueda + volumen de pases + comprador/vendedor
+   (bid/ask) de arbitrajes/pases. El CEM (diario) no tiene nada de esto.
+4. **Sintéticos TIR**: pago final por letra (IAMC `informeslecap` / Min. Economía).
+5. **Estrategias**: costos/IVA por pata, primas/strikes reales (cadena CBOT/A3), avanzadas (calendarios de
+   dos vtos, acumulador path-dependent).
+6. **Modelo propio de Lautaro** para capacidad de pago (fórmula + ejemplo) vía `CAPACIDAD_OVERRIDE`.
+7. **Fase 3**: calendario de informes (con `FUENTES.md`), lineups/camiones, reporte diario para WhatsApp,
+   ratio maíz/soja, arbitraje Matba↔CBOT (factores bushel→tn en `docs/negocio/`).
+8. **Módulo scoring de clientes** (`docs/negocio/03`): producto de consultora a futuro (no es panel de esta
+   web; requiere datos de fijaciones de clientes + historial A3 externo).
