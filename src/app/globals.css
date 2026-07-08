@@ -114,6 +114,13 @@ button { font:inherit; color:inherit; background:none; border:none; }
 .ruedas { display:inline-flex; align-items:center; gap:9px; }
 .rueda-tag { display:inline-flex; align-items:center; gap:5px; font-family:var(--font-mono);
   font-size:var(--fs-xs); font-weight:600; color:var(--ink-2); white-space:nowrap; }
+.pz-input { width:74px; font-family:var(--font-mono); font-size:var(--fs-xs); font-weight:700;
+  color:var(--ink); background:var(--panel); border:1px solid var(--line-2); border-radius:5px;
+  padding:1px 5px; text-align:right; font-variant-numeric:tabular-nums; }
+.pz-input:focus { outline:none; border-color:var(--brand-deep); }
+.pz-reset { margin-left:5px; cursor:pointer; border:none; background:none; color:var(--ink-3);
+  font-size:var(--fs-xs); line-height:1; padding:0 2px; }
+.pz-reset:hover { color:var(--brand-deep); }
 .toggle { display:inline-flex; align-items:center; gap:7px; cursor:pointer; font-size:var(--fs-xs);
   font-weight:600; letter-spacing:.03em; padding:5px 10px 5px 8px; border:1px solid var(--line-2);
   border-radius:6px; background:var(--panel); color:var(--ink-2); }

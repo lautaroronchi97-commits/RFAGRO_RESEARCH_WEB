@@ -54,7 +54,7 @@ Marca: **RF AGRO** (nunca "CONSULTAR"). Glifos trigo/soja/maíz, cinta tipo piza
 | # | Módulo | Estado |
 |---|--------|--------|
 | 0 | Cinta | REAL (dólares). Pizarra en la cinta = ejemplo (falta usar CAC). |
-| 1 | Arbitrajes | **REAL** (`arbitrajes-cierres.ts`): futuro (ajuste A3/CEM) vs pizarra USD de CAC (`pizarra.ts`, scrape + override). Spread + tasa directa + **TNA USD** (días al vto real desde `vencimientos`, fuente CEM). |
+| 1 | Arbitrajes | **REAL** (`arbitrajes-cierres.ts` + `arbitrajes-editable.tsx`): futuro (ajuste A3/CEM) vs pizarra USD de CAC (`pizarra.ts`, scrape + override). **Pizarra editable** (recalcula TNA en vivo). Spread + tasa directa + **TNA USD** (días al vto desde `vencimientos`) + Vol. |
 | 2 | Pases | **REAL** (`pases-cierres.ts`): spread de ajuste + tasa directa + **TNA** (días entre vtos, tabla `vencimientos`). Falta comprador/vendedor. |
 | 3 | Dólar futuro | REAL (MAE) + TNA/TEM/TEA. |
 | 4 | Dólar linked | REAL (data912) + TNA/TEM/TEA + spread oficial MAE. |
