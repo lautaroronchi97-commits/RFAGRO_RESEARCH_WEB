@@ -12,6 +12,7 @@ import { DjvePanel } from "@/components/djve-panel";
 import { CapacidadPanel } from "@/components/capacidad-panel";
 import { MejorCajaPanel } from "@/components/mejor-caja-panel";
 import { CalcDiferido } from "@/components/calc-diferido";
+import { CalcNegociosPago } from "@/components/calc-negocios-pago";
 import { CalcArbitraje } from "@/components/calc-arbitraje";
 import { CalcEstrategias } from "@/components/calc-estrategias";
 import { CalcFijar } from "@/components/calc-fijar";
@@ -43,6 +44,7 @@ export default async function Home() {
 
           <h2 className="sec-title">Calculadoras</h2>
           <CalcDiferido />
+          <CalcNegociosPago />
           <CalcArbitraje />
           <CalcEstrategias />
           <CalcFijar />
