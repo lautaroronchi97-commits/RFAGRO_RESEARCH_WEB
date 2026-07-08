@@ -36,6 +36,11 @@ Marca: **RF AGRO** (nunca "CONSULTAR"). Glifos trigo/soja/maíz, cinta tipo piza
 | Macro / reservas | BCRA v4 | `api.bcra.gob.ar/estadisticas/v4.0/monetarias` (v3 deprecada) |
 | Pizarra soja/maíz/trigo | **CAC-BCR** | `www.cac.bcr.com.ar/es/precios-de-pizarra` (scrape HTML; trae `$` y `US$` + TC BNA) |
 
+> **Directorio completo de fuentes de noticias/informes/datos del agro** (relevamiento de Lautaro, 06/07/2026):
+> [`docs/FUENTES.md`](FUENTES.md) — oficiales AR, bolsas, cadenas por cultivo, mercados, logística, clima,
+> internacional (USDA/CONAB/etc.), consultoras, medios y calendario de publicación. Alimenta el módulo
+> **Noticias** (fuentes propias) y el futuro **Calendario de informes**.
+
 ## Metodología de fórmulas (confirmada con Lautaro)
 - **Referencia oficial = oficial mayorista MAE** (ticker `UST$T` de `resumen/FOR`). NO el minorista.
 - **Dólar futuro** (spot = mayorista MAE, base 365): directa = Fut/Spot − 1 · TNA = directa × 365/días ·
