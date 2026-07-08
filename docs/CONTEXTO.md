@@ -122,6 +122,11 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
   `20260708120000`, seed desde CEM `/api/v2/symbols` campo `maturityDate`) + `vencimientos.ts` +
   `dates.ts` (hoyCordobaISO/diasEntre/diasHasta). Arbitraje: directa × 365/(vto − hoy). Pase: directa
   × 365/(vto_larga − vto_cercana). Verificado por SQL (ej. TRI JUL26 +1,51% en 16 días → +34,5% TNA).
+- **Capacidad de pago REAL** (`capacidad.ts` + `capacidad-panel.tsx`): FAS Teórico de BCR (scrape de la
+  planilla `#sheet` de "Precios FOB/FAS Argentina", fila "FAS Teórico en u$s", primer valor = Spot SAGyP;
+  parser verificado). Muestra pizarra CAC al lado como contexto. Override `CAPACIDAD_OVERRIDE` para el
+  modelo propio de Lautaro. Sin históricos (decisión de Lautaro). Ojo: el FAS tiene varias columnas
+  (SAGyP/Up River/Brasil) — se toma Spot SAGyP; si Lautaro quiere otra referencia, se ajusta.
 - Limpieza: se quitó `pases` de ejemplo de `src/lib/sample.ts` (código muerto).
 
 ### Fuentes validadas con request real (para lo que sigue)
