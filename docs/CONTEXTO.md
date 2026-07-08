@@ -40,6 +40,12 @@ Marca: **RF AGRO** (nunca "CONSULTAR"). Glifos trigo/soja/maíz, cinta tipo piza
 > [`docs/FUENTES.md`](FUENTES.md) — oficiales AR, bolsas, cadenas por cultivo, mercados, logística, clima,
 > internacional (USDA/CONAB/etc.), consultoras, medios y calendario de publicación. Alimenta el módulo
 > **Noticias** (fuentes propias) y el futuro **Calendario de informes**.
+>
+> **Base de conocimiento del negocio** (correacopio / mesa de trading, referencia permanente):
+> [`docs/negocio/`](negocio/) — `01_contexto_negocio` (estructura, instrumentos, pricing, estrategias,
+> financiero, glosario) · `02_logicas_y_principios` (reglas + **REGLAS DEL DELTA** §6) ·
+> `03_modulo_comportamiento_cliente_vendedor` (scoring AHP + P&L, producto a futuro) ·
+> `04_datos_y_workarounds` (intranets de acopios, reportes, parseo de exports). Sin datos personales.
 
 ## Metodología de fórmulas (confirmada con Lautaro)
 - **Referencia oficial = oficial mayorista MAE** (ticker `UST$T` de `resumen/FOR`). NO el minorista.
