@@ -1,6 +1,15 @@
+import { WheatMark } from "./icons";
+
 export function SiteFooter() {
   return (
     <footer className="foot">
+      <div className="foot-brand" aria-hidden="true">
+        <WheatMark />
+        <span className="fb-name">
+          <span className="rf">RF</span> <span className="agro">AGRO</span>
+        </span>
+        <span className="fb-sub">Research de granos</span>
+      </div>
       <div className="src">
         <b>Fuentes</b>
         <span className="src-chip">A3 Primary</span>
