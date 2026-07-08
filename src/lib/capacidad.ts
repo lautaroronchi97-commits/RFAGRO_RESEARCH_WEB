@@ -9,8 +9,10 @@ import type { Meta } from "./market";
  *
  * Fuente: BCR "Precios FOB/FAS Argentina"
  *   https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-1
- * (planilla `#sheet`, fila "FAS Teórico en u$s" por grano). Se toma el PRIMER
- * valor = Spot / puerto SAGyP. Parser verificado contra el HTML real.
+ * (planilla `#sheet`, fila "FAS Teórico en u$s" por grano). Los valores van en
+ * orden de puerto (SAGyP, Up River, …); se toma el SEGUNDO = **Up River (Rosario)**,
+ * la referencia del Gran Rosario. Si solo hay uno, cae a ese. Parser verificado
+ * contra el HTML real.
  *
  * Es la BASE de BCR; el modelo propio de Lautaro se pisa con `CAPACIDAD_OVERRIDE`
  * (JSON `{"SOJ":320,"MAI":175,"TRI":200}`). Se muestra la pizarra CAC al lado
@@ -74,13 +76,14 @@ function parseFas(html: string): { fas: Record<string, number>; fecha: string | 
         }
       }
     } else if (head.startsWith("FAS Teórico") && cur && !(cur in fas)) {
+      const nums: number[] = [];
       for (const c of cells.slice(1)) {
         const v = arNum(c);
-        if (v) {
-          fas[cur] = v;
-          break;
-        }
+        if (v) nums.push(v);
       }
+      // El orden de columnas es SAGyP, Up River, …: el 2º = Up River (Rosario).
+      const val = nums.length >= 2 ? nums[1] : nums[0];
+      if (val != null && Number.isFinite(val)) fas[cur] = val;
     }
   }
   return { fas, fecha };
