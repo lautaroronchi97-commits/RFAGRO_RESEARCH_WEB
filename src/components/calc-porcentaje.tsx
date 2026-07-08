@@ -5,6 +5,8 @@ import { Panel, PanelHead } from "./panel";
 import { nfmt, rfmt } from "@/lib/format";
 import { porcentaje, precioDesdePct } from "@/lib/porcentaje";
 import { hoyCordoba, parseYmd, diasCorridos, sumarCorridos, fmtFecha } from "@/lib/habiles";
+import { CurvaPicker } from "./curva-picker";
+import type { GranoCurva } from "@/lib/curva-types";
 
 function IconPct() {
   return (
@@ -18,7 +20,7 @@ function num(v: string): number { const n = Number(v.replace(",", ".")); return 
 
 type Modo = "pct" | "precio";
 
-export function CalcPorcentaje() {
+export function CalcPorcentaje({ granos = [] }: { granos?: GranoCurva[] }) {
   const [modo, setModo] = React.useState<Modo>("pct");
   const [precioNeg, setPrecioNeg] = React.useState("205");
   const [precioRef, setPrecioRef] = React.useState("180");
@@ -47,6 +49,7 @@ export function CalcPorcentaje() {
             <option value="precio">Precio del negocio</option>
           </select>
         </label>
+        <CurvaPicker granos={granos} label="Referencia desde A3" onPick={(p) => { setPrecioRef(String(p.precio)); setFechaRef(p.vto); }} />
         <div className="calc-grid">
           {modo === "pct" ? (
             <label className="calc-field"><span>Precio del negocio (a fijar)</span>

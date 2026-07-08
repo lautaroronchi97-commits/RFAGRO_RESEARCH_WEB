@@ -5,6 +5,8 @@ import { Panel, PanelHead } from "./panel";
 import { nfmt, pfmt, rfmt } from "@/lib/format";
 import { tasaDirecta, tnaUSD, spread, teaUSD } from "@/lib/arbitraje";
 import { hoyCordoba, parseYmd, diasCorridos, sumarCorridos, fmtFecha } from "@/lib/habiles";
+import { CurvaPicker } from "./curva-picker";
+import type { GranoCurva } from "@/lib/curva-types";
 
 function IconArb() {
   return (
@@ -23,7 +25,7 @@ function num(v: string): number {
   return Number.isFinite(n) ? n : NaN;
 }
 
-export function CalcArbitraje() {
+export function CalcArbitraje({ granos = [] }: { granos?: GranoCurva[] }) {
   const [pizarra, setPizarra] = React.useState("320");
   const [futuro, setFuturo] = React.useState("330");
   const [fechaVto, setFechaVto] = React.useState(() =>
@@ -55,6 +57,7 @@ export function CalcArbitraje() {
       <PanelHead glyph={<IconArb />} title="Calculadora — arbitraje disponible ↔ futuro" sub="Tasa directa · TNA USD · spread (carry de granos)" />
 
       <div className="calc">
+        <CurvaPicker granos={granos} onPick={(p) => { setFuturo(String(p.precio)); setFechaVto(p.vto); }} />
         <div className="calc-grid">
           <label className="calc-field">
             <span>Pizarra / disponible (USD)</span>
