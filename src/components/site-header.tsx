@@ -1,5 +1,6 @@
 import { WheatMark } from "./icons";
 import { RuedaClock } from "./rueda-clock";
+import { RuedaStatus } from "./rueda-status";
 import { ThemeToggle } from "./theme-toggle";
 
 const NAV: { label: string; href: string; disabled?: boolean }[] = [
@@ -40,6 +41,7 @@ export function SiteHeader() {
             <span className="dot-live" aria-hidden="true" />
             Rueda&nbsp;·&nbsp;<RuedaClock />&nbsp;ART
           </span>
+          <RuedaStatus />
           <ThemeToggle />
         </div>
       </div>

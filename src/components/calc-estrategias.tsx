@@ -3,68 +3,153 @@
 import * as React from "react";
 import { Panel, PanelHead } from "./panel";
 import { nfmt, sfmt } from "@/lib/format";
-import { ESTRATEGIAS, payoffTotal, primaNeta, serieEscenarios, type Pata, type Tipo, type Lado } from "@/lib/estrategias";
+import {
+  PRESETS,
+  payoffTotal,
+  serieEscenarios,
+  breakevens,
+  type Pata,
+  type Tipo,
+  type Lado,
+  type Escenario,
+} from "@/lib/estrategias";
 
 function IconStrat() {
   return (
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.3} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M2 10l3-4 3 2 3-5 3 3" />
+      <path d="M2 11c2 0 3-6 5-6s2 3 4 3 3-2 3-2" />
+      <path d="M2 13.5h12" />
     </svg>
   );
 }
 
-type PataStr = { tipo: Tipo; lado: Lado; strike: string; prima: string };
+type PataStr = { tipo: Tipo; lado: Lado; cttos: string; strike: string; prima: string };
 const num = (v: string) => { const n = Number(v.replace(",", ".")); return Number.isFinite(n) ? n : NaN; };
-const toStr = (p: Pata): PataStr => ({ tipo: p.tipo, lado: p.lado, strike: String(p.strike), prima: String(p.prima) });
-const toNum = (p: PataStr): Pata => ({ tipo: p.tipo, lado: p.lado, strike: num(p.strike), prima: num(p.prima) });
+const toStr = (p: Pata): PataStr => ({ tipo: p.tipo, lado: p.lado, cttos: String(p.cttos), strike: String(p.strike), prima: String(p.prima) });
+const toNum = (p: PataStr): Pata => ({
+  tipo: p.tipo,
+  lado: p.lado,
+  cttos: Number.isFinite(num(p.cttos)) ? num(p.cttos) : 0,
+  strike: num(p.strike),
+  prima: p.tipo === "futuro" ? 0 : Number.isFinite(num(p.prima)) ? num(p.prima) : 0,
+});
+
+const PRESET0 = PRESETS.find((p) => p.id === "collar") ?? PRESETS[0];
+
+/** Gráfico de payoff: resultado por tonelada vs precio final, con breakevens. */
+function PayoffChart({ serie, B, bes }: { serie: Escenario[]; B: number; bes: number[] }) {
+  if (serie.length < 2) return null;
+  const W = 620, H = 190, padX = 8, padT = 12, padB = 22;
+  const xs = serie.map((s) => s.P);
+  const ys = serie.map((s) => s.resultado);
+  const loX = Math.min(...xs), hiX = Math.max(...xs);
+  const hiY = Math.max(0, ...ys), loY = Math.min(0, ...ys);
+  const rY = hiY - loY || 1;
+  const x = (P: number) => padX + ((P - loX) / (hiX - loX || 1)) * (W - 2 * padX);
+  const y = (v: number) => padT + ((hiY - v) / rY) * (H - padT - padB);
+  const zeroY = y(0);
+  const pts = serie.map((s) => `${x(s.P).toFixed(1)},${y(s.resultado).toFixed(1)}`).join(" ");
+
+  return (
+    <div className="chart-wrap">
+      <svg className="cv" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Gráfico de payoff de la estrategia">
+        <line x1={padX} y1={zeroY} x2={W - padX} y2={zeroY} stroke="var(--line-2)" strokeWidth={1} />
+        {Number.isFinite(B) && B >= loX && B <= hiX && (
+          <line x1={x(B)} y1={padT} x2={x(B)} y2={H - padB} stroke="var(--ink-3)" strokeWidth={1} strokeDasharray="3 3" />
+        )}
+        <polyline points={pts} fill="none" stroke="var(--brand-deep)" strokeWidth={1.8} />
+        {bes.map((be, i) => (
+          <g key={i}>
+            <circle cx={x(be)} cy={zeroY} r={3} fill="var(--gold, var(--brand-deep))" />
+            <text x={x(be)} y={H - 7} textAnchor="middle" fontSize={10} fill="var(--ink-3)" fontFamily="var(--font-mono)">{nfmt(be, 0)}</text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
 
 export function CalcEstrategias() {
-  const [estId, setEstId] = React.useState("collar_venta");
-  const [patas, setPatas] = React.useState<PataStr[]>(
-    () => (ESTRATEGIAS.find((e) => e.id === "collar_venta")?.patas ?? []).map(toStr),
-  );
+  const [base, setBase] = React.useState("320");
+  const [paso, setPaso] = React.useState("15");
+  const [estId, setEstId] = React.useState(PRESET0.id);
+  const [patas, setPatas] = React.useState<PataStr[]>(() => PRESET0.patas(320, 15).map(toStr));
 
-  const cambiarEstrategia = (id: string) => {
+  const B = num(base), S = num(paso);
+  const preset = PRESETS.find((p) => p.id === estId);
+
+  const cambiar = (id: string) => {
     setEstId(id);
-    const def = ESTRATEGIAS.find((e) => e.id === id);
-    if (def) setPatas(def.patas.map(toStr));
+    const p = PRESETS.find((x) => x.id === id);
+    if (p && Number.isFinite(B) && Number.isFinite(S)) setPatas(p.patas(B, S).map(toStr));
+  };
+  const recargar = () => {
+    if (preset && Number.isFinite(B) && Number.isFinite(S)) setPatas(preset.patas(B, S).map(toStr));
   };
   const setPata = (i: number, campo: keyof PataStr, val: string) =>
     setPatas((ps) => ps.map((p, j) => (j === i ? { ...p, [campo]: val } : p)));
-  const agregar = () => setPatas((ps) => [...ps, { tipo: "call", lado: "compra", strike: "320", prima: "5" }]);
+  const agregar = () => setPatas((ps) => [...ps, { tipo: "call", lado: "compra", cttos: "1", strike: base, prima: "5" }]);
   const quitar = (i: number) => setPatas((ps) => ps.filter((_, j) => j !== i));
 
-  const patasNum = patas.map(toNum).filter((p) => Number.isFinite(p.strike) && Number.isFinite(p.prima));
-  const strikes = patasNum.map((p) => p.strike).filter((s) => s > 0);
-  const centro = strikes.length ? (Math.min(...strikes) + Math.max(...strikes)) / 2 : 320;
-  const span = strikes.length ? Math.max(Math.max(...strikes) - Math.min(...strikes), centro * 0.15) : centro * 0.3;
-  const desde = Math.min(...strikes, centro) - span;
-  const hasta = Math.max(...strikes, centro) + span;
-  const serie = patasNum.length ? serieEscenarios(patasNum, desde, hasta, 41) : [];
-  const neta = primaNeta(patasNum);
-  const claves = strikes.length
-    ? [...new Set([desde, ...strikes, centro, hasta])].sort((a, b) => a - b).map((P) => ({ P, resultado: payoffTotal(P, patasNum) }))
-    : [];
+  const patasNum = patas.map(toNum).filter((p) => Number.isFinite(p.strike));
+  const okRange = Number.isFinite(B) && Number.isFinite(S) && S > 0;
+  const serie = okRange && patasNum.length ? serieEscenarios(patasNum, B, S) : [];
+  const bes = breakevens(serie);
+  const ys = serie.map((s) => s.resultado);
+  const maxG = ys.length ? Math.max(...ys) : NaN;
+  const maxP = ys.length ? Math.min(...ys) : NaN;
+  const neta = patasNum.reduce((a, p) => (p.tipo === "futuro" ? a : a + (p.lado === "compra" ? p.prima * p.cttos : -p.prima * p.cttos)), 0);
+  const claves = Array.from(new Set([...patasNum.map((p) => p.strike), Number.isFinite(B) ? B : NaN]))
+    .filter((v) => Number.isFinite(v))
+    .sort((a, b) => a - b);
 
   return (
     <Panel id="calc-estrategias">
-      <PanelHead glyph={<IconStrat />} title="Calculadora — estrategias con opciones" sub="Combinadas (collar, calls/puts, lanzamientos) · payoff y escenarios" />
+      <PanelHead glyph={<IconStrat />} title="Calculadora — estrategias con opciones" sub="Preset + patas editables · payoff, tabla y gráfico" />
 
       <div className="calc">
-        <label className="calc-field calc-mode">
-          <span>Estrategia</span>
-          <select value={estId} onChange={(e) => cambiarEstrategia(e.target.value)}>
-            {ESTRATEGIAS.map((e) => <option key={e.id} value={e.id}>{e.nombre}</option>)}
-          </select>
-        </label>
+        <div className="calc-grid">
+          <label className="calc-field">
+            <span>Estrategia</span>
+            <select value={estId} onChange={(e) => cambiar(e.target.value)}>
+              {PRESETS.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+            </select>
+          </label>
+          <label className="calc-field">
+            <span>Precio base / ATM (USD)</span>
+            <input inputMode="decimal" value={base} onChange={(e) => setBase(e.target.value)} />
+          </label>
+          <label className="calc-field">
+            <span>Paso entre strikes (USD)</span>
+            <input inputMode="decimal" value={paso} onChange={(e) => setPaso(e.target.value)} />
+          </label>
+        </div>
+
+        {preset && (
+          <div className="strat-exp">
+            <span className="k">{preset.view}</span> {preset.explicacion}
+          </div>
+        )}
+
+        <PayoffChart serie={serie} B={B} bes={bes} />
+
+        <div className="calc-out">
+          <div className="calc-meta">
+            <span>Máx. ganancia: <b className="pos">{Number.isFinite(maxG) ? sfmt(maxG, 1) : "—"}</b></span>
+            <span>Máx. pérdida: <b className="neg">{Number.isFinite(maxP) ? sfmt(maxP, 1) : "—"}</b></span>
+            <span>Prima neta: <b>{sfmt(neta, 1)} USD</b> {neta > 0 ? "(costo)" : neta < 0 ? "(ingreso)" : ""}</span>
+            <span>Breakeven(s): <b>{bes.length ? bes.map((b) => nfmt(b, 1)).join(" · ") : "—"}</b></span>
+          </div>
+        </div>
 
         <div className="table-scroll">
-          <table className="tbl" style={{ minWidth: 520 }}>
+          <table className="tbl" style={{ minWidth: 540 }}>
             <thead>
               <tr>
                 <th className="l" scope="col">Instrumento</th>
                 <th className="l" scope="col">Lado</th>
-                <th scope="col">Strike</th>
+                <th scope="col">Cttos</th>
+                <th scope="col">Strike / entrada</th>
                 <th scope="col">Prima</th>
                 <th scope="col" aria-label="quitar" />
               </tr>
@@ -82,76 +167,46 @@ export function CalcEstrategias() {
                       <option value="compra">Compra</option><option value="venta">Venta</option>
                     </select>
                   </td>
+                  <td><input className="cell-in num" inputMode="numeric" value={p.cttos} onChange={(e) => setPata(i, "cttos", e.target.value)} /></td>
                   <td><input className="cell-in num" inputMode="decimal" value={p.strike} onChange={(e) => setPata(i, "strike", e.target.value)} /></td>
-                  <td><input className="cell-in num" inputMode="decimal" value={p.prima} onChange={(e) => setPata(i, "prima", e.target.value)} disabled={p.tipo === "futuro"} /></td>
+                  <td><input className="cell-in num" inputMode="decimal" value={p.prima} disabled={p.tipo === "futuro"} onChange={(e) => setPata(i, "prima", e.target.value)} /></td>
                   <td><button type="button" className="cell-del" onClick={() => quitar(i)} aria-label="Quitar pata">×</button></td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <button type="button" className="calc-add" onClick={agregar}>+ pata</button>
+        <div className="calc-btns">
+          <button type="button" className="calc-add" onClick={agregar}>+ pata</button>
+          <button type="button" className="calc-add" onClick={recargar}>↺ recargar preset</button>
+        </div>
 
-        {serie.length > 0 && (
-          <>
-            <div className="calc-out">
-              <div className="calc-res">
-                <span className="calc-res-lbl">Prima neta</span>
-                <span className={`calc-res-val ${neta > 0 ? "neg" : "pos"}`}>{sfmt(neta, 2)}</span>
-                <span className="calc-res-sub">{neta > 0 ? "costo" : neta < 0 ? "ingreso" : "sin costo"} por tonelada</span>
-              </div>
-            </div>
-            <PayoffChart serie={serie} strikes={strikes} />
-            <div className="table-scroll">
-              <table className="tbl" style={{ minWidth: 360 }}>
-                <thead><tr><th className="l" scope="col">Precio final</th><th scope="col">Resultado</th></tr></thead>
-                <tbody>
-                  {claves.map((s, i) => (
-                    <tr key={i}><td className="l sym">{nfmt(s.P, 1)}</td>
-                      <td className={s.resultado > 0 ? "pos" : s.resultado < 0 ? "neg" : "neu2"}>{sfmt(s.resultado, 2)}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
+        <div className="table-scroll">
+          <table className="tbl" style={{ minWidth: 340 }}>
+            <thead><tr><th className="l" scope="col">Precio final</th><th scope="col">Resultado</th></tr></thead>
+            <tbody>
+              {claves.map((P) => {
+                const r = payoffTotal(P, patasNum);
+                return (
+                  <tr key={P}>
+                    <td className="l sym">{nfmt(P, 1)}</td>
+                    <td className={r > 0 ? "pos" : r < 0 ? "neg" : "neu2"}>{sfmt(r, 2)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="panel-note">
         <span>
-          <span className="k">Estrategias combinadas</span> (modelo Excels INTAGRO): payoff por tonelada a cada
-          precio final = suma de las patas (futuro/call/put, compra/venta). Elegí una del menú o armá la tuya con
-          “+ pata”. Strikes y primas a mano; con la cadena de opciones A3/CBOT se completan solos.
+          <span className="k">Payoff</span> Resultado por tonelada al vencimiento = suma de las patas (futuro +
+          calls + puts). Elegí una estrategia del menú (se precarga con strikes al paso elegido) y ajustá las
+          patas a mano. La línea punteada es el precio base; los puntos, los breakeven. Catálogo y fórmulas en
+          <code> docs/ESTRATEGIAS_CATALOGO.md</code>.
         </span>
       </div>
     </Panel>
-  );
-}
-
-function PayoffChart({ serie, strikes }: { serie: { P: number; resultado: number }[]; strikes: number[] }) {
-  const W = 320, H = 180, ml = 36, mr = 8, mt = 10, mb = 22;
-  const xs = serie.map((s) => s.P);
-  const ys = serie.map((s) => s.resultado);
-  const xMin = Math.min(...xs), xMax = Math.max(...xs);
-  const yMin = Math.min(...ys, 0), yMax = Math.max(...ys, 0);
-  const px = (v: number) => ml + ((v - xMin) / (xMax - xMin || 1)) * (W - ml - mr);
-  const py = (v: number) => mt + (1 - (v - yMin) / (yMax - yMin || 1)) * (H - mt - mb);
-  const path = serie.map((s, i) => `${i ? "L" : "M"}${px(s.P).toFixed(1)},${py(s.resultado).toFixed(1)}`).join(" ");
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="payoff" role="img" aria-label="Payoff de la estrategia" style={{ width: "100%", height: "auto" }}>
-      <line x1={ml} y1={H - mb} x2={W - mr} y2={H - mb} stroke="var(--line-2)" strokeWidth={1} />
-      <line x1={ml} y1={mt} x2={ml} y2={H - mb} stroke="var(--line-2)" strokeWidth={1} />
-      <line x1={ml} y1={py(0)} x2={W - mr} y2={py(0)} stroke="var(--line-2)" strokeWidth={1} strokeDasharray="2 3" />
-      {strikes.map((k, i) => (
-        <line key={i} x1={px(k)} y1={mt} x2={px(k)} y2={H - mb} stroke="var(--line-2)" strokeWidth={1} strokeDasharray="3 3" />
-      ))}
-      <path d={path} fill="none" stroke="var(--pos)" strokeWidth={2} />
-      <text x={ml - 4} y={py(yMax)} textAnchor="end" fontSize="8" fill="var(--ink-3)" dominantBaseline="middle">{nfmt(yMax, 0)}</text>
-      <text x={ml - 4} y={py(yMin)} textAnchor="end" fontSize="8" fill="var(--ink-3)" dominantBaseline="middle">{nfmt(yMin, 0)}</text>
-      {strikes.map((k, i) => (
-        <text key={i} x={px(k)} y={H - mb + 10} textAnchor="middle" fontSize="8" fill="var(--ink-3)">{nfmt(k, 0)}</text>
-      ))}
-    </svg>
   );
 }

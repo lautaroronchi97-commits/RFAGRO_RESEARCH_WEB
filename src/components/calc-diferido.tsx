@@ -124,7 +124,7 @@ export function CalcDiferido() {
 
   return (
     <Panel id="calc-diferido">
-      <PanelHead glyph={<IconCalc />} title="Calculadora — pago diferido" sub="Diferido vs con pago · tasa USD · fecha de pago" />
+      <PanelHead glyph={<IconCalc />} title="Calculadora — pago diferido" sub="Negocios en pesos · diferido vs con pago · tasa pesos · fecha de pago" />
 
       <div className="calc">
         <label className="calc-field calc-mode">
@@ -139,19 +139,19 @@ export function CalcDiferido() {
         <div className="calc-grid">
           {showConPago && (
             <label className="calc-field">
-              <span>Precio con pago (USD)</span>
+              <span>Precio con pago (ARS)</span>
               <input inputMode="decimal" value={conPago} onChange={(e) => setConPago(e.target.value)} />
             </label>
           )}
           {showDiferido && (
             <label className="calc-field">
-              <span>Precio diferido (USD)</span>
+              <span>Precio diferido (ARS)</span>
               <input inputMode="decimal" value={diferido} onChange={(e) => setDiferido(e.target.value)} />
             </label>
           )}
           {showTasa && (
             <label className="calc-field">
-              <span>Tasa USD anual (%)</span>
+              <span>Tasa pesos anual (%)</span>
               <input inputMode="decimal" value={tasa} onChange={(e) => setTasa(e.target.value)} />
             </label>
           )}
@@ -187,9 +187,9 @@ export function CalcDiferido() {
 
       <div className="panel-note">
         <span>
-          Diferido = con pago × (1 + tasa × días/365), interés simple. El pago (cobro anticipado)
-          descuenta; los días son solo el excedente por encima del pago estándar de {nHabiles} hábiles.
-          Feriados AR editables en <code>habiles.ts</code>. Pesificación: pendiente.
+          Negocios en pesos. Diferido = con pago × (1 + tasa × días/365), interés simple. El pago (cobro
+          anticipado) descuenta; los días son solo el excedente por encima del pago estándar de {nHabiles}
+          hábiles. Feriados AR editables en <code>habiles.ts</code>.
         </span>
       </div>
     </Panel>

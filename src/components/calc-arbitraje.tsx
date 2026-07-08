@@ -52,20 +52,20 @@ export function CalcArbitraje() {
 
   return (
     <Panel id="calc-arbitraje">
-      <PanelHead glyph={<IconArb />} title="Calculadora — arbitraje disponible ↔ futuro" sub="Tasa directa · TNA USD · spread (carry de granos)" />
+      <PanelHead glyph={<IconArb />} title="Calculadora — carry implícito entre dos posiciones" sub="Tasa directa · TNA USD · spread entre una posición cercana y una lejana" />
 
       <div className="calc">
         <div className="calc-grid">
           <label className="calc-field">
-            <span>Pizarra / disponible (USD)</span>
+            <span>Posición cercana / disponible (USD)</span>
             <input inputMode="decimal" value={pizarra} onChange={(e) => setPizarra(e.target.value)} />
           </label>
           <label className="calc-field">
-            <span>Precio futuro (USD)</span>
+            <span>Posición lejana / futuro (USD)</span>
             <input inputMode="decimal" value={futuro} onChange={(e) => setFuturo(e.target.value)} />
           </label>
           <label className="calc-field">
-            <span>Vencimiento de la posición</span>
+            <span>Vencimiento de la lejana</span>
             <input type="date" suppressHydrationWarning value={fechaVto} onChange={(e) => setFechaVto(e.target.value)} />
           </label>
         </div>
@@ -87,9 +87,9 @@ export function CalcArbitraje() {
 
       <div className="panel-note">
         <span>
-          <span className="k">Fórmula real</span> (Excel RF): tasa directa = futuro/pizarra − 1 · TNA USD =
-          (futuro/pizarra − 1) × 365/días · spread = futuro − pizarra. Por ahora los precios se cargan a
-          mano; cuando estén los cierres A3 en la base, se completan solos por posición.
+          <span className="k">Carry</span> entre dos posiciones: tasa directa = lejana/cercana − 1 · TNA USD =
+          (lejana/cercana − 1) × 365/días · spread = lejana − cercana. Sirve para detectar el carry entre
+          disponible y un futuro, o entre dos posiciones de futuros. Precios a mano; con la curva A3 salen solos.
         </span>
       </div>
     </Panel>
