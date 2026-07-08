@@ -11,6 +11,7 @@ import { PanelCambiario } from "@/components/panel-cambiario";
 import { DjvePanel } from "@/components/djve-panel";
 import { CapacidadPanel } from "@/components/capacidad-panel";
 import { MejorCajaPanel } from "@/components/mejor-caja-panel";
+import { NoticiasPanel } from "@/components/noticias-panel";
 import { CalcDiferido } from "@/components/calc-diferido";
 import { CalcNegociosPago } from "@/components/calc-negocios-pago";
 import { CalcArbitraje } from "@/components/calc-arbitraje";
@@ -36,6 +37,9 @@ export default async function Home() {
       <Cinta data={cinta} />
       <main className="wrap">
         <div className="col">
+          <h2 className="sec-title">Noticias</h2>
+          <NoticiasPanel />
+
           <h2 className="sec-title">Granos</h2>
           <ArbitrajesTable />
           <MejorCajaPanel />
