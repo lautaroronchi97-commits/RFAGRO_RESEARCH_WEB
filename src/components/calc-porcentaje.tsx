@@ -23,50 +23,66 @@ export function CalcPorcentaje() {
   const [precioNeg, setPrecioNeg] = React.useState("205");
   const [precioRef, setPrecioRef] = React.useState("180");
   const [pct, setPct] = React.useState("114");
+  const [aforo, setAforo] = React.useState("2");
   const [fechaRef, setFechaRef] = React.useState(() => fmtInput(sumarCorridos(parseYmd(hoyCordoba()), 120)));
 
   const dias = fechaRef ? Math.max(0, diasCorridos(parseYmd(hoyCordoba()), parseYmd(fechaRef))) : NaN;
 
-  let resultado = "—", resSub = "";
+  let resultado = "—";
+  let resSub = "";
+  let clienteTxt = "";
   if (modo === "pct") {
-    const v = porcentaje(num(precioNeg), num(precioRef));
-    if (Number.isFinite(v)) { resultado = rfmt(v, 1); resSub = `${nfmt(num(precioNeg), 2)} es ${rfmt(v, 1)} de ${nfmt(num(precioRef), 2)}`; }
+    const lleno = porcentaje(num(precioNeg), num(precioRef));
+    if (Number.isFinite(lleno)) {
+      resultado = rfmt(lleno, 1);
+      resSub = `${nfmt(num(precioNeg), 2)} ÷ ${nfmt(num(precioRef), 2)}`;
+      const af = num(aforo);
+      if (Number.isFinite(af)) clienteTxt = rfmt(lleno - af, 1);
+    }
   } else {
     const v = precioDesdePct(num(pct), num(precioRef));
-    if (Number.isFinite(v)) { resultado = nfmt(v, 2); resSub = `${rfmt(num(pct), 1)} de ${nfmt(num(precioRef), 2)}`; }
+    if (Number.isFinite(v)) {
+      resultado = nfmt(v, 2);
+      resSub = `${rfmt(num(pct), 1)} de ${nfmt(num(precioRef), 2)}`;
+    }
   }
 
   return (
     <Panel id="calc-porcentaje">
-      <PanelHead glyph={<IconPct />} title="Cotizador — negocios por porcentaje" sub="Fijar por relación a otro producto/posición (ej. 180% pizarra maíz)" />
+      <PanelHead glyph={<IconPct />} title="Cotizador — negocios por porcentaje" sub="Fijar por relación a otra posición (ej. 114% maíz julio) · aforo a cliente" />
       <div className="calc">
         <label className="calc-field calc-mode">
           <span>Calcular</span>
           <select value={modo} onChange={(e) => setModo(e.target.value as Modo)}>
-            <option value="pct">Porcentaje (relación)</option>
+            <option value="pct">Porcentaje lleno</option>
             <option value="precio">Precio del negocio</option>
           </select>
         </label>
         <div className="calc-grid">
           {modo === "pct" ? (
-            <label className="calc-field"><span>Precio del negocio (a fijar)</span>
+            <label className="calc-field"><span>Precio posición vendida</span>
               <input inputMode="decimal" value={precioNeg} onChange={(e) => setPrecioNeg(e.target.value)} /></label>
           ) : (
             <label className="calc-field"><span>Porcentaje (%)</span>
               <input inputMode="decimal" value={pct} onChange={(e) => setPct(e.target.value)} /></label>
           )}
-          <label className="calc-field"><span>Precio de referencia (2º producto)</span>
+          <label className="calc-field"><span>Precio posición de fijación</span>
             <input inputMode="decimal" value={precioRef} onChange={(e) => setPrecioRef(e.target.value)} /></label>
-          <label className="calc-field"><span>Vencimiento de la referencia</span>
+          {modo === "pct" && (
+            <label className="calc-field"><span>Aforo a cliente (%)</span>
+              <input inputMode="decimal" value={aforo} onChange={(e) => setAforo(e.target.value)} /></label>
+          )}
+          <label className="calc-field"><span>Vto de la fijación</span>
             <input type="date" suppressHydrationWarning value={fechaRef} onChange={(e) => setFechaRef(e.target.value)} /></label>
         </div>
         <div className="calc-out">
           <div className="calc-res">
-            <span className="calc-res-lbl">{modo === "pct" ? "Porcentaje" : "Precio del negocio"}</span>
+            <span className="calc-res-lbl">{modo === "pct" ? "Porcentaje lleno" : "Precio del negocio"}</span>
             <span className="calc-res-val">{resultado}</span>
             {resSub && <span className="calc-res-sub">{resSub}</span>}
           </div>
           <div className="calc-meta">
+            {modo === "pct" && clienteTxt && <span>A cliente (−aforo): <b>{clienteTxt}</b></span>}
             <span>Plazo estimado: <b>{Number.isFinite(dias) ? `${dias} días` : "—"}</b></span>
             <span>Vence: <b>{fechaRef ? fmtFecha(parseYmd(fechaRef)) : "—"}</b></span>
           </div>
@@ -74,9 +90,10 @@ export function CalcPorcentaje() {
       </div>
       <div className="panel-note">
         <span>
-          <span className="k">Por relación</span>: porcentaje = precio del negocio ÷ precio de referencia. Ej.
-          “180% pizarra maíz” o “57% soja julio”. El plazo se estima del vencimiento de la posición de referencia.
-          Precios a mano por ahora; con la curva A3 se eligen posición/producto y se completan solos.
+          <span className="k">Por relación</span> Porcentaje lleno = precio de la posición vendida ÷ precio de la
+          posición de fijación (ej. 114% maíz julio). El <b>aforo</b> se resta al lleno para cotizar a clientes
+          (lleno − aforo). El plazo se estima del vencimiento de la fijación. Precios a mano; con la curva A3 se
+          eligen producto/posición y se completan solos.
         </span>
       </div>
     </Panel>

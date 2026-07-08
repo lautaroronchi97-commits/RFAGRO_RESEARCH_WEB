@@ -35,10 +35,13 @@ export default async function Home() {
       <Cinta data={cinta} />
       <main className="wrap">
         <div className="col">
+          <h2 className="sec-title">Granos</h2>
           <ArbitrajesTable />
           <MejorCajaPanel />
           <PasesPanel />
           <CapacidadPanel />
+
+          <h2 className="sec-title">Calculadoras</h2>
           <CalcDiferido />
           <CalcArbitraje />
           <CalcEstrategias />
@@ -46,6 +49,8 @@ export default async function Home() {
           <CalcPorcentaje />
           <CalcPases />
           <CalcCostos />
+
+          <h2 className="sec-title">Dólar y tasas</h2>
           <DolarFuturoPanel />
           <DolarLinkedPanel />
           <ImplicitasPanel />

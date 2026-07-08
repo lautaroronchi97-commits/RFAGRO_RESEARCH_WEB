@@ -121,6 +121,10 @@ button { font:inherit; color:inherit; background:none; border:none; }
 .pz-reset { margin-left:5px; cursor:pointer; border:none; background:none; color:var(--ink-3);
   font-size:var(--fs-xs); line-height:1; padding:0 2px; }
 .pz-reset:hover { color:var(--brand-deep); }
+.sec-title { font-family:var(--font-ui); font-size:var(--fs-xs); font-weight:800; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--ink-2); margin:14px 2px 2px; padding-top:10px;
+  border-top:1px solid var(--line); }
+.sec-title:first-child { border-top:none; padding-top:0; margin-top:0; }
 .toggle { display:inline-flex; align-items:center; gap:7px; cursor:pointer; font-size:var(--fs-xs);
   font-weight:600; letter-spacing:.03em; padding:5px 10px 5px 8px; border:1px solid var(--line-2);
   border-radius:6px; background:var(--panel); color:var(--ink-2); }
