@@ -49,8 +49,8 @@ Marca: **RF AGRO** (nunca "CONSULTAR"). Glifos trigo/soja/maíz, cinta tipo piza
 | # | Módulo | Estado |
 |---|--------|--------|
 | 0 | Cinta | REAL (dólares). Pizarra en la cinta = ejemplo (falta usar CAC). |
-| 1 | Arbitrajes | **REAL** (`arbitrajes-cierres.ts`): futuro (ajuste A3/CEM) vs pizarra USD de CAC (`pizarra.ts`, scrape + override `PIZARRA_OVERRIDE`). Spread + tasa directa reales. Falta **TNA USD** (regla de vto). |
-| 2 | Pases | **REAL** (settlement CEM vía Supabase, `pases-cierres.ts`): spread de ajuste + tasa directa por posición viva. Falta TNA (días entre vtos) y comprador/vendedor. |
+| 1 | Arbitrajes | **REAL** (`arbitrajes-cierres.ts`): futuro (ajuste A3/CEM) vs pizarra USD de CAC (`pizarra.ts`, scrape + override). Spread + tasa directa + **TNA USD** (días al vto real desde `vencimientos`, fuente CEM). |
+| 2 | Pases | **REAL** (`pases-cierres.ts`): spread de ajuste + tasa directa + **TNA** (días entre vtos, tabla `vencimientos`). Falta comprador/vendedor. |
 | 3 | Dólar futuro | REAL (MAE) + TNA/TEM/TEA. |
 | 4 | Dólar linked | REAL (data912) + TNA/TEM/TEA + spread oficial MAE. |
 | 5 | Implícitas combinadas | REAL (futuro + linked); granos = ejemplo. |
@@ -116,6 +116,12 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
 - **Fix posiciones vivas** (`src/lib/futuros.ts`): la vista `futuros_cierres_ultimo` traía el último
   cierre de TODOS los símbolos históricos (JUL21, ABR22…). Ahora se filtran a vto ≥ mes actual (Córdoba).
   Corrige también el panel **Cierres**, que mostraba posiciones muertas como vigentes.
+- **Arbitrajes REAL** (`arbitrajes-cierres.ts` + `pizarra.ts`): futuro (ajuste A3/CEM) vs pizarra USD
+  de CAC-BCR (scrape del HTML `board-{grano}`, parser verificado, + override `PIZARRA_OVERRIDE`).
+- **TNA USD real en Arbitrajes y Pases**: nueva tabla `vencimientos` (migración
+  `20260708120000`, seed desde CEM `/api/v2/symbols` campo `maturityDate`) + `vencimientos.ts` +
+  `dates.ts` (hoyCordobaISO/diasEntre/diasHasta). Arbitraje: directa × 365/(vto − hoy). Pase: directa
+  × 365/(vto_larga − vto_cercana). Verificado por SQL (ej. TRI JUL26 +1,51% en 16 días → +34,5% TNA).
 - Limpieza: se quitó `pases` de ejemplo de `src/lib/sample.ts` (código muerto).
 
 ### Fuentes validadas con request real (para lo que sigue)

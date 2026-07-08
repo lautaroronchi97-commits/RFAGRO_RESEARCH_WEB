@@ -1,6 +1,8 @@
 import "server-only";
 import { cache } from "react";
 import { getCierresGranos } from "./futuros";
+import { getVencimientos } from "./vencimientos";
+import { diasEntre } from "./dates";
 import type { Meta } from "./market";
 
 /**
@@ -15,9 +17,10 @@ import type { Meta } from "./market";
  * Columnas y su fórmula (confirmadas en `pases.ts`, hoja PASES del Excel):
  *   - ajuste  = settlement(larga) − settlement(cercana)          [US$]
  *   - directa = settlement(larga) / settlement(cercana) − 1      [% del período]
+ *   - tna     = directa × 365 / días_entre_vencimientos          [%, anualizada]
  *   - ultimo  = close(larga) − close(cercana)                    [US$, si ambas operaron]
- * La TNA del pase (× 365/días) queda pendiente: necesita los días entre
- * vencimientos de cada posición (regla de vto a confirmar con Lautaro).
+ * Los días salen de los vencimientos reales de cada posición (tabla
+ * `vencimientos`, fuente CEM). Si falta un vto, la TNA de ese pase queda null.
  */
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -26,6 +29,8 @@ export type PaseSpread = {
   label: string; // "JUL26 / DIC26"
   ajuste: number | null; // settlement(larga) − settlement(cercana)
   directa: number | null; // settlement(larga) / settlement(cercana) − 1, en %
+  tna: number | null; // directa anualizada (365/días entre vtos), en %
+  dias: number | null; // días entre vencimientos
   ultimo: number | null; // close(larga) − close(cercana), solo si ambas operaron
 };
 
@@ -39,7 +44,7 @@ export type PaseGrano = {
 export type PasesData = { granos: PaseGrano[]; meta: Meta };
 
 export const getPases = cache(async (): Promise<PasesData> => {
-  const { granos, meta } = await getCierresGranos();
+  const [{ granos, meta }, vtos] = await Promise.all([getCierresGranos(), getVencimientos()]);
 
   const out: PaseGrano[] = [];
   for (const g of granos) {
@@ -58,7 +63,12 @@ export const getPases = cache(async (): Promise<PasesData> => {
         cercana.close && larga.close && cercana.close > 0 && larga.close > 0
           ? round2(larga.close - cercana.close)
           : null;
-      spreads.push({ label: `${cercana.posicion} / ${larga.posicion}`, ajuste, directa, ultimo });
+      const vc = vtos.get(cercana.symbol);
+      const vl = vtos.get(larga.symbol);
+      const dias = vc && vl ? diasEntre(vc, vl) : null;
+      const tna =
+        directa != null && dias != null && dias > 0 ? round2((directa * 365) / dias) : null;
+      spreads.push({ label: `${cercana.posicion} / ${larga.posicion}`, ajuste, directa, tna, dias, ultimo });
     }
     if (spreads.length > 0) {
       out.push({ underlying: g.underlying, nombre: g.nombre, fecha: g.fecha, spreads });

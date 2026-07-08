@@ -1,6 +1,6 @@
 import * as React from "react";
 import { getArbitrajes } from "@/lib/arbitrajes-cierres";
-import { nfmt, sfmt, pfmt } from "@/lib/format";
+import { nfmt, sfmt, pfmt, dirOf, arrowOf } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
 import { IconArb, GlyphSoja, GlyphMaiz, GlyphTrigo } from "./icons";
 import { InfoTip } from "./infotip";
@@ -43,17 +43,23 @@ export async function ArbitrajesTable() {
               </th>
               <th scope="col">
                 <InfoTip term="Tasa directa">
-                  Ese spread como % de la pizarra (futuro/pizarra − 1), sin anualizar. Positiva = conviene
-                  esperar/fijar; negativa = el disponible rinde más.
+                  Ese spread como % de la pizarra (futuro/pizarra − 1), sin anualizar.
                 </InfoTip>
               </th>
+              <th scope="col">
+                <InfoTip term="TNA USD">
+                  La tasa directa anualizada en dólares (× 365/días al vto). Alta (verde) = conviene
+                  esperar/fijar; negativa (roja) = el disponible rinde más.
+                </InfoTip>
+              </th>
+              <th scope="col">Días</th>
             </tr>
           </thead>
           <tbody>
             {data.granos.map((g) => (
               <React.Fragment key={g.underlying}>
                 <tr className="grp">
-                  <td className="l" colSpan={4}>
+                  <td className="l" colSpan={6}>
                     <span className="grp-cell">
                       <span className="gglyph" style={{ color: glyphColor(g.underlying) }}>
                         {glyphFor(g.underlying)}
@@ -67,19 +73,33 @@ export async function ArbitrajesTable() {
                     </span>
                   </td>
                 </tr>
-                {g.rows.map((r) => (
-                  <tr key={r.pos}>
-                    <td className="l sym">{r.pos}</td>
-                    <td>{nfmt(r.ajuste, 2)}</td>
-                    <td className={cls(r.spread)}>{sfmt(r.spread, 2)}</td>
-                    <td className={cls(r.directa)}>{pfmt(r.directa, 2)}</td>
-                  </tr>
-                ))}
+                {g.rows.map((r) => {
+                  const d = dirOf(r.tna);
+                  return (
+                    <tr key={r.pos}>
+                      <td className="l sym">{r.pos}</td>
+                      <td>{nfmt(r.ajuste, 2)}</td>
+                      <td className={cls(r.spread)}>{sfmt(r.spread, 2)}</td>
+                      <td className={cls(r.directa)}>{pfmt(r.directa, 2)}</td>
+                      <td>
+                        {r.tna != null ? (
+                          <span className={`chip ${d === "up" ? "up" : d === "down" ? "down" : ""}`}>
+                            <span className="ar">{arrowOf(d)}</span>
+                            {pfmt(r.tna, 1)}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="dim">{r.dias != null ? r.dias : "—"}</td>
+                    </tr>
+                  );
+                })}
               </React.Fragment>
             ))}
             {data.granos.length === 0 && (
               <tr>
-                <td className="l dim" colSpan={4}>
+                <td className="l dim" colSpan={6}>
                   Sin datos de arbitrajes todavía (faltan cierres o pizarra).
                 </td>
               </tr>
@@ -90,9 +110,9 @@ export async function ArbitrajesTable() {
       <div className="panel-note">
         <span>
           <span className="k">Real</span> Futuro = ajuste (settlement) de A3/CEM · Pizarra = disponible USD de
-          CAC-BCR{data.pizarraFecha ? ` (al ${data.pizarraFecha})` : ""}. Precios A3 = <b>futuro</b>, no es lo
-          que se paga hoy. Pendiente: <b>TNA USD</b> (anualizada) — necesita la regla de vencimiento por
-          posición para calcular los días.
+          CAC-BCR{data.pizarraFecha ? ` (al ${data.pizarraFecha})` : ""}. TNA USD = tasa directa anualizada
+          por los días al vencimiento real de cada posición (CEM). Precios A3 = <b>futuro</b>, no es lo que se
+          paga hoy.
         </span>
       </div>
     </Panel>

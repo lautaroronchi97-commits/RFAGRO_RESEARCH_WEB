@@ -1,6 +1,6 @@
 import * as React from "react";
 import { getPases } from "@/lib/pases-cierres";
-import { sfmt, pfmt } from "@/lib/format";
+import { sfmt, pfmt, dirOf, arrowOf } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
 import { GlyphSoja, GlyphMaiz, GlyphTrigo } from "./icons";
 import { InfoTip } from "./infotip";
@@ -40,7 +40,7 @@ export async function PasesPanel() {
         stamp={<SourceStamp meta={data.meta} />}
       />
       <div className="table-scroll">
-        <table className="tbl" style={{ minWidth: 480 }}>
+        <table className="tbl" style={{ minWidth: 620 }}>
           <thead>
             <tr>
               <th className="l" scope="col">Pase</th>
@@ -55,6 +55,12 @@ export async function PasesPanel() {
                   Ese spread como % de la posición cercana (larga/cercana − 1), sin anualizar.
                 </InfoTip>
               </th>
+              <th scope="col">
+                <InfoTip term="TNA USD">
+                  La tasa directa anualizada (× 365/días entre vencimientos de las dos posiciones).
+                </InfoTip>
+              </th>
+              <th scope="col">Días</th>
               <th scope="col">Últ. op.</th>
             </tr>
           </thead>
@@ -62,7 +68,7 @@ export async function PasesPanel() {
             {data.granos.map((g) => (
               <React.Fragment key={g.underlying}>
                 <tr className="grp">
-                  <td className="l" colSpan={4}>
+                  <td className="l" colSpan={6}>
                     <span className="grp-cell">
                       <span className="gglyph" style={{ color: glyphColor(g.underlying) }}>
                         {glyphFor(g.underlying)}
@@ -72,19 +78,33 @@ export async function PasesPanel() {
                     </span>
                   </td>
                 </tr>
-                {g.spreads.map((r) => (
-                  <tr key={r.label}>
-                    <td className="l sym">{r.label}</td>
-                    <td className={cls(r.ajuste)}>{sfmt(r.ajuste, 2)}</td>
-                    <td className={cls(r.directa)}>{pfmt(r.directa, 2)}</td>
-                    <td className="dim">{sfmt(r.ultimo, 2)}</td>
-                  </tr>
-                ))}
+                {g.spreads.map((r) => {
+                  const d = dirOf(r.tna);
+                  return (
+                    <tr key={r.label}>
+                      <td className="l sym">{r.label}</td>
+                      <td className={cls(r.ajuste)}>{sfmt(r.ajuste, 2)}</td>
+                      <td className={cls(r.directa)}>{pfmt(r.directa, 2)}</td>
+                      <td>
+                        {r.tna != null ? (
+                          <span className={`chip ${d === "up" ? "up" : d === "down" ? "down" : ""}`}>
+                            <span className="ar">{arrowOf(d)}</span>
+                            {pfmt(r.tna, 1)}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="dim">{r.dias != null ? r.dias : "—"}</td>
+                      <td className="dim">{sfmt(r.ultimo, 2)}</td>
+                    </tr>
+                  );
+                })}
               </React.Fragment>
             ))}
             {data.granos.length === 0 && (
               <tr>
-                <td className="l dim" colSpan={4}>
+                <td className="l dim" colSpan={6}>
                   Sin cierres para calcular pases todavía.
                 </td>
               </tr>
@@ -95,9 +115,9 @@ export async function PasesPanel() {
       <div className="panel-note">
         <span>
           <span className="k">Real</span> Pase = diferencia de ajuste (settlement) entre posiciones
-          consecutivas del mismo grano, desde los cierres del CEM guardados en Supabase. Últ. op. = mismo
-          cálculo sobre el último precio operado (— si alguna posición no operó ese día). Pendiente: TNA del
-          pase (días entre vencimientos) y comprador/vendedor + histórico desde los snapshots.
+          consecutivas del mismo grano, desde los cierres del CEM guardados en Supabase. TNA = tasa directa
+          anualizada por los días entre vencimientos (CEM). Últ. op. = spread sobre el último precio operado
+          (— si alguna posición no operó ese día). Próximo: comprador/vendedor + histórico desde los snapshots.
         </span>
       </div>
     </Panel>
