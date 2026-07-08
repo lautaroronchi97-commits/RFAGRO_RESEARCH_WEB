@@ -8,6 +8,15 @@ import { DolarLinkedPanel } from "@/components/dolar-linked-panel";
 import { ImplicitasPanel } from "@/components/implicitas-panel";
 import { SinteticosPanel } from "@/components/sinteticos-panel";
 import { PanelCambiario } from "@/components/panel-cambiario";
+import { DjvePanel } from "@/components/djve-panel";
+import { CierresPanel } from "@/components/cierres-panel";
+import { CalcDiferido } from "@/components/calc-diferido";
+import { CalcArbitraje } from "@/components/calc-arbitraje";
+import { CalcEstrategias } from "@/components/calc-estrategias";
+import { CalcFijar } from "@/components/calc-fijar";
+import { CalcCostos } from "@/components/calc-costos";
+import { CalcPorcentaje } from "@/components/calc-porcentaje";
+import { CalcPases } from "@/components/calc-pases";
 import { SiteFooter } from "@/components/site-footer";
 import { RefreshOnFocus } from "@/components/refresh-on-focus";
 
@@ -27,11 +36,20 @@ export default async function Home() {
         <div className="col">
           <ArbitrajesTable />
           <PasesPanel />
+          <CierresPanel />
+          <CalcDiferido />
+          <CalcArbitraje />
+          <CalcEstrategias />
+          <CalcFijar />
+          <CalcPorcentaje />
+          <CalcPases />
+          <CalcCostos />
           <DolarFuturoPanel />
           <DolarLinkedPanel />
           <ImplicitasPanel />
           <SinteticosPanel />
           <PanelCambiario />
+          <DjvePanel />
         </div>
       </main>
       <div className="awn" aria-hidden="true" />
