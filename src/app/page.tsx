@@ -1,4 +1,5 @@
 import { getCintaData } from "@/lib/market";
+import { getCurvaGranos } from "@/lib/curva";
 import { SiteHeader } from "@/components/site-header";
 import { Cinta } from "@/components/cinta";
 import { ArbitrajesTable } from "@/components/arbitrajes-table";
@@ -28,6 +29,7 @@ export const revalidate = 60;
 
 export default async function Home() {
   const cinta = await getCintaData();
+  const curva = await getCurvaGranos();
 
   return (
     <>
@@ -48,12 +50,12 @@ export default async function Home() {
 
           <h2 className="sec-title">Calculadoras</h2>
           <CalcDiferido />
-          <CalcNegociosPago />
-          <CalcArbitraje />
+          <CalcNegociosPago granos={curva.granos} />
+          <CalcArbitraje granos={curva.granos} />
           <CalcEstrategias />
-          <CalcFijar />
-          <CalcPorcentaje />
-          <CalcPases />
+          <CalcFijar granos={curva.granos} />
+          <CalcPorcentaje granos={curva.granos} />
+          <CalcPases granos={curva.granos} />
           <CalcCostos />
 
           <h2 className="sec-title">Dólar y tasas</h2>

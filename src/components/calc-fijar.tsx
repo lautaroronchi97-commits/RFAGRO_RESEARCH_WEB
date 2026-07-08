@@ -5,6 +5,7 @@ import { Panel, PanelHead } from "./panel";
 import { sfmt, rfmt, nfmt } from "@/lib/format";
 import { evaluarFijar, type PosCurva, type Lado, type FilaFijar } from "@/lib/fijar";
 import { hoyCordoba, parseYmd } from "@/lib/habiles";
+import type { GranoCurva } from "@/lib/curva-types";
 
 function IconFijar() {
   return (
@@ -77,7 +78,7 @@ function DeltaChart({ filas }: { filas: FilaFijar[] }) {
   );
 }
 
-export function CalcFijar() {
+export function CalcFijar({ granos = [] }: { granos?: GranoCurva[] }) {
   const [disp, setDisp] = React.useState("320");
   const [lado, setLado] = React.useState<Lado>("compro");
   const [tasa, setTasa] = React.useState("10");
@@ -109,6 +110,25 @@ export function CalcFijar() {
       <PanelHead glyph={<IconFijar />} title="Cotizador — negocios a fijar" sub="Delta disponible vs curva de futuros" />
 
       <div className="calc">
+        {granos.length > 0 && (
+          <div className="curva-pick">
+            <span className="curva-pick-lbl">Traer curva de A3</span>
+            <select
+              aria-label="Grano"
+              defaultValue=""
+              onChange={(e) => {
+                const g = granos[Number(e.target.value)];
+                if (g) setCurva(g.posiciones.map((p) => ({ vto: p.vto, precio: String(p.precio) })));
+                e.currentTarget.selectedIndex = 0;
+              }}
+            >
+              <option value="" disabled>Grano…</option>
+              {granos.map((g, i) => (
+                <option key={g.underlying} value={i}>{g.nombre}</option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className="calc-grid">
           <label className="calc-field">
             <span>Disponible (USD)</span>

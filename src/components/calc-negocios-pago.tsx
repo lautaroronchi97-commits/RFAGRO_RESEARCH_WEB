@@ -4,6 +4,8 @@ import * as React from "react";
 import { Panel, PanelHead } from "./panel";
 import { nfmt, pfmt } from "@/lib/format";
 import { hoyCordoba, parseYmd, sumarHabiles, sumarCorridos, diasCorridos, fmtFecha } from "@/lib/habiles";
+import { CurvaPicker } from "./curva-picker";
+import type { GranoCurva } from "@/lib/curva-types";
 
 function IconPago() {
   return (
@@ -18,7 +20,7 @@ function IconPago() {
 function fmtInput(d: Date): string { return d.toISOString().slice(0, 10); }
 function num(v: string): number { const n = Number(v.replace(",", ".")); return Number.isFinite(n) ? n : NaN; }
 
-export function CalcNegociosPago() {
+export function CalcNegociosPago({ granos = [] }: { granos?: GranoCurva[] }) {
   const [futuro, setFuturo] = React.useState("340");
   const [vto, setVto] = React.useState(() => fmtInput(sumarCorridos(parseYmd(hoyCordoba()), 90)));
   const [habiles, setHabiles] = React.useState("5");
@@ -42,6 +44,7 @@ export function CalcNegociosPago() {
     <Panel id="calc-negocios-pago">
       <PanelHead glyph={<IconPago />} title="Cotizador — negocios con pagos" sub="Disponible = futuro descontado al pago · pesificable por TC" />
       <div className="calc">
+        <CurvaPicker granos={granos} label="Traer futuro de A3" onPick={(p) => { setFuturo(String(p.precio)); setVto(p.vto); }} />
         <div className="calc-grid">
           <label className="calc-field"><span>Precio futuro (USD)</span>
             <input inputMode="decimal" value={futuro} onChange={(e) => setFuturo(e.target.value)} /></label>
