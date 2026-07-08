@@ -111,6 +111,9 @@ button { font:inherit; color:inherit; background:none; border:none; }
   padding:5px 9px; border:1px solid var(--line); border-radius:6px; background:var(--panel); }
 .rueda time { color:var(--ink); font-variant-numeric:tabular-nums; }
 .dot-live { width:7px; height:7px; border-radius:50%; background:var(--pos); }
+.ruedas { display:inline-flex; align-items:center; gap:9px; }
+.rueda-tag { display:inline-flex; align-items:center; gap:5px; font-family:var(--font-mono);
+  font-size:var(--fs-xs); font-weight:600; color:var(--ink-2); white-space:nowrap; }
 .toggle { display:inline-flex; align-items:center; gap:7px; cursor:pointer; font-size:var(--fs-xs);
   font-weight:600; letter-spacing:.03em; padding:5px 10px 5px 8px; border:1px solid var(--line-2);
   border-radius:6px; background:var(--panel); color:var(--ink-2); }

@@ -9,8 +9,8 @@ import { ImplicitasPanel } from "@/components/implicitas-panel";
 import { SinteticosPanel } from "@/components/sinteticos-panel";
 import { PanelCambiario } from "@/components/panel-cambiario";
 import { DjvePanel } from "@/components/djve-panel";
-import { CierresPanel } from "@/components/cierres-panel";
 import { CapacidadPanel } from "@/components/capacidad-panel";
+import { MejorCajaPanel } from "@/components/mejor-caja-panel";
 import { CalcDiferido } from "@/components/calc-diferido";
 import { CalcArbitraje } from "@/components/calc-arbitraje";
 import { CalcEstrategias } from "@/components/calc-estrategias";
@@ -36,8 +36,8 @@ export default async function Home() {
       <main className="wrap">
         <div className="col">
           <ArbitrajesTable />
+          <MejorCajaPanel />
           <PasesPanel />
-          <CierresPanel />
           <CapacidadPanel />
           <CalcDiferido />
           <CalcArbitraje />

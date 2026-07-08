@@ -53,13 +53,14 @@ export async function ArbitrajesTable() {
                 </InfoTip>
               </th>
               <th scope="col">Días</th>
+              <th scope="col">Vol</th>
             </tr>
           </thead>
           <tbody>
             {data.granos.map((g) => (
               <React.Fragment key={g.underlying}>
                 <tr className="grp">
-                  <td className="l" colSpan={6}>
+                  <td className="l" colSpan={7}>
                     <span className="grp-cell">
                       <span className="gglyph" style={{ color: glyphColor(g.underlying) }}>
                         {glyphFor(g.underlying)}
@@ -92,6 +93,7 @@ export async function ArbitrajesTable() {
                         )}
                       </td>
                       <td className="dim">{r.dias != null ? r.dias : "—"}</td>
+                      <td className="dim">{r.volume != null ? nfmt(r.volume, 0) : "—"}</td>
                     </tr>
                   );
                 })}
@@ -99,7 +101,7 @@ export async function ArbitrajesTable() {
             ))}
             {data.granos.length === 0 && (
               <tr>
-                <td className="l dim" colSpan={6}>
+                <td className="l dim" colSpan={7}>
                   Sin datos de arbitrajes todavía (faltan cierres o pizarra).
                 </td>
               </tr>

@@ -127,6 +127,17 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
   parser verificado). Muestra pizarra CAC al lado como contexto. Override `CAPACIDAD_OVERRIDE` para el
   modelo propio de Lautaro. Sin históricos (decisión de Lautaro). Ojo: el FAS tiene varias columnas
   (SAGyP/Up River/Brasil) — se toma Up River (Rosario), elegido por Lautaro.
+- **Estado de rueda** (`rueda-status.tsx`): horarios oficiales Matba Rofex — Dólar 10:00–15:00, Agro
+  10:30–17:00 (verificado en la página de horarios). Indicador abierto/cerrado en vivo, L-V, hora Córdoba.
+  El reloj (`rueda-clock.tsx`) ya tickeaba solo (el `--:--:--` es el estado pre-hidratación).
+- **Volumen en Arbitrajes** (columna Vol, desde `futuros_cierres.volume`). Volumen de pases NO disponible
+  aún (el CEM no tiene instrumentos de pase → necesita el feed en vivo de A3).
+- **Mejor para hacer caja** (`mejor-caja-panel.tsx`): ranking soja/maíz/trigo por MENOR tasa implícita
+  (min TNA disponible vs posiciones siguientes). Reusa `getArbitrajes`.
+- **Ajuste por posición fuera de pantalla**: se quitó `CierresPanel` de `page.tsx` (los datos quedan en
+  Supabase para gráficos; el componente sigue en el repo por si se re-usa).
+- **Pases = armados por patas** (verificado): el CEM NO publica instrumentos de pase (`MAI.ROS/POS1/POS2`);
+  las cotizaciones de pase de la rueda + su volumen requieren el feed en vivo de A3 (cron 60s a definir).
 - Limpieza: se quitó `pases` de ejemplo de `src/lib/sample.ts` (código muerto).
 
 ### Fuentes validadas con request real (para lo que sigue)

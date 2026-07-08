@@ -27,6 +27,7 @@ export type ArbRow = {
   directa: number | null; // ajuste/pizarra − 1, en %
   dias: number | null; // días hasta el vencimiento
   tna: number | null; // directa anualizada (365/días), en %
+  volume: number | null; // volumen operado en el día (contratos)
 };
 
 export type ArbGrano = {
@@ -63,7 +64,7 @@ export const getArbitrajes = cache(async (): Promise<ArbData> => {
       const dias = vto ? diasHasta(vto) : null;
       const tna =
         directa != null && dias != null && dias > 0 ? round2((directa * 365) / dias) : null;
-      return { pos: p.posicion, ajuste, spread, directa, dias, tna };
+      return { pos: p.posicion, ajuste, spread, directa, dias, tna, volume: p.volume ?? null };
     });
     if (rows.length > 0) {
       granos.push({
