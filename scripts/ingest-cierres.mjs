@@ -112,7 +112,9 @@ async function main() {
   for (const product of PRODUCTS) {
     const rows = await fetchProduct(product, from, to);
     console.log(`  ${product}: ${rows.length} filas`);
-    all.push(...rows.map(toRow).filter((r) => r.symbol && r.fecha));
+    // Excluir OPCIONES: el filtro por producto también trae opciones, cuyo símbolo
+    // lleva strike + C/P con espacio (ej. "SOJ.ROS/NOV26 336 C"). Solo futuros puros.
+    all.push(...rows.map(toRow).filter((r) => r.symbol && r.fecha && !r.symbol.includes(" ")));
   }
   // dedup por (symbol, fecha) por si el CEM repite
   const seen = new Set();
