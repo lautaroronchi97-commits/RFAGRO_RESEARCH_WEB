@@ -60,6 +60,22 @@ function vencKey(posicion: string | null): number {
   return anio * 100 + mes;
 }
 
+/**
+ * Año-mes actual en zona Córdoba como clave aaaamm. La vista `_ultimo` trae el
+ * último cierre de CADA símbolo histórico (incluye posiciones ya vencidas como
+ * JUL21): para la pizarra vigente hay que descartar las muertas (venc < hoy).
+ */
+function hoyVencKey(): number {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Argentina/Cordoba",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(new Date());
+  const anio = Number(parts.find((p) => p.type === "year")?.value ?? 0);
+  const mes = Number(parts.find((p) => p.type === "month")?.value ?? 0);
+  return anio * 100 + mes;
+}
+
 const SOURCE = "CEM · Matba ROFEX";
 
 export const getCierresGranos = cache(async (): Promise<CierresData> => {
@@ -103,9 +119,17 @@ export const getCierresGranos = cache(async (): Promise<CierresData> => {
   }
 
   const orden = ["SOJ", "MAI", "TRI"];
+  const hoyYM = hoyVencKey();
   const granos = [...byGrano.values()]
     .sort((a, b) => orden.indexOf(a.underlying) - orden.indexOf(b.underlying))
-    .map((g) => ({ ...g, posiciones: g.posiciones.sort((a, b) => a.venc - b.venc) }));
+    .map((g) => ({
+      ...g,
+      // Solo disponible (venc 0) + posiciones vivas (vto en el mes actual o futuro).
+      posiciones: g.posiciones
+        .filter((p) => p.venc === 0 || p.venc >= hoyYM)
+        .sort((a, b) => a.venc - b.venc),
+    }))
+    .filter((g) => g.posiciones.length > 0);
 
   const fechas = granos.map((g) => g.fecha).filter(Boolean) as string[];
   const ultima = fechas.sort().at(-1) ?? null;

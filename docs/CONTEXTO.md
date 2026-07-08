@@ -49,8 +49,8 @@ Marca: **RF AGRO** (nunca "CONSULTAR"). Glifos trigo/soja/maíz, cinta tipo piza
 | # | Módulo | Estado |
 |---|--------|--------|
 | 0 | Cinta | REAL (dólares). Pizarra en la cinta = ejemplo (falta usar CAC). |
-| 1 | Arbitrajes | **EJEMPLO** (`src/lib/sample.ts`). Pendiente: A3 futuros DDA + pizarra CAC. |
-| 2 | Pases | **EJEMPLO**. Pendiente: A3 spreads calendario DDA. |
+| 1 | Arbitrajes | **EJEMPLO** (`src/lib/sample.ts`). Futuros ya en Supabase; falta la **pizarra disponible USD** (NO está en `futuros_cierres`) → scrape CAC / override manual. |
+| 2 | Pases | **REAL** (settlement CEM vía Supabase, `pases-cierres.ts`): spread de ajuste + tasa directa por posición viva. Falta TNA (días entre vtos) y comprador/vendedor. |
 | 3 | Dólar futuro | REAL (MAE) + TNA/TEM/TEA. |
 | 4 | Dólar linked | REAL (data912) + TNA/TEM/TEA + spread oficial MAE. |
 | 5 | Implícitas combinadas | REAL (futuro + linked); granos = ejemplo. |
@@ -105,3 +105,45 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
 
 ## Comandos
 - `npm run dev` (real en sandbox: `NODE_USE_ENV_PROXY=1 npm run dev`) · `npm run build` · push a la rama → deploy.
+
+## Sesión 08/07/2026 (rama `claude/pending-tasks-vzoa3c`)
+
+### Hecho en esta sesión
+- **Pases REAL** (`src/lib/pases-cierres.ts` + `pases-panel.tsx`): deriva el pase = diferencia de
+  ajuste (settlement) entre posiciones consecutivas del mismo grano, desde `futuros_cierres` (CEM en
+  Supabase). Suma tasa directa (larga/cercana − 1, exacta, sin fechas). TNA pendiente (necesita días
+  entre vencimientos). Verificado contra SQL: valores sensatos (contango/backwardation por cosecha).
+- **Fix posiciones vivas** (`src/lib/futuros.ts`): la vista `futuros_cierres_ultimo` traía el último
+  cierre de TODOS los símbolos históricos (JUL21, ABR22…). Ahora se filtran a vto ≥ mes actual (Córdoba).
+  Corrige también el panel **Cierres**, que mostraba posiciones muertas como vigentes.
+- Limpieza: se quitó `pases` de ejemplo de `src/lib/sample.ts` (código muerto).
+
+### Fuentes validadas con request real (para lo que sigue)
+- **Capacidad de pago = FAS Teórico** de BCR: `bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-1`
+  (HTML por grano: FOB, retenciones, gastos, **FAS Teórico u$s**) + PDF de metodología. Base según Lautaro;
+  después él pasa su propio modelo para chequear. Complemento: MINAGRI.
+- **Sintéticos (pago final por letra)**: IAMC `iamc.com.ar/informeslecap/` — "Informe Letras y Bonos del
+  Tesoro" trae el **pago al vencimiento (valor final)** por letra (PDF por fecha). Emisor oficial = Min. Economía.
+- **CBOT (maíz/trigo/soja Chicago)**: no hay skill dedicado en gauss; se cubre con `barchart` / `investing` /
+  `yahoo-finance`. `primary` es solo Matba ROFEX (no CBOT).
+- **Pases CEM `/api/v2/spread`**: existe pero devolvió HTTP 400 con params mínimos (necesita product/from/to);
+  NO fue necesario: los pases se calculan desde los cierres que ya guardamos.
+- **Pizarra granos**: el `/api/v2/spot-prices` de CEM es **solo dólar** (BNA/USD G/BCRA), no granos → la
+  pizarra USD de soja/maíz/trigo sale de **CAC-BCR** (scrape) o del FAS teórico BCR + override manual.
+- **Noticias (nuevo pedido)**: `bcr.com.ar/es/mercados/investigacion-y-desarrollo/resumen-de-noticias/resumen-de-diarios`
+  es el FORMATO que le gusta a Lautaro (HTML por categorías con links a las fuentes). Fuente propia a definir.
+- **Reporte diario**: formato objetivo = **imagen/PDF para enviar por WhatsApp**.
+- **Camiones en puerto**: fuente a confirmar (BCR suele tenerlo).
+
+### ⚠ Cron de cierres NO corre solo (diagnóstico)
+`.github/workflows/ingest-cierres.yml` **NO está en `main`** (la rama default). Los `schedule` de GitHub
+Actions corren SOLO desde la rama default → nunca se disparó automático. Las 22.398 filas (hasta 2026-07-03)
+son del backfill manual. **Para activarlo (lo hace Lautaro):** (1) mergear el workflow a `main`; (2) cargar
+secrets del repo `SUPABASE_URL` y `SUPABASE_SERVICE_KEY` (Settings → Secrets and variables → Actions).
+
+### Pendiente de decisión de Lautaro (bloquea)
+- **Arbitrajes reales**: regla de **vencimiento** por posición (para días→TNA) + fuente de **pizarra USD**
+  (CAC scrape vs FAS teórico BCR vs override manual). Con eso Arbitrajes sale igual que Pases.
+- **Capacidad de pago**: su propio modelo (fórmula + ejemplo numérico) además del FAS teórico de base.
+- **Noticias**: qué fuente usamos (scrapear el resumen de BCR es su contenido editorial; mejor RSS de los
+  medios originales o curaduría propia).
