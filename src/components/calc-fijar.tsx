@@ -177,7 +177,7 @@ export function CalcFijar() {
           <span className="k">A fijar</span> Delta = disponible − futuro (sin costo de oportunidad) · TNA impl. =
           (futuro/disponible − 1) × 365/días · Resultado = compro a fijar → futuro − disponible; vendo a fijar →
           disponible − futuro (verde = a favor). <b>Comparador</b>: la TNA impl. se pinta verde cuando supera tu
-          tasa; "Precio a tu tasa" = futuro teórico si el carry rindiera exactamente esa tasa. Toma el precio de
+          tasa; «Precio a tu tasa» = futuro teórico si el carry rindiera exactamente esa tasa. Toma el precio de
           <b> futuros</b>, que puede diferir del spot al fijar (riesgo de base).
         </span>
       </div>
