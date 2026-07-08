@@ -52,6 +52,7 @@ async function fetchWindow(product, from, to) {
     const url = new URL(CEM);
     url.search = new URLSearchParams({
       product,
+      type: "FUT", // solo futuros (excluye opciones en origen → mucho más rápido)
       from,
       to,
       page: String(page),
