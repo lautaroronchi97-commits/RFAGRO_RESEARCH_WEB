@@ -33,7 +33,20 @@ function isoDaysAgo(days) {
 }
 
 /** Trae todas las páginas de un producto en el rango dado. */
-async function fetchProduct(product, from, to) {
+/** Parte [from, to] en ventanas de `dias` días (el CEM da HTTP 424 con rangos muy amplios). */
+function ventanas(from, to, dias = 180) {
+  const out = [];
+  let start = new Date(`${from}T00:00:00Z`);
+  const end = new Date(`${to}T00:00:00Z`);
+  while (start <= end) {
+    const stop = new Date(Math.min(start.getTime() + (dias - 1) * 86400000, end.getTime()));
+    out.push([start.toISOString().slice(0, 10), stop.toISOString().slice(0, 10)]);
+    start = new Date(stop.getTime() + 86400000);
+  }
+  return out;
+}
+
+async function fetchWindow(product, from, to) {
   const rows = [];
   for (let page = 1; ; page++) {
     const url = new URL(CEM);
@@ -46,11 +59,19 @@ async function fetchProduct(product, from, to) {
       sortDir: "ASC",
     }).toString();
     const res = await fetch(url, { headers: { accept: "application/json" } });
-    if (!res.ok) throw new Error(`CEM ${product} p${page}: HTTP ${res.status}`);
+    if (!res.ok) throw new Error(`CEM ${product} ${from}..${to} p${page}: HTTP ${res.status}`);
     const json = await res.json();
     const data = Array.isArray(json?.data) ? json.data : [];
     rows.push(...data);
-    if (data.length < PAGE_SIZE) break; // última página
+    if (data.length < PAGE_SIZE) break; // última página de la ventana
+  }
+  return rows;
+}
+
+async function fetchProduct(product, from, to) {
+  const rows = [];
+  for (const [f, t] of ventanas(from, to)) {
+    rows.push(...(await fetchWindow(product, f, t)));
   }
   return rows;
 }
