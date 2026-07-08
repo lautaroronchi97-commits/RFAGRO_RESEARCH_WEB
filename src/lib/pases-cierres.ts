@@ -9,8 +9,9 @@ import type { Meta } from "./market";
  * Pases (spreads de calendario) de futuros de granos, derivados de los cierres
  * reales de Supabase (`futuros_cierres`, fuente CEM · Matba ROFEX).
  *
- * Un "pase" es la diferencia de precio entre dos posiciones consecutivas del
- * mismo grano (vender la cercana / comprar la lejana). Se calcula sobre el
+ * Un "pase" es la diferencia de precio entre dos posiciones del mismo grano
+ * (vender la cercana / comprar la lejana). Se arma la posición cercana (la
+ * primera viva) contra cada posición más lejana. Se calcula sobre el
  * ajuste (settlement), el precio de liquidación oficial del día: siempre existe
  * aunque la posición no opere, así que es el más robusto.
  *
@@ -51,24 +52,27 @@ export const getPases = cache(async (): Promise<PasesData> => {
     // Solo futuros con vencimiento (excluye disponible, venc = 0), ya en orden de vto.
     const fut = g.posiciones.filter((p) => p.venc > 0);
     const spreads: PaseSpread[] = [];
-    for (let i = 0; i < fut.length - 1; i++) {
-      const cercana = fut[i];
-      const larga = fut[i + 1];
-      if (!cercana || !larga) continue;
-      const pc = cercana.settlement;
-      const pl = larga.settlement;
-      const ajuste = pc != null && pl != null ? round2(pl - pc) : null;
-      const directa = pc != null && pc > 0 && pl != null ? round2((pl / pc - 1) * 100) : null;
-      const ultimo =
-        cercana.close && larga.close && cercana.close > 0 && larga.close > 0
-          ? round2(larga.close - cercana.close)
-          : null;
-      const vc = vtos.get(cercana.symbol);
-      const vl = vtos.get(larga.symbol);
-      const dias = vc && vl ? diasEntre(vc, vl) : null;
-      const tna =
-        directa != null && dias != null && dias > 0 ? round2((directa * 365) / dias) : null;
-      spreads.push({ label: `${cercana.posicion} / ${larga.posicion}`, ajuste, directa, tna, dias, ultimo });
+    // Posición cercana (la primera viva) contra cada posición más lejana.
+    const cercana = fut[0];
+    if (cercana) {
+      for (let j = 1; j < fut.length; j++) {
+        const larga = fut[j];
+        if (!larga) continue;
+        const pc = cercana.settlement;
+        const pl = larga.settlement;
+        const ajuste = pc != null && pl != null ? round2(pl - pc) : null;
+        const directa = pc != null && pc > 0 && pl != null ? round2((pl / pc - 1) * 100) : null;
+        const ultimo =
+          cercana.close && larga.close && cercana.close > 0 && larga.close > 0
+            ? round2(larga.close - cercana.close)
+            : null;
+        const vc = vtos.get(cercana.symbol);
+        const vl = vtos.get(larga.symbol);
+        const dias = vc && vl ? diasEntre(vc, vl) : null;
+        const tna =
+          directa != null && dias != null && dias > 0 ? round2((directa * 365) / dias) : null;
+        spreads.push({ label: `${cercana.posicion} / ${larga.posicion}`, ajuste, directa, tna, dias, ultimo });
+      }
     }
     if (spreads.length > 0) {
       out.push({ underlying: g.underlying, nombre: g.nombre, fecha: g.fecha, spreads });

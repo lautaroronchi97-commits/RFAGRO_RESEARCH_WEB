@@ -114,8 +114,8 @@ export async function PasesPanel() {
       </div>
       <div className="panel-note">
         <span>
-          <span className="k">Real</span> Pase = diferencia de ajuste (settlement) entre posiciones
-          consecutivas del mismo grano, desde los cierres del CEM guardados en Supabase. TNA = tasa directa
+          <span className="k">Real</span> Pase = diferencia de ajuste (settlement) de la posición cercana
+          contra cada más lejana del mismo grano, desde los cierres del CEM guardados en Supabase. TNA = tasa directa
           anualizada por los días entre vencimientos (CEM). Últ. op. = spread sobre el último precio operado
           (— si alguna posición no operó ese día). Próximo: comprador/vendedor + histórico desde los snapshots.
         </span>
