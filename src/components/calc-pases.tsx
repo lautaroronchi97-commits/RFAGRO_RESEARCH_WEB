@@ -5,6 +5,8 @@ import { Panel, PanelHead } from "./panel";
 import { sfmt, rfmt, pfmt } from "@/lib/format";
 import { pase, tasaDirectaPase, tnaPase } from "@/lib/pases";
 import { parseYmd, diasCorridos, sumarCorridos, hoyCordoba, fmtFecha } from "@/lib/habiles";
+import { CurvaPicker } from "./curva-picker";
+import type { GranoCurva } from "@/lib/curva-types";
 
 function IconPase() {
   return (
@@ -16,7 +18,7 @@ function IconPase() {
 function fmtInput(d: Date): string { return d.toISOString().slice(0, 10); }
 function num(v: string): number { const n = Number(v.replace(",", ".")); return Number.isFinite(n) ? n : NaN; }
 
-export function CalcPases() {
+export function CalcPases({ granos = [] }: { granos?: GranoCurva[] }) {
   const [precioCorta, setPrecioCorta] = React.useState("323");
   const [precioLarga, setPrecioLarga] = React.useState("333");
   const [vtoCorta, setVtoCorta] = React.useState(() => fmtInput(sumarCorridos(parseYmd(hoyCordoba()), 30)));
@@ -35,6 +37,10 @@ export function CalcPases() {
     <Panel id="calc-pases">
       <PanelHead glyph={<IconPase />} title="Cotizador — pases" sub="Spread lleno entre posiciones · quita a cliente" />
       <div className="calc">
+        <div className="curva-pick-row">
+          <CurvaPicker granos={granos} label="Corta desde A3" onPick={(p) => { setPrecioCorta(String(p.precio)); setVtoCorta(p.vto); }} />
+          <CurvaPicker granos={granos} label="Larga desde A3" onPick={(p) => { setPrecioLarga(String(p.precio)); setVtoLarga(p.vto); }} />
+        </div>
         <div className="calc-grid">
           <label className="calc-field"><span>Posición vendida (cercana) — precio</span>
             <input inputMode="decimal" value={precioCorta} onChange={(e) => setPrecioCorta(e.target.value)} /></label>
