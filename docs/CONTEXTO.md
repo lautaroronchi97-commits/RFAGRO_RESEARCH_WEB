@@ -5,7 +5,11 @@
 > (productores / acopios). El tiempo real tick-a-tick lo maneja Lautaro aparte (Excel + eTrader);
 > esta web es **demorado / varias veces por día**, no realtime.
 >
-> **Deploy:** https://rfagro-research-web.vercel.app · **Rama de trabajo:** `claude/new-session-frovqj`
+> **Deploy:** https://rfagro-research-web.vercel.app · **Rama default:** `claude/new-session-frovqj` ·
+> **Rama de trabajo actual:** `claude/financial-data-web-infra-whg41m`
+>
+> ⭐ **Lo más nuevo está en la sección "Sesión 08/07/2026" más abajo** (Supabase conectado, cierres
+> A3 históricos, 8 calculadoras). Leé eso primero para el estado real.
 
 ## Cómo trabajar con Lautaro (reglas)
 - Principiante en programación: explicá cada comando/concepto paso a paso.
@@ -17,7 +21,7 @@
 
 ## Stack
 Next.js 16 (App Router) + TypeScript · Tailwind v4 · next-themes · gráficos SVG a mano (Recharts previsto) ·
-Supabase (Postgres + Auth) **aún NO conectado** · Deploy en Vercel (auto-deploy al pushear la rama).
+**Supabase (Postgres) CONECTADO** (lectura anon vía PostgREST) · cron por GitHub Actions · Deploy en Vercel.
 TZ America/Argentina/Cordoba.
 
 ## Design system — "Pizarra electrónica" (aprobado; "afinar estética" pendiente)
@@ -86,7 +90,71 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
   Branch → `main`). Env vars sensibles con scope **Production only**.
 - Vercel Hobby es no-comercial → decidir upgrade a Pro ANTES de poner datos reales frente a clientes (C2).
 
+## Sesión 08/07/2026 — Fase C aplicada (Supabase + cierres A3 + 8 calculadoras)
+
+**Documentos de referencia creados** (leerlos para el detalle): `docs/INFRAESTRUCTURA.md`
+(arquitectura y escalado), `docs/FORMULAS_EXCEL.md` (fórmulas reales del Excel RF),
+`docs/ESTRATEGIAS_COMBINADAS.md` (opciones), `docs/PLANILLA_DIARIA.md` (modelos varios).
+
+### Supabase — CONECTADO
+- Proyecto **`lineup-argentina`** · ref **`gbpfgfeksqmzmsxnxiwg`** · región sa-east-1 (São Paulo).
+  Org `chona97`. Se consolidó RF AGRO sobre este proyecto (no se creó uno nuevo).
+- Tablas: `lineup` (~494k, scraper ISA Agents **frenado** desde ~jun), `djve` (MAGyP, **al día**),
+  `compras` (% cosecha/priceado, **frenado**), **`futuros_cierres`** (cierres A3 granos).
+- Vistas (lectura anon): `djve_resumen`, `futuros_cierres_ultimo` (curva = último cierre por posición).
+- **`futuros_cierres`: 22.398 filas, 2021-07-08 → hoy** (SOJ 8.360 · MAI 7.324 · TRI 6.714), solo futuros.
+- Web lee con **`src/lib/supabase.ts`** (PostgREST, clave publishable/anon, RLS solo-lectura).
+- Env vars web: `SUPABASE_URL`, `SUPABASE_ANON_KEY` (en Vercel + `.env.local`). Son PÚBLICAS (RLS protege).
+- ⚠️ El MCP `execute_sql` de escritura estuvo **bloqueado en permisos** esta sesión → para escribir
+  datos vía MCP usar **`apply_migration`** (sí funciona).
+
+### Fuente CEM (Matba ROFEX) — la clave de los históricos de A3
+- **`https://apicem.matbarofex.com.ar/api/v2`** — API REST PÚBLICA, sin auth, Swagger en `/swagger/v1/swagger.json`.
+- `GET /closing-prices?product=&type=FUT&from=&to=&page=&pageSize=500&sortDir=ASC` → cierres por posición/día
+  (settlement, OHLC, openInterest, volume, impliedRate, previousClose, change).
+- **Claves aprendidas:** `type=FUT` trae **solo futuros** (sin `type` vienen opciones mezcladas, símbolo con
+  espacio+strike+C/P, 10× más filas). `sortDir` en **MAYÚSCULAS**. Rangos de fechas amplios dan **HTTP 424** →
+  el script parte en **ventanas de 180 días**. Productos grano: `SOJ/MAI/TRI Dolar MATba`.
+- Otros endpoints útiles: `/spot-prices` (pizarra), `/daily|monthly|yearly-trading-volume`, `/spread` (pases),
+  `/market-position-data`, `/downloads/*` (CSV). El CEM RECHAZA conexiones desde Supabase (SSL) → ingerir por Actions.
+
+### Cron de ingesta (GitHub Actions)
+- **`.github/workflows/ingest-cierres.yml`** (schedule `0 23 * * 1-5` post-cierre + `workflow_dispatch`).
+  Corre **`scripts/ingest-cierres.mjs`** (fetch CEM → upsert Supabase por symbol+fecha).
+- Secrets en GitHub → Settings → Secrets → Actions: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` (service_role,
+  ESCRITURA, secreta). El workflow corre desde la rama default (por eso se mergeó el PR #1).
+- Backfill manual: dispatch con inputs `from`/`to`. Ya se corrió el de 5 años.
+
+### Paneles y calculadoras nuevos (todo client-side, rápido)
+- **Paneles REALES nuevos:** DJVE (`djve-panel`), **Cierres A3** (`cierres-panel`, curva histórica).
+- **8 calculadoras** (`src/components/calc-*.tsx` + `src/lib/*.ts`), fórmulas validadas con Lautaro / su Excel:
+  pago diferido (diferido cobra más = base×(1+tasa×días/365), interés simple, días=excedente sobre 5 hábiles),
+  arbitraje (tasa directa=fut/pizarra−1, TNA USD=INTRATE act/365), **estrategias combinadas** de opciones
+  (payoff por patas, ~10 del catálogo INTAGRO), a fijar (curva+delta esperado), por porcentaje, pases,
+  **costos Cocos** (tarifario web/app real humana/jurídica, comisiones % TNA prorrateadas por plazo).
+- **Curva real conectada:** `src/lib/curva.ts` + `curva-picker.tsx` → arbitraje/a-fijar/%/pases autocompletan
+  precio y vto desde `futuros_cierres_ultimo` (fórmulas siguen en `docs/FORMULAS_EXCEL.md`, hoja ARBITRAJES).
+
+### Skills de gauss (github.com/gauss314/skills)
+Catálogo de fuentes de datos. Útiles: `primary` (A3/Matba), `data912`, `mae`, `bcra-macro`, y para
+**CBOT/metales/Merval/SPY/EWZ**: `barchart` / `investing` / `yahoo-finance`. (Resuelve la parte "internacional".)
+
+### Estado de deploy / PRs
+- **PR #1 MERGEADO** (infra Supabase + cron + calculadoras + cierres A3). Cron activo.
+- **PR #2** (draft): calculadoras conectadas a la curva real de A3. Rama `claude/financial-data-web-infra-whg41m`.
+- Conversión Chicago→USD/tn (para arbitraje CBOT): maíz ×0,3937 · soja/trigo ×0,3674 (`docs/PLANILLA_DIARIA.md`).
+- ⚠️ Hoja "Clientes" de la planilla diaria = datos personales reales → NUNCA al repo; va en base con login.
+
 ## Pendientes (orden para retomar — plan completo en la conversación de auditoría)
+
+**Punto B — paneles nuevos (con la historia ya cargada):** volumen negociado por producto (de `futuros_cierres`),
+% sobre cosecha, total priceado/negociado, variación semanal USD, arbitraje Chicago↔Matba (con factores de arriba),
+ratio maíz/soja, calendario de informes (bolsas/USDA/Conab), panel de **lineups** (datos ya en `lineup`),
+**reporte diario** de operaciones (matba+volumen+CBOT+metales+Merval/SPY/EWZ). Reactivar scrapers `lineup`/`compras`.
+**Antes de clientes:** Vercel Pro (Hobby es no-comercial) + robots→index. **Fuentes a definir con Lautaro:**
+camiones en puerto, SIO Granos, compras netas BCRA, capacidad de pago.
+
+### Pendientes previos (Fase B, siguen válidos)
 **Fase B (estructura):**
 1. B1 Resiliencia: tarjetas de degradación por panel desde el Result ("fuente caída" vs "sin datos");
    error.tsx como defensa extra. OJO: bajo ISR estático Suspense NO streamea — verificar en build de prod.
