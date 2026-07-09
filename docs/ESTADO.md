@@ -19,7 +19,7 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 09/07/2026, sesión switch de producción a `main`)
+## Ahora (última actualización: 09/07/2026, sesión plan bases de gráficos)
 
 **✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
 de datos reales (verificado contra el sitio en vivo: CSS con tokens premium `#060A07`/`#0C130D` y
@@ -27,7 +27,12 @@ paneles Arbitrajes/Pases/Noticias/Calculadoras/Dólar/Capacidad/LECAPs presentes
 PR #8 mergeado · default de GitHub = `main` · Vercel Branch Tracking = `main` + promote a Production ·
 ramas viejas borradas (en GitHub solo queda `main`).
 
-**En vuelo:** nada. La cancha está limpia para arrancar features nuevas desde `main`.
+**En vuelo:** plan para las **bases de gráficos de futuros y spreads**
+([`PLAN_BASES_GRAFICOS.md`](PLAN_BASES_GRAFICOS.md), sesión 09/07, PR #10): (1) CBOT desde 2020 vía
+API de Barchart (fuente verificada, conserva contratos vencidos), (2) backfill A3 2020→jul-2021
+(el CEM tiene datos desde 02/01/2020; es solo un dispatch de `ingest-cierres.yml`), (3) pizarra
+Rosario histórica en $ y US$ desde 2020 vía consulta histórica oficial de CAC (verificada).
+**Esperando respuestas de Lautaro a las 4 preguntas del plan antes de construir.**
 
 **Único chequeo pendiente (Lautaro, mañana 10/07):** en Actions, verificar que el cron de cierres
 (`ingest-cierres.yml`, corre 23:00 UTC hábiles) haya corrido solo **desde `main`** (la corrida del
@@ -41,9 +46,12 @@ exitoso, curva al día hasta el 08/07) — NO hay que cargar secrets ni correr i
 | Rama | Estado |
 |---|---|
 | `main` | Única rama de integración y producción. |
-| `claude/pending-tasks-review-72ywwf` | Sesión 09/07 (esta actualización de estado) → borrar tras merge. |
+| `claude/pending-tasks-review-72ywwf` | Sesión 09/07 (actualización de estado) → borrar tras merge. |
+| `claude/futures-position-databases-j10vpr` | Sesión 09/07 (plan bases de gráficos, PR #10) → borrar tras merge. |
 
 **Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
+0. Ejecutar los 4 pasos de `PLAN_BASES_GRAFICOS.md` (backfill A3 → pizarra histórica → CBOT →
+   gráficos), apenas Lautaro responda las preguntas del plan.
 1. Feed A3 en vivo (pases: cotización/volumen/bid-ask).
 2. Sintéticos TIR (pago final por letra, IAMC). [Requiere tabla de Lautaro]
 3. Fase B (resiliencia, tests, mobile) y backlog de datos (reactivar scrapers `lineup`/`compras`,
