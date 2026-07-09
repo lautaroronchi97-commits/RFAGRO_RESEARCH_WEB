@@ -5,7 +5,8 @@
 > (productores / acopios). El tiempo real tick-a-tick lo maneja Lautaro aparte (Excel + eTrader);
 > esta web es **demorado / varias veces por día**, no realtime.
 >
-> **Deploy:** https://rfagro-research-web.vercel.app · **Rama de trabajo:** `claude/new-session-frovqj`
+> **Deploy:** https://rfagro-research-web.vercel.app · **Rama de trabajo:** la de la sesión actual (`claude/*`;
+> última: `claude/premium-web-design-k60hly`)
 
 ## Cómo trabajar con Lautaro (reglas)
 - Principiante en programación: explicá cada comando/concepto paso a paso.
@@ -20,11 +21,17 @@ Next.js 16 (App Router) + TypeScript · Tailwind v4 · next-themes · gráficos 
 Supabase (Postgres + Auth) **aún NO conectado** · Deploy en Vercel (auto-deploy al pushear la rama).
 TZ America/Argentina/Cordoba.
 
-## Design system — "Pizarra electrónica" (aprobado; "afinar estética" pendiente)
+## Design system — "Pizarra electrónica" (aprobado; rediseño premium aplicado 09/07/2026, PR #5)
 Tokens en `src/app/globals.css`. Paleta del logo: verdes (RF `#2F6E34` / AGRO `#4E9C3A`) + trigo `#EFBF2E`;
 fondo claro `#EDF2E3`. Semáforo vivo: pos `#16A34A`/`#37D982`, neg `#DC2626`/`#FF5C5C`. Dos temas:
 claro (clientes) / oscuro "rueda" (trader). Fuentes Inter + JetBrains Mono (números tabulares).
 Marca: **RF AGRO** (nunca "CONSULTAR"). Glifos trigo/soja/maíz, cinta tipo pizarrón.
+**Rediseño premium (solo presentación, cero cambios de datos/fórmulas):** oscuro = carbón verde profundo
+(`#060A07`, paneles `#0C130D`–`#152017`) con atmósfera radial sutil; claro = papel crema tipo informe de
+banca privada. Oro `#EFBF2E` SOLO como acento (hairlines, filos, glow) — mantener esa avaricia. Bordes
+hairline translúcidos, sombras multicapa, transiciones 150–250ms, `::selection` dorada, scrollbars finas,
+`reduced-motion` respetado, contraste AA verificado. Masthead con filo dorado + nav animada, cinta con
+fades, tablas con hover/tick dorado, charts con grilla punteada + área en degradé, footer colofón.
 
 ## Fuentes de datos (Fase 0, validadas con requests reales) — todo REST
 | Dato | Fuente | Endpoint / nota |
@@ -100,8 +107,8 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
    workflow con `workflow_dispatch` y schedule `*/30 13-21 * * 1-5` UTC — corre desde la rama default).
 6. C2 Arbitrajes + Pases REALES (snapshots + INTRATE [LAUTARO ejemplo numérico] + pizarra CAC con override).
 7. C3 Sintéticos TIR ([LAUTARO] tabla "pago final por letra").
-8. C4 Vista productor, PWA, calculadora, estética, charts históricos (re-evaluar Recharts), robots→index,
-   compras BCRA manual.
+8. C4 Vista productor, PWA, calculadora, charts históricos (re-evaluar Recharts), robots→index,
+   compras BCRA manual. (Estética: rediseño premium ya aplicado — ver Design system.)
 
 ## Comandos
 - `npm run dev` (real en sandbox: `NODE_USE_ENV_PROXY=1 npm run dev`) · `npm run build` · push a la rama → deploy.
