@@ -19,24 +19,20 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 09/07/2026, sesión organización del repo)
+## Ahora (última actualización: 09/07/2026, sesión switch de producción a `main`)
 
-**Producción (Vercel)**: sigue sirviendo `claude/new-session-frovqj` (datos reales SIN el rediseño
-premium). El switch a `main` está pendiente de los pasos manuales de Lautaro (abajo).
+**✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
+de datos reales (verificado contra el sitio en vivo: CSS con tokens premium `#060A07`/`#0C130D` y
+paneles Arbitrajes/Pases/Noticias/Calculadoras/Dólar/Capacidad/LECAPs presentes). Hecho el 09/07:
+PR #8 mergeado · default de GitHub = `main` · Vercel Branch Tracking = `main` + promote a Production ·
+ramas viejas borradas (en GitHub solo queda `main`).
 
-**En vuelo:**
-- PR de unificación (`claude/repo-branch-organization-lh2siw` → `main`): junta las dos historias
-  (rediseño premium + datos/calculadoras/noticias), CONTEXTO único y este sistema de handoff.
-  **Hasta que se mergee y se hagan los pasos manuales, NO arrancar trabajo nuevo de features.**
+**En vuelo:** nada. La cancha está limpia para arrancar features nuevas desde `main`.
 
-**Pasos manuales pendientes (Lautaro — detalle paso a paso en
-[`PLAN_ORGANIZACION_REPO.md`](PLAN_ORGANIZACION_REPO.md)):**
-1. Revisar la Preview del PR de unificación y mergearlo.
-2. GitHub: rama default → `main`.
-3. Vercel: Production Branch → `main`.
-4. Verificar la web en producción (diseño premium + paneles de datos).
-5. Borrar las ramas viejas (lista en el plan).
-6. Al día hábil siguiente: chequear en Actions que el cron de cierres haya corrido desde `main`.
+**Único chequeo pendiente (Lautaro, mañana 10/07):** en Actions, verificar que el cron de cierres
+(`ingest-cierres.yml`, corre 23:00 UTC hábiles) haya corrido solo **desde `main`** (la corrida del
+09/07 00:07 UTC salió desde la default vieja porque era pre-switch). Si corrió y la curva está al día,
+listo; si no, avisar en la próxima sesión.
 
 **Dato verificado 09/07**: el cron de cierres YA corre solo (secrets cargados, run #4 por schedule
 exitoso, curva al día hasta el 08/07) — NO hay que cargar secrets ni correr ingestas a mano.
@@ -44,15 +40,11 @@ exitoso, curva al día hasta el 08/07) — NO hay que cargar secrets ni correr i
 **Ramas vivas y su veredicto:**
 | Rama | Estado |
 |---|---|
-| `main` | Única integración/producción (tras el switch). |
-| `claude/repo-branch-organization-lh2siw` | PR de unificación en vuelo → borrar tras merge. |
-| `claude/new-session-frovqj` | Default/producción VIEJA → borrar al final del switch. |
-| `claude/pending-tasks-vzoa3c` | 100% integrada → borrar. |
-| `claude/financial-data-web-infra-whg41m` | Código superado (PR #4); apunte rescatado a CONTEXTO → borrar. |
-| `claude/premium-web-design-k60hly` | 100% en `main` → borrar. |
+| `main` | Única rama de integración y producción. |
+| `claude/pending-tasks-review-72ywwf` | Sesión 09/07 (esta actualización de estado) → borrar tras merge. |
 
-**Lo próximo (después del switch, en orden — detalle en CONTEXTO «Pendientes»):**
+**Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
 1. Feed A3 en vivo (pases: cotización/volumen/bid-ask).
-2. Sintéticos TIR (pago final por letra, IAMC).
+2. Sintéticos TIR (pago final por letra, IAMC). [Requiere tabla de Lautaro]
 3. Fase B (resiliencia, tests, mobile) y backlog de datos (reactivar scrapers `lineup`/`compras`,
    lineups, calendario, reporte WhatsApp — lista completa en CONTEXTO «Pendientes» punto 5).
