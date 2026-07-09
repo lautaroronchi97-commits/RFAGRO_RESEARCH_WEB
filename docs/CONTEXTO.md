@@ -221,8 +221,9 @@ secrets del repo `SUPABASE_URL` y `SUPABASE_SERVICE_KEY` (Settings → Secrets a
 1. **Cron de cierres (2 min de Lautaro)**: mergear `ingest-cierres.yml` a la rama default + cargar secrets
    `SUPABASE_URL` / `SUPABASE_SERVICE_KEY`. Sin esto los cierres quedan al 3/7 (los `schedule` de Actions
    corren solo desde la rama default). Ídem para armar el resto de los crons (rueda, pizarra, ingest_log).
-2. **Auto-curva A3 en las calculadoras**: que traigan la curva real por producto (desde `futuros_cierres`)
-   en vez de precios a mano (hoy todas las calcs cargan precios manualmente).
+2. ✅ **Auto-curva A3 en las calculadoras** — HECHO (09/07, PR #4). Ver "Sesión 09/07/2026" abajo.
+   Las calcs autocompletan precio + vto desde la curva real; queda pendiente sólo que el pase traiga
+   volumen/bid-ask (eso depende del feed A3 en vivo, punto 3).
 3. **Feed A3 en vivo (cron 60s)**: cotizaciones de pase de la rueda + volumen de pases + comprador/vendedor
    (bid/ask) de arbitrajes/pases. El CEM (diario) no tiene nada de esto.
 4. **Sintéticos TIR**: pago final por letra (IAMC `informeslecap` / Min. Economía).
@@ -233,3 +234,31 @@ secrets del repo `SUPABASE_URL` y `SUPABASE_SERVICE_KEY` (Settings → Secrets a
    ratio maíz/soja, arbitraje Matba↔CBOT (factores bushel→tn en `docs/negocio/`).
 8. **Módulo scoring de clientes** (`docs/negocio/03`): producto de consultora a futuro (no es panel de esta
    web; requiere datos de fijaciones de clientes + historial A3 externo).
+
+## Sesión 09/07/2026 (rama `claude/pending-tasks-vzoa3c`)
+
+### Hecho — auto-curva A3 en las calculadoras (PR #4, mergeado a producción)
+Se rescató el contenido del **PR #2** (había quedado en draft y con conflictos porque el PR #3 reescribió
+los mismos archivos de calculadoras) y se re-aplicó **sobre la lógica de hoy, sin tocar ninguna fórmula**:
+- **`src/lib/curva.ts` + `curva-types.ts`**: `getCurvaGranos()` lee la vista `futuros_cierres_ultimo`
+  (último cierre por posición). **Filtra posiciones vencidas** con la misma regla que `futuros.ts`
+  (`vencKey >= hoyVencKey` en zona Córdoba) → sólo muestra posiciones vivas. `vtoDePosicion("JUL26")` =
+  último día del mes ("2026-07-31"), suficiente para el plazo.
+- **`src/components/curva-picker.tsx`** (client): selector reutilizable grano → posición; al elegir,
+  `onPick` autocompleta precio (settlement) + vencimiento. Si no hay curva, no renderiza (inputs a mano).
+- **Wiring en 5 calculadoras**: Negocios con pagos (futuro+vto), Carry implícito (la lejana), A fijar
+  (carga la **curva entera** del grano en la grilla de escenarios), Por porcentaje (posición de fijación),
+  Pases (dos selectores: corta y larga). `page.tsx` llama `getCurvaGranos()` y pasa `curva.granos`.
+- **`scripts/ingest-cierres.mjs`**: ventanas de **180 días** (evita HTTP 424 del CEM en rangos amplios) +
+  `type=FUT` (sólo futuros en origen, sin opciones).
+- `lint` + `typecheck` + `build` ✅. Deploy de producción **READY** (commit merge del PR #4).
+
+### Limpieza de PRs
+- **PR #2 cerrado** (su contenido quedó cubierto por el PR #4, adaptado a las calculadoras nuevas).
+- **PR #3 y PR #4 mergeados** a la rama default (`claude/new-session-frovqj` = producción en Vercel).
+
+### Pendiente que sigue (no cambió)
+- El **volumen y bid/ask de los pases** en las calcs siguen dependiendo del **feed A3 en vivo** (punto 3
+  de la lista de arriba); el CEM diario no los tiene. La curva de precios ya es real.
+- **Cron de cierres**: sigue sin correr solo (punto 1). Mientras no se active, la curva se congela en la
+  última fecha ingerida.
