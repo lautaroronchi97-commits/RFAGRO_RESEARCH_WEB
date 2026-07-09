@@ -408,3 +408,78 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
   background:color-mix(in srgb, var(--gold) 8%, transparent); }
 .st-ejemplo { color:var(--ink-3); box-shadow:inset 0 0 0 1px var(--line-2); }
 .st-warn { color:var(--gold-text); cursor:help; }
+
+/* ===== Módulos de datos (calculadoras, curva, noticias, pizarra editable, rueda) =====
+   Clases traídas de la línea de features al unificar con el rediseño premium. */
+.ruedas { display:inline-flex; align-items:center; gap:9px; }
+.rueda-tag { display:inline-flex; align-items:center; gap:5px; font-family:var(--font-mono);
+  font-size:var(--fs-xs); font-weight:600; color:var(--ink-2); white-space:nowrap; }
+.pz-input { width:74px; font-family:var(--font-mono); font-size:var(--fs-xs); font-weight:700;
+  color:var(--ink); background:var(--panel); border:1px solid var(--line-2); border-radius:5px;
+  padding:1px 5px; text-align:right; font-variant-numeric:tabular-nums; }
+.pz-input:focus { outline:none; border-color:var(--brand-deep); }
+.pz-reset { margin-left:5px; cursor:pointer; border:none; background:none; color:var(--ink-3);
+  font-size:var(--fs-xs); line-height:1; padding:0 2px; }
+.pz-reset:hover { color:var(--brand-deep); }
+.sec-title { font-family:var(--font-ui); font-size:var(--fs-xs); font-weight:800; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--ink-2); margin:14px 2px 2px; padding-top:10px;
+  border-top:1px solid var(--line); }
+.sec-title:first-child { border-top:none; padding-top:0; margin-top:0; }
+.strat-exp { font-size:var(--fs-xs); color:var(--ink-2); line-height:1.5; padding:8px 11px;
+  background:var(--panel-2); border:1px solid var(--line); border-radius:8px; }
+.calc-btns { display:flex; gap:10px; flex-wrap:wrap; }
+.news-wrap { padding:6px 14px 4px; display:flex; flex-direction:column; gap:12px; }
+.news-cat-h { font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.06em; font-weight:800;
+  color:var(--brand-deep); margin-bottom:5px; }
+.news-list { list-style:none; margin:0 0 8px; padding:0; display:flex; flex-direction:column; gap:8px; }
+.news-item { display:flex; flex-direction:column; gap:1px; }
+.news-title { font-size:13.5px; color:var(--ink); text-decoration:none; line-height:1.35; }
+.news-title:hover { color:var(--brand-deep); text-decoration:underline; }
+.news-src { font-size:var(--fs-2xs); color:var(--ink-3); font-weight:700; text-transform:uppercase; letter-spacing:.03em; }
+.news-empty { padding:0 14px 10px; color:var(--ink-3); font-size:var(--fs-xs); }
+.tbl tbody tr.tot td { font-weight:700; color:var(--ink); border-top:1px solid var(--line-2);
+  border-bottom:none; background:var(--panel-2); }
+/* ---- Calculadoras ---- */
+.calc { padding:14px 16px; display:flex; flex-direction:column; gap:14px; }
+.calc-field { display:flex; flex-direction:column; gap:4px; }
+.calc-field > span { font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.05em;
+  color:var(--ink-3); font-weight:700; }
+.calc-field input, .calc-field select { font-family:var(--font-mono); font-size:14px;
+  padding:8px 10px; border-radius:7px; border:1px solid var(--line-2); background:var(--panel-2);
+  color:var(--ink); width:100%; }
+.calc-field input:focus, .calc-field select:focus { outline:none; border-color:var(--focus);
+  box-shadow:0 0 0 2px color-mix(in srgb, var(--focus) 22%, transparent); }
+.calc-mode { max-width:260px; }
+.calc-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+.calc-out { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px;
+  padding:12px 14px; border-radius:9px; background:var(--panel-3); border:1px solid var(--line-2); }
+.calc-res { display:flex; flex-direction:column; gap:2px; }
+.calc-res-lbl { font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); font-weight:700; }
+.calc-res-val { font-family:var(--font-mono); font-size:26px; font-weight:700; font-variant-numeric:tabular-nums;
+  color:var(--brand-deep); line-height:1.1; }
+.calc-res-sub { font-family:var(--font-mono); font-size:var(--fs-2xs); color:var(--ink-2); }
+.calc-meta { display:flex; flex-direction:column; gap:3px; font-family:var(--font-mono);
+  font-size:var(--fs-2xs); color:var(--ink-2); text-align:right; }
+.calc-meta b { color:var(--ink); font-weight:700; }
+.cell-in { font-family:var(--font-mono); font-size:12.5px; padding:4px 6px; border-radius:5px;
+  border:1px solid var(--line-2); background:var(--panel-2); color:var(--ink); width:100%; max-width:130px; }
+.cell-in.num { text-align:right; max-width:90px; }
+.cell-in:focus { outline:none; border-color:var(--focus); }
+.cell-del { border:none; background:none; color:var(--ink-3); font-size:15px; cursor:pointer; padding:2px 6px; line-height:1; }
+.cell-del:hover { color:var(--neg); }
+.calc-add { align-self:flex-start; font-family:var(--font-ui); font-size:var(--fs-xs); font-weight:700;
+  padding:6px 12px; border-radius:7px; border:1px dashed var(--line-2); background:transparent;
+  color:var(--brand-deep); cursor:pointer; }
+.calc-add:hover { background:var(--panel-2); border-color:var(--focus); }
+.cell-in.sm { max-width:64px; }
+.cell-wrap { display:inline-flex; align-items:center; gap:5px; justify-content:flex-end; }
+.tna-tag { font-family:var(--font-ui); font-size:9px; font-weight:700; letter-spacing:.04em;
+  color:var(--trigo-deep, var(--brand-deep)); background:var(--panel-3); padding:1px 4px; border-radius:3px; }
+.curva-pick { display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap; padding:8px 10px;
+  background:var(--panel-2); border:1px solid var(--line); border-radius:8px; }
+.curva-pick-row { display:flex; gap:10px; flex-wrap:wrap; }
+.curva-pick-lbl { font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.05em;
+  color:var(--brand-deep); font-weight:700; }
+.curva-pick select { font-family:var(--font-mono); font-size:12.5px; padding:5px 8px; border-radius:6px;
+  border:1px solid var(--line-2); background:var(--panel); color:var(--ink); }
+
