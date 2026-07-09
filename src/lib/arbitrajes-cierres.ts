@@ -22,6 +22,7 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export type ArbRow = {
   pos: string;
+  symbol: string; // símbolo del futuro en A3, ej. "SOJ.ROS/JUL26" (clave del feed en vivo)
   ajuste: number | null; // settlement del futuro (USD)
   spread: number | null; // ajuste − pizarra
   directa: number | null; // ajuste/pizarra − 1, en %
@@ -64,7 +65,7 @@ export const getArbitrajes = cache(async (): Promise<ArbData> => {
       const dias = vto ? diasHasta(vto) : null;
       const tna =
         directa != null && dias != null && dias > 0 ? round2((directa * 365) / dias) : null;
-      return { pos: p.posicion, ajuste, spread, directa, dias, tna, volume: p.volume ?? null };
+      return { pos: p.posicion, symbol: p.symbol, ajuste, spread, directa, dias, tna, volume: p.volume ?? null };
     });
     if (rows.length > 0) {
       granos.push({

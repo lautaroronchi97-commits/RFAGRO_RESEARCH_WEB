@@ -1,0 +1,42 @@
+/**
+ * Horarios de las ruedas de Matba Rofex (hora Córdoba), fuente compartida entre
+ * el indicador visual del header (`rueda-status.tsx`, client) y la capa de datos
+ * en vivo de A3 (`a3-live.ts`, server). Horarios oficiales:
+ *   - Dólar / Monedas: 10:00 a 15:00 (ajuste 15:00).
+ *   - Agro / granos:   10:30 a 17:00 (ajuste 17:00).
+ * Rueda abierta = día hábil (L-V) dentro del horario. Sin `server-only`: es
+ * cálculo puro (Intl + aritmética), seguro tanto en cliente como en servidor.
+ */
+
+export type Rueda = { nombre: string; label: string; abre: number; cierra: number }; // abre/cierra = minutos desde 00:00
+
+export const RUEDA_DOLAR: Rueda = { nombre: "Dólar", label: "10–15", abre: 10 * 60, cierra: 15 * 60 };
+export const RUEDA_AGRO: Rueda = { nombre: "Agro", label: "10:30–17", abre: 10 * 60 + 30, cierra: 17 * 60 };
+export const RUEDAS: Rueda[] = [RUEDA_DOLAR, RUEDA_AGRO];
+
+/** Minutos desde medianoche y día de semana (0=Dom … 6=Sáb) en Córdoba. */
+export function ahoraCordoba(d: Date = new Date()): { min: number; dow: number } {
+  const p = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Argentina/Cordoba",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(d);
+  const get = (t: string) => p.find((x) => x.type === t)?.value ?? "";
+  const h = Number(get("hour"));
+  const m = Number(get("minute"));
+  const dias: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  return { min: (Number.isNaN(h) ? 0 : h) * 60 + (Number.isNaN(m) ? 0 : m), dow: dias[get("weekday")] ?? 0 };
+}
+
+/** ¿La rueda `r` está abierta ahora (hábil L-V dentro del horario)? */
+export function ruedaAbierta(r: Rueda, ahora: { min: number; dow: number } = ahoraCordoba()): boolean {
+  const habil = ahora.dow >= 1 && ahora.dow <= 5;
+  return habil && ahora.min >= r.abre && ahora.min < r.cierra;
+}
+
+/** Atajo: ¿está abierta la rueda de granos (Agro)? */
+export function ruedaAgroAbierta(d?: Date): boolean {
+  return ruedaAbierta(RUEDA_AGRO, ahoraCordoba(d));
+}

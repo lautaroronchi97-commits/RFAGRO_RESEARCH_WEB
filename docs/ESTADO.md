@@ -19,32 +19,32 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 09/07/2026, sesión switch de producción a `main`)
+## Ahora (última actualización: 09/07/2026, sesión Feed A3 en vivo)
 
-**✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
-de datos reales (verificado contra el sitio en vivo: CSS con tokens premium `#060A07`/`#0C130D` y
-paneles Arbitrajes/Pases/Noticias/Calculadoras/Dólar/Capacidad/LECAPs presentes). Hecho el 09/07:
-PR #8 mergeado · default de GitHub = `main` · Vercel Branch Tracking = `main` + promote a Production ·
-ramas viejas borradas (en GitHub solo queda `main`).
+**🟡 Feed A3 en vivo — código listo, falta validar con datos reales.** Se conectó el cliente A3 (que
+estaba escrito pero dormido) a los paneles: **Pases** suma Comprador/Vendedor/Último/Vol del instrumento
+de pase real, **Arbitrajes** suma Comprador/Vendedor del futuro. Frescura ~60s por la regeneración ISR de
+la página (NO un cron: un cron de 60s no existe gratis; el cron queda para el histórico). Todo degrada
+solo sin credenciales. `lint`/`typecheck`/`build` ✅. Detalle: `docs/sesiones/2026-07-09-feed-a3-en-vivo.md`.
 
-**En vuelo:** nada. La cancha está limpia para arrancar features nuevas desde `main`.
+**En vuelo (paso de Lautaro):** validar datos reales en la **Preview del PR** — tildar el scope
+**Preview** en las 3 vars A3 de Vercel (`A3_API_BASE`/`A3_USERNAME`/`A3_PASSWORD`), redeploy de la Preview,
+y en horario de rueda (10:30–17:00) comparar puntas/último/vol contra eTrader/Excel. Al aprobar: destildar
+Preview y mergear. Antes del merge, en la Preview sin creds las columnas se ven en "—" (esperado).
 
-**Único chequeo pendiente (Lautaro, mañana 10/07):** en Actions, verificar que el cron de cierres
-(`ingest-cierres.yml`, corre 23:00 UTC hábiles) haya corrido solo **desde `main`** (la corrida del
-09/07 00:07 UTC salió desde la default vieja porque era pre-switch). Si corrió y la curva está al día,
-listo; si no, avisar en la próxima sesión.
-
-**Dato verificado 09/07**: el cron de cierres YA corre solo (secrets cargados, run #4 por schedule
-exitoso, curva al día hasta el 08/07) — NO hay que cargar secrets ni correr ingestas a mano.
+**Contexto previo (sigue vigente):** producción sirve `main` con el rediseño premium + todos los paneles.
+El cron de cierres (`ingest-cierres.yml`, 23:00 UTC hábiles) YA corre solo desde `main` (curva al día).
 
 **Ramas vivas y su veredicto:**
 | Rama | Estado |
 |---|---|
 | `main` | Única rama de integración y producción. |
-| `claude/pending-tasks-review-72ywwf` | Sesión 09/07 (esta actualización de estado) → borrar tras merge. |
+| `claude/feed-a3-live-plan-obxzcz` | Sesión Feed A3 en vivo (esta) → borrar tras merge. |
 
 **Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
-1. Feed A3 en vivo (pases: cotización/volumen/bid-ask).
+1. **Fase 2 del Feed A3 — histórico intradiario**: cron GH Actions `*/15 13-20 * * 1-5` UTC +
+   `scripts/ingest-rueda.mjs` + tabla `snapshots` + `ingest_log` (INFRAESTRUCTURA.md). Habilita gráficos
+   intradía. (La frescura ya está resuelta web-directa; esto es SOLO para guardar historia.)
 2. Sintéticos TIR (pago final por letra, IAMC). [Requiere tabla de Lautaro]
 3. Fase B (resiliencia, tests, mobile) y backlog de datos (reactivar scrapers `lineup`/`compras`,
    lineups, calendario, reporte WhatsApp — lista completa en CONTEXTO «Pendientes» punto 5).

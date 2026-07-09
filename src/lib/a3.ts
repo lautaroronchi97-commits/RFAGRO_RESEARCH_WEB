@@ -48,7 +48,12 @@ async function authFetch<T>(path: string, revalidate: number): Promise<T | null>
       next: { revalidate },
       signal: AbortSignal.timeout(8000),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      // Token revocado/expirado (A3 invalida el token al re-loguear en otro lado):
+      // limpiamos el caché en memoria para forzar re-auth en la próxima llamada.
+      if (res.status === 401 || res.status === 403) cachedToken = null;
+      return null;
+    }
     return (await res.json()) as T;
   } catch {
     return null;
