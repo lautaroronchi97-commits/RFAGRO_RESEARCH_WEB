@@ -5,8 +5,12 @@
 > (productores / acopios). El tiempo real tick-a-tick lo maneja Lautaro aparte (Excel + eTrader);
 > esta web es **demorado / varias veces por día**, no realtime.
 >
-> **Deploy:** https://rfagro-research-web.vercel.app · **Rama de trabajo:** la de la sesión actual (`claude/*`;
-> última: `claude/premium-web-design-k60hly`)
+> **Deploy:** https://rfagro-research-web.vercel.app · **Rama de integración: `main`** (todo entra por PR a `main`).
+> Cada sesión trabaja en su rama `claude/*` creada DESDE `main`.
+>
+> ⚠️ **ANTES de empezar cualquier sesión: leé [`docs/ESTADO.md`](ESTADO.md)** (tablero vivo: qué hay en
+> producción, qué ramas están abiertas, qué sigue) y la última entrada de [`docs/sesiones/`](sesiones/).
+> El protocolo de trabajo entre sesiones está en `ESTADO.md`.
 
 ## Cómo trabajar con Lautaro (reglas)
 - Principiante en programación: explicá cada comando/concepto paso a paso.
@@ -18,7 +22,8 @@
 
 ## Stack
 Next.js 16 (App Router) + TypeScript · Tailwind v4 · next-themes · gráficos SVG a mano (Recharts previsto) ·
-Supabase (Postgres + Auth) **aún NO conectado** · Deploy en Vercel (auto-deploy al pushear la rama).
+**Supabase CONECTADO** (proyecto `lineup-argentina`, lectura anon con RLS; tablas `futuros_cierres`,
+`vencimientos`, `djve`, `lineup`, `compras` — detalle en la sesión 07–08/07 abajo) · Deploy en Vercel.
 TZ America/Argentina/Cordoba.
 
 ## Design system — "Pizarra electrónica" (aprobado; rediseño premium aplicado 09/07/2026, PR #5)
@@ -97,11 +102,15 @@ al volver a la pestaña, tema sin bloque @media duplicado, contraste AA, touch-a
 headers de seguridad, robots noindex (mientras haya EJEMPLO), README real, CI (GitHub Actions),
 favicon de marca. **Cero credenciales en historial de git (verificado).**
 
-### Flujo de deploy (NUEVO — Fase 0)
-- Rama **`main` = producción** en Vercel; el trabajo va en ramas `claude/*` → **Preview URL**;
-  publicar = PR → merge a `main` (GitHub UI). Los pushes a ramas ya NO tocan producción
-  (vigente cuando Lautaro complete el switch en Vercel: Settings → Environments → Production
-  Branch → `main`). Env vars sensibles con scope **Production only**.
+### Flujo de deploy (vigente desde la unificación del 09/07/2026)
+- **`main` = la ÚNICA rama de integración y producción.** Todo el trabajo va en ramas `claude/*` creadas
+  **desde `main`** → Preview URL en Vercel; publicar = PR con **base `main`** → merge (GitHub UI).
+  Historia y pasos del switch: [`docs/PLAN_ORGANIZACION_REPO.md`](PLAN_ORGANIZACION_REPO.md).
+- **NUNCA** abrir PRs contra otra rama que no sea `main`, ni actualizar `CONTEXTO.md`/`ESTADO.md` en dos
+  ramas a la vez (así se partió la historia en dos entre el 07 y el 09/07).
+- Los `schedule` de GitHub Actions (cron de cierres) corren SOLO desde la rama default de GitHub → la
+  default debe ser `main` y los workflows viven ahí.
+- Env vars sensibles con scope **Production only**.
 - Vercel Hobby es no-comercial → decidir upgrade a Pro ANTES de poner datos reales frente a clientes (C2).
 
 ## Pendientes (orden para retomar — plan completo en la conversación de auditoría)
@@ -123,6 +132,52 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
 
 ## Comandos
 - `npm run dev` (real en sandbox: `NODE_USE_ENV_PROXY=1 npm run dev`) · `npm run build` · push a la rama → deploy.
+
+## Sesión 07–08/07/2026 (rama `claude/financial-data-web-infra-whg41m`) — Fase C aplicada
+> Rescatada al unificar el repo (09/07): este apunte solo existía en esa rama y nunca había llegado a una
+> rama integrada. Su código entró por el merge `96a9bc9` + el rescate del PR #2 en el PR #4.
+
+**Documentos de referencia creados** (leerlos para el detalle): `docs/INFRAESTRUCTURA.md`
+(arquitectura y escalado), `docs/FORMULAS_EXCEL.md` (fórmulas reales del Excel RF),
+`docs/ESTRATEGIAS_COMBINADAS.md` (opciones), `docs/PLANILLA_DIARIA.md` (modelos varios).
+
+### Supabase — CONECTADO
+- Proyecto **`lineup-argentina`** · ref **`gbpfgfeksqmzmsxnxiwg`** · región sa-east-1 (São Paulo).
+  Org `chona97`. Se consolidó RF AGRO sobre este proyecto (no se creó uno nuevo).
+- Tablas: `lineup` (~494k, scraper ISA Agents **frenado** desde ~jun), `djve` (MAGyP, **al día**),
+  `compras` (% cosecha/priceado, **frenado**), **`futuros_cierres`** (cierres A3 granos).
+- Vistas (lectura anon): `djve_resumen`, `futuros_cierres_ultimo` (curva = último cierre por posición).
+- **`futuros_cierres`: 22.398 filas, 2021-07-08 → 2026-07-03** (SOJ 8.360 · MAI 7.324 · TRI 6.714), solo futuros.
+- Web lee con **`src/lib/supabase.ts`** (PostgREST, clave publishable/anon, RLS solo-lectura).
+- Env vars web: `SUPABASE_URL`, `SUPABASE_ANON_KEY` (en Vercel + `.env.local`). Son PÚBLICAS (RLS protege).
+- ⚠️ El MCP `execute_sql` de escritura estuvo **bloqueado en permisos** → para escribir vía MCP usar
+  **`apply_migration`** (sí funciona).
+
+### Fuente CEM (Matba ROFEX) — la clave de los históricos de A3
+- **`https://apicem.matbarofex.com.ar/api/v2`** — API REST PÚBLICA, sin auth, Swagger en `/swagger/v1/swagger.json`.
+- `GET /closing-prices?product=&type=FUT&from=&to=&page=&pageSize=500&sortDir=ASC` → cierres por posición/día
+  (settlement, OHLC, openInterest, volume, impliedRate, previousClose, change).
+- **Claves aprendidas:** `type=FUT` trae **solo futuros** (sin `type` vienen opciones mezcladas, 10× más filas).
+  `sortDir` en **MAYÚSCULAS**. Rangos amplios dan **HTTP 424** → el script parte en **ventanas de 180 días**.
+  Productos grano: `SOJ/MAI/TRI Dolar MATba`.
+- Otros endpoints útiles: `/spot-prices` (pizarra, solo dólar), `/daily|monthly|yearly-trading-volume`,
+  `/spread` (pases), `/market-position-data`, `/downloads/*` (CSV). El CEM RECHAZA conexiones desde
+  Supabase (SSL) → ingerir por GitHub Actions.
+
+### Cron de ingesta (GitHub Actions)
+- **`.github/workflows/ingest-cierres.yml`** (schedule `0 23 * * 1-5` post-cierre + `workflow_dispatch`).
+  Corre **`scripts/ingest-cierres.mjs`** (fetch CEM → upsert Supabase por symbol+fecha).
+- Secrets en GitHub → Settings → Secrets → Actions: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` (service_role,
+  ESCRITURA, secreta). El workflow corre SOLO desde la rama default.
+- Backfill manual: dispatch con inputs `from`/`to`. Ya se corrió el de 5 años.
+
+### Otros aprendizajes de esa sesión
+- **Skills de gauss** (github.com/gauss314/skills): catálogo de fuentes. Útiles: `primary` (A3/Matba),
+  `data912`, `mae`, `bcra-macro`; para **CBOT/metales/Merval/SPY/EWZ**: `barchart`/`investing`/`yahoo-finance`.
+- Conversión Chicago→USD/tn (arbitraje CBOT): maíz ×0,3937 · soja/trigo ×0,3674 (`docs/PLANILLA_DIARIA.md`).
+- ⚠️ Hoja "Clientes" de la planilla diaria = datos personales reales → NUNCA al repo; va en base con login.
+- Paneles de esa sesión: DJVE (`djve-panel`), Cierres A3 (`cierres-panel`), primeras 8 calculadoras
+  (incl. **costos Cocos** con tarifario real) — luego reformadas en la sesión 08/07 de abajo.
 
 ## Sesión 08/07/2026 (rama `claude/pending-tasks-vzoa3c`)
 
@@ -269,3 +324,12 @@ los mismos archivos de calculadoras) y se re-aplicó **sobre la lógica de hoy, 
   de la lista de arriba); el CEM diario no los tiene. La curva de precios ya es real.
 - **Cron de cierres**: sigue sin correr solo (punto 1). Mientras no se active, la curva se congela en la
   última fecha ingerida.
+
+## Sesión 09/07/2026 (rama `claude/repo-branch-organization-lh2siw`) — Unificación del repo
+El trabajo estaba partido en DOS historias: `main` (rediseño premium, PRs #5/#6) y
+`claude/new-session-frovqj` (datos/calculadoras/noticias, PRs #3/#4/#7) — producción NO tenía el diseño
+nuevo y cada línea tenía su propio CONTEXTO. Esta sesión unificó todo (merge + este CONTEXTO único) y creó
+el sistema de handoff entre sesiones: **`docs/ESTADO.md`** (tablero vivo, leído automáticamente por cada
+sesión vía `CLAUDE.md`) + **`docs/sesiones/`** (un markdown por sesión, append-only, sin conflictos).
+Diagnóstico completo y pasos manuales de Lautaro: [`docs/PLAN_ORGANIZACION_REPO.md`](PLAN_ORGANIZACION_REPO.md).
+**A partir de acá, los apuntes de sesión van en `docs/sesiones/` — NO agregar más secciones "Sesión" acá.**
