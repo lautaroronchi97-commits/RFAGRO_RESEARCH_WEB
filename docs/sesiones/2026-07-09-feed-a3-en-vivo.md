@@ -1,6 +1,6 @@
 # Sesión 2026-07-09 — Feed A3 en vivo (pases + arbitrajes)
 
-- **Rama:** `claude/feed-a3-live-plan-obxzcz` · **PR:** #_ (base `main`)
+- **Rama:** `claude/feed-a3-live-plan-obxzcz` · **PR:** #11 (base `main`)
 - **Objetivo pedido por Lautaro:** Feed A3 en vivo — cotización/volumen/bid-ask de pases (con la
   idea original de "cron 60s en horario de rueda") + comprador/vendedor en arbitrajes.
 
