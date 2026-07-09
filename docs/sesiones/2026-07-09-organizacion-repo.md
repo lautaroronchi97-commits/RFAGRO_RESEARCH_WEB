@@ -48,7 +48,12 @@
 
 ## Quedó pendiente / en vuelo
 - Los 6 pasos manuales de Lautaro (sección «Ahora» de `ESTADO.md`).
-- La curva de cierres sigue congelada al 2026-07-03 hasta que corra la ingesta.
+
+## Hallazgo de la verificación (corrige a los docs heredados)
+- El **cron de cierres YA corre solo**: secrets cargados, run #4 disparado por `schedule` el 09/07
+  00:07 UTC con éxito, y `futuros_cierres` al día (22.443 filas, hasta 2026-07-08). El diagnóstico
+  "no corre / curva congelada al 03/07" que traían los CONTEXTO viejos estaba desactualizado — se
+  verificó contra GitHub Actions y Supabase antes de corregir ESTADO/PLAN/CONTEXTO.
 
 ## Trampas descubiertas (para la próxima sesión)
 - `git merge-tree --write-tree origin/A origin/B` simula un merge sin tocar nada — útil para ver

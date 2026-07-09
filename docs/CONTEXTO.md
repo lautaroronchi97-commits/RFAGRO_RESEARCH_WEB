@@ -65,8 +65,9 @@ fades, tablas con hover/tick dorado, charts con grilla punteada + área en degra
   TEA = (Fut/Spot)^(365/días) − 1 · TEM = (1+TEA)^(1/12) − 1.
 - **Dólar linked** (vs oficial MAE, base 365, misma lógica): TC implícito = Px/100 · spread of. = Oficial − TCimpl ·
   TNA/TEA/TEM con Oficial/TCimpl. Vencimiento inferido del ticker (`D` + dd + letra-mes + yy).
-- **Arbitrajes granos** (a implementar al enchufar A3): tasa directa = (precio futuro / pizarra USD) − 1 ·
-  TNA USD = INTRATE(hoy, vto, pizarra, precio, act/365). Pizarra USD desde CAC (+ override manual).
+- **Arbitrajes granos** (implementado el 08/07 con cierres CEM + pizarra CAC): tasa directa =
+  (precio futuro / pizarra USD) − 1 · TNA USD = directa × 365/días al vto (act/365). Pizarra USD desde
+  CAC (+ override manual + editable en el panel).
 
 ## Estado de módulos (`src/components/`)
 | # | Módulo | Estado |
@@ -113,22 +114,25 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
 - Env vars sensibles con scope **Production only**.
 - Vercel Hobby es no-comercial → decidir upgrade a Pro ANTES de poner datos reales frente a clientes (C2).
 
-## Pendientes (orden para retomar — plan completo en la conversación de auditoría)
-**Fase B (estructura):**
-1. B1 Resiliencia: tarjetas de degradación por panel desde el Result ("fuente caída" vs "sin datos");
-   error.tsx como defensa extra. OJO: bajo ISR estático Suspense NO streamea — verificar en build de prod.
-2. B2 Extraer `dates.ts` (hoyCordoba/diasHasta UTC-noon/ultimoDiaHabil), `tickers.ts`, `rates.ts`.
-   [LAUTARO] 1 ejemplo numérico por fórmula como fixture.
-3. B3 Tests (Vitest): rates → tickers → dates; a CI.
-4. B4a Mobile tablas (.hide-sm/.hide-md + fade/hint) · B4b ChartFrame compartido + tabla fallback de
-   implícitas + `noUncheckedIndexedAccess` · B4c InfoTip popover accesible.
-**Fase C (piedra angular):**
-5. C1 Supabase + cron por GitHub Actions (`snapshots` + `kv`; SOLO el cron llama a A3; token A3 en kv;
-   workflow con `workflow_dispatch` y schedule `*/30 13-21 * * 1-5` UTC — corre desde la rama default).
-6. C2 Arbitrajes + Pases REALES (snapshots + INTRATE [LAUTARO ejemplo numérico] + pizarra CAC con override).
-7. C3 Sintéticos TIR ([LAUTARO] tabla "pago final por letra").
-8. C4 Vista productor, PWA, calculadora, charts históricos (re-evaluar Recharts), robots→index,
-   compras BCRA manual. (Estética: rediseño premium ya aplicado — ver Design system.)
+## Pendientes (lista canónica — actualizada 09/07/2026; lo urgente/vivo está en `ESTADO.md`)
+**Ya hecho de los planes viejos** (no re-trabajar): C1 Supabase + cron de cierres (vía CEM diario +
+GitHub Actions, corre solo) · C2 Arbitrajes + Pases reales (08/07) · estética premium (09/07) ·
+`dates.ts`/`vencimientos.ts` extraídos · auto-curva en calculadoras (PR #4).
+1. **Feed A3 en vivo** (cron 60s en horario de rueda): cotización/volumen/bid-ask de pases y
+   comprador/vendedor de arbitrajes — el CEM diario no lo tiene. (Es lo que queda "vivo" del viejo C1.)
+2. **C3 Sintéticos TIR**: [LAUTARO] tabla "pago final por letra" (IAMC `informeslecap`).
+3. **Fase B (estructura)**: B1 Resiliencia (tarjetas de degradación por panel desde el Result; OJO: bajo
+   ISR estático Suspense NO streamea) · B2 extraer `tickers.ts`/`rates.ts` + [LAUTARO] 1 ejemplo numérico
+   por fórmula como fixture · B3 Tests (Vitest) a CI · B4 mobile tablas / ChartFrame /
+   `noUncheckedIndexedAccess` / InfoTip accesible.
+4. **C4**: vista productor, PWA, charts históricos (re-evaluar Recharts), robots→index, compras BCRA manual.
+5. **Fase 3 / backlog de datos** (lista completa en `docs/INFRAESTRUCTURA.md`): reactivar scrapers
+   `lineup`/`compras` (frenados), panel de lineups, calendario de informes (`FUENTES.md`), reporte diario
+   WhatsApp, ratio maíz/soja, arbitraje Matba↔CBOT, SIO Granos, camiones en puerto, volumen por producto,
+   % sobre cosecha, variación semanal USD.
+6. **Estrategias**: costos/IVA por pata, primas/strikes reales, calendarios de dos vtos, acumulador.
+7. **Modelo propio de Lautaro** para capacidad de pago (vía `CAPACIDAD_OVERRIDE`).
+8. **Módulo scoring de clientes** (`docs/negocio/03`): producto a futuro, requiere datos externos.
 
 ## Comandos
 - `npm run dev` (real en sandbox: `NODE_USE_ENV_PROXY=1 npm run dev`) · `npm run build` · push a la rama → deploy.
@@ -147,7 +151,8 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
 - Tablas: `lineup` (~494k, scraper ISA Agents **frenado** desde ~jun), `djve` (MAGyP, **al día**),
   `compras` (% cosecha/priceado, **frenado**), **`futuros_cierres`** (cierres A3 granos).
 - Vistas (lectura anon): `djve_resumen`, `futuros_cierres_ultimo` (curva = último cierre por posición).
-- **`futuros_cierres`: 22.398 filas, 2021-07-08 → 2026-07-03** (SOJ 8.360 · MAI 7.324 · TRI 6.714), solo futuros.
+- **`futuros_cierres`**: 22.398 filas al momento de esa sesión (2021-07-08 → 2026-07-03), solo futuros.
+  [Actualización 09/07: 22.443 filas, al día hasta 2026-07-08 — el cron nocturno ya corre solo.]
 - Web lee con **`src/lib/supabase.ts`** (PostgREST, clave publishable/anon, RLS solo-lectura).
 - Env vars web: `SUPABASE_URL`, `SUPABASE_ANON_KEY` (en Vercel + `.env.local`). Son PÚBLICAS (RLS protege).
 - ⚠️ El MCP `execute_sql` de escritura estuvo **bloqueado en permisos** → para escribir vía MCP usar
@@ -177,7 +182,8 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
 - Conversión Chicago→USD/tn (arbitraje CBOT): maíz ×0,3937 · soja/trigo ×0,3674 (`docs/PLANILLA_DIARIA.md`).
 - ⚠️ Hoja "Clientes" de la planilla diaria = datos personales reales → NUNCA al repo; va en base con login.
 - Paneles de esa sesión: DJVE (`djve-panel`), Cierres A3 (`cierres-panel`), primeras 8 calculadoras
-  (incl. **costos Cocos** con tarifario real) — luego reformadas en la sesión 08/07 de abajo.
+  (incl. **costos Cocos**: tarifario real web/app, persona humana/jurídica, comisiones % TNA prorrateadas
+  por plazo — vive en `src/lib/costos.ts`) — luego reformadas en la sesión 08/07 de abajo.
 
 ## Sesión 08/07/2026 (rama `claude/pending-tasks-vzoa3c`)
 
@@ -264,11 +270,12 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
 - **Reporte diario**: formato objetivo = **imagen/PDF para enviar por WhatsApp**.
 - **Camiones en puerto**: fuente a confirmar (BCR suele tenerlo).
 
-### ⚠ Cron de cierres NO corre solo (diagnóstico)
-`.github/workflows/ingest-cierres.yml` **NO está en `main`** (la rama default). Los `schedule` de GitHub
-Actions corren SOLO desde la rama default → nunca se disparó automático. Las 22.398 filas (hasta 2026-07-03)
-son del backfill manual. **Para activarlo (lo hace Lautaro):** (1) mergear el workflow a `main`; (2) cargar
-secrets del repo `SUPABASE_URL` y `SUPABASE_SERVICE_KEY` (Settings → Secrets and variables → Actions).
+### Cron de cierres — ✅ RESUELTO (verificado 09/07)
+Diagnóstico de esta sesión (luego desactualizado): el workflow no estaba en la rama default y faltaban
+secrets. **Ya no aplica**: los secrets `SUPABASE_URL`/`SUPABASE_SERVICE_KEY` fueron cargados, el workflow
+vive en la rama default y **el schedule ya disparó solo** (run #4, `event=schedule`, 09/07 00:07 UTC,
+success) → la curva se actualiza sola cada noche hábil. Al cambiar la default a `main`, el workflow tiene
+que existir en `main` (lo garantiza el PR de unificación del 09/07).
 
 ### Resuelto en la sesión (ya no bloquea)
 - **Vencimiento por posición** (para días→TNA): sale del CEM `/api/v2/symbols` (`maturityDate`) → tabla
@@ -280,9 +287,9 @@ secrets del repo `SUPABASE_URL` y `SUPABASE_SERVICE_KEY` (Settings → Secrets a
 - **Pago diferido**: pesos, interés simple (confirmado).
 
 ### Pendientes al cierre (para retomar)
-1. **Cron de cierres (2 min de Lautaro)**: mergear `ingest-cierres.yml` a la rama default + cargar secrets
-   `SUPABASE_URL` / `SUPABASE_SERVICE_KEY`. Sin esto los cierres quedan al 3/7 (los `schedule` de Actions
-   corren solo desde la rama default). Ídem para armar el resto de los crons (rueda, pizarra, ingest_log).
+1. ~~Cron de cierres~~ → **RESUELTO** (verificado 09/07: secrets cargados, schedule corriendo solo desde
+   la default, curva al día). Queda para el futuro: armar el resto de los crons (rueda, pizarra, ingest_log)
+   con el mismo esquema.
 2. ✅ **Auto-curva A3 en las calculadoras** — HECHO (09/07, PR #4). Ver "Sesión 09/07/2026" abajo.
    Las calcs autocompletan precio + vto desde la curva real; queda pendiente sólo que el pase traiga
    volumen/bid-ask (eso depende del feed A3 en vivo, punto 3).
@@ -322,12 +329,12 @@ los mismos archivos de calculadoras) y se re-aplicó **sobre la lógica de hoy, 
 ### Pendiente que sigue (no cambió)
 - El **volumen y bid/ask de los pases** en las calcs siguen dependiendo del **feed A3 en vivo** (punto 3
   de la lista de arriba); el CEM diario no los tiene. La curva de precios ya es real.
-- **Cron de cierres**: sigue sin correr solo (punto 1). Mientras no se active, la curva se congela en la
-  última fecha ingerida.
+- ~~Cron de cierres sin correr solo~~ → **resuelto**: verificado el 09/07 que el schedule ya corre solo
+  y la curva está al día (ver «Cron de cierres — RESUELTO» arriba).
 
 ## Sesión 09/07/2026 (rama `claude/repo-branch-organization-lh2siw`) — Unificación del repo
 El trabajo estaba partido en DOS historias: `main` (rediseño premium, PRs #5/#6) y
-`claude/new-session-frovqj` (datos/calculadoras/noticias, PRs #3/#4/#7) — producción NO tenía el diseño
+`claude/new-session-frovqj` (datos/calculadoras/noticias, PRs #1/#3/#4/#7) — producción NO tenía el diseño
 nuevo y cada línea tenía su propio CONTEXTO. Esta sesión unificó todo (merge + este CONTEXTO único) y creó
 el sistema de handoff entre sesiones: **`docs/ESTADO.md`** (tablero vivo, leído automáticamente por cada
 sesión vía `CLAUDE.md`) + **`docs/sesiones/`** (un markdown por sesión, append-only, sin conflictos).

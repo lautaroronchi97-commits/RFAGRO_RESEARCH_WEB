@@ -33,10 +33,13 @@ premium). El switch a `main` está pendiente de los pasos manuales de Lautaro (a
 [`PLAN_ORGANIZACION_REPO.md`](PLAN_ORGANIZACION_REPO.md)):**
 1. Revisar la Preview del PR de unificación y mergearlo.
 2. GitHub: rama default → `main`.
-3. GitHub: cargar secrets `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` (activa el cron de cierres).
-4. Vercel: Production Branch → `main`.
+3. Vercel: Production Branch → `main`.
+4. Verificar la web en producción (diseño premium + paneles de datos).
 5. Borrar las ramas viejas (lista en el plan).
-6. Correr a mano el workflow de ingesta para poner la curva al día (está congelada al 03/07).
+6. Al día hábil siguiente: chequear en Actions que el cron de cierres haya corrido desde `main`.
+
+**Dato verificado 09/07**: el cron de cierres YA corre solo (secrets cargados, run #4 por schedule
+exitoso, curva al día hasta el 08/07) — NO hay que cargar secrets ni correr ingestas a mano.
 
 **Ramas vivas y su veredicto:**
 | Rama | Estado |
@@ -49,7 +52,7 @@ premium). El switch a `main` está pendiente de los pasos manuales de Lautaro (a
 | `claude/premium-web-design-k60hly` | 100% en `main` → borrar. |
 
 **Lo próximo (después del switch, en orden — detalle en CONTEXTO «Pendientes»):**
-1. Verificar que el cron de cierres corra solo (Actions, `0 23 * * 1-5`).
-2. Feed A3 en vivo (pases: cotización/volumen/bid-ask).
-3. Sintéticos TIR (pago final por letra, IAMC).
-4. Fase B (resiliencia, tests, mobile) y Fase 3 (calendario, lineups, reporte WhatsApp).
+1. Feed A3 en vivo (pases: cotización/volumen/bid-ask).
+2. Sintéticos TIR (pago final por letra, IAMC).
+3. Fase B (resiliencia, tests, mobile) y backlog de datos (reactivar scrapers `lineup`/`compras`,
+   lineups, calendario, reporte WhatsApp — lista completa en CONTEXTO «Pendientes» punto 5).

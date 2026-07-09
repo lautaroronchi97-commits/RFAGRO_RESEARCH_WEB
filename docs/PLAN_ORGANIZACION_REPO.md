@@ -2,6 +2,8 @@
 
 > Para Lautaro. Explica qué estaba pasando con las ramas, qué ya quedó resuelto en el PR de esta
 > sesión, y los **6 pasos manuales** (con cada click) que faltan para cerrar el tema. Tiempo total: ~10 min.
+> Buena noticia extra verificada en esta sesión: el **cron de cierres ya corre solo** (secrets cargados,
+> corrida automática exitosa el 09/07, curva al día) — no hay nada que configurar ahí.
 
 ## 1. Qué estaba pasando (el diagnóstico)
 
@@ -19,8 +21,9 @@ Tu sensación era correcta: **no estabas trabajando sobre tu última actualizaci
 - **`claude/new-session-frovqj`** (la rama *default* de GitHub y la que sirve Vercel en producción)
   tenía todos los datos pero **no** el rediseño → la web pública nunca mostró el diseño nuevo.
 - Cada tronco actualizaba **su propio `CONTEXTO.md`** → cada sesión nueva leía una historia incompleta.
-- El cron de cierres no corre porque los `schedule` de GitHub Actions solo corren desde la rama
-  default y además faltan los secrets.
+- El cron de cierres **sí funciona** (corre desde la default actual, donde el workflow existe y los
+  secrets ya están cargados) — pero `main` no tenía el workflow, así que el switch de default requiere
+  mergear primero el PR de unificación (que lo trae).
 
 **Causa raíz:** cuando abrís una sesión nueva de Claude, su rama se crea desde la rama **default** de
 GitHub. Como la default era `claude/new-session-frovqj` pero el rediseño se mergeó a `main`, cada mitad
@@ -31,7 +34,7 @@ del trabajo quedó en un tronco distinto.
 | Rama | Qué tiene | Veredicto |
 |---|---|---|
 | `main` | Rediseño premium (PRs #5/#6) | **Se queda**: será LA única rama de integración y producción |
-| `claude/new-session-frovqj` | Datos/calculadoras (PRs #1/#3/#4/#7) | Borrar al final (paso 6), cuando ya nada la apunte |
+| `claude/new-session-frovqj` | Datos/calculadoras (PRs #1/#3/#4/#7) | Borrar al final (paso 5), cuando ya nada la apunte |
 | `claude/pending-tasks-vzoa3c` | Nada propio (100% integrada) | Borrar |
 | `claude/financial-data-web-infra-whg41m` | Código viejo superado por el PR #4; su apunte de CONTEXTO ya fue rescatado | Borrar |
 | `claude/premium-web-design-k60hly` | Nada propio (100% en `main`) | Borrar |
@@ -67,32 +70,28 @@ En el repo → **Settings** (arriba a la derecha) → **General** → sección *
 ícono de flechitas (⇄) → elegí `main` → **Update** → confirmá. Desde acá, toda sesión nueva de Claude
 sale de `main`, y los crons de Actions corren desde `main`.
 
-**Paso 3 — Cargar los secrets del cron.**
-**Settings** → **Secrets and variables** → **Actions** → botón **"New repository secret"**, dos veces:
-- Name: `SUPABASE_URL` → Value: la URL del proyecto (Supabase → Project Settings → API → Project URL).
-- Name: `SUPABASE_SERVICE_KEY` → Value: la clave **service_role** (misma pantalla de API; es la SECRETA,
-  no la anon). Con esto el cron de cierres queda activo (corre 23:00 UTC, L-V).
-
-**Paso 4 — Apuntar producción de Vercel a `main`.**
+**Paso 3 — Apuntar producción de Vercel a `main`.**
 Vercel → tu proyecto → **Settings** → **Environments** → **Production** → en **Branch Tracking** poné
 `main` → **Save**. Después andá a **Deployments** y verificá que haya un deploy de producción desde
 `main` (si no arrancó solo: en el último deploy de `main`, menú "..." → **Promote to Production** /
 **Redeploy**).
 
-**Paso 5 — Verificar la web.**
+**Paso 4 — Verificar la web.**
 https://rfagro-research-web.vercel.app tiene que mostrar el diseño premium con todos los paneles de
-datos reales. Si algo se ve mal, avisame en una sesión nueva ANTES del paso 6.
+datos reales. Si algo se ve mal, avisame en una sesión nueva ANTES del paso 5.
 
-**Paso 6 — Borrar las ramas viejas.**
+**Paso 5 — Borrar las ramas viejas.**
 GitHub → **Code** → link **"Branches"** (al lado del selector de ramas) → tachito 🗑 en:
 `claude/pending-tasks-vzoa3c`, `claude/financial-data-web-infra-whg41m`,
 `claude/premium-web-design-k60hly`, `claude/repo-branch-organization-lh2siw` (ya mergeada) y, último,
 `claude/new-session-frovqj`. GitHub no deja borrar la default, por eso el paso 2 va antes. Si te
 arrepentís, GitHub permite restaurar una rama borrada desde su PR.
 
-**Bonus (recomendado) — Poner la curva al día.**
-**Actions** → workflow **"Ingesta cierres"** → **Run workflow** (sin inputs) → Run. Los cierres estaban
-congelados al 03/07; esto los actualiza ya mismo sin esperar al cron de la noche.
+**Paso 6 — Chequeo del cron al día hábil siguiente.**
+El cron de cierres **ya corre solo** (secrets cargados; corrida automática exitosa el 09/07 a la noche;
+curva al día). NO hay que tocar nada. Solo verificá al día hábil siguiente del switch, en **Actions** →
+**"Ingesta cierres"**, que la corrida nueva salga de `main` y esté en verde. Si algún día la curva se
+atrasa: **Run workflow** (sin inputs) la pone al día a mano.
 
 ## 5. Cómo trabajamos de ahora en más (el protocolo)
 
