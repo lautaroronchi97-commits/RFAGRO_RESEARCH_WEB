@@ -24,8 +24,9 @@
 Next.js 16 (App Router) + TypeScript · Tailwind v4 · next-themes · gráficos SVG a mano (Recharts previsto) ·
 **Supabase CONECTADO** (proyecto `lineup-argentina`, lectura anon con RLS; tablas `futuros_cierres`,
 `vencimientos`, `djve`, `lineup`, `compras`, **`pizarra_historico`** (pizarra CAC 2020→hoy, $ y US$,
-5 granos), **`cbot_cierres`** (futuros CBOT maíz/soja/trigo, ¢/bu + USD/tn) — detalle en las sesiones
-abajo) · Deploy en Vercel. TZ America/Argentina/Cordoba.
+5 granos), **`cbot_cierres`** (futuros CBOT maíz/soja/trigo, ¢/bu + USD/tn), `noticias` (portal del agro,
+`sesiones/2026-07-10-portal-noticias.md`) — detalle en las sesiones abajo) · Deploy en Vercel.
+TZ America/Argentina/Cordoba.
 
 ## Design system — "Pizarra electrónica" (aprobado; rediseño premium aplicado 09/07/2026, PR #5)
 Tokens en `src/app/globals.css`. Paleta del logo: verdes (RF `#2F6E34` / AGRO `#4E9C3A`) + trigo `#EFBF2E`;
@@ -50,11 +51,12 @@ fades, tablas con hover/tick dorado, charts con grilla punteada + área en degra
 | Pizarra soja/maíz/trigo (día) | **CAC-BCR** | `www.cac.bcr.com.ar/es/precios-de-pizarra` (scrape HTML; trae `$` y `US$` + TC BNA) |
 | Pizarra histórica 2020→hoy (5 granos, $ y US$) | **CAC-BCR (consulta)** | `www.cac.bcr.com.ar/es/precios-de-pizarra/consultas?product={13\|3\|8\|9\|6}&type=any&period=day&date_start=&date_end=` → JSON en `drupalSettings.app_prices.plot.data` (`y`=$/tn, `y_usd`=US$/tn). US$ = BNA divisa comprador. Trocear en ventanas ≤3 años. → `pizarra_historico` |
 | Futuros CBOT maíz/soja/trigo (por posición, vencidos incl.) | **Barchart (API interno)** | `barchart.com/proxies/core-api/v1/historical/get` (auth por cookie `XSRF-TOKEN` del `/overview` + header `x-xsrf-token`). ¢/bu fraccionario (`"565-2"`=565,25). USD/tn: maíz ×0.3936826, soja/trigo ×0.3674371. → `cbot_cierres` |
+| **Noticias del agro** (portal) | **15 medios** (RSS + scrape) | Cron horario `ingest-noticias.mjs` → tabla Supabase `noticias`. Fuentes: BCR resumen + InfoCampo, Bichos de Campo, Ámbito, La Nación Campo, Clarín Rural, Agrositio (granos/economía/clima), dataPORTUARIA, TodoAgro, Cebada Cervecera, Agrofy News (scrape), G1 Brasil, World-Grain. Categorización PROPIA por reglas (`noticias-reglas.json`). Detalle: `sesiones/2026-07-10-portal-noticias.md` |
 
 > **Directorio completo de fuentes de noticias/informes/datos del agro** (relevamiento de Lautaro, 06/07/2026):
 > [`docs/FUENTES.md`](FUENTES.md) — oficiales AR, bolsas, cadenas por cultivo, mercados, logística, clima,
 > internacional (USDA/CONAB/etc.), consultoras, medios y calendario de publicación. Alimenta el módulo
-> **Noticias** (fuentes propias) y el futuro **Calendario de informes**.
+> **Noticias** (fuentes propias, ya implementado — ver fila arriba) y el futuro **Calendario de informes**.
 >
 > **Base de conocimiento del negocio** (correacopio / mesa de trading, referencia permanente):
 > [`docs/negocio/`](negocio/) — `01_contexto_negocio` (estructura, instrumentos, pricing, estrategias,
@@ -83,6 +85,7 @@ fades, tablas con hover/tick dorado, charts con grilla punteada + área en degra
 | 5 | Implícitas combinadas | REAL (futuro + linked); granos = ejemplo. |
 | 6 | Sintéticos/LECAPs | PARCIAL: precios LECAP reales; TIR/sintético pendiente ("pago final por letra"). |
 | 7 | Panel cambiario | REAL (volumen MAE). Compras netas BCRA = pendiente (sin API; proxy / vía X). |
+| 8 | Noticias (portal) | **REAL** (`noticias.ts` lee Supabase `noticias` + fallback en vivo; `noticias-panel.tsx` + `noticias-client.tsx`). 15 medios vía cron horario, **categorización propia** por reglas (`noticias-reglas.json` + `noticias-clasificar.ts`), filtro de ruido, chips de filtro, link-out. Detalle: `sesiones/2026-07-10-portal-noticias.md`. |
 
 ## Secretos / entorno
 - **A3** en variables de entorno (Vercel → Settings → Environment Variables): `A3_API_BASE=https://api.cocos.xoms.com.ar`,

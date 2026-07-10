@@ -1,6 +1,7 @@
-import { getNoticias, type NoticiaItem } from "@/lib/noticias";
+import { getNoticias } from "@/lib/noticias";
 import { Panel, PanelHead } from "./panel";
 import { SourceStamp } from "./source-stamp";
+import { NoticiasClient } from "./noticias-client";
 
 function IconNews() {
   return (
@@ -12,53 +13,29 @@ function IconNews() {
   );
 }
 
-function Lista({ items }: { items: NoticiaItem[] }) {
-  return (
-    <ul className="news-list">
-      {items.map((n, i) => (
-        <li key={`${n.link}-${i}`} className="news-item">
-          <a href={n.link} target="_blank" rel="noopener noreferrer" className="news-title">{n.titulo}</a>
-          <span className="news-src">{n.fuente}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 export async function NoticiasPanel() {
   const data = await getNoticias();
-  const vacio = data.categorias.length === 0 && data.feeds.length === 0;
 
   return (
     <Panel id="noticias">
       <PanelHead
         glyph={<IconNews />}
-        title="Noticias del día"
-        sub="Agro y economía · resumen BCR + medios"
+        title="Noticias"
+        sub={`Portal del agro · ${data.nFuentes} fuentes · categorización propia`}
         stamp={<SourceStamp meta={data.meta} />}
       />
-      <div className="news-wrap">
-        {data.categorias.map((c) => (
-          <div key={c.categoria} className="news-cat">
-            <div className="news-cat-h">{c.categoria}</div>
-            <Lista items={c.items} />
-          </div>
-        ))}
-        {data.feeds.length > 0 && (
-          <div className="news-cat">
-            <div className="news-cat-h">Más del sector</div>
-            {data.feeds.map((f) => (
-              <Lista key={f.fuente} items={f.items} />
-            ))}
-          </div>
-        )}
-        {vacio && <p className="news-empty">Sin noticias disponibles ahora.</p>}
-      </div>
+      {data.total > 0 ? (
+        <NoticiasClient categorias={data.categorias} ahora={data.generadoMs} />
+      ) : (
+        <p className="news-empty">Sin noticias disponibles ahora.</p>
+      )}
       <div className="panel-note">
         <span>
-          <span className="k">Fuentes</span> Resumen de diarios de BCR (con link a la fuente original) + RSS de
-          InfoCampo, Bichos de Campo y Ámbito. Se muestran titulares con link a cada medio, no el contenido.
-          Directorio completo en <code>docs/FUENTES.md</code>.
+          <span className="k">Fuentes</span> Ingesta horaria (cron → Supabase) de BCR resumen de diarios, InfoCampo,
+          Bichos de Campo, Ámbito, La Nación Campo, Clarín Rural, Agrositio, dataPORTUARIA, TodoAgro, Cebada
+          Cervecera, Agrofy News, G1 Agronegócios y World-Grain. Titulares con link a cada medio (no se republica
+          contenido). Categorías propias por reglas editables (<code>src/lib/noticias-reglas.json</code>); directorio
+          completo en <code>docs/FUENTES.md</code>.
         </span>
       </div>
     </Panel>

@@ -35,12 +35,6 @@ gráficos de posiciones y spreads:**
 - **A3 desde 2020 → COMPLETO**: backfill corrido y verificado — `futuros_cierres` ahora
   **2020-01-02 → 2026-07-08** (31.049 filas, +8.606 del tramo 2020→jul-2021).
 
-**También en vuelo — Feed A3 en vivo (PR #11, rama `claude/feed-a3-live-plan-obxzcz`):** código listo,
-falta que Lautaro valide con datos reales en la **Preview del PR** (tildar el scope **Preview** en las 3
-vars A3 de Vercel `A3_API_BASE`/`A3_USERNAME`/`A3_PASSWORD`, redeploy, y en horario de rueda 10:30–17:00
-comparar puntas/último/vol contra eTrader/Excel; al aprobar destildar Preview y mergear). Detalle:
-`docs/sesiones/2026-07-09-feed-a3-en-vivo.md`.
-
 **En vuelo / pendiente de Lautaro (bases de gráficos):**
 1. **Mergear el PR #10.** Recién ahí se pueden disparar los workflows nuevos (GitHub solo permite
    `workflow_dispatch` desde la rama default).
@@ -51,12 +45,22 @@ comparar puntas/último/vol contra eTrader/Excel; al aprobar destildar Preview y
 `SUPABASE_SERVICE_KEY` cargados) — los crons nuevos (pizarra, CBOT) usan esos mismos secrets y
 arrancan solos al estar en `main`.
 
+**Recién entrado a `main` de otras sesiones (contexto + pendientes de Lautaro):**
+- **Portal de noticias (PR #12):** panel Noticias rediseñado (categorización propia por 6 temas, chips,
+  15 fuentes) + cron horario `ingest-noticias.yml` → tabla `noticias`. Pendiente: 1ª carga a mano
+  (Actions → *Ingesta noticias* → Run workflow); el cron arranca solo al estar en `main`.
+  Detalle: `docs/sesiones/2026-07-10-portal-noticias.md`.
+- **Feed A3 en vivo (PR #11):** Pases suma Comprador/Vendedor/Último/Vol del pase real y Arbitrajes suma
+  Comprador/Vendedor del futuro (frescura ~60s por ISR, degrada solo sin creds). Pendiente: validar con
+  datos reales en horario de rueda (10:30–17:00) tildando el scope Preview/Production en las 3 vars A3 de
+  Vercel. Detalle: `docs/sesiones/2026-07-09-feed-a3-en-vivo.md`.
+
 **Ramas vivas y su veredicto:**
 | Rama | Estado |
 |---|---|
 | `main` | Única rama de integración y producción. |
-| `claude/feed-a3-live-plan-obxzcz` | Feed A3 en vivo (PR #11) → validar en Preview, luego mergear. |
-| `claude/futures-position-databases-j10vpr` | Bases de gráficos (PR #10) → mergear + backfill CBOT. |
+| `claude/futures-position-databases-j10vpr` | Bases de gráficos (PR #10, ABIERTO) → mergear + backfill CBOT. |
+| `claude/feed-a3-live-plan-obxzcz` · `claude/news-section-redesign-k3zctf` | PR #11 y #12 ya mergeados → borrar. |
 
 **Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
 0. Cerrar las bases de gráficos: mergear PR #10 → disparar backfill CBOT → **gráficos** (curvas,
