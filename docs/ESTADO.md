@@ -32,14 +32,14 @@ gráficos de posiciones y spreads:**
 - **CBOT → tabla `cbot_cierres`**: curva cercana actual cargada (20 posiciones vivas, ¢/bu **y
   USD/tn**) + `ingest-cbot.mjs` + workflow. **Falta el backfill histórico completo** (dispatch del
   workflow con `backfill=true`, tras mergear).
-- **A3 desde 2020**: disparado el backfill de `ingest-cierres.yml` (`2020-01-01→2021-07-08`).
+- **A3 desde 2020 → COMPLETO**: backfill corrido y verificado — `futuros_cierres` ahora
+  **2020-01-02 → 2026-07-08** (31.049 filas, +8.606 del tramo 2020→jul-2021).
 
 **En vuelo / pendiente de Lautaro:**
 1. **Mergear el PR #10.** Recién ahí se pueden disparar los workflows nuevos (GitHub solo permite
    `workflow_dispatch` desde la rama default).
 2. **Backfill CBOT completo:** Actions → *Ingesta cierres CBOT* → Run workflow → **backfill = true**
-   (~129 contratos, ~25-30k filas).
-3. **Verificar backfill A3 2020:** que `MIN(fecha)` de `futuros_cierres` sea 2020-01 (por SQL).
+   (~129 contratos, ~25-30k filas). Es lo único que falta para tener las 3 bases completas.
 
 **Dato verificado 09/07**: el cron de cierres A3 YA corre solo (secrets `SUPABASE_URL`/
 `SUPABASE_SERVICE_KEY` cargados) — los crons nuevos (pizarra, CBOT) usan esos mismos secrets y

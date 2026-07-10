@@ -17,8 +17,9 @@
 - **CBOT (`cbot_cierres`) — tabla + curva actual + pipeline**: migración `create_cbot_cierres`;
   cargadas las **20 posiciones vivas** (curva cercana maíz/soja/trigo) en ¢/bu **y USD/tn**;
   `scripts/ingest-cbot.mjs` (backfill 129 contratos / diario T-1) + `ingest-cbot.yml`.
-- **A3 desde 2020**: disparado el backfill del workflow existente `ingest-cierres.yml`
+- **A3 desde 2020 → COMPLETO**: corrido el backfill del workflow existente `ingest-cierres.yml`
   (`from=2020-01-01, to=2021-07-08`) — sin código nuevo (el CEM tiene datos desde 02/01/2020).
+  `futuros_cierres` quedó en 31.049 filas, 2020-01-02 → 2026-07-08 (verificado por SQL).
 - **Pizarra diaria**: `scripts/ingest-pizarra.mjs` + `ingest-pizarra.yml` (cron 21:00 UTC L-V).
 - CI local (lint + typecheck + build) ✅.
 
@@ -39,8 +40,7 @@
 
 ## Quedó pendiente / en vuelo
 - **Backfill CBOT completo**: dispatch de `ingest-cbot.yml` con `backfill=true` **tras mergear el
-  PR** (los workflows nuevos solo se disparan desde la rama default).
-- **Verificar** que el backfill A3 2020 haya completado (SQL: `MIN(fecha)` de `futuros_cierres`).
+  PR** (los workflows nuevos solo se disparan desde la rama default). Único faltante de las 3 bases.
 - Gráficos en la web (sesión aparte): curvas, spreads, ratio A3↔CBOT, pizarra vs futuros.
 
 ## Trampas descubiertas (para la próxima sesión)

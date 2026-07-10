@@ -10,7 +10,7 @@
 | Dataset | Tabla | Estado | Detalle |
 |---|---|---|---|
 | Pizarra Rosario | `pizarra_historico` | ✅ **CARGADA** | 7.893 filas, 5 granos, **2020-01-02 → 2026-07-07**, $ y US$, estimativos flagueados |
-| A3 (Matba/CEM) | `futuros_cierres` | ⏳ **backfill disparado** | tenía 2021-07-08→hoy (22.443); se disparó el backfill 2020-01-01→2021-07-08 (workflow) |
+| A3 (Matba/CEM) | `futuros_cierres` | ✅ **COMPLETA** | backfill 2020 corrido → **2020-01-02 → 2026-07-08** (31.049 filas) |
 | CBOT (Barchart) | `cbot_cierres` | 🟡 **curva actual + workflow listo** | 20 posiciones vivas cargadas hoy; histórico completo (~129 contratos) al correr el backfill del workflow |
 
 **Decisiones de Lautaro (confirmadas en el hilo):**
@@ -57,10 +57,11 @@ input `backfill`).
 **Falta:** correr el backfill completo → **dispatch de `ingest-cbot.yml` con `backfill=true`**
 (desde `main`, tras mergear el PR). Deja ~25-30k filas históricas.
 
-## Dataset 2 — A3: SOJ/MAI/TRI desde 2020
+## Dataset 2 — A3: SOJ/MAI/TRI desde 2020 (✅ completo)
 
-- **Verificado:** el CEM tiene cierres desde el **02/01/2020**. Sin código nuevo: se **disparó** el
-  workflow `ingest-cierres.yml` con `from=2020-01-01, to=2021-07-08` (upsert, re-correr es inocuo).
+- **Hecho:** el CEM tiene cierres desde el **02/01/2020**; se corrió el workflow `ingest-cierres.yml`
+  con `from=2020-01-01, to=2021-07-08` (sin código nuevo). `futuros_cierres` quedó en **31.049 filas,
+  2020-01-02 → 2026-07-08** (verificado por SQL).
 - Vencimientos de posiciones vencidas: NO están en CEM `/symbols` → para TNA histórica de spreads
   usar `MAX(fecha)` por símbolo como proxy del último día de negociación.
 
@@ -92,8 +93,7 @@ ventana móvil 10 días, que **auto-corrige** las cotizaciones provisorias) ·
 
 ## Lo que falta (para cerrar las bases)
 
-1. **Backfill A3 2020** → disparado; verificar que `futuros_cierres` arranque en 2020-01 (chequeo
-   por SQL tras el run del workflow).
+1. ~~Backfill A3 2020~~ → **HECHO** (`futuros_cierres` 2020-01-02 → 2026-07-08, 31.049 filas).
 2. **Backfill CBOT completo** → tras mergear el PR (los workflows nuevos solo se pueden disparar
    desde la rama default): **Actions → Ingesta cierres CBOT → Run workflow → backfill = true**.
 3. **Alta de secrets/crons:** los 3 workflows usan `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` (ya
