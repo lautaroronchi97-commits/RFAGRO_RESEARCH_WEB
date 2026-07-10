@@ -1,0 +1,38 @@
+name: Ingesta cierres CBOT (Barchart → Supabase)
+
+# Mantiene al día la tabla cbot_cierres con los cierres de futuros CBOT (Chicago):
+# maíz ZC, soja ZS, trigo ZW, por posición (acotado a ~12 meses previos al vto).
+# Toma T-1 (el día en curso es intradía hasta el settle) → corre L-V post-cierre.
+# Los `schedule` de GitHub Actions corren desde la rama default del repo.
+
+on:
+  schedule:
+    - cron: "0 22 * * 1-5" # 22:00 UTC, tras el settle de CBOT
+  workflow_dispatch:
+    inputs:
+      backfill:
+        description: "Backfill histórico completo (2020→hoy). Dejar vacío = solo posiciones vivas."
+        type: boolean
+        default: false
+      from_year:
+        description: "Año desde para el backfill (default 2020)"
+        required: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Ingesta
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.backfill }}" = "true" ]; then
+            node scripts/ingest-cbot.mjs --backfill --from-year "${{ github.event.inputs.from_year || '2020' }}"
+          else
+            node scripts/ingest-cbot.mjs
+          fi

@@ -19,42 +19,52 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 10/07/2026, sesión portal de noticias)
+## Ahora (última actualización: 10/07/2026, sesión bases de gráficos)
 
-**🟢 Portal de noticias rediseñado** (rama `claude/news-section-redesign-k3zctf`, detalle en
-`docs/sesiones/2026-07-10-portal-noticias.md`). El panel Noticias pasó de una lista plana con las
-categorías de BCR a un **portal con categorización PROPIA** (6 categorías por tema: Mercados/Economía/
-Internacional/Clima/Logística/Empresas), **chips de filtro**, tarjetas con glifo + fuente + "hace X h",
-y **15 fuentes** (se sumaron La Nación Campo, Clarín Rural, Agrositio, dataPORTUARIA, TodoAgro, Cebada
-Cervecera, Agrofy News, G1 Brasil, World-Grain). Un **cron horario** (`ingest-noticias.yml` →
-`scripts/ingest-noticias.mjs`) las ingesta a la **tabla Supabase `noticias`** (migración aplicada);
-la web lee de ahí con fallback en vivo. lint+tsc+build OK, render verificado en claro/oscuro con datos
-reales.
+**✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
+de datos reales. Default de GitHub = `main` · Vercel Branch Tracking = `main`.
 
-**En vuelo:** PR de esta sesión (portal de noticias), base `main`, draft hasta verificar.
+**Hecho esta sesión (PR #10, [`PLAN_BASES_GRAFICOS.md`](PLAN_BASES_GRAFICOS.md)) — bases para los
+gráficos de posiciones y spreads:**
+- **Pizarra Rosario histórica → tabla `pizarra_historico` CARGADA COMPLETA**: 5 granos (soja, maíz,
+  trigo, girasol, sorgo), **2020-01-02 → 2026-07-07** (7.893 filas), en $ y US$, estimativos
+  flagueados. Fuente: consulta histórica oficial de CAC. + script `ingest-pizarra.mjs` + cron.
+- **CBOT → tabla `cbot_cierres`**: curva cercana actual cargada (20 posiciones vivas, ¢/bu **y
+  USD/tn**) + `ingest-cbot.mjs` + workflow. **Falta el backfill histórico completo** (dispatch del
+  workflow con `backfill=true`, tras mergear).
+- **A3 desde 2020 → COMPLETO**: backfill corrido y verificado — `futuros_cierres` ahora
+  **2020-01-02 → 2026-07-08** (31.049 filas, +8.606 del tramo 2020→jul-2021).
 
-**⚠️ Acción de Lautaro tras el merge (noticias):** el cron de noticias corre desde la rama default
-(`main`), así que **queda activo recién al mergear**. Los secrets (`SUPABASE_URL`/`SUPABASE_SERVICE_KEY`)
-ya existen (los usa `ingest-cierres`). Para la 1ª carga se puede lanzar a mano en Actions → "Run workflow".
+**En vuelo / pendiente de Lautaro (bases de gráficos):**
+1. **Mergear el PR #10.** Recién ahí se pueden disparar los workflows nuevos (GitHub solo permite
+   `workflow_dispatch` desde la rama default).
+2. **Backfill CBOT completo:** Actions → *Ingesta cierres CBOT* → Run workflow → **backfill = true**
+   (~129 contratos, ~25-30k filas). Es lo único que falta para tener las 3 bases completas.
 
-**Sesión anterior (Feed A3 en vivo, ya en `main` vía PR #11):** Pases suma Comprador/Vendedor/Último/Vol
-del pase real y Arbitrajes suma Comprador/Vendedor del futuro (frescura ~60s por ISR, degrada solo sin
-credenciales). Detalle: `docs/sesiones/2026-07-09-feed-a3-en-vivo.md`. **Paso pendiente de Lautaro:**
-validar puntas/último/vol con datos reales en horario de rueda (10:30–17:00). Para ver datos reales hay
-que tildar el scope **Preview/Production** en las 3 vars A3 de Vercel
-(`A3_API_BASE`/`A3_USERNAME`/`A3_PASSWORD`); sin creds las columnas se ven en "—" (esperado).
+**Dato verificado 09/07**: el cron de cierres A3 YA corre solo (secrets `SUPABASE_URL`/
+`SUPABASE_SERVICE_KEY` cargados) — los crons nuevos (pizarra, CBOT) usan esos mismos secrets y
+arrancan solos al estar en `main`.
 
-**Contexto previo (vigente):** producción sirve `main` con el rediseño premium + todos los paneles. El
-cron de cierres (`ingest-cierres.yml`, 23:00 UTC hábiles) YA corre solo desde `main` (curva al día) — NO
-hay que cargar secrets ni correr ingestas a mano.
+**Recién entrado a `main` de otras sesiones (contexto + pendientes de Lautaro):**
+- **Portal de noticias (PR #12):** panel Noticias rediseñado (categorización propia por 6 temas, chips,
+  15 fuentes) + cron horario `ingest-noticias.yml` → tabla `noticias`. Pendiente: 1ª carga a mano
+  (Actions → *Ingesta noticias* → Run workflow); el cron arranca solo al estar en `main`.
+  Detalle: `docs/sesiones/2026-07-10-portal-noticias.md`.
+- **Feed A3 en vivo (PR #11):** Pases suma Comprador/Vendedor/Último/Vol del pase real y Arbitrajes suma
+  Comprador/Vendedor del futuro (frescura ~60s por ISR, degrada solo sin creds). Pendiente: validar con
+  datos reales en horario de rueda (10:30–17:00) tildando el scope Preview/Production en las 3 vars A3 de
+  Vercel. Detalle: `docs/sesiones/2026-07-09-feed-a3-en-vivo.md`.
 
 **Ramas vivas y su veredicto:**
 | Rama | Estado |
 |---|---|
 | `main` | Única rama de integración y producción. |
-| `claude/news-section-redesign-k3zctf` | Sesión 10/07 (portal de noticias) → borrar tras merge. |
+| `claude/futures-position-databases-j10vpr` | Bases de gráficos (PR #10, ABIERTO) → mergear + backfill CBOT. |
+| `claude/feed-a3-live-plan-obxzcz` · `claude/news-section-redesign-k3zctf` | PR #11 y #12 ya mergeados → borrar. |
 
 **Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
+0. Cerrar las bases de gráficos: mergear PR #10 → disparar backfill CBOT → **gráficos** (curvas,
+   spreads, ratio A3↔CBOT, pizarra vs futuros). Detalle en `PLAN_BASES_GRAFICOS.md`.
 1. **Fase 2 del Feed A3 — histórico intradiario**: cron GH Actions `*/15 13-20 * * 1-5` UTC +
    `scripts/ingest-rueda.mjs` + tabla `snapshots` + `ingest_log` (INFRAESTRUCTURA.md). Habilita gráficos
    intradía. (La frescura ya está resuelta web-directa; esto es SOLO para guardar historia.)
