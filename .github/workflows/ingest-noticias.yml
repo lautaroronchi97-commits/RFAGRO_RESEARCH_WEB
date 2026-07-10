@@ -1,0 +1,29 @@
+name: Ingesta noticias (medios → Supabase)
+
+# Portal de noticias: recorre todas las fuentes (RSS + scrapes de docs/FUENTES.md),
+# clasifica con las reglas propias (src/lib/noticias-reglas.json) y upserta en la
+# tabla public.noticias. Corre cada hora; también se puede lanzar a mano.
+# Los `schedule` de GitHub Actions corren desde la rama default del repo (main).
+
+on:
+  schedule:
+    - cron: "17 * * * *" # cada hora a los :17 (los :00 en punto sufren la congestión de GitHub)
+  workflow_dispatch:
+
+concurrency:
+  group: ingest-noticias
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Ingesta
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/ingest-noticias.mjs

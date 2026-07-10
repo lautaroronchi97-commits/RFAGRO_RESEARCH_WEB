@@ -1,0 +1,84 @@
+{
+  "_doc": "Reglas de categorización PROPIA del portal de noticias RF AGRO (no se copia la de BCR). La PRIMERA categoría cuya lista matchea el titular gana → el orden va de la más específica a la más general. Palabras: sin distinción de mayúsculas ni acentos; una palabra suelta matchea por palabra entera, una frase por secuencia de palabras. Hay términos en español, portugués (G1) e inglés (World-Grain). Si nada matchea se usa la categoría default de la fuente (scripts/ingest-noticias.mjs). Editar acá ajusta al cron y a la web juntos.",
+  "categorias": [
+    {
+      "id": "clima",
+      "nombre": "Clima",
+      "palabras": [
+        "lluvia", "lluvias", "sequía", "seca", "helada", "heladas", "granizo", "tormenta", "tormentas",
+        "clima", "climática", "climático", "meteorológico", "meteorológica", "pronóstico", "pronósticos",
+        "el niño", "la niña", "súper niño", "niño fuerte", "enso", "precipitaciones", "hídrico", "hídrica", "hídricas", "humedad",
+        "temperaturas", "ola de calor", "ola polar", "agua útil", "reservas de agua", "inundación", "inundaciones",
+        "drought", "rainfall", "weather", "frost", "heat wave", "monsoon",
+        "chuva", "chuvas", "estiagem", "geada", "clima seco"
+      ]
+    },
+    {
+      "id": "logistica",
+      "nombre": "Logística y puertos",
+      "palabras": [
+        "puerto", "puertos", "portuario", "portuaria", "portuarias", "portuarios", "buque", "buques",
+        "embarque", "embarques", "line-up", "lineup", "hidrovía", "dragado", "calado", "camiones",
+        "ferrocarril", "flete", "fletes", "logística", "transporte de cargas", "estibadores", "paro", "amarre", "bodega", "bodegas",
+        "vessel", "vessels", "shipping", "freight", "port", "ports",
+        "navio", "navios", "porto", "portos"
+      ]
+    },
+    {
+      "id": "internacional",
+      "nombre": "Internacional",
+      "palabras": [
+        "usda", "wasde", "chicago", "cbot", "cme", "export sales", "crop progress", "conab", "matif",
+        "mar negro", "rusia", "ucrania", "china", "estados unidos", "eeuu", "trump", "brasil", "brazil",
+        "europa", "unión europea", "aranceles", "arancel", "safra", "safrinha", "milho",
+        "india", "indonesia", "malasia", "egipto", "argelia", "vietnam", "paraguay", "uruguay", "bolivia",
+        "black sea", "russia", "ukraine", "soybean", "soybeans", "wheat", "corn", "grain", "grains",
+        "palm oil", "canola", "tariff", "tariffs"
+      ]
+    },
+    {
+      "id": "economia",
+      "nombre": "Economía y política",
+      "palabras": [
+        "dólar", "blue", "cambiario", "cambiaria", "tipo de cambio", "retenciones", "derechos de exportación",
+        "bcra", "banco central", "inflación", "ipc", "tasa de interés", "tasas", "milei", "caputo",
+        "gobierno", "congreso", "senado", "diputados", "ley", "decreto", "impuesto", "impuestos", "fiscal",
+        "cepo", "brecha", "fmi", "bonos", "lecap", "lecaps", "riesgo país", "elecciones", "electoral",
+        "subsidios", "iva", "afip", "presupuesto", "deuda", "política", "casa rosada"
+      ]
+    },
+    {
+      "id": "empresas",
+      "nombre": "Empresas y negocios",
+      "palabras": [
+        "empresa", "empresas", "compañía", "inversión", "inversiones", "invierten", "adquisición", "fusión",
+        "planta", "fábrica", "bayer", "syngenta", "cargill", "bunge", "dreyfus", "cofco", "viterra",
+        "aceitera", "molinos", "vicentin", "startup", "agtech", "lanzamiento", "quiebra",
+        "concurso de acreedores", "negocios"
+      ]
+    },
+    {
+      "id": "mercados",
+      "nombre": "Mercados y precios",
+      "palabras": [
+        "soja", "maíz", "trigo", "girasol", "cebada", "sorgo", "granos", "poroto", "oleaginosas", "cereales",
+        "precio", "precios", "pizarra", "cotización", "cotizaciones", "futuros", "matba", "rofex",
+        "mercado", "mercados", "siembra", "cosecha", "rinde", "rindes", "campaña", "hectáreas", "toneladas",
+        "exportación", "exportaciones", "molienda", "etanol", "biodiésel", "biocombustibles", "fas", "fob",
+        "hacienda", "ganadería", "novillo", "feedlot", "leche", "tambo", "carne"
+      ]
+    }
+  ],
+  "_ruidoDoc": "Titulares de SERVICIO/widget que ensucian el portal (cotización del dólar por provincia, pizarra diaria, clima puntual, ‘minuto a minuto’). Se descartan en la ingesta y en la web. Son regex (flag i) probadas contra el título crudo. Editar con cuidado: deben matchear páginas de servicio, no noticias reales.",
+  "ruido": [
+    "a cu[aá]nto (cotiza|cotizan|est[aá])",
+    "minuto a minuto",
+    "^clima en .+ hoy",
+    "^(precio|precios) (del|de la|de los|de las|de) .+(hoy|rosario)",
+    "(d[oó]lar|euro) .*\\bhoy\\b.*\\d{4}",
+    "cotiza(n|ci[oó]n) .*(hoy|este) .*\\d{4}",
+    "^(d[oó]lar|euro) (blue|oficial|mep|ccl|mayorista|tarjeta|cripto)"
+  ],
+  "ordenPanel": ["mercados", "economia", "internacional", "clima", "logistica", "empresas"],
+  "fallback": "mercados"
+}

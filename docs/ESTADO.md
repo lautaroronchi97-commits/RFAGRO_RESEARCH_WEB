@@ -19,27 +19,40 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 09/07/2026, sesión Feed A3 en vivo)
+## Ahora (última actualización: 10/07/2026, sesión portal de noticias)
 
-**🟡 Feed A3 en vivo — código listo, falta validar con datos reales.** Se conectó el cliente A3 (que
-estaba escrito pero dormido) a los paneles: **Pases** suma Comprador/Vendedor/Último/Vol del instrumento
-de pase real, **Arbitrajes** suma Comprador/Vendedor del futuro. Frescura ~60s por la regeneración ISR de
-la página (NO un cron: un cron de 60s no existe gratis; el cron queda para el histórico). Todo degrada
-solo sin credenciales. `lint`/`typecheck`/`build` ✅. Detalle: `docs/sesiones/2026-07-09-feed-a3-en-vivo.md`.
+**🟢 Portal de noticias rediseñado** (rama `claude/news-section-redesign-k3zctf`, detalle en
+`docs/sesiones/2026-07-10-portal-noticias.md`). El panel Noticias pasó de una lista plana con las
+categorías de BCR a un **portal con categorización PROPIA** (6 categorías por tema: Mercados/Economía/
+Internacional/Clima/Logística/Empresas), **chips de filtro**, tarjetas con glifo + fuente + "hace X h",
+y **15 fuentes** (se sumaron La Nación Campo, Clarín Rural, Agrositio, dataPORTUARIA, TodoAgro, Cebada
+Cervecera, Agrofy News, G1 Brasil, World-Grain). Un **cron horario** (`ingest-noticias.yml` →
+`scripts/ingest-noticias.mjs`) las ingesta a la **tabla Supabase `noticias`** (migración aplicada);
+la web lee de ahí con fallback en vivo. lint+tsc+build OK, render verificado en claro/oscuro con datos
+reales.
 
-**En vuelo (paso de Lautaro):** validar datos reales en la **Preview del PR** — tildar el scope
-**Preview** en las 3 vars A3 de Vercel (`A3_API_BASE`/`A3_USERNAME`/`A3_PASSWORD`), redeploy de la Preview,
-y en horario de rueda (10:30–17:00) comparar puntas/último/vol contra eTrader/Excel. Al aprobar: destildar
-Preview y mergear. Antes del merge, en la Preview sin creds las columnas se ven en "—" (esperado).
+**En vuelo:** PR de esta sesión (portal de noticias), base `main`, draft hasta verificar.
 
-**Contexto previo (sigue vigente):** producción sirve `main` con el rediseño premium + todos los paneles.
-El cron de cierres (`ingest-cierres.yml`, 23:00 UTC hábiles) YA corre solo desde `main` (curva al día).
+**⚠️ Acción de Lautaro tras el merge (noticias):** el cron de noticias corre desde la rama default
+(`main`), así que **queda activo recién al mergear**. Los secrets (`SUPABASE_URL`/`SUPABASE_SERVICE_KEY`)
+ya existen (los usa `ingest-cierres`). Para la 1ª carga se puede lanzar a mano en Actions → "Run workflow".
+
+**Sesión anterior (Feed A3 en vivo, ya en `main` vía PR #11):** Pases suma Comprador/Vendedor/Último/Vol
+del pase real y Arbitrajes suma Comprador/Vendedor del futuro (frescura ~60s por ISR, degrada solo sin
+credenciales). Detalle: `docs/sesiones/2026-07-09-feed-a3-en-vivo.md`. **Paso pendiente de Lautaro:**
+validar puntas/último/vol con datos reales en horario de rueda (10:30–17:00). Para ver datos reales hay
+que tildar el scope **Preview/Production** en las 3 vars A3 de Vercel
+(`A3_API_BASE`/`A3_USERNAME`/`A3_PASSWORD`); sin creds las columnas se ven en "—" (esperado).
+
+**Contexto previo (vigente):** producción sirve `main` con el rediseño premium + todos los paneles. El
+cron de cierres (`ingest-cierres.yml`, 23:00 UTC hábiles) YA corre solo desde `main` (curva al día) — NO
+hay que cargar secrets ni correr ingestas a mano.
 
 **Ramas vivas y su veredicto:**
 | Rama | Estado |
 |---|---|
 | `main` | Única rama de integración y producción. |
-| `claude/feed-a3-live-plan-obxzcz` | Sesión Feed A3 en vivo (esta) → borrar tras merge. |
+| `claude/news-section-redesign-k3zctf` | Sesión 10/07 (portal de noticias) → borrar tras merge. |
 
 **Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
 1. **Fase 2 del Feed A3 — histórico intradiario**: cron GH Actions `*/15 13-20 * * 1-5` UTC +

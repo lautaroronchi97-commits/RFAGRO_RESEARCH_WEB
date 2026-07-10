@@ -23,7 +23,8 @@
 ## Stack
 Next.js 16 (App Router) + TypeScript · Tailwind v4 · next-themes · gráficos SVG a mano (Recharts previsto) ·
 **Supabase CONECTADO** (proyecto `lineup-argentina`, lectura anon con RLS; tablas `futuros_cierres`,
-`vencimientos`, `djve`, `lineup`, `compras` — detalle en la sesión 07–08/07 abajo) · Deploy en Vercel.
+`vencimientos`, `djve`, `lineup`, `compras`, `noticias` — detalle en la sesión 07–08/07 abajo y, para
+`noticias`, en `docs/sesiones/2026-07-10-portal-noticias.md`) · Deploy en Vercel.
 TZ America/Argentina/Cordoba.
 
 ## Design system — "Pizarra electrónica" (aprobado; rediseño premium aplicado 09/07/2026, PR #5)
