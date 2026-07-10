@@ -76,8 +76,8 @@ fades, tablas con hover/tick dorado, charts con grilla punteada + área en degra
 | # | Módulo | Estado |
 |---|--------|--------|
 | 0 | Cinta | REAL (dólares). Pizarra en la cinta = ejemplo (falta usar CAC). |
-| 1 | Arbitrajes | **REAL** (`arbitrajes-cierres.ts` + `arbitrajes-editable.tsx`): futuro (ajuste A3/CEM) vs pizarra USD de CAC (`pizarra.ts`, scrape + override). **Pizarra editable** (recalcula TNA en vivo). Spread + tasa directa + **TNA USD** (días al vto desde `vencimientos`) + Vol. |
-| 2 | Pases | **REAL** (`pases-cierres.ts`): spread de ajuste + tasa directa + **TNA** (días entre vtos, tabla `vencimientos`). Falta comprador/vendedor. |
+| 1 | Arbitrajes | **REAL** (`arbitrajes-cierres.ts` + `arbitrajes-editable.tsx`): futuro (ajuste A3/CEM) vs pizarra USD de CAC (`pizarra.ts`, scrape + override). **Pizarra editable** (recalcula TNA en vivo). Spread + tasa directa + **TNA USD** (días al vto desde `vencimientos`) + Vol. **+ Comprador/Vendedor del futuro en vivo** (`a3-live.ts`, A3 en horario de rueda). |
+| 2 | Pases | **REAL** (`pases-cierres.ts`): spread de ajuste + tasa directa + **TNA** (días entre vtos, tabla `vencimientos`). **+ Comprador/Vendedor/Último/Vol del pase en vivo** (`a3-live.ts`, instrumento `GRANO.ROS/POS1/POS2` de A3, en horario de rueda). |
 | 3 | Dólar futuro | REAL (MAE) + TNA/TEM/TEA. |
 | 4 | Dólar linked | REAL (data912) + TNA/TEM/TEA + spread oficial MAE. |
 | 5 | Implícitas combinadas | REAL (futuro + linked); granos = ejemplo. |
@@ -97,6 +97,10 @@ Token válido, 349 instrumentos DDA (granos) + 69 DDF (dólar), market data real
 futuros `SOJ.ROS/JUL26`, pases `MAI.ROS/SEP26/DIC26`, dólar `DLR/JUL26`; opciones traen strike+`C/P` (excluir),
 disponible = `/DISPO`. **Límites:** no hay cap diario documentado; A3 recomienda WebSocket para MD en vivo;
 el caché de Next ya acota las llamadas (una regeneración por ventana, no por usuario). Todo hoy es **REST**.
+**Feed en vivo (09/07):** `src/lib/a3-live.ts` conecta el cliente A3 a los paneles Pases/Arbitrajes
+**web-directa** (por la regeneración ISR de la página, `revalidate = 60` + MD `revalidate = 30`), NO por un
+cron — un cron de 60s no existe gratis (GitHub Actions mín. 5 min; Vercel Hobby crons 1×/día). Un cron
+queda SOLO para el histórico intradiario (Fase 2, tabla `snapshots`).
 
 ## Auditoría integral (07/07/2026) — hecha, Fase 0+A aplicada
 Se auditó todo (arquitectura/datos, UI/UX, seguridad/repo) + plan por fases revisado por experto.
@@ -121,8 +125,11 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
 **Ya hecho de los planes viejos** (no re-trabajar): C1 Supabase + cron de cierres (vía CEM diario +
 GitHub Actions, corre solo) · C2 Arbitrajes + Pases reales (08/07) · estética premium (09/07) ·
 `dates.ts`/`vencimientos.ts` extraídos · auto-curva en calculadoras (PR #4).
-1. **Feed A3 en vivo** (cron 60s en horario de rueda): cotización/volumen/bid-ask de pases y
-   comprador/vendedor de arbitrajes — el CEM diario no lo tiene. (Es lo que queda "vivo" del viejo C1.)
+1. ~~**Feed A3 en vivo**~~ — **HECHO (display)** el 09/07: puntas/volumen/último de pases + comprador/vendedor
+   de arbitrajes vía `a3-live.ts`, **web-directa** (frescura ~60s por la regeneración ISR, NO un cron: un
+   cron de 60s no existe gratis). Falta validar datos reales en Preview. **Queda la Fase 2 — histórico
+   intradiario**: cron GH Actions `*/15 13-20 * * 1-5` UTC + `scripts/ingest-rueda.mjs` + tabla `snapshots`
+   + `ingest_log` (INFRAESTRUCTURA.md) para gráficos intradía. El CEM diario no tiene nada de esto.
 2. **C3 Sintéticos TIR**: [LAUTARO] tabla "pago final por letra" (IAMC `informeslecap`).
 3. **Fase B (estructura)**: B1 Resiliencia (tarjetas de degradación por panel desde el Result; OJO: bajo
    ISR estático Suspense NO streamea) · B2 extraer `tickers.ts`/`rates.ts` + [LAUTARO] 1 ejemplo numérico

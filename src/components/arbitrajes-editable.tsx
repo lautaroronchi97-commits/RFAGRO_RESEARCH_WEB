@@ -12,7 +12,14 @@ import { InfoTip } from "./infotip";
  * fijos (vencimiento real de la posición), así que sólo depende de la pizarra.
  */
 
-type Row = { pos: string; ajuste: number | null; dias: number | null; volume: number | null };
+type Row = {
+  pos: string;
+  ajuste: number | null;
+  dias: number | null;
+  volume: number | null;
+  bid: number | null; // comprador (A3 en vivo, solo lectura)
+  ask: number | null; // vendedor (A3 en vivo, solo lectura)
+};
 export type ArbGranoClient = {
   underlying: string;
   nombre: string;
@@ -46,11 +53,22 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
 
   return (
     <div className="table-scroll">
-      <table className="tbl">
+      <table className="tbl" style={{ minWidth: 760 }}>
         <thead>
           <tr>
             <th className="l" scope="col">Posición</th>
             <th scope="col">Ajuste</th>
+            <th scope="col">
+              <InfoTip term="Comprador">
+                Mejor punta compradora (bid) del futuro en A3, en vivo (~1 min con rueda abierta).
+                — = sin puntas (p. ej. fuera de rueda).
+              </InfoTip>
+            </th>
+            <th scope="col">
+              <InfoTip term="Vendedor">
+                Mejor punta vendedora (oferta/ask) del futuro en A3, en vivo.
+              </InfoTip>
+            </th>
             <th scope="col">
               <InfoTip term="Spread US$">
                 Diferencia entre el ajuste del futuro y la pizarra del disponible.
@@ -79,7 +97,7 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
             return (
               <React.Fragment key={g.underlying}>
                 <tr className="grp">
-                  <td className="l" colSpan={7}>
+                  <td className="l" colSpan={9}>
                     <span className="grp-cell">
                       <span className="gglyph" style={{ color: glyphColor(g.underlying) }}>
                         {glyphFor(g.underlying)}
@@ -128,6 +146,8 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
                     <tr key={r.pos}>
                       <td className="l sym">{r.pos}</td>
                       <td>{nfmt(r.ajuste, 2)}</td>
+                      <td>{nfmt(r.bid, 2)}</td>
+                      <td>{nfmt(r.ask, 2)}</td>
                       <td className={cls(spread)}>{sfmt(spread, 2)}</td>
                       <td className={cls(directa)}>{pfmt(directa, 2)}</td>
                       <td>
@@ -150,7 +170,7 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
           })}
           {granos.length === 0 && (
             <tr>
-              <td className="l dim" colSpan={7}>
+              <td className="l dim" colSpan={9}>
                 Sin datos de arbitrajes todavía (faltan cierres o pizarra).
               </td>
             </tr>

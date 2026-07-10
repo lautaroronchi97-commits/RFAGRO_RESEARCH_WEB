@@ -35,7 +35,13 @@ gráficos de posiciones y spreads:**
 - **A3 desde 2020 → COMPLETO**: backfill corrido y verificado — `futuros_cierres` ahora
   **2020-01-02 → 2026-07-08** (31.049 filas, +8.606 del tramo 2020→jul-2021).
 
-**En vuelo / pendiente de Lautaro:**
+**También en vuelo — Feed A3 en vivo (PR #11, rama `claude/feed-a3-live-plan-obxzcz`):** código listo,
+falta que Lautaro valide con datos reales en la **Preview del PR** (tildar el scope **Preview** en las 3
+vars A3 de Vercel `A3_API_BASE`/`A3_USERNAME`/`A3_PASSWORD`, redeploy, y en horario de rueda 10:30–17:00
+comparar puntas/último/vol contra eTrader/Excel; al aprobar destildar Preview y mergear). Detalle:
+`docs/sesiones/2026-07-09-feed-a3-en-vivo.md`.
+
+**En vuelo / pendiente de Lautaro (bases de gráficos):**
 1. **Mergear el PR #10.** Recién ahí se pueden disparar los workflows nuevos (GitHub solo permite
    `workflow_dispatch` desde la rama default).
 2. **Backfill CBOT completo:** Actions → *Ingesta cierres CBOT* → Run workflow → **backfill = true**
@@ -49,13 +55,15 @@ arrancan solos al estar en `main`.
 | Rama | Estado |
 |---|---|
 | `main` | Única rama de integración y producción. |
-| `claude/pending-tasks-review-72ywwf` | Sesión 09/07 (actualización de estado) → borrar tras merge. |
-| `claude/futures-position-databases-j10vpr` | Sesión 09/07 (plan bases de gráficos, PR #10) → borrar tras merge. |
+| `claude/feed-a3-live-plan-obxzcz` | Feed A3 en vivo (PR #11) → validar en Preview, luego mergear. |
+| `claude/futures-position-databases-j10vpr` | Bases de gráficos (PR #10) → mergear + backfill CBOT. |
 
 **Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
 0. Cerrar las bases de gráficos: mergear PR #10 → disparar backfill CBOT → **gráficos** (curvas,
    spreads, ratio A3↔CBOT, pizarra vs futuros). Detalle en `PLAN_BASES_GRAFICOS.md`.
-1. Feed A3 en vivo (pases: cotización/volumen/bid-ask).
+1. **Fase 2 del Feed A3 — histórico intradiario**: cron GH Actions `*/15 13-20 * * 1-5` UTC +
+   `scripts/ingest-rueda.mjs` + tabla `snapshots` + `ingest_log` (INFRAESTRUCTURA.md). Habilita gráficos
+   intradía. (La frescura ya está resuelta web-directa; esto es SOLO para guardar historia.)
 2. Sintéticos TIR (pago final por letra, IAMC). [Requiere tabla de Lautaro]
 3. Fase B (resiliencia, tests, mobile) y backlog de datos (reactivar scrapers `lineup`/`compras`,
    lineups, calendario, reporte WhatsApp — lista completa en CONTEXTO «Pendientes» punto 5).

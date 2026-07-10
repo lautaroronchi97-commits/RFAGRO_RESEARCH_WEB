@@ -1,6 +1,7 @@
 import * as React from "react";
 import { getPases } from "@/lib/pases-cierres";
-import { sfmt, pfmt, dirOf, arrowOf } from "@/lib/format";
+import { getPasesLive, mergeLiveMeta } from "@/lib/a3-live";
+import { sfmt, pfmt, nfmt, dirOf, arrowOf } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
 import { GlyphSoja, GlyphMaiz, GlyphTrigo } from "./icons";
 import { InfoTip } from "./infotip";
@@ -29,7 +30,8 @@ function IconPases() {
 const cls = (v: number | null) => (v == null ? "neu2" : v > 0 ? "pos" : v < 0 ? "neg" : "neu2");
 
 export async function PasesPanel() {
-  const data = await getPases();
+  const [data, live] = await Promise.all([getPases(), getPasesLive()]);
+  const meta = mergeLiveMeta(data.meta, live);
 
   return (
     <Panel id="pases">
@@ -37,10 +39,10 @@ export async function PasesPanel() {
         glyph={<IconPases />}
         title="Pases"
         sub="Spreads entre posiciones (calendario)"
-        stamp={<SourceStamp meta={data.meta} />}
+        stamp={<SourceStamp meta={meta} />}
       />
       <div className="table-scroll">
-        <table className="tbl" style={{ minWidth: 620 }}>
+        <table className="tbl" style={{ minWidth: 880 }}>
           <thead>
             <tr>
               <th className="l" scope="col">Pase</th>
@@ -62,13 +64,35 @@ export async function PasesPanel() {
               </th>
               <th scope="col">Días</th>
               <th scope="col">Últ. op.</th>
+              <th scope="col">
+                <InfoTip term="Comprador">
+                  Mejor punta compradora (bid) del instrumento de pase que cotiza en A3, en vivo
+                  (~1 min con rueda abierta). — = sin puntas (p. ej. fuera de rueda).
+                </InfoTip>
+              </th>
+              <th scope="col">
+                <InfoTip term="Vendedor">
+                  Mejor punta vendedora (oferta/ask) del instrumento de pase en A3, en vivo.
+                </InfoTip>
+              </th>
+              <th scope="col">
+                <InfoTip term="Último">
+                  Último precio operado del pase HOY en la rueda de A3. Distinto de Últ. op., que se
+                  calcula con los cierres (ajuste) del día.
+                </InfoTip>
+              </th>
+              <th scope="col">
+                <InfoTip term="Vol">
+                  Volumen operado del instrumento de pase en el día (A3).
+                </InfoTip>
+              </th>
             </tr>
           </thead>
           <tbody>
             {data.granos.map((g) => (
               <React.Fragment key={g.underlying}>
                 <tr className="grp">
-                  <td className="l" colSpan={6}>
+                  <td className="l" colSpan={10}>
                     <span className="grp-cell">
                       <span className="gglyph" style={{ color: glyphColor(g.underlying) }}>
                         {glyphFor(g.underlying)}
@@ -80,6 +104,7 @@ export async function PasesPanel() {
                 </tr>
                 {g.spreads.map((r) => {
                   const d = dirOf(r.tna);
+                  const p = live.puntas.get(r.spreadSymbol);
                   return (
                     <tr key={r.label}>
                       <td className="l sym">{r.label}</td>
@@ -97,6 +122,10 @@ export async function PasesPanel() {
                       </td>
                       <td className="dim">{r.dias != null ? r.dias : "—"}</td>
                       <td className="dim">{sfmt(r.ultimo, 2)}</td>
+                      <td>{sfmt(p?.bid ?? null, 2)}</td>
+                      <td>{sfmt(p?.ask ?? null, 2)}</td>
+                      <td>{sfmt(p?.last ?? null, 2)}</td>
+                      <td className="dim">{p?.vol != null ? nfmt(p.vol, 0) : "—"}</td>
                     </tr>
                   );
                 })}
@@ -104,7 +133,7 @@ export async function PasesPanel() {
             ))}
             {data.granos.length === 0 && (
               <tr>
-                <td className="l dim" colSpan={6}>
+                <td className="l dim" colSpan={10}>
                   Sin cierres para calcular pases todavía.
                 </td>
               </tr>
@@ -117,7 +146,9 @@ export async function PasesPanel() {
           <span className="k">Real</span> Pase = diferencia de ajuste (settlement) de la posición cercana
           contra cada más lejana del mismo grano, desde los cierres del CEM guardados en Supabase. TNA = tasa directa
           anualizada por los días entre vencimientos (CEM). Últ. op. = spread sobre el último precio operado
-          (— si alguna posición no operó ese día). Próximo: comprador/vendedor + histórico desde los snapshots.
+          (— si alguna posición no operó ese día). Comprador/Vendedor/Último/Vol = puntas y operado del
+          instrumento de pase en A3, en vivo (~1 min con rueda abierta; fuera de rueda las puntas quedan —).
+          Próximo: histórico desde los snapshots.
         </span>
       </div>
     </Panel>

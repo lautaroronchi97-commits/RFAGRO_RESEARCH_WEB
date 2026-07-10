@@ -28,6 +28,7 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export type PaseSpread = {
   label: string; // "JUL26 / DIC26"
+  spreadSymbol: string; // instrumento de pase en A3, ej. "SOJ.ROS/JUL26/DIC26" (clave del feed en vivo)
   ajuste: number | null; // settlement(larga) − settlement(cercana)
   directa: number | null; // settlement(larga) / settlement(cercana) − 1, en %
   tna: number | null; // directa anualizada (365/días entre vtos), en %
@@ -71,7 +72,16 @@ export const getPases = cache(async (): Promise<PasesData> => {
         const dias = vc && vl ? diasEntre(vc, vl) : null;
         const tna =
           directa != null && dias != null && dias > 0 ? round2((directa * 365) / dias) : null;
-        spreads.push({ label: `${cercana.posicion} / ${larga.posicion}`, ajuste, directa, tna, dias, ultimo });
+        spreads.push({
+          label: `${cercana.posicion} / ${larga.posicion}`,
+          // Símbolo del pase real en A3: root de la cercana + posición de la larga.
+          spreadSymbol: `${cercana.symbol}/${larga.posicion}`,
+          ajuste,
+          directa,
+          tna,
+          dias,
+          ultimo,
+        });
       }
     }
     if (spreads.length > 0) {
