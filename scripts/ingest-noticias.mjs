@@ -254,13 +254,15 @@ async function main() {
     }
   });
 
-  // dedup por link entre fuentes (BCR suele linkear notas que también vienen por RSS)
-  const seen = new Set();
-  const rows = all.filter((r) => {
-    if (seen.has(r.link)) return false;
-    seen.add(r.link);
-    return true;
-  });
+  // dedup por link entre fuentes (BCR suele linkear notas que también vienen por RSS). Ante colisión
+  // gana el registro MÁS RICO: el que trae fecha_pub (y así el nombre de medio limpio, no "(vía BCR)"),
+  // para que la fecha/orden sea estable corrida a corrida, sin depender de qué fuente respondió esa hora.
+  const byLink = new Map();
+  for (const r of all) {
+    const prev = byLink.get(r.link);
+    if (!prev || (!prev.fecha_pub && r.fecha_pub)) byLink.set(r.link, r);
+  }
+  const rows = [...byLink.values()];
 
   const porCat = {};
   for (const r of rows) porCat[r.categoria] = (porCat[r.categoria] ?? 0) + 1;

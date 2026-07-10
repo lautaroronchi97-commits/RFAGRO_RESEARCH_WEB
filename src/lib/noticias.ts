@@ -37,18 +37,25 @@ type ItemCat = NoticiaItem & { categoria: string };
 
 function agrupar(items: ItemCat[]): NoticiaCategoria[] {
   const porCat = new Map<string, NoticiaItem[]>();
+  const vistos = new Set<string>();
   for (const it of items) {
     if (esRuido(it.titulo)) continue; // descarta páginas de servicio (dólar por provincia, clima puntual…)
+    if (vistos.has(it.link)) continue; // dedup por link: evita choque de keys y notas duplicadas (BCR + RSS)
+    vistos.add(it.link);
     const id = ORDEN_PANEL.includes(it.categoria) ? it.categoria : CATEGORIA_FALLBACK;
     const lista = porCat.get(id) ?? [];
     lista.push({ titulo: it.titulo, fuente: it.fuente, link: it.link, fechaMs: it.fechaMs });
     porCat.set(id, lista);
   }
+  // Sin fecha (titulares curados de BCR en el fallback) = "recién vistos" → rankean como ahora, no en
+  // epoch 0: si no, quedaban al fondo y el slice de abajo los truncaba, escondiendo la fuente primaria.
+  const ahoraMs = Date.now();
+  const rank = (x: NoticiaItem) => x.fechaMs ?? ahoraMs;
   return ORDEN_PANEL.filter((id) => porCat.has(id)).map((id) => ({
     id,
     nombre: nombreCategoria(id),
     items: (porCat.get(id) ?? [])
-      .sort((a, b) => (b.fechaMs ?? 0) - (a.fechaMs ?? 0))
+      .sort((a, b) => rank(b) - rank(a))
       .slice(0, MAX_POR_CATEGORIA),
   }));
 }
@@ -208,11 +215,14 @@ async function fetchText(url: string): Promise<string | null> {
 
 async function enVivo(problema: string): Promise<NoticiasData> {
   const [bcr, ...feeds] = await Promise.all([fetchText(BCR_URL), ...FEEDS_VIVO.map((f) => fetchText(f.url))]);
-  const items: ItemCat[] = bcr ? parseBcr(bcr) : [];
+  // RSS primero, BCR al final: si una nota llega por RSS y por BCR, la dedup de `agrupar` (primero gana)
+  // conserva el registro RSS, que trae fecha real y nombre de medio limpio (no el "(vía BCR)").
+  const items: ItemCat[] = [];
   FEEDS_VIVO.forEach((f, i) => {
     const xml = feeds[i];
     if (xml) items.push(...parseRss(xml, f.fuente, f.def));
   });
+  if (bcr) items.push(...parseBcr(bcr));
 
   const problemas = [problema];
   if (!bcr) problemas.push("Resumen BCR no disponible");

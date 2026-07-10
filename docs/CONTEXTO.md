@@ -48,11 +48,12 @@ fades, tablas con hover/tick dorado, charts con grilla punteada + área en degra
 | Oficial / MEP / CCL / mayorista | dolarapi + criptoya | `dolarapi.com/v1/dolares`, `criptoya.com/api/dolar` |
 | Macro / reservas | BCRA v4 | `api.bcra.gob.ar/estadisticas/v4.0/monetarias` (v3 deprecada) |
 | Pizarra soja/maíz/trigo | **CAC-BCR** | `www.cac.bcr.com.ar/es/precios-de-pizarra` (scrape HTML; trae `$` y `US$` + TC BNA) |
+| **Noticias del agro** (portal) | **15 medios** (RSS + scrape) | Cron horario `ingest-noticias.mjs` → tabla Supabase `noticias`. Fuentes: BCR resumen + InfoCampo, Bichos de Campo, Ámbito, La Nación Campo, Clarín Rural, Agrositio (granos/economía/clima), dataPORTUARIA, TodoAgro, Cebada Cervecera, Agrofy News (scrape), G1 Brasil, World-Grain. Categorización PROPIA por reglas (`noticias-reglas.json`). Detalle: `sesiones/2026-07-10-portal-noticias.md` |
 
 > **Directorio completo de fuentes de noticias/informes/datos del agro** (relevamiento de Lautaro, 06/07/2026):
 > [`docs/FUENTES.md`](FUENTES.md) — oficiales AR, bolsas, cadenas por cultivo, mercados, logística, clima,
 > internacional (USDA/CONAB/etc.), consultoras, medios y calendario de publicación. Alimenta el módulo
-> **Noticias** (fuentes propias) y el futuro **Calendario de informes**.
+> **Noticias** (fuentes propias, ya implementado — ver fila arriba) y el futuro **Calendario de informes**.
 >
 > **Base de conocimiento del negocio** (correacopio / mesa de trading, referencia permanente):
 > [`docs/negocio/`](negocio/) — `01_contexto_negocio` (estructura, instrumentos, pricing, estrategias,
@@ -81,6 +82,7 @@ fades, tablas con hover/tick dorado, charts con grilla punteada + área en degra
 | 5 | Implícitas combinadas | REAL (futuro + linked); granos = ejemplo. |
 | 6 | Sintéticos/LECAPs | PARCIAL: precios LECAP reales; TIR/sintético pendiente ("pago final por letra"). |
 | 7 | Panel cambiario | REAL (volumen MAE). Compras netas BCRA = pendiente (sin API; proxy / vía X). |
+| 8 | Noticias (portal) | **REAL** (`noticias.ts` lee Supabase `noticias` + fallback en vivo; `noticias-panel.tsx` + `noticias-client.tsx`). 15 medios vía cron horario, **categorización propia** por reglas (`noticias-reglas.json` + `noticias-clasificar.ts`), filtro de ruido, chips de filtro, link-out. Detalle: `sesiones/2026-07-10-portal-noticias.md`. |
 
 ## Secretos / entorno
 - **A3** en variables de entorno (Vercel → Settings → Environment Variables): `A3_API_BASE=https://api.cocos.xoms.com.ar`,
