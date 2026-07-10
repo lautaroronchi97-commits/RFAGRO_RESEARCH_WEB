@@ -45,6 +45,16 @@
   stamp REAL, 6 categorías, filtro operativo, sin titulares de servicio. Verificado el filtro de ruido
   con casos (6 servicio + 5 notas reales, todos correctos).
 
+## Ajuste posterior (mismo día, tras el merge del PR #12) — ventana de "últimos 3 días hábiles"
+- Pedido de Lautaro: no mostrar noticias más viejas que los **últimos 3 días hábiles** (antes la ventana
+  era 72 h fijas). Cambio SOLO de display en `src/lib/noticias.ts`: nuevo `corteHabilesMs(3)` (usa
+  `hoyCordobaISO` de `dates.ts`) que calcula el 00:00 Córdoba del 3er día hábil más reciente (hoy cuenta
+  si es hábil; salta sábados/domingos; sin feriados). Ej.: un lunes la ventana arranca el jueves anterior.
+  Se aplica en el camino Supabase (se quitó el relleno con más viejas de `MIN_VIGENTES`) y en el fallback
+  en vivo (conservando los titulares sin fecha del BCR del día). Verificado: lógica del corte OK para
+  L/Mi/V/Sáb/Dom, y render real con máx antigüedad mostrada = 48 h (dentro de mié–vie). Va por un **PR
+  nuevo** (el #12 ya estaba mergeado; la rama se reinició desde `main`).
+
 ## Quedó pendiente / en vuelo
 - **[LAUTARO] Cargar el cron en Actions**: el schedule corre desde la rama default (`main`), así que
   recién queda activo al mergear el PR. Los secrets `SUPABASE_URL`/`SUPABASE_SERVICE_KEY` ya existen

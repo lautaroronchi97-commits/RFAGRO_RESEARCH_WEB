@@ -3,6 +3,7 @@ import { cache } from "react";
 import type { Meta } from "./market";
 import { sbSelect } from "./supabase";
 import { CATEGORIA_FALLBACK, ORDEN_PANEL, clasificar, esRuido, nombreCategoria } from "./noticias-clasificar";
+import { hoyCordobaISO } from "./dates";
 
 /**
  * Portal de noticias del agro. Fuente primaria: tabla `noticias` de Supabase,
@@ -17,9 +18,36 @@ import { CATEGORIA_FALLBACK, ORDEN_PANEL, clasificar, esRuido, nombreCategoria }
  */
 
 const REVALIDATE = 600; // 10 min (el cron corre cada hora)
-const VENTANA_MS = 72 * 3600_000; // qué se considera "noticia vigente"
-const MIN_VIGENTES = 8; // si el fin de semana quedan menos, completar con las últimas
+const DIAS_HABILES = 3; // ventana visible: últimos N días hábiles (no se muestra nada más viejo)
 const MAX_POR_CATEGORIA = 12;
+
+/**
+ * Epoch ms del inicio (00:00 Córdoba) del día hábil más viejo de la ventana de los
+ * últimos `dias` hábiles (hoy cuenta si es hábil). Ej.: un lunes, la ventana arranca
+ * el jueves anterior, así el panel no muestra sólo las noticias del lunes. Fin de
+ * semana en el medio incluido (hay poca noticia, pero si la hay entra). Sin feriados.
+ */
+function corteHabilesMs(dias: number): number {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Argentina/Cordoba",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  // Ancla al mediodía de hoy en Córdoba (UTC-3 fijo, sin DST) → restar 1 día = mismo mediodía del día previo.
+  let ancla = Date.parse(`${hoyCordobaISO()}T12:00:00-03:00`);
+  let habiles = 0;
+  let corteISO = hoyCordobaISO();
+  while (habiles < dias) {
+    const dow = new Date(ancla).getUTCDay(); // mediodía Córdoba = 15:00 UTC → mismo día calendario
+    if (dow !== 0 && dow !== 6) {
+      habiles++;
+      corteISO = fmt.format(new Date(ancla));
+    }
+    if (habiles < dias) ancla -= 86_400_000;
+  }
+  return Date.parse(`${corteISO}T00:00:00-03:00`);
+}
 
 export type NoticiaItem = { titulo: string; fuente: string; link: string; fechaMs: number | null };
 export type NoticiaCategoria = { id: string; nombre: string; items: NoticiaItem[] };
@@ -98,9 +126,9 @@ function desdeSupabase(rows: RawRow[]): NoticiasData | null {
   }
   if (items.length === 0) return null;
 
-  const corte = Date.now() - VENTANA_MS;
-  const vigentes = items.filter((i) => (i.fechaMs ?? 0) >= corte);
-  const usar = vigentes.length >= MIN_VIGENTES ? vigentes : items.slice(0, 80);
+  // Sólo los últimos N días hábiles (fecha del medio, o creado_en si el feed no la trae).
+  const corte = corteHabilesMs(DIAS_HABILES);
+  const usar = items.filter((i) => (i.fechaMs ?? 0) >= corte);
 
   const categorias = agrupar(usar);
   return {
@@ -226,7 +254,9 @@ async function enVivo(problema: string): Promise<NoticiasData> {
 
   const problemas = [problema];
   if (!bcr) problemas.push("Resumen BCR no disponible");
-  const categorias = agrupar(items);
+  // Misma ventana de días hábiles; se conservan los titulares sin fecha (BCR curado del día).
+  const corte = corteHabilesMs(DIAS_HABILES);
+  const categorias = agrupar(items.filter((it) => it.fechaMs == null || it.fechaMs >= corte));
   return {
     categorias,
     total: categorias.reduce((n, c) => n + c.items.length, 0),
