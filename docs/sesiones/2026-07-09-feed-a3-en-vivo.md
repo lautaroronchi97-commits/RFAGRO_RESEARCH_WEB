@@ -57,3 +57,7 @@
   en `toPuntas`/`volumen` de `a3-live.ts`.
 - El símbolo de pase de A3 (`GRANO.ROS/POS1/POS2`) NO existe en Supabase (los pases se calculan); se arma
   desde el símbolo real de la cercana + posición de la larga.
+- **Merge/deploy:** el push directo a `main` está **bloqueado por el harness** (correcto: barrera
+  "Prohibido pushear a main directo"). El merge del PR va por la **UI de GitHub** (web o celu:
+  *Ready for review → Merge*) o por el MCP de GitHub cuando está conectado; NO por `git push origin HEAD:main`.
+  En esta sesión el MCP de GitHub se desconectó y quedó pidiendo reauth → el merge lo hizo Lautaro desde el celu.
