@@ -39,8 +39,9 @@
   (curva de hoy) · futuros_cierres 22.443 (backfill 2020 en curso).
 
 ## Quedó pendiente / en vuelo
-- **Backfill CBOT completo**: dispatch de `ingest-cbot.yml` con `backfill=true` **tras mergear el
-  PR** (los workflows nuevos solo se disparan desde la rama default). Único faltante de las 3 bases.
+- **Backfill CBOT**: PR #10 mergeado → 1er dispatch gatilló el rate limit de Barchart (HTTP 429) y
+  perdió ~45 contratos → fix con reintentos+backoff (PR #14) + re-dispatch apuntando a la rama.
+  Verificar que las 3 bases queden completas (soja desde 2020) y mergear el PR #14 para el cron diario.
 - Gráficos en la web (sesión aparte): curvas, spreads, ratio A3↔CBOT, pizarra vs futuros.
 
 ## Trampas descubiertas (para la próxima sesión)
@@ -51,4 +52,7 @@
 - CBOT: precios fraccionarios en octavos (`"565-2"`=565,25); la fila de hoy es intradía (tomar T-1);
   `limit` máx 1000 (alcanza para 12 meses).
 - Workflows nuevos: GitHub solo permite `workflow_dispatch` de un workflow que ya está en la rama
-  default → el backfill CBOT espera al merge.
+  default. PERO, una vez que el `.yml` está en la default, se puede disparar con `ref=<rama>` y corre
+  el CÓDIGO de esa rama → sirvió para correr el fix del CBOT sin esperar el merge.
+- **Barchart limita por rate (HTTP 429)** ~a las 40 requests seguidas → el backfill de 129 contratos
+  perdía un bloque. Fix: `PAUSA_MS=1500` + reintentos con backoff 5/10/20/40s (PR #14).

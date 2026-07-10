@@ -39,7 +39,8 @@ const MONTH_CODE = { F: 1, G: 2, H: 3, J: 4, K: 5, M: 6, N: 7, Q: 8, U: 9, V: 10
 const MES_ES = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
 const MESES_VENTANA = 12; // meses previos al vto que guardamos (comparable con A3)
 const DESDE = "2020-01-01";
-const PAUSA_MS = 500; // entre requests, para no castigar a Barchart
+const PAUSA_MS = 1500; // entre requests: Barchart limita por rate (HTTP 429) si vas muy rápido
+const REINTENTOS_MS = [5000, 10000, 20000, 40000]; // backoff ante 429/5xx
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -122,19 +123,28 @@ async function fetchContract(sym, sess, startDate, endDate) {
     startDate,
     endDate,
   }).toString();
-  const res = await fetch(url, {
-    headers: {
-      "user-agent": UA,
-      accept: "application/json",
-      referer: OVERVIEW(sym),
-      "x-xsrf-token": sess.xsrf,
-      cookie: sess.cookie,
-    },
-    signal: AbortSignal.timeout(20000),
-  });
-  if (!res.ok) throw new Error(`Barchart ${sym}: HTTP ${res.status}`);
-  const json = await res.json();
-  return Array.isArray(json?.data) ? json.data : [];
+  // Barchart limita por rate (HTTP 429) en rachas → reintento con backoff creciente.
+  for (let intento = 0; ; intento++) {
+    const res = await fetch(url, {
+      headers: {
+        "user-agent": UA,
+        accept: "application/json",
+        referer: OVERVIEW(sym),
+        "x-xsrf-token": sess.xsrf,
+        cookie: sess.cookie,
+      },
+      signal: AbortSignal.timeout(20000),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      return Array.isArray(json?.data) ? json.data : [];
+    }
+    if ((res.status === 429 || res.status >= 500) && intento < REINTENTOS_MS.length) {
+      await sleep(REINTENTOS_MS[intento]); // esperá a que se libere el rate window
+      continue;
+    }
+    throw new Error(`Barchart ${sym}: HTTP ${res.status}`);
+  }
 }
 
 function toRow(r, meta, sym, mes) {
