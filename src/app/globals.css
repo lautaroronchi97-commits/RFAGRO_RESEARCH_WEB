@@ -428,15 +428,47 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
 .strat-exp { font-size:var(--fs-xs); color:var(--ink-2); line-height:1.5; padding:8px 11px;
   background:var(--panel-2); border:1px solid var(--line); border-radius:8px; }
 .calc-btns { display:flex; gap:10px; flex-wrap:wrap; }
-.news-wrap { padding:6px 14px 4px; display:flex; flex-direction:column; gap:12px; }
-.news-cat-h { font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.06em; font-weight:800;
-  color:var(--brand-deep); margin-bottom:5px; }
-.news-list { list-style:none; margin:0 0 8px; padding:0; display:flex; flex-direction:column; gap:8px; }
-.news-item { display:flex; flex-direction:column; gap:1px; }
-.news-title { font-size:13.5px; color:var(--ink); text-decoration:none; line-height:1.35; }
-.news-title:hover { color:var(--brand-deep); text-decoration:underline; }
-.news-src { font-size:var(--fs-2xs); color:var(--ink-3); font-weight:700; text-transform:uppercase; letter-spacing:.03em; }
-.news-empty { padding:0 14px 10px; color:var(--ink-3); font-size:var(--fs-xs); }
+/* ---- Noticias (portal): chips de filtro + grilla por categoría ---- */
+.news-body { display:flex; flex-direction:column; }
+.news-filtros { display:flex; flex-wrap:wrap; gap:6px; padding:10px 14px 0; }
+.news-chip { display:inline-flex; align-items:center; gap:6px; font-size:var(--fs-2xs); font-weight:800;
+  letter-spacing:.05em; text-transform:uppercase; color:var(--ink-2); padding:4px 10px;
+  border:1px solid var(--line-2); border-radius:999px; cursor:pointer; background:transparent;
+  transition:color var(--t-fast) ease, border-color var(--t-fast) ease, background var(--t-fast) ease; }
+.news-chip:hover { color:var(--ink); border-color:var(--gold-hair); }
+.news-chip .n { font-family:var(--font-mono); font-weight:600; font-size:9px; color:var(--ink-3); }
+.news-chip[aria-pressed="true"] { color:var(--gold-text);
+  border-color:color-mix(in srgb, var(--gold) 55%, transparent);
+  background:color-mix(in srgb, var(--gold) 9%, transparent); }
+.news-chip[aria-pressed="true"] .n { color:var(--gold-text); }
+.news-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(310px, 1fr)); gap:10px; padding:12px 14px 14px; }
+.news-cat { display:flex; flex-direction:column; min-width:0;
+  background:color-mix(in srgb, var(--panel-2) 62%, transparent);
+  border:1px solid var(--line); border-radius:9px; padding:10px 12px 6px; }
+.news-cat.full { grid-column:1 / -1; }
+.news-cat-hd { display:flex; align-items:center; gap:7px; padding-bottom:7px; margin-bottom:6px; position:relative; }
+.news-cat-hd::after { content:""; position:absolute; left:0; right:0; bottom:0; height:1px;
+  background:linear-gradient(90deg, var(--gold-hair), var(--line) 45%, transparent 95%); }
+.news-cat-glyph { display:inline-flex; color:var(--gold); }
+.news-cat-glyph svg { width:14px; height:14px; }
+.news-cat-name { margin:0; font-size:var(--fs-2xs); font-weight:800; text-transform:uppercase;
+  letter-spacing:.07em; color:var(--brand-deep); }
+.news-cat-n { margin-left:auto; font-family:var(--font-mono); font-size:9px; font-weight:700;
+  color:var(--ink-3); border:1px solid var(--line); border-radius:999px; padding:0 6px; line-height:1.6; }
+.news-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.news-item { display:flex; flex-direction:column; gap:2px; padding:7px 0; border-top:1px solid var(--line); }
+.news-item:first-child { border-top:none; }
+.news-title { font-size:13px; font-weight:500; color:var(--ink); line-height:1.38; text-decoration:none;
+  transition:color var(--t-fast) ease; }
+.news-title:hover { color:var(--brand-deep); text-decoration:underline;
+  text-decoration-color:var(--gold); text-underline-offset:3px; }
+.news-meta { display:flex; align-items:baseline; gap:5px; min-width:0; }
+.news-src { font-size:var(--fs-2xs); color:var(--ink-3); font-weight:700; text-transform:uppercase;
+  letter-spacing:.03em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.news-time { font-family:var(--font-mono); font-size:var(--fs-2xs); color:var(--ink-3); white-space:nowrap; }
+.news-cat.full .news-list { display:block; columns:2 340px; column-gap:26px; }
+.news-cat.full .news-item { break-inside:avoid; }
+.news-empty { padding:12px 16px 14px; color:var(--ink-3); font-size:var(--fs-xs); }
 .tbl tbody tr.tot td { font-weight:700; color:var(--ink); border-top:1px solid var(--line-2);
   border-bottom:none; background:var(--panel-2); }
 /* ---- Calculadoras ---- */
