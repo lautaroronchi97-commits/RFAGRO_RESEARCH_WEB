@@ -1,50 +1,54 @@
-# Sesión 2026-07-09 — Plan bases para gráficos de futuros
+# Sesión 2026-07-09/10 — Bases para gráficos de futuros (CBOT, A3 2020, pizarra)
 
 - **Rama:** `claude/futures-position-databases-j10vpr` · **PR:** #10 (base `main`, draft)
-- **Objetivo pedido por Lautaro:** verificar las bases existentes y armar el plan para tener
-  (1) posiciones CBOT desde 2020, (2) posiciones A3 desde 2020, (3) pizarra Rosario histórica
-  en $ y US$ desde 2020 — insumos para gráficos de posiciones de futuros y spreads.
+- **Objetivo pedido por Lautaro:** verificar las bases existentes y dejar armadas/actualizadas las
+  tres que alimentan los gráficos de posiciones y spreads: (1) CBOT maíz/soja/trigo desde 2020,
+  (2) A3 maíz/soja/trigo desde 2020, (3) pizarra Rosario histórica en $ y US$ desde 2020.
 
 ## Hecho
-- **Auditoría de Supabase**: `futuros_cierres` arranca el 2021-07-08 (no 2020) · no existe tabla
-  CBOT ni pizarra histórica · `vencimientos` solo tiene posiciones vivas.
-- **Investigación de fuentes con requests reales** (dos agentes en paralelo + verificaciones
-  propias) y **plan completo** en [`docs/PLAN_BASES_GRAFICOS.md`](../PLAN_BASES_GRAFICOS.md):
-  tablas nuevas (`cbot_cierres`, `pizarra_historico`), scripts, crons y orden de ejecución.
-- Solo docs en esta sesión: **no se construyó nada todavía** (plan → aprobación → construir).
+- **Investigación de fuentes con requests reales** (2 agentes en paralelo) + plan aprobado por
+  Lautaro → [`docs/PLAN_BASES_GRAFICOS.md`](../PLAN_BASES_GRAFICOS.md).
+- **Pizarra histórica (`pizarra_historico`) — CARGADA COMPLETA**: migración
+  `create_pizarra_historico` + backfill 2020-01-02→2026-07-07 de **soja/maíz/trigo/girasol/sorgo**
+  (7.893 filas) en $ y US$, con `es_estimativo` flagueado. Fuente: consulta histórica oficial de
+  CAC (`/es/precios-de-pizarra/consultas`, JSON `drupalSettings.app_prices.plot.data`). El backfill
+  se hizo server-side con la extensión `http` de Postgres (troceado en ventanas de ~3 años porque
+  CAC deja de embeber la serie en rangos amplios); la extensión se dropeó al terminar.
+- **CBOT (`cbot_cierres`) — tabla + curva actual + pipeline**: migración `create_cbot_cierres`;
+  cargadas las **20 posiciones vivas** (curva cercana maíz/soja/trigo) en ¢/bu **y USD/tn**;
+  `scripts/ingest-cbot.mjs` (backfill 129 contratos / diario T-1) + `ingest-cbot.yml`.
+- **A3 desde 2020**: disparado el backfill del workflow existente `ingest-cierres.yml`
+  (`from=2020-01-01, to=2021-07-08`) — sin código nuevo (el CEM tiene datos desde 02/01/2020).
+- **Pizarra diaria**: `scripts/ingest-pizarra.mjs` + `ingest-pizarra.yml` (cron 21:00 UTC L-V).
+- CI local (lint + typecheck + build) ✅.
 
 ## Decisiones tomadas (y por qué)
-- **CBOT vía API interno de Barchart** (`/proxies/core-api/v1/historical/get`): única fuente
-  gratis verificada que conserva contratos VENCIDOS con settlement + volumen + open interest.
-  Fallback cron: Yahoo (solo vivos, sin OI). Fallback pago: Databento (~USD 0, crédito gratis).
-- **CBOT acotado a 18 meses previos al vencimiento** (pedido de Lautaro de no irse a plazos
-  largos) — a confirmar el corte exacto.
-- **Pizarra histórica vía consulta oficial de CAC** (`/es/precios-de-pizarra/consultas`): serie
-  completa 02/01/2020→hoy con $ y US$ en una request por grano. El US$ es de la propia CAC
-  (BNA divisa comprador), no hay que reconstruirlo.
-- **A3 2020 sin código nuevo**: dispatch del workflow existente con `from=2020-01-01`.
+- **CBOT acotado a 12 meses previos al vto** (no 18): Lautaro quiere solo posiciones comparables
+  con A3 para **ratios de posiciones cercanas**. 12 meses ≈ horizonte de A3.
+- **CBOT en toneladas**: se guarda ¢/bu crudo + `settlement_usd_tn`. Factores **verificados**
+  (U.S. Grains Council/CME): maíz 0.3936826 (56 lb/bu), soja/trigo 0.3674371 (60 lb/bu).
+- **Pizarra: los 5 productos** (Lautaro: "guarda la pizarra de todos los productos").
+- **US$ de pizarra viene de la CAC** (BNA divisa comprador) — no se reconstruye.
 
 ## Verificado
-- CEM tiene cierres desde el **02/01/2020** (request real, SOJ.ROS/ENE20).
-- Barchart devuelve vencidos completos (ZCH21/ZSK22/ZWZ23/ZSN20) y coincide tick a tick con
-  Yahoo en settlement; CME/Stooq/Investing/Nasdaq CHRIS descartados con evidencia.
-- CAC: 1.578 puntos por grano 2020→hoy con `y` ($) e `y_usd` (US$); TC implícito ≈ BNA divisa
-  comprador publicado (1.482,98 ≈ 1.483 ✓); estimativos flagueables con `type=estimativo`.
-- Solo docs → sin cambios de código que requieran lint/build (CI corre igual sobre el PR).
+- Barchart devuelve vencidos completos y auth funciona en node (cookies de un símbolo sirven para
+  todos). Conversión a USD/tn correcta (maíz DIC26 452¢ → 177,94 USD/tn; soja NOV26 1181,5¢ → 434,13).
+- CAC: 5 series 2020→hoy, ~1.578 puntos c/u; soja 183 estimativos (coincide con la investigación).
+- Estado Supabase post-sesión: pizarra_historico 7.893 (2020-01-02→2026-07-07) · cbot_cierres 20
+  (curva de hoy) · futuros_cierres 22.443 (backfill 2020 en curso).
 
 ## Quedó pendiente / en vuelo
-- Respuestas de Lautaro a las 4 preguntas del plan (horizonte CBOT, unidades ¢/bu→USD/tn,
-  girasol/sorgo en pizarra, si disparar ya el backfill A3).
-- Ejecutar los pasos 1–4 del plan en sesiones siguientes.
+- **Backfill CBOT completo**: dispatch de `ingest-cbot.yml` con `backfill=true` **tras mergear el
+  PR** (los workflows nuevos solo se disparan desde la rama default).
+- **Verificar** que el backfill A3 2020 haya completado (SQL: `MIN(fecha)` de `futuros_cierres`).
+- Gráficos en la web (sesión aparte): curvas, spreads, ratio A3↔CBOT, pizarra vs futuros.
 
 ## Trampas descubiertas (para la próxima sesión)
-- **Yahoo BORRA los contratos vencidos** (hasta los de hace 2 meses) → inútil para backfill.
-- **CME bloquea IPs por scraping** en su web de settlements (nos pasó en vivo) y el FTP de
-  settlements fue discontinuado en ene-2024.
-- Barchart: precios fraccionarios (`"454-6"` = 454,75 ¢/bu) · `limit` máx 1000 · fila del día
-  en curso es intradiaria (tomar T-1) · requiere cookies + header `x-xsrf-token` del overview.
-- CAC: el export XLSX oficial trae SOLO pesos; el US$ está únicamente en el JSON
-  `drupalSettings` de la página de consulta. La serie web arranca exacto el 02/01/2020.
-- El US$ de CAC es **BNA divisa comprador**, NO el A3500 del BCRA (~0,4% de diferencia).
-- CEM `/symbols` no lista posiciones vencidas → para TNA histórica usar `MAX(fecha)` por símbolo
-  de `futuros_cierres` como proxy del vencimiento.
+- **CAC no embebe la serie** si el rango es muy amplio (>~3 años) → trocear en ventanas ≤2-3 años.
+- La extensión `http` de Postgres **sí llega a CAC** (útil para backfills puntuales); su timeout
+  por defecto es 5s → subir con `http_set_curlopt('CURLOPT_TIMEOUT_MS','30000')`. El MCP corta a 60s
+  → no meter más de ~2 fetches por query.
+- CBOT: precios fraccionarios en octavos (`"565-2"`=565,25); la fila de hoy es intradía (tomar T-1);
+  `limit` máx 1000 (alcanza para 12 meses).
+- Workflows nuevos: GitHub solo permite `workflow_dispatch` de un workflow que ya está en la rama
+  default → el backfill CBOT espera al merge.

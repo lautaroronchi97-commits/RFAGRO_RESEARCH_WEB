@@ -19,28 +19,31 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 09/07/2026, sesión plan bases de gráficos)
+## Ahora (última actualización: 10/07/2026, sesión bases de gráficos)
 
 **✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
-de datos reales (verificado contra el sitio en vivo: CSS con tokens premium `#060A07`/`#0C130D` y
-paneles Arbitrajes/Pases/Noticias/Calculadoras/Dólar/Capacidad/LECAPs presentes). Hecho el 09/07:
-PR #8 mergeado · default de GitHub = `main` · Vercel Branch Tracking = `main` + promote a Production ·
-ramas viejas borradas (en GitHub solo queda `main`).
+de datos reales. Default de GitHub = `main` · Vercel Branch Tracking = `main`.
 
-**En vuelo:** plan para las **bases de gráficos de futuros y spreads**
-([`PLAN_BASES_GRAFICOS.md`](PLAN_BASES_GRAFICOS.md), sesión 09/07, PR #10): (1) CBOT desde 2020 vía
-API de Barchart (fuente verificada, conserva contratos vencidos), (2) backfill A3 2020→jul-2021
-(el CEM tiene datos desde 02/01/2020; es solo un dispatch de `ingest-cierres.yml`), (3) pizarra
-Rosario histórica en $ y US$ desde 2020 vía consulta histórica oficial de CAC (verificada).
-**Esperando respuestas de Lautaro a las 4 preguntas del plan antes de construir.**
+**Hecho esta sesión (PR #10, [`PLAN_BASES_GRAFICOS.md`](PLAN_BASES_GRAFICOS.md)) — bases para los
+gráficos de posiciones y spreads:**
+- **Pizarra Rosario histórica → tabla `pizarra_historico` CARGADA COMPLETA**: 5 granos (soja, maíz,
+  trigo, girasol, sorgo), **2020-01-02 → 2026-07-07** (7.893 filas), en $ y US$, estimativos
+  flagueados. Fuente: consulta histórica oficial de CAC. + script `ingest-pizarra.mjs` + cron.
+- **CBOT → tabla `cbot_cierres`**: curva cercana actual cargada (20 posiciones vivas, ¢/bu **y
+  USD/tn**) + `ingest-cbot.mjs` + workflow. **Falta el backfill histórico completo** (dispatch del
+  workflow con `backfill=true`, tras mergear).
+- **A3 desde 2020**: disparado el backfill de `ingest-cierres.yml` (`2020-01-01→2021-07-08`).
 
-**Único chequeo pendiente (Lautaro, mañana 10/07):** en Actions, verificar que el cron de cierres
-(`ingest-cierres.yml`, corre 23:00 UTC hábiles) haya corrido solo **desde `main`** (la corrida del
-09/07 00:07 UTC salió desde la default vieja porque era pre-switch). Si corrió y la curva está al día,
-listo; si no, avisar en la próxima sesión.
+**En vuelo / pendiente de Lautaro:**
+1. **Mergear el PR #10.** Recién ahí se pueden disparar los workflows nuevos (GitHub solo permite
+   `workflow_dispatch` desde la rama default).
+2. **Backfill CBOT completo:** Actions → *Ingesta cierres CBOT* → Run workflow → **backfill = true**
+   (~129 contratos, ~25-30k filas).
+3. **Verificar backfill A3 2020:** que `MIN(fecha)` de `futuros_cierres` sea 2020-01 (por SQL).
 
-**Dato verificado 09/07**: el cron de cierres YA corre solo (secrets cargados, run #4 por schedule
-exitoso, curva al día hasta el 08/07) — NO hay que cargar secrets ni correr ingestas a mano.
+**Dato verificado 09/07**: el cron de cierres A3 YA corre solo (secrets `SUPABASE_URL`/
+`SUPABASE_SERVICE_KEY` cargados) — los crons nuevos (pizarra, CBOT) usan esos mismos secrets y
+arrancan solos al estar en `main`.
 
 **Ramas vivas y su veredicto:**
 | Rama | Estado |
@@ -50,8 +53,8 @@ exitoso, curva al día hasta el 08/07) — NO hay que cargar secrets ni correr i
 | `claude/futures-position-databases-j10vpr` | Sesión 09/07 (plan bases de gráficos, PR #10) → borrar tras merge. |
 
 **Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
-0. Ejecutar los 4 pasos de `PLAN_BASES_GRAFICOS.md` (backfill A3 → pizarra histórica → CBOT →
-   gráficos), apenas Lautaro responda las preguntas del plan.
+0. Cerrar las bases de gráficos: mergear PR #10 → disparar backfill CBOT → **gráficos** (curvas,
+   spreads, ratio A3↔CBOT, pizarra vs futuros). Detalle en `PLAN_BASES_GRAFICOS.md`.
 1. Feed A3 en vivo (pases: cotización/volumen/bid-ask).
 2. Sintéticos TIR (pago final por letra, IAMC). [Requiere tabla de Lautaro]
 3. Fase B (resiliencia, tests, mobile) y backlog de datos (reactivar scrapers `lineup`/`compras`,
