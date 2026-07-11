@@ -19,7 +19,7 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 11/07/2026, sesión plan de gráficos de spreads)
+## Ahora (última actualización: 11/07/2026, sesión panel de gráficos de spreads)
 
 **✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
 de datos reales. Default de GitHub = `main` · Vercel Branch Tracking = `main`.
@@ -60,6 +60,10 @@ panel de gráficos de spreads ([`PLAN_GRAFICOS_SPREADS.md`](PLAN_GRAFICOS_SPREAD
   Evidencia medida en `docs/sesiones/2026-07-11-plan-graficos-spreads.md`.
 
 **Recién entrado a `main` de otras sesiones (contexto + pendientes de Lautaro):**
+- **Calculadora "Negocios de planta" (PR #18, mergeada):** `src/components/calc-planta.tsx` en
+  Calculadoras — arranca de un precio (pizarra CAC editable) y descuenta 6 rubros (contra flete,
+  secada, merma volátil, paritaria, embolsado, otros) → Precio final + Total de gastos.
+  Detalle: `docs/sesiones/2026-07-11-calc-negocios-planta.md`.
 - **Portal de noticias (PR #12):** panel Noticias rediseñado (categorización propia por 6 temas, chips,
   15 fuentes) + cron horario `ingest-noticias.yml` → tabla `noticias`. Pendiente: 1ª carga a mano
   (Actions → *Ingesta noticias* → Run workflow); el cron arranca solo al estar en `main`.
