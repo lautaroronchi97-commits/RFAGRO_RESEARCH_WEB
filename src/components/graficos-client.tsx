@@ -140,6 +140,7 @@ function escribirURL(e: Estado) {
 /* ---------------- presets ---------------- */
 
 const a3Pata = (grano: string, mon: string): Pata => ({ fuente: "a3", grano, mon });
+const cbotPata = (grano: string, mon: string): Pata => ({ fuente: "cbot", grano, mon });
 
 // Presets de calendar spreads por grano (lista de Lautaro, 11/07). Avanzan
 // cronológicamente en base al carry; cuando el 2º mes es menor al 1º, la pata B
@@ -150,13 +151,20 @@ const GRUPOS_PRESET: { grano: string; label: string; pares: [string, string][] }
   { grano: "trigo", label: "Trigo", pares: [["DIC", "ENE"], ["DIC", "MAR"], ["ENE", "MAR"], ["MAR", "JUL"], ["JUL", "DIC"]] },
 ];
 
-// Presets con patas libres (entre productos). Los de Chicago (A3 vs CBOT) quedan
-// pendientes de que Lautaro confirme el mapeo CBOT: el análisis empírico mostró
-// que la posición homónima no siempre es la que mejor correlaciona (ej. soja NOV
-// local ↔ CBOT JUL, no NOV). Ver docs/sesiones. `cbotPata` queda listo para usar.
+// Presets con patas libres: entre productos y A3 vs Chicago. El mapeo CBOT de
+// cada posición local sale del análisis empírico de correlación (confirmado por
+// Lautaro): la posición homónima no siempre es la más representativa (ej. soja
+// NOV local ↔ CBOT JUL, maíz DIC ↔ CBOT SEP). Ver docs/sesiones.
 const PARES_LIBRES: { grupo: string; label: string; a: Pata; b: Pata }[] = [
   { grupo: "Entre productos", label: "Maíz ABR / Soja MAY", a: a3Pata("maiz", "ABR"), b: a3Pata("soja", "MAY") },
   { grupo: "Entre productos", label: "Maíz JUL / Soja JUL", a: a3Pata("maiz", "JUL"), b: a3Pata("soja", "JUL") },
+  { grupo: "Chicago", label: "Soja MAY", a: a3Pata("soja", "MAY"), b: cbotPata("soja", "MAY") },
+  { grupo: "Chicago", label: "Soja JUL", a: a3Pata("soja", "JUL"), b: cbotPata("soja", "JUL") },
+  { grupo: "Chicago", label: "Soja NOV", a: a3Pata("soja", "NOV"), b: cbotPata("soja", "JUL") },
+  { grupo: "Chicago", label: "Maíz ABR", a: a3Pata("maiz", "ABR"), b: cbotPata("maiz", "MAY") },
+  { grupo: "Chicago", label: "Maíz JUL", a: a3Pata("maiz", "JUL"), b: cbotPata("maiz", "MAY") },
+  { grupo: "Chicago", label: "Maíz SEP", a: a3Pata("maiz", "SEP"), b: cbotPata("maiz", "DIC") },
+  { grupo: "Chicago", label: "Maíz DIC", a: a3Pata("maiz", "DIC"), b: cbotPata("maiz", "SEP") },
 ];
 
 const DEFAULT_A = a3Pata("maiz", "ABR");
@@ -164,12 +172,15 @@ const DEFAULT_B = a3Pata("maiz", "JUL");
 
 /**
  * Offset de año de la pata B respecto de la campaña (anclada en la pata A):
- * +1 si el mes de B es menor al de A (el spread cruza al año siguiente, ej.
- * soja NOV/MAY = Nov de una campaña vs May de la que sigue). 0 en cualquier
- * otro caso, incluido mismo mes cruzando mercados (Nov A3 vs Nov CBOT).
+ * +1 si el mes de B es menor al de A (el calendar spread cruza al año siguiente,
+ * ej. soja NOV/MAY = Nov de una campaña vs May de la que sigue).
+ * SOLO aplica a spreads del MISMO producto y mercado (calendar spread puro).
+ * Entre productos (maíz vs soja) o entre mercados (A3 vs CBOT) van a la misma
+ * campaña (offset 0): ahí el apareo es por año del contrato.
  */
 function offsetB(a: Pata, b: Pata | null): number {
   if (!b || !a.mon || !b.mon) return 0;
+  if (a.fuente !== b.fuente || a.grano !== b.grano) return 0;
   const ma = mesDePosicion(`${a.mon}00`);
   const mb = mesDePosicion(`${b.mon}00`);
   return ma > 0 && mb > 0 && mb < ma ? 1 : 0;
