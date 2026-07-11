@@ -19,31 +19,28 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 10/07/2026, sesión bases de gráficos)
+## Ahora (última actualización: 11/07/2026, sesión plan de gráficos de spreads)
 
 **✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
 de datos reales. Default de GitHub = `main` · Vercel Branch Tracking = `main`.
 
-**Hecho esta sesión (PR #10, [`PLAN_BASES_GRAFICOS.md`](PLAN_BASES_GRAFICOS.md)) — bases para los
-gráficos de posiciones y spreads:**
-- **Pizarra Rosario histórica → tabla `pizarra_historico` CARGADA COMPLETA**: 5 granos (soja, maíz,
-  trigo, girasol, sorgo), **2020-01-02 → 2026-07-07** (7.893 filas), en $ y US$, estimativos
-  flagueados. Fuente: consulta histórica oficial de CAC. + script `ingest-pizarra.mjs` + cron.
-- **CBOT → tabla `cbot_cierres`**: curva cercana actual cargada (20 posiciones vivas, ¢/bu **y
-  USD/tn**) + `ingest-cbot.mjs` + workflow. **Falta el backfill histórico completo** (dispatch del
-  workflow con `backfill=true`, tras mergear).
-- **A3 desde 2020 → COMPLETO**: backfill corrido y verificado — `futuros_cierres` ahora
-  **2020-01-02 → 2026-07-08** (31.049 filas, +8.606 del tramo 2020→jul-2021).
+**✅ LAS 3 BASES DE GRÁFICOS ESTÁN COMPLETAS (verificado por SQL el 11/07):** PR #10 mergeado
+(merge #14) y **backfill CBOT ya corrido** — `futuros_cierres` 31.049 filas (2020-01-02→08/07,
+feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→09/07) ·
+`pizarra_historico` 7.893 filas (→07/07). Los 3 crons corren solos. Ya no queda nada pendiente de
+[`PLAN_BASES_GRAFICOS.md`](PLAN_BASES_GRAFICOS.md).
 
-**En vuelo / pendiente de Lautaro (bases de gráficos):**
-1. **Mergear el PR #10.** Recién ahí se pueden disparar los workflows nuevos (GitHub solo permite
-   `workflow_dispatch` desde la rama default).
-2. **Backfill CBOT completo:** Actions → *Ingesta cierres CBOT* → Run workflow → **backfill = true**
-   (~129 contratos, ~25-30k filas). Es lo único que falta para tener las 3 bases completas.
-
-**Dato verificado 09/07**: el cron de cierres A3 YA corre solo (secrets `SUPABASE_URL`/
-`SUPABASE_SERVICE_KEY` cargados) — los crons nuevos (pizarra, CBOT) usan esos mismos secrets y
-arrancan solos al estar en `main`.
+**Hecho esta sesión (rama `claude/timeline-spread-charts-plan-3zlt1g`) — PLAN del panel de
+gráficos de spreads entre cosechas ([`PLAN_GRAFICOS_SPREADS.md`](PLAN_GRAFICOS_SPREADS.md)):**
+- Plan completo del panel que pidió Lautaro (sus 3 casos: maíz ABR vs JUL por campaña · soja NOV
+  A3 vs Chicago · pizarra vs futuro seleccionable): catálogo de gráficos v1/v2/ideas, superposición
+  de campañas (2 alineaciones de eje X), filtros, UX (`/graficos`), arquitectura (`/api/series` +
+  vista `series_catalogo`), Recharts 3.9.2, fases 0→3.
+- **⚠️ Bug real encontrado planificando:** PostgREST trunca a 1.000 filas con HTTP 206 y `sbSelect`
+  lo trata como éxito (truncado silencioso) → Fase 0 del plan = fix en `src/lib/supabase.ts`.
+- **Espera de Lautaro: responder las 29 PREGUNTAS del plan** (sección 9; P1–P11 antes de la Fase 2,
+  ninguna bloquea la Fase 1) y aprobar → recién ahí se implementa.
+  Evidencia medida en `docs/sesiones/2026-07-11-plan-graficos-spreads.md`.
 
 **Recién entrado a `main` de otras sesiones (contexto + pendientes de Lautaro):**
 - **Portal de noticias (PR #12):** panel Noticias rediseñado (categorización propia por 6 temas, chips,
@@ -59,12 +56,13 @@ arrancan solos al estar en `main`.
 | Rama | Estado |
 |---|---|
 | `main` | Única rama de integración y producción. |
-| `claude/futures-position-databases-j10vpr` | Bases de gráficos (PR #10, ABIERTO) → mergear + backfill CBOT. |
-| `claude/feed-a3-live-plan-obxzcz` · `claude/news-section-redesign-k3zctf` | PR #11 y #12 ya mergeados → borrar. |
+| `claude/timeline-spread-charts-plan-3zlt1g` | Plan de gráficos de spreads (PR draft) → Lautaro responde preguntas → implementar. |
+| `claude/futures-position-databases-j10vpr` · `claude/feed-a3-live-plan-obxzcz` · `claude/news-section-redesign-k3zctf` | PRs #10/#14, #11 y #12/#15/#16 ya mergeados → borrar. |
 
 **Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
-0. Cerrar las bases de gráficos: mergear PR #10 → disparar backfill CBOT → **gráficos** (curvas,
-   spreads, ratio A3↔CBOT, pizarra vs futuros). Detalle en `PLAN_BASES_GRAFICOS.md`.
+0. **Gráficos de spreads**: Lautaro responde las preguntas de `PLAN_GRAFICOS_SPREADS.md` →
+   Fase 0 (fix truncado 206 en `sbSelect`) → Fase 1 (caso maíz ABR vs JUL + par del Excel,
+   validable contra su planilla).
 1. **Fase 2 del Feed A3 — histórico intradiario**: cron GH Actions `*/15 13-20 * * 1-5` UTC +
    `scripts/ingest-rueda.mjs` + tabla `snapshots` + `ingest_log` (INFRAESTRUCTURA.md). Habilita gráficos
    intradía. (La frescura ya está resuelta web-directa; esto es SOLO para guardar historia.)
