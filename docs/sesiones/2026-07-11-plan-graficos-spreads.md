@@ -36,6 +36,25 @@
 
 ---
 
+## Hecho — Presets + análisis CBOT (iteración con Lautaro sobre la preview)
+- **Presets de calendar spreads por grano** (lista de Lautaro): soja/maíz/trigo, 15 pares que
+  avanzan por carry. **Offset de campaña** (`offsetB`): si el 2º mes < 1º, la pata B es de la
+  campaña siguiente (soja NOV/MAY = Nov26 vs May27, verificado por SQL). Barra agrupada por grano.
+- **Presets "entre productos"**: Maíz ABR/Soja MAY y Maíz JUL/Soja JUL. Se borró el preset "Excel"
+  (era el mismo par, solo ejemplo).
+- **Convenciones de signo** en `ordenarPatas` (P10/P11): A3 − CBOT (local minuendo) y pizarra −
+  futuro (pizarra minuendo). Verificado: pizarra maíz − maíz ABR = +1,78 (pizarra sobre futuro).
+- **Fix de hidratación:** el estado inicial sale de la URL (solo cliente) → el panel se gatea con
+  `mounted` hasta el primer paint para no romper SSR.
+- **Análisis empírico A3↔CBOT** (correlación de cambios diarios, solo ruedas líquidas; para elegir
+  qué CBOT refleja cada posición local — pedido de Lautaro). Mejor CBOT por posición A3 (rnk 1):
+  - **Maíz:** ABR→MAY (0,619 vs MAR 0,602) · JUL→MAY (0,636) · SEP→DIC (0,637≈SEP 0,633) · DIC→SEP
+    (0,643 vs DIC 0,585).
+  - **Soja:** MAY→MAY (0,643) · JUL→ENE/JUL/MAY (~0,66, empate) · NOV→JUL (0,686; la homónima NOV
+    es la PEOR, 0,487 — la soja Nov local sigue al viejo cultivo de Chicago).
+  - Hallazgo: la posición homónima NO siempre es la que mejor correlaciona; los presets de Chicago
+    quedan pendientes de que Lautaro confirme el mapeo (por eso NO se hardcodearon).
+
 ## Hecho — PLAN (fase previa de la sesión)
 
 ## Hecho

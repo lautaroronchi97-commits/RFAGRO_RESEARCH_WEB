@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { SerieCat, SeriePuntos, Fuente } from "@/lib/series-types";
+import { fuenteDeId, type SerieCat, type SeriePuntos, type Fuente } from "@/lib/series-types";
 import {
   joinFfill, metricaDiaria, alinear, mesDePosicion, mediana, percentil,
   type Metric, type Eje, type BandaPunto, type PuntoXY,
@@ -149,7 +149,16 @@ const GRUPOS_PRESET: { grano: string; label: string; pares: [string, string][] }
   { grano: "maiz", label: "Maíz", pares: [["ABR", "JUL"], ["JUL", "SEP"], ["JUL", "DIC"], ["DIC", "ABR"], ["DIC", "JUL"]] },
   { grano: "trigo", label: "Trigo", pares: [["DIC", "ENE"], ["DIC", "MAR"], ["ENE", "MAR"], ["MAR", "JUL"], ["JUL", "DIC"]] },
 ];
-const PRESET_EXCEL = { a: a3Pata("maiz", "ABR"), b: a3Pata("soja", "MAY") };
+
+// Presets con patas libres (entre productos). Los de Chicago (A3 vs CBOT) quedan
+// pendientes de que Lautaro confirme el mapeo CBOT: el análisis empírico mostró
+// que la posición homónima no siempre es la que mejor correlaciona (ej. soja NOV
+// local ↔ CBOT JUL, no NOV). Ver docs/sesiones. `cbotPata` queda listo para usar.
+const PARES_LIBRES: { grupo: string; label: string; a: Pata; b: Pata }[] = [
+  { grupo: "Entre productos", label: "Maíz ABR / Soja MAY", a: a3Pata("maiz", "ABR"), b: a3Pata("soja", "MAY") },
+  { grupo: "Entre productos", label: "Maíz JUL / Soja JUL", a: a3Pata("maiz", "JUL"), b: a3Pata("soja", "JUL") },
+];
+
 const DEFAULT_A = a3Pata("maiz", "ABR");
 const DEFAULT_B = a3Pata("maiz", "JUL");
 
@@ -234,8 +243,8 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
       if (b) { if (!idx.resolver(b, y + off)) continue; }
       cand.add(y);
     }
-    // pizarra: años calendario disponibles
-    if (a.fuente === "pizarra") idx.aniosPizarra(a.grano).forEach((y) => cand.add(y));
+    // pizarra sola (sin pata B): años calendario disponibles de la serie continua.
+    if (a.fuente === "pizarra" && !b) idx.aniosPizarra(a.grano).forEach((y) => cand.add(y));
     return [...cand].sort();
   }, [idx, a, b]);
 
@@ -408,6 +417,11 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
     setYears([]); // = todas las campañas disponibles del par
   }, []);
 
+  // El estado inicial sale de la URL (solo cliente) → durante SSR/hidratación el
+  // server no la conoce. Se muestra un placeholder determinista hasta el mount
+  // para evitar mismatch de hidratación; recién ahí se pinta el panel real.
+  if (!mounted) return <div className="gx-wrap" aria-busy="true" />;
+
   return (
     <div className="gx-wrap">
       <div className="gx-preset-groups">
@@ -430,12 +444,21 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
             })}
           </div>
         ))}
-        <div className="gx-preset-row">
-          <span className="gx-preset-glabel">Otros</span>
-          <button type="button" className="gx-preset" onClick={() => aplicarPreset(PRESET_EXCEL.a, PRESET_EXCEL.b)}>
-            Maíz ABR / Soja MAY (Excel)
-          </button>
-        </div>
+        {[...new Set(PARES_LIBRES.map((p) => p.grupo))].map((grupo) => (
+          <div className="gx-preset-row" key={grupo}>
+            <span className="gx-preset-glabel">{grupo}</span>
+            {PARES_LIBRES.filter((p) => p.grupo === grupo).map((p) => {
+              const on = a.fuente === p.a.fuente && a.grano === p.a.grano && a.mon === p.a.mon
+                && b?.fuente === p.b.fuente && b?.grano === p.b.grano && b?.mon === p.b.mon;
+              return (
+                <button key={p.label} type="button" className={`gx-preset${on ? " on" : ""}`}
+                  onClick={() => aplicarPreset(p.a, p.b)}>
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </div>
 
       <div className="gx-build">
@@ -633,17 +656,31 @@ function PataSelector({
 
 /* ---------------- helpers ---------------- */
 
-/** Ordena las dos patas para el spread: [cercana/barata, lejana/cara]. */
+/**
+ * Ordena las dos patas para el spread = far − near. Convenciones de Lautaro:
+ *  - Pizarra − futuro (P11): la pizarra es el minuendo (far).
+ *  - A3 − CBOT (P10): la posición local (A3) es el minuendo (far).
+ *  - Mismo mercado: lejana − cercana (vto mayor − menor); empate → cara − barata.
+ */
 function ordenarPatas(
   sa: SeriePuntos, ra: PataResuelta, sb: SeriePuntos, rb: PataResuelta,
 ): [SeriePuntos, SeriePuntos] {
+  const fa = fuenteDeId(ra.serieId);
+  const fb = fuenteDeId(rb.serieId);
+
+  // Pizarra − futuro: pizarra = far (minuendo).
+  if (fa === "pizarra" && fb !== "pizarra") return [sb, sa];
+  if (fb === "pizarra" && fa !== "pizarra") return [sa, sb];
+
+  // A3 − CBOT: A3 = far (minuendo).
+  if (fa === "a3" && fb === "cbot") return [sb, sa];
+  if (fb === "a3" && fa === "cbot") return [sa, sb];
+
+  // Mismo mercado: lejana − cercana; empate → cara − barata.
   if (ra.vto && rb.vto && ra.vto !== rb.vto) {
-    return ra.vto < rb.vto ? [sa, sb] : [sb, sa]; // lejana = vto mayor
+    return ra.vto < rb.vto ? [sa, sb] : [sb, sa];
   }
-  // Empate (o sin vto): cara − barata, por precio medio.
-  const meanA = media(sa.v);
-  const meanB = media(sb.v);
-  return meanA <= meanB ? [sa, sb] : [sb, sa];
+  return media(sa.v) <= media(sb.v) ? [sa, sb] : [sb, sa];
 }
 
 function media(xs: number[]): number {
