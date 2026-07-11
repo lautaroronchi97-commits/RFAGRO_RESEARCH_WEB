@@ -2,7 +2,16 @@ import "server-only";
 import { cache } from "react";
 import type { Meta } from "./market";
 import { sbSelect } from "./supabase";
-import { CATEGORIA_FALLBACK, ORDEN_PANEL, claveTitulo, clasificar, esRuido, nombreCategoria } from "./noticias-clasificar";
+import {
+  CATEGORIA_FALLBACK,
+  ORDEN_PANEL,
+  claveTitulo,
+  clasificar,
+  clasificarStrict,
+  esRelevante,
+  fuenteTier,
+  nombreCategoria,
+} from "./noticias-clasificar";
 import { hoyCordobaISO } from "./dates";
 
 /**
@@ -19,7 +28,9 @@ import { hoyCordobaISO } from "./dates";
 
 const REVALIDATE = 600; // 10 min (el cron corre cada hora)
 const DIAS_HABILES = 3; // ventana visible: últimos N días hábiles (no se muestra nada más viejo)
-const MAX_POR_CATEGORIA = 12;
+const MAX_POR_CATEGORIA = 10;
+const N_DESTACADOS = 8; // "Lo importante hoy" (briefing)
+const MAX_DESTACADOS_POR_CAT = 3; // diversidad en el briefing
 
 /**
  * Epoch ms del inicio (00:00 Córdoba) del día hábil más viejo de la ventana de los
@@ -49,9 +60,17 @@ function corteHabilesMs(dias: number): number {
   return Date.parse(`${corteISO}T00:00:00-03:00`);
 }
 
-export type NoticiaItem = { titulo: string; fuente: string; link: string; fechaMs: number | null };
+export type NoticiaItem = {
+  titulo: string;
+  fuente: string;
+  link: string;
+  fechaMs: number | null;
+  nMedios: number; // cuántos medios cubrieron el mismo evento (1 = único)
+  sinFecha: boolean; // el feed no trajo fecha → rankea debajo de los fechados del día
+};
 export type NoticiaCategoria = { id: string; nombre: string; items: NoticiaItem[] };
 export type NoticiasData = {
+  destacados: NoticiaItem[]; // "Lo importante hoy" (briefing transversal, priorizado)
   categorias: NoticiaCategoria[];
   total: number;
   nFuentes: number;
@@ -59,47 +78,120 @@ export type NoticiasData = {
   meta: Meta;
 };
 
-/* ---------------- armado común ---------------- */
+/* ---------------- armado: dedup por evento + ranking por relevancia ---------------- */
 
-type ItemCat = NoticiaItem & { categoria: string };
+type ItemCat = { titulo: string; fuente: string; link: string; fechaMs: number | null; categoria: string };
+type Rep = ItemCat & { nMedios: number; tier: number };
 
-function agrupar(items: ItemCat[]): NoticiaCategoria[] {
-  const porCat = new Map<string, NoticiaItem[]>();
-  const vistos = new Set<string>();
-  // dedup por título: la misma nota puede llegar directo (link del medio) y vía Google News (link
-  // redirect). Se queda el registro directo (no Google) y con fecha. score: directo=2 · fecha=+1.
-  const esGoogle = (l: string) => /news\.google\./i.test(l);
-  const score = (x: ItemCat) => (esGoogle(x.link) ? 0 : 2) + (x.fechaMs ? 1 : 0);
-  const porTitulo = new Map<string, ItemCat>();
-  for (const it of items) {
-    if (esRuido(it.titulo)) continue; // descarta páginas de servicio (dólar por provincia, clima puntual…)
-    if (vistos.has(it.link)) continue; // dedup exacta por link (evita choque de keys de React)
-    vistos.add(it.link);
-    const k = claveTitulo(it.titulo);
-    const prev = porTitulo.get(k);
-    if (!prev || score(it) > score(prev)) porTitulo.set(k, it);
-  }
-  for (const it of porTitulo.values()) {
-    const id = ORDEN_PANEL.includes(it.categoria) ? it.categoria : CATEGORIA_FALLBACK;
-    const lista = porCat.get(id) ?? [];
-    lista.push({ titulo: it.titulo, fuente: it.fuente, link: it.link, fechaMs: it.fechaMs });
-    porCat.set(id, lista);
-  }
-  // Sin fecha (titulares curados de BCR en el fallback) = "recién vistos" → rankean como ahora, no en
-  // epoch 0: si no, quedaban al fondo y el slice de abajo los truncaba, escondiendo la fuente primaria.
-  const ahoraMs = Date.now();
-  const rank = (x: NoticiaItem) => x.fechaMs ?? ahoraMs;
-  return ORDEN_PANEL.filter((id) => porCat.has(id)).map((id) => ({
-    id,
-    nombre: nombreCategoria(id),
-    items: (porCat.get(id) ?? [])
-      .sort((a, b) => rank(b) - rank(a))
-      .slice(0, MAX_POR_CATEGORIA),
-  }));
+const STOP = new Set([
+  "para", "por", "con", "los", "las", "del", "una", "unos", "unas", "que", "como", "más", "mas", "este",
+  "esta", "estos", "estas", "tras", "hoy", "sobre", "entre", "desde", "hasta", "según", "segun", "the",
+  "and", "for", "with", "from", "que", "año", "años", "millones", "mil",
+]);
+
+function tokensDe(titulo: string): Set<string> {
+  return new Set(claveTitulo(titulo).split(" ").filter((w) => w.length > 3 && !STOP.has(w)));
 }
 
-function contarFuentes(cats: NoticiaCategoria[]): number {
-  return new Set(cats.flatMap((c) => c.items.map((i) => i.fuente))).size;
+/** Cifras distintivas (≥2 dígitos, sin separadores): 50,1 · 300.000 · 17.500. Descartan % y años sueltos. */
+function cifrasDe(titulo: string): Set<string> {
+  return new Set((titulo.match(/\d[\d.,]*/g) ?? []).map((n) => n.replace(/[.,]/g, "")).filter((n) => n.length >= 3));
+}
+
+/**
+ * Agrupa notas del MISMO evento (dedup semántica). Greedy contra la SEMILLA de cada cluster (no
+ * acumula, para no derivar): se unen si comparten ≥4 tokens de contenido con jaccard ≥0.5, o una
+ * cifra distintiva + ≥4 tokens. Conservador: ante la duda, no colapsa (mejor mostrar de más).
+ */
+function clusterizar(items: ItemCat[]): ItemCat[][] {
+  const clusters: { items: ItemCat[]; toks: Set<string>; cifras: Set<string> }[] = [];
+  for (const it of items) {
+    const tk = tokensDe(it.titulo);
+    const cf = cifrasDe(it.titulo);
+    let dest: (typeof clusters)[number] | null = null;
+    for (const c of clusters) {
+      const common = [...tk].filter((x) => c.toks.has(x)).length;
+      const jac = common / (tk.size + c.toks.size - common || 1);
+      const sharedNum = [...cf].some((x) => c.cifras.has(x));
+      if ((common >= 4 && jac >= 0.5) || (sharedNum && common >= 3)) {
+        dest = c;
+        break;
+      }
+    }
+    if (dest) dest.items.push(it);
+    else clusters.push({ items: [it], toks: tk, cifras: cf });
+  }
+  return clusters.map((c) => c.items);
+}
+
+/** Relevancia = recencia + cobertura (nº de medios) + tier de fuente + peso de categoría. */
+function scoreRep(r: Rep, ahoraMs: number, corteMs: number): number {
+  const span = Math.max(1, ahoraMs - corteMs);
+  const rec = r.fechaMs ? Math.min(1, Math.max(0, (r.fechaMs - corteMs) / span)) : 0.15; // s/f rankea abajo
+  const cob = Math.min(r.nMedios, 8) / 8;
+  const tierW = r.tier === 0 ? 1 : r.tier === 1 ? 0.6 : 0.3;
+  const catW: Record<string, number> =
+    { informes: 1, mercados: 1, economia: 0.95, internacional: 0.9, clima: 0.7, logistica: 0.6, empresas: 0.5 };
+  return 0.32 * rec + 0.3 * cob + 0.2 * tierW + 0.18 * (catW[r.categoria] ?? 0.7);
+}
+
+function toItem(r: Rep): NoticiaItem {
+  return { titulo: r.titulo, fuente: r.fuente, link: r.link, fechaMs: r.fechaMs, nMedios: r.nMedios, sinFecha: r.fechaMs == null };
+}
+
+function armar(items: ItemCat[], corteMs: number): { destacados: NoticiaItem[]; categorias: NoticiaCategoria[] } {
+  const ahoraMs = Date.now();
+  // Filtro de display (defensa por si quedan filas viejas sin gate) + dedup exacta por link.
+  const vistos = new Set<string>();
+  const limpios: ItemCat[] = [];
+  for (const it of items) {
+    // Gate estricto de display (Lautaro): solo notas con señal temática, sin ruido ni excluidas
+    // (ganadería/regionales). Vale para todas las fuentes, incluso la data vieja sin gate de ingesta.
+    if (!esRelevante(it.titulo)) continue;
+    if (vistos.has(it.link)) continue;
+    vistos.add(it.link);
+    // Re-clasifica con las reglas ACTUALES (taxonomía nueva aplica al instante, sin backfill).
+    limpios.push({ ...it, categoria: clasificarStrict(it.titulo) ?? it.categoria });
+  }
+  // Cluster por evento → 1 representante (mejor tier, más fresco) + nMedios; fecha = la más nueva del grupo.
+  const reps: Rep[] = clusterizar(limpios).map((grupo) => {
+    grupo.sort((a, b) => fuenteTier(a.fuente) - fuenteTier(b.fuente) || (b.fechaMs ?? 0) - (a.fechaMs ?? 0));
+    const rep = grupo[0]!;
+    const fechaMs = grupo.reduce((mx, x) => Math.max(mx, x.fechaMs ?? 0), 0) || null;
+    return { ...rep, fechaMs, nMedios: grupo.length, tier: fuenteTier(rep.fuente) };
+  });
+  reps.sort((a, b) => scoreRep(b, ahoraMs, corteMs) - scoreRep(a, ahoraMs, corteMs));
+
+  // Briefing "Lo importante hoy": top N por score, con tope por categoría para diversidad.
+  const destacados: NoticiaItem[] = [];
+  const briefPorCat = new Map<string, number>();
+  for (const r of reps) {
+    if (destacados.length >= N_DESTACADOS) break;
+    // Solo notas relevantes de verdad: matchean un keyword temático o las cubrieron ≥2 medios.
+    if (clasificarStrict(r.titulo) === null && r.nMedios < 2) continue;
+    const n = briefPorCat.get(r.categoria) ?? 0;
+    if (n >= MAX_DESTACADOS_POR_CAT) continue;
+    briefPorCat.set(r.categoria, n + 1);
+    destacados.push(toItem(r));
+  }
+
+  // Chips por categoría, ya en orden de score (reps viene ordenado), tope por categoría.
+  const porCat = new Map<string, Rep[]>();
+  for (const r of reps) {
+    const id = ORDEN_PANEL.includes(r.categoria) ? r.categoria : CATEGORIA_FALLBACK;
+    if (!porCat.has(id)) porCat.set(id, []);
+    porCat.get(id)!.push(r);
+  }
+  const categorias = ORDEN_PANEL.filter((id) => porCat.has(id)).map((id) => ({
+    id,
+    nombre: nombreCategoria(id),
+    items: (porCat.get(id) ?? []).slice(0, MAX_POR_CATEGORIA).map(toItem),
+  }));
+  return { destacados, categorias };
+}
+
+function contarFuentes(cats: NoticiaCategoria[], destacados: NoticiaItem[]): number {
+  return new Set([...destacados, ...cats.flatMap((c) => c.items)].map((i) => i.fuente)).size;
 }
 
 /* ---------------- fuente primaria: Supabase (cron horario) ---------------- */
@@ -140,11 +232,12 @@ function desdeSupabase(rows: RawRow[]): NoticiasData | null {
   const corte = corteHabilesMs(DIAS_HABILES);
   const usar = items.filter((i) => (i.fechaMs ?? 0) >= corte);
 
-  const categorias = agrupar(usar);
+  const { destacados, categorias } = armar(usar, corte);
   return {
+    destacados,
     categorias,
     total: categorias.reduce((n, c) => n + c.items.length, 0),
-    nFuentes: contarFuentes(categorias),
+    nFuentes: contarFuentes(categorias, destacados),
     generadoMs: Date.now(),
     meta: {
       source: "Portal RF AGRO · ingesta horaria de medios",
@@ -266,11 +359,15 @@ async function enVivo(problema: string): Promise<NoticiasData> {
   if (!bcr) problemas.push("Resumen BCR no disponible");
   // Misma ventana de días hábiles; se conservan los titulares sin fecha (BCR curado del día).
   const corte = corteHabilesMs(DIAS_HABILES);
-  const categorias = agrupar(items.filter((it) => it.fechaMs == null || it.fechaMs >= corte));
+  const { destacados, categorias } = armar(
+    items.filter((it) => it.fechaMs == null || it.fechaMs >= corte),
+    corte,
+  );
   return {
+    destacados,
     categorias,
     total: categorias.reduce((n, c) => n + c.items.length, 0),
-    nFuentes: contarFuentes(categorias),
+    nFuentes: contarFuentes(categorias, destacados),
     generadoMs: Date.now(),
     meta: {
       source: "Lectura en vivo (BCR + RSS)",

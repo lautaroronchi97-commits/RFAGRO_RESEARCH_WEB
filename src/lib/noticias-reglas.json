@@ -19,7 +19,7 @@
         "europa", "europeo", "union europea", "parlamento europeo", "francia", "iran", "aranceles", "arancel",
         "safra", "safrinha", "milho", "india", "indonesia", "malasia", "egipto", "argelia", "vietnam",
         "paraguay", "uruguay", "bolivia", "black sea", "russia", "ukraine", "soybean", "soybeans",
-        "wheat", "corn", "grains", "palm oil", "canola", "tariff", "tariffs"
+        "wheat", "corn", "grains", "soy", "palm oil", "canola", "tariff", "tariffs"
       ]
     },
     {
@@ -83,7 +83,7 @@
     "bovino", "bovina", "feedlot", "tambo", "tambos", "leche", "lácteo", "lácteos", "láctea", "frigorífico",
     "frigoríficos", "faena", "carne", "cerdo", "porcino", "avícola", "pollo", "yerba", "yerbatera", "vino",
     "vinos", "vitivinícola", "bodega", "olivo", "aceituna", "miel", "apícola", "apicultura", "algodón",
-    "tabaco", "azúcar", "caña de azúcar", "aserradero", "forestal"
+    "tabaco", "azúcar", "caña de azúcar", "aserradero", "forestal", "economías regionales"
   ],
   "granos": [
     "soja", "maíz", "maiz", "trigo", "girasol", "cebada", "sorgo", "granos", "grano", "poroto",
@@ -118,7 +118,7 @@
   "fallback": "mercados",
   "_tierDoc": "Prioridad editorial por fuente para elegir el representante de un cluster y para el ranking. 0=agencias/oficiales/bolsas · 1=nacionales serios y agro-especializados fuertes · 2=resto (provinciales, radios, agregadores). Match por substring sobre el nombre de fuente en minúsculas.",
   "fuenteTier": {
-    "0": ["reuters", "bloomberg", "usda", " cme", "bcr.com", "bolsa de", "conab", "cftc", "world-grain", "world grain", "matba", "rofex", "a3 "],
+    "0": ["reuters", "bloomberg", "usda", " cme", "bcr.com", "bolsa de", "conab", "cftc", "matba", "rofex", "a3 "],
     "1": ["la nacion", "la nación", "ámbito", "ambito", "infobae", "clarin", "clarín", "infocampo", "bichos de campo", "agrofy", "agrolatam", "agrositio", "dtn", "agweb", "successful farming", "farm progress", "pro farmer", "cebada cervecera", "dataportuaria", "todoagro"]
   }
 }

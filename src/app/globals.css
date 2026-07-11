@@ -466,9 +466,32 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
 .news-src { font-size:var(--fs-2xs); color:var(--ink-3); font-weight:700; text-transform:uppercase;
   letter-spacing:.03em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .news-time { font-family:var(--font-mono); font-size:var(--fs-2xs); color:var(--ink-3); white-space:nowrap; }
+.news-cobertura { font-family:var(--font-mono); font-size:var(--fs-2xs); font-weight:700; white-space:nowrap;
+  color:var(--gold-text); }
 .news-cat.full .news-list { display:block; columns:2 340px; column-gap:26px; }
 .news-cat.full .news-item { break-inside:avoid; }
 .news-empty { padding:12px 16px 14px; color:var(--ink-3); font-size:var(--fs-xs); }
+
+/* ---- "Lo importante hoy" (briefing priorizado) ---- */
+.news-brief { margin:12px 14px 2px; padding:11px 14px 12px; border-radius:10px;
+  background:color-mix(in srgb, var(--gold) 7%, var(--panel-2));
+  border:1px solid color-mix(in srgb, var(--gold) 30%, var(--line-2)); position:relative; }
+.news-brief::before { content:""; position:absolute; left:0; top:10px; bottom:10px; width:3px; border-radius:3px;
+  background:linear-gradient(180deg, var(--gold), color-mix(in srgb, var(--gold) 40%, transparent)); }
+.news-brief-hd { display:flex; align-items:center; gap:7px; margin-bottom:8px; }
+.news-brief-dot { width:7px; height:7px; border-radius:50%; background:var(--gold);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--gold) 22%, transparent); }
+.news-brief-hd h3 { margin:0; font-size:var(--fs-2xs); font-weight:800; text-transform:uppercase;
+  letter-spacing:.09em; color:var(--gold-text); }
+.news-brief-list { list-style:none; margin:0; padding:0; display:grid; gap:8px 22px;
+  grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); }
+.news-brief-item { display:grid; grid-template-columns:auto 1fr; column-gap:9px; align-items:baseline; }
+.news-brief-num { font-family:var(--font-mono); font-size:var(--fs-2xs); font-weight:700; color:var(--gold-text);
+  opacity:.7; grid-row:span 2; }
+.news-brief-title { font-size:13.5px; font-weight:600; color:var(--ink); line-height:1.34; text-decoration:none; }
+.news-brief-title:hover { color:var(--brand-deep); text-decoration:underline;
+  text-decoration-color:var(--gold); text-underline-offset:3px; }
+.news-brief-item .news-meta { grid-column:2; }
 .tbl tbody tr.tot td { font-weight:700; color:var(--ink); border-top:1px solid var(--line-2);
   border-bottom:none; background:var(--panel-2); }
 /* ---- Calculadoras ---- */

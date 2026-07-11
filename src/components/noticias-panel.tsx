@@ -25,7 +25,7 @@ export async function NoticiasPanel() {
         stamp={<SourceStamp meta={data.meta} />}
       />
       {data.total > 0 ? (
-        <NoticiasClient categorias={data.categorias} ahora={data.generadoMs} />
+        <NoticiasClient destacados={data.destacados} categorias={data.categorias} ahora={data.generadoMs} />
       ) : (
         <p className="news-empty">Sin noticias disponibles ahora.</p>
       )}
