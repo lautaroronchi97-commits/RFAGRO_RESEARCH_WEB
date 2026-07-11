@@ -30,14 +30,18 @@ feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→
 `pizarra_historico` 7.893 filas (→07/07). Los 3 crons corren solos. Ya no queda nada pendiente de
 [`PLAN_BASES_GRAFICOS.md`](PLAN_BASES_GRAFICOS.md).
 
-**Hecho esta sesión (rama `claude/timeline-spread-charts-plan-3zlt1g`) — PLAN del panel de
-gráficos de spreads entre cosechas ([`PLAN_GRAFICOS_SPREADS.md`](PLAN_GRAFICOS_SPREADS.md)):**
-- Plan completo del panel que pidió Lautaro (sus 3 casos: maíz ABR vs JUL por campaña · soja NOV
-  A3 vs Chicago · pizarra vs futuro seleccionable): catálogo de gráficos v1/v2/ideas, superposición
-  de campañas (2 alineaciones de eje X), filtros, UX (`/graficos`), arquitectura (`/api/series` +
-  vista `series_catalogo`), Recharts 3.9.2, fases 0→3.
-- **⚠️ Bug real encontrado planificando:** PostgREST trunca a 1.000 filas con HTTP 206 y `sbSelect`
-  lo trata como éxito (truncado silencioso) → Fase 0 del plan = fix en `src/lib/supabase.ts`.
+**Hecho esta sesión (rama `claude/timeline-spread-charts-plan-3zlt1g`) — PLAN + Fase 0 + Fase 1 del
+panel de gráficos de spreads ([`PLAN_GRAFICOS_SPREADS.md`](PLAN_GRAFICOS_SPREADS.md)):**
+- **Plan completo** del panel (sus 3 casos + 4 usos diarios), catálogo v1/v2/ideas, 2 alineaciones
+  de eje, UX `/graficos`, arquitectura, Recharts 3.9.2, fases 0→3, 30 preguntas (26 respondidas).
+- **✅ Fase 0 IMPLEMENTADA:** guard del truncado 206 + `sbSelectAll` paginado (`src/lib/supabase.ts`)
+  · flag estimativo en `pizarra.ts` → el panel Arbitrajes marca "estimativa" (antes la mostraba como
+  firme). El bug del 206 (PostgREST trunca a 1.000 y `sbSelect` lo tragaba) quedó cerrado.
+- **✅ Fase 1 IMPLEMENTADA y VALIDADA:** página `/graficos` con Recharts — motor de 2 patas genérico
+  (`series.ts`/`derivadas.ts`/`/api/series` + vista `series_catalogo` con 351 series), constructor,
+  chips de campañas, toggle eje/métrica/ventana, presets caso (a) + par del Excel, estado en URL
+  compartible. **Reproduce el Excel exacto** (spread 2021-04-05 = 125,6; ratio U7 = 0,5796),
+  verificado con Playwright en claro/oscuro. `lint`+`tsc`+`build` verdes.
 - **Lautaro respondió 26 de las 30 preguntas el 11/07** (vía chips en el chat; todas las
   decisiones registradas en la sección 9 del plan). Highlights: eje días-al-vto por índice de
   rueda · spread = lejana−cercana (empate: caro−barato) · ratio default maíz/soja · A3−CBOT en
@@ -68,9 +72,9 @@ gráficos de spreads entre cosechas ([`PLAN_GRAFICOS_SPREADS.md`](PLAN_GRAFICOS_
 | `claude/futures-position-databases-j10vpr` · `claude/feed-a3-live-plan-obxzcz` · `claude/news-section-redesign-k3zctf` | PRs #10/#14, #11 y #12/#15/#16 ya mergeados → borrar. |
 
 **Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
-0. **Gráficos de spreads**: Lautaro responde las preguntas de `PLAN_GRAFICOS_SPREADS.md` →
-   Fase 0 (fix truncado 206 en `sbSelect`) → Fase 1 (caso maíz ABR vs JUL + par del Excel,
-   validable contra su planilla).
+0. **Gráficos de spreads — Fase 2**: con el panel Fase 1 andando, sumar ratio+ⁿ vistas confirmadas,
+   base pizarra−futuro, A3↔CBOT, banda min–máx+mediana y percentil (falta el ejemplo numérico P13),
+   presets definitivos (P27). Fase 0+1 ya en el PR #17.
 1. **Fase 2 del Feed A3 — histórico intradiario**: cron GH Actions `*/15 13-20 * * 1-5` UTC +
    `scripts/ingest-rueda.mjs` + tabla `snapshots` + `ingest_log` (INFRAESTRUCTURA.md). Habilita gráficos
    intradía. (La frescura ya está resuelta web-directa; esto es SOLO para guardar historia.)

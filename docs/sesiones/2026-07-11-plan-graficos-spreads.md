@@ -1,11 +1,32 @@
-# Sesión 2026-07-11 — Plan panel de gráficos de spreads
+# Sesión 2026-07-11 — Panel de gráficos de spreads (plan + Fase 0+1)
 
 - **Rama:** `claude/timeline-spread-charts-plan-3zlt1g` · **PR:** draft (base `main`)
-- **Objetivo pedido por Lautaro:** plan (NO implementación) del panel de gráficos de línea de
-  tiempo para comparar spreads entre cosechas — sus 3 casos: maíz ABR vs JUL Rosario por campaña,
-  soja NOV Rosario vs soja NOV Chicago, pizarra vs futuro A3 seleccionable — con período editable,
-  todas las posiciones combinables, campañas superpuestas (eje ene→dic), y propuestas de mejoras.
-  Regla explícita: no suponer nada; toda ambigüedad = pregunta.
+- **Objetivo pedido por Lautaro:** plan del panel de gráficos de línea de tiempo para comparar
+  spreads entre cosechas — sus 3 casos: maíz ABR vs JUL Rosario por campaña, soja NOV Rosario vs
+  soja NOV Chicago, pizarra vs futuro A3 seleccionable — con período editable, todas las posiciones
+  combinables, campañas superpuestas, y propuestas de mejoras. **Tras aprobar el plan y responder
+  las preguntas, dio el "dale" y se implementó Fase 0 + Fase 1 en la misma sesión.**
+
+## Hecho — IMPLEMENTACIÓN (Fase 0 + 1)
+- **Fase 0 (fixes independientes):** guard del truncado HTTP 206 en `src/lib/supabase.ts` +
+  `sbSelectAll` paginado · flag `estimativo` en `src/lib/pizarra.ts` (clase `estimative` del board
+  CAC) hilvanado hasta el panel Arbitrajes (`arbitrajes-cierres.ts`, `arbitrajes-table.tsx`,
+  `arbitrajes-editable.tsx`, badge `.pz-estim`).
+- **Fase 1 (panel `/graficos`):** migración `series_catalogo` (aplicada; 351 series) ·
+  `src/lib/series.ts` + `series-types.ts` + `derivadas.ts` (motor puro: join ffill 3 ruedas, spread
+  lejana−cercana, ratio, alineación días-al-vto por índice de rueda y calendario) · route handlers
+  `/api/series` y `/api/series/catalogo` · `graficos-client.tsx` + `spread-chart.tsx` (Recharts
+  3.9.2) · `src/app/graficos/page.tsx` · tokens `--camp-2020…2027` en `globals.css` · entrada
+  "Gráficos" en el nav (`site-header.tsx`, anchors absolutos `/#`).
+- **Validado contra datos reales + el Excel** (Playwright, claro y oscuro): spread MAI ABR22−SOJ
+  MAY22 al 2021-04-05 = 125,6 = hoja "2022"; ratio maíz/soja al 2022-02-14 = 0,5796 = celda U7 del
+  resumen; KPI vigente 146,50 = SOJ MAY27 − MAI ABR27. `lint`+`tsc`+`build` verdes, sin errores de
+  consola. Trampa hallada y corregida: PostgREST NO acepta el símbolo entrecomillado (`eq."..."`
+  devuelve []); va sin comillas, solo encodeando el `/` (`eq.MAI.ROS%2FABR22`).
+
+---
+
+## Hecho — PLAN (fase previa de la sesión)
 
 ## Hecho
 - **`docs/PLAN_GRAFICOS_SPREADS.md`** — el plan completo: catálogo de 9 gráficos v1 + 8 v2 + backlog

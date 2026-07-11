@@ -14,6 +14,7 @@ export async function ArbitrajesTable() {
     nombre: g.nombre,
     pizarraDefault: g.pizarraUsd,
     pizarraArs: g.pizarraArs,
+    pizarraEstimativa: g.pizarraEstimativa,
     rows: g.rows.map((r) => {
       const p = live.puntas.get(r.symbol);
       return {

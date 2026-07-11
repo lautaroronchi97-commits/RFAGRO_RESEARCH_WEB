@@ -4,14 +4,14 @@ import { RuedaStatus } from "./rueda-status";
 import { ThemeToggle } from "./theme-toggle";
 
 const NAV: { label: string; href: string; disabled?: boolean }[] = [
-  { label: "Noticias", href: "#noticias" },
-  { label: "Arbitrajes", href: "#arbitrajes" },
-  { label: "Dólar futuro", href: "#dolar-futuro" },
-  { label: "Dólar linked", href: "#dolar-linked" },
-  { label: "Pases", href: "#pases" },
-  { label: "Implícitas", href: "#implicitas" },
-  { label: "Sintéticos", href: "#sinteticos" },
-  { label: "Cambiario", href: "#cambiario" },
+  { label: "Noticias", href: "/#noticias" },
+  { label: "Arbitrajes", href: "/#arbitrajes" },
+  { label: "Gráficos", href: "/graficos" },
+  { label: "Pases", href: "/#pases" },
+  { label: "Dólar futuro", href: "/#dolar-futuro" },
+  { label: "Dólar linked", href: "/#dolar-linked" },
+  { label: "Implícitas", href: "/#implicitas" },
+  { label: "Cambiario", href: "/#cambiario" },
 ];
 
 export function SiteHeader() {

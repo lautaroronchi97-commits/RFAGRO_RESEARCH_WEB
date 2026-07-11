@@ -292,21 +292,27 @@ Cada fase termina en algo **verificable por Lautaro en una URL de preview**, con
 `lint` + `tsc` + `build` verdes y su PR draft **base `main`** (protocolo de `ESTADO.md`). Nada de
 la fase N+1 arranca sin validar la N.
 
-**Fase 0 — fix independiente (corresponde ya, con o sin panel):**
-guard de HTTP 206/truncado en `src/lib/supabase.ts`. Entregable: `sbSelect` falla ruidoso (o
-pagina) ante respuesta parcial. Es prerequisito funcional de las series de pizarra (§6).
+**Fase 0 — ✅ HECHA (11/07):**
+- Guard de HTTP 206/truncado en `src/lib/supabase.ts` + `sbSelectAll` (pagina con limit/offset para
+  series continuas como pizarra). `sbSelect` ahora falla ruidoso (`reason: "truncated"`) ante el
+  206 parcial en vez de tragar 1.000 filas en silencio.
+- Flag estimativo en el scrape del día (`src/lib/pizarra.ts`): captura la clase `estimative` del
+  board de CAC → `PizarraGrano.estimativo` → el panel Arbitrajes marca "estimativa" cuando la
+  pizarra no está fijada (Dto. 1058/99), en vez de mostrarla como firme.
 
-**Fase 1 — mínima demostrable (el caso (a) + el par del Excel andando):**
-migración `series_catalogo` + grant anon · `src/lib/series.ts` (resolución de ids + fetch por
-símbolo, select mínimo, paginación de series continuas, reusa `sbSelect`/Result) · `GET
-/api/series` + `/api/series/catalogo` · `src/lib/derivadas.ts` (join con ffill acotado + spread
-`B−A`, la única fórmula ya confirmada por el Excel; transformaciones días-al-vto y day-of-year) ·
-página `/graficos` con Recharts: constructor 2 patas, chips de campañas, toggle de eje, presets
-"Maíz ABR vs JUL Ros" (caso a) y "Maíz ABR vs Soja MAY Ros" (el par del Excel) · estado en URL.
-**Entregable verificable:** URL de preview donde (1) el caso (a) superpone campañas 2020→2026, y
-(2) el preset del par del Excel reproduce los números de **sus hojas 2021→2025 completas (y el
-tramo 2020 desde enero)** — validación directa contra la planilla que Lautaro ya usa. Sin bandas,
-sin percentil, sin ratio: solo lo confirmado.
+**Fase 1 — ✅ HECHA y VALIDADA (11/07):**
+migración `series_catalogo` (351 series: 217 A3 `.ROS` + 129 CBOT + 5 pizarra) · `src/lib/series.ts`
+(catálogo + fetch por símbolo, select mínimo, pizarra paginada) · `GET /api/series` +
+`/api/series/catalogo` (data cache + `s-maxage`) · `src/lib/derivadas.ts` (join con ffill acotado
+3 ruedas + spread lejana−cercana + ratio + alineación días-al-vto por índice de rueda y calendario)
+· `src/components/graficos-client.tsx` + `spread-chart.tsx` (Recharts 3.9.2): constructor de 2 patas
+genérico, chips de campañas por color, toggle de eje/métrica/ventana, presets "Maíz ABR vs JUL" y
+"Maíz ABR vs Soja MAY (Excel)", estado en URL compartible · página `/graficos` + entrada en el nav.
+**Validado contra el Excel de Lautaro:** el spread MAI ABR22−SOJ MAY22 al 2021-04-05 = **125,6**
+(idéntico a la hoja "2022"); el ratio maíz/soja al 2022-02-14 = **0,5796** (idéntico a la celda U7
+de su hoja resumen); KPI de la campaña vigente = 146,50 (= SOJ MAY27 332,5 − MAI ABR27 186).
+`lint` + `tsc` + `build` verdes; panel ejercitado con Playwright en claro y oscuro, sin errores de
+consola. Sin bandas ni percentil todavía (Fase 2, pendiente del ejemplo numérico P13).
 
 **Validación con Lautaro (gate):** revisar la Fase 1 contra su Excel + contestar las PREGUNTAS de
 la sección 9 (sobre todo P1–P11). Ninguna fórmula de Fase 2 se implementa sin su ejemplo numérico.

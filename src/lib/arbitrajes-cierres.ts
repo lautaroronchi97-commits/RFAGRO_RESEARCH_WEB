@@ -37,6 +37,7 @@ export type ArbGrano = {
   fecha: string | null;
   pizarraUsd: number | null;
   pizarraArs: number | null;
+  pizarraEstimativa: boolean; // CAC no fijó pizarra ese día (estimación Dto. 1058/99)
   rows: ArbRow[];
 };
 
@@ -74,6 +75,7 @@ export const getArbitrajes = cache(async (): Promise<ArbData> => {
         fecha: g.fecha,
         pizarraUsd,
         pizarraArs: pz?.ars ?? null,
+        pizarraEstimativa: pz?.estimativo ?? false,
         rows,
       });
     }
