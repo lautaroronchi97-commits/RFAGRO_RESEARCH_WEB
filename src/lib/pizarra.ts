@@ -20,7 +20,7 @@ const URL_CAC = "https://www.cac.bcr.com.ar/es/precios-de-pizarra";
 const SOURCE = "CAC · BCR (pizarra)";
 const CLASES: Record<string, string> = { SOJ: "soja", MAI: "maiz", TRI: "trigo" };
 
-export type PizarraGrano = { underlying: string; usd: number; ars: number | null };
+export type PizarraGrano = { underlying: string; usd: number; ars: number | null; estimativo: boolean };
 export type PizarraData = {
   granos: Record<string, PizarraGrano>;
   fecha: string | null;
@@ -33,12 +33,15 @@ function arNum(s: string): number {
   return Number(s.replace(/\./g, "").replace(",", "."));
 }
 
-function parseGrano(html: string, cls: string): { usd: number; ars: number } | null {
+function parseGrano(html: string, cls: string): { usd: number; ars: number; estimativo: boolean } | null {
+  // CAC marca la pizarra estimativa (días sin fijación, Dto. 1058/99) con la
+  // clase `estimative` en el div del board: `<div class="board board-soja estimative">`.
+  // Capturamos el resto de la clase (grupo 1) para detectarlo.
   const re = new RegExp(
-    `board-${cls}\\b[\\s\\S]*?<div class="price">\\s*\\$([\\d.]+,\\d{2})[\\s\\S]*?US\\$<\\/strong>\\s*([\\d.]+,\\d{2})`,
+    `board-${cls}\\b([^"]*)"[\\s\\S]*?<div class="price">\\s*\\$([\\d.]+,\\d{2})[\\s\\S]*?US\\$<\\/strong>\\s*([\\d.]+,\\d{2})`,
   );
   const m = html.match(re);
-  return m ? { ars: arNum(m[1]), usd: arNum(m[2]) } : null;
+  return m ? { estimativo: /\bestimative\b/.test(m[1]), ars: arNum(m[2]), usd: arNum(m[3]) } : null;
 }
 
 function overrides(): Record<string, number> {
@@ -71,9 +74,10 @@ export const getPizarra = cache(async (): Promise<PizarraData> => {
     const p = html ? parseGrano(html, cls) : null;
     const usdOverride = ov[u];
     if (usdOverride != null && Number.isFinite(usdOverride)) {
-      granos[u] = { underlying: u, usd: usdOverride, ars: p?.ars ?? null };
+      // El override manual fija la referencia → deja de ser estimativa.
+      granos[u] = { underlying: u, usd: usdOverride, ars: p?.ars ?? null, estimativo: false };
     } else if (p) {
-      granos[u] = { underlying: u, usd: p.usd, ars: p.ars };
+      granos[u] = { underlying: u, usd: p.usd, ars: p.ars, estimativo: p.estimativo };
     }
   }
 

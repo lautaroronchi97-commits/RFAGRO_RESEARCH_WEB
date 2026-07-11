@@ -25,6 +25,7 @@ export type ArbGranoClient = {
   nombre: string;
   pizarraDefault: number | null;
   pizarraArs: number | null;
+  pizarraEstimativa?: boolean;
   rows: Row[];
 };
 
@@ -115,6 +116,11 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
                           aria-label={`Pizarra USD ${g.nombre}`}
                         />
                         {g.pizarraArs ? ` · ARS ${nfmt(g.pizarraArs, 0)}` : ""}
+                        {g.pizarraEstimativa && !editada && (
+                          <span className="pz-estim" title="CAC no fijó pizarra ese día: es una estimación (Dto. 1058/99), no un precio firme. Editá el valor si tenés el real.">
+                            estimativa
+                          </span>
+                        )}
                         {editada && (
                           <button
                             type="button"

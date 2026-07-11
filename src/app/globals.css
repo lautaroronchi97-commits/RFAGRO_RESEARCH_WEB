@@ -31,6 +31,10 @@
   --pos:#16A34A; --neg:#DC2626; --neu:#7E8C74;
   --pos-weak:rgba(22,163,74,.12); --neg-weak:rgba(220,38,38,.12);
   --focus:#2F6E34;
+  /* Colores de campañas (validados con el validador dataviz, PASS 4/4 en ambos temas).
+     El color sigue a la campaña SIEMPRE; la vigente se distingue por grosor, no color. */
+  --camp-2020:#2A78D6; --camp-2021:#D96A2A; --camp-2022:#0891B2; --camp-2023:#B45309;
+  --camp-2024:#DB5A9B; --camp-2025:#9333EA; --camp-2026:#0F9E8C; --camp-2027:#7C4FD0;
   --shadow:
     0 1px 1.5px rgba(23,37,27,.05),
     0 4px 10px -4px rgba(23,37,27,.07),
@@ -60,6 +64,8 @@
   --pos:#37D982; --neg:#FF5C5C; --neu:#8B9E85;
   --pos-weak:rgba(55,217,130,.14); --neg-weak:rgba(255,92,92,.14);
   --focus:#98CE66;
+  --camp-2020:#3987E5; --camp-2021:#D95926; --camp-2022:#0AA2C0; --camp-2023:#BE6A1C;
+  --camp-2024:#DB639E; --camp-2025:#A55BEA; --camp-2026:#0FA38E; --camp-2027:#9085E9;
   --shadow:
     0 1px 0 rgba(0,0,0,.45),
     0 4px 12px -6px rgba(0,0,0,.55),
@@ -421,6 +427,10 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
 .pz-reset { margin-left:5px; cursor:pointer; border:none; background:none; color:var(--ink-3);
   font-size:var(--fs-xs); line-height:1; padding:0 2px; }
 .pz-reset:hover { color:var(--brand-deep); }
+.pz-estim { margin-left:6px; padding:0.5px 5px; border-radius:3px; cursor:help;
+  font-size:9px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--gold-text); background:color-mix(in srgb, var(--gold) 12%, transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--gold) 45%, transparent); }
 .sec-title { font-family:var(--font-ui); font-size:var(--fs-xs); font-weight:800; letter-spacing:.08em;
   text-transform:uppercase; color:var(--ink-2); margin:14px 2px 2px; padding-top:10px;
   border-top:1px solid var(--line); }
@@ -538,3 +548,70 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
 .curva-pick select { font-family:var(--font-mono); font-size:12.5px; padding:5px 8px; border-radius:6px;
   border:1px solid var(--line-2); background:var(--panel); color:var(--ink); }
 
+
+/* ---------------- Panel de gráficos de spreads (/graficos) ---------------- */
+.gx-wrap { max-width:1120px; margin:0 auto; padding:18px 16px 40px; }
+.gx-presets { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+.gx-preset { font-family:var(--font-ui); font-size:var(--fs-xs); font-weight:700; cursor:pointer;
+  padding:6px 12px; border-radius:999px; border:1px solid var(--line-2); background:var(--panel-2);
+  color:var(--ink-2); transition:color .15s, border-color .15s, background .15s; }
+.gx-preset:hover { color:var(--ink); border-color:var(--gold-hair); background:var(--panel-3); }
+.gx-preset.on { color:var(--gold-text); border-color:var(--gold-hair);
+  background:color-mix(in srgb, var(--gold) 10%, var(--panel-2)); }
+
+.gx-build { display:flex; flex-wrap:wrap; align-items:flex-end; gap:14px 18px; padding:14px 16px;
+  background:var(--panel-2); border:1px solid var(--line); border-radius:10px; margin-bottom:14px; }
+.gx-pata { display:flex; flex-direction:column; gap:5px; }
+.gx-pata-lbl { font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.06em;
+  color:var(--brand-deep); font-weight:800; }
+.gx-selrow { display:flex; gap:6px; flex-wrap:wrap; }
+.gx-build select { font-family:var(--font-mono); font-size:12.5px; padding:5px 8px; border-radius:6px;
+  border:1px solid var(--line-2); background:var(--panel); color:var(--ink); }
+.gx-build select:focus { outline:none; border-color:var(--focus); }
+.gx-swap { align-self:flex-end; margin-bottom:2px; cursor:pointer; border:1px solid var(--line-2);
+  background:var(--panel); color:var(--ink-2); border-radius:7px; padding:5px 9px; font-size:14px; line-height:1; }
+.gx-swap:hover { color:var(--gold-text); border-color:var(--gold-hair); }
+.gx-seg { display:inline-flex; border:1px solid var(--line-2); border-radius:7px; overflow:hidden; }
+.gx-seg button { font-family:var(--font-ui); font-size:var(--fs-xs); font-weight:700; cursor:pointer;
+  padding:5px 10px; border:none; background:var(--panel); color:var(--ink-3); }
+.gx-seg button.on { background:var(--panel-3); color:var(--ink); }
+.gx-seg button + button { border-left:1px solid var(--line-2); }
+
+.gx-chips { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px; align-items:center; }
+.gx-chips-lbl { font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.06em;
+  color:var(--ink-3); font-weight:700; margin-right:2px; }
+.gx-chip { display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-family:var(--font-mono);
+  font-size:var(--fs-xs); font-weight:700; padding:4px 10px; border-radius:999px;
+  border:1px solid var(--line-2); background:var(--panel); color:var(--ink-3); }
+.gx-chip .sw { width:9px; height:9px; border-radius:50%; background:var(--c, var(--ink-3)); opacity:.4; }
+.gx-chip[aria-pressed="true"] { color:var(--ink); border-color:color-mix(in srgb, var(--c) 55%, var(--line-2)); }
+.gx-chip[aria-pressed="true"] .sw { opacity:1; }
+.gx-chip.vig[aria-pressed="true"] { box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent); }
+.gx-chip:disabled { opacity:.35; cursor:not-allowed; }
+
+.gx-chart { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+  padding:14px 10px 8px; box-shadow:var(--shadow); }
+.gx-empty { padding:60px 20px; text-align:center; color:var(--ink-3); font-size:var(--fs-sm); }
+.gx-note { margin-top:12px; font-size:var(--fs-2xs); color:var(--ink-3); line-height:1.5; }
+.gx-note b { color:var(--ink-2); font-weight:700; }
+.gx-tip { background:var(--panel); border:1px solid var(--line-2); border-radius:8px; padding:8px 10px;
+  box-shadow:var(--shadow); font-size:var(--fs-xs); }
+.gx-tip .gx-tip-h { font-weight:700; color:var(--ink); margin-bottom:4px; font-family:var(--font-mono); }
+.gx-tip-row { display:flex; align-items:center; gap:6px; color:var(--ink-2); font-variant-numeric:tabular-nums; }
+.gx-tip-row .sw { width:8px; height:8px; border-radius:50%; }
+.gx-kpis { display:flex; flex-wrap:wrap; gap:16px; margin-top:10px; padding:10px 14px;
+  background:var(--panel-2); border:1px solid var(--line); border-radius:8px; }
+.gx-kpi { display:flex; flex-direction:column; gap:1px; }
+.gx-kpi .k { font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); font-weight:700; }
+.gx-kpi .v { font-family:var(--font-mono); font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+
+/* Presets agrupados por grano (calendar spreads de Lautaro) */
+.gx-preset-groups { display:flex; flex-direction:column; gap:7px; margin-bottom:14px; }
+.gx-preset-row { display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.gx-preset-glabel { font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.06em;
+  color:var(--brand-deep); font-weight:800; min-width:44px; }
+
+/* Toggle de modo de comparación (Campañas | Período) */
+.gx-modo { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+.gx-modo-hint { font-size:var(--fs-2xs); color:var(--ink-3); }
+.gx-modo .gx-seg button { padding:6px 14px; font-size:var(--fs-sm); }

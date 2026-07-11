@@ -19,48 +19,51 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 11/07/2026, sesión calculadora negocios de planta)
-
-**Hecho esta sesión (rama `claude/plant-business-calculator-0sf28m`) — calculadora "Negocios de planta":**
-- Nueva calc (`src/components/calc-planta.tsx`) en la sección **Calculadoras**: arranca de un precio y
-  descuenta seis rubros editables → **Precio final** + **Total de gastos** (todo USD, aritmética local).
-- Rubros: **contra flete** · **secada** (`puntos × valor/punto`, modo Fijo 5 USD o "No fijo" editable, con
-  desglose) · **merma volátil** (%, default 0,3, sobre el arranque) · **paritaria** (4,5) · **embolsado** ·
-  **otros** (rubro abierto + concepto libre).
-- **Arranque = pizarra CAC** (soja/maíz/trigo, `getPizarra()` en `page.tsx`) con selector de producto +
-  precio editable (↺ vuelve a pizarra). lint/typecheck/build OK; aritmética y render verificados.
-- Pendiente menor: girasol/sorgo en el selector (vía `pizarra_historico`) si Lautaro lo pide.
-- Detalle: `docs/sesiones/2026-07-11-calc-negocios-planta.md`.
-
----
-
-## Ahora previo (última actualización: 10/07/2026, sesión bases de gráficos)
+## Ahora (última actualización: 11/07/2026, sesión panel de gráficos de spreads)
 
 **✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
 de datos reales. Default de GitHub = `main` · Vercel Branch Tracking = `main`.
 
-**Hecho esta sesión (PR #10, [`PLAN_BASES_GRAFICOS.md`](PLAN_BASES_GRAFICOS.md)) — bases para los
-gráficos de posiciones y spreads:**
-- **Pizarra Rosario histórica → tabla `pizarra_historico` CARGADA COMPLETA**: 5 granos (soja, maíz,
-  trigo, girasol, sorgo), **2020-01-02 → 2026-07-07** (7.893 filas), en $ y US$, estimativos
-  flagueados. Fuente: consulta histórica oficial de CAC. + script `ingest-pizarra.mjs` + cron.
-- **CBOT → tabla `cbot_cierres`**: curva cercana actual cargada (20 posiciones vivas, ¢/bu **y
-  USD/tn**) + `ingest-cbot.mjs` + workflow. **Falta el backfill histórico completo** (dispatch del
-  workflow con `backfill=true`, tras mergear).
-- **A3 desde 2020 → COMPLETO**: backfill corrido y verificado — `futuros_cierres` ahora
-  **2020-01-02 → 2026-07-08** (31.049 filas, +8.606 del tramo 2020→jul-2021).
+**✅ LAS 3 BASES DE GRÁFICOS ESTÁN COMPLETAS (verificado por SQL el 11/07):** PR #10 mergeado
+(merge #14) y **backfill CBOT ya corrido** — `futuros_cierres` 31.049 filas (2020-01-02→08/07,
+feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→09/07) ·
+`pizarra_historico` 7.893 filas (→07/07). Los 3 crons corren solos. Ya no queda nada pendiente de
+[`PLAN_BASES_GRAFICOS.md`](PLAN_BASES_GRAFICOS.md).
 
-**En vuelo / pendiente de Lautaro (bases de gráficos):**
-1. **Mergear el PR #10.** Recién ahí se pueden disparar los workflows nuevos (GitHub solo permite
-   `workflow_dispatch` desde la rama default).
-2. **Backfill CBOT completo:** Actions → *Ingesta cierres CBOT* → Run workflow → **backfill = true**
-   (~129 contratos, ~25-30k filas). Es lo único que falta para tener las 3 bases completas.
-
-**Dato verificado 09/07**: el cron de cierres A3 YA corre solo (secrets `SUPABASE_URL`/
-`SUPABASE_SERVICE_KEY` cargados) — los crons nuevos (pizarra, CBOT) usan esos mismos secrets y
-arrancan solos al estar en `main`.
+**Hecho esta sesión (rama `claude/timeline-spread-charts-plan-3zlt1g`) — PLAN + Fase 0 + Fase 1 del
+panel de gráficos de spreads ([`PLAN_GRAFICOS_SPREADS.md`](PLAN_GRAFICOS_SPREADS.md)):**
+- **Plan completo** del panel (sus 3 casos + 4 usos diarios), catálogo v1/v2/ideas, 2 alineaciones
+  de eje, UX `/graficos`, arquitectura, Recharts 3.9.2, fases 0→3, 30 preguntas (26 respondidas).
+- **✅ Fase 0 IMPLEMENTADA:** guard del truncado 206 + `sbSelectAll` paginado (`src/lib/supabase.ts`)
+  · flag estimativo en `pizarra.ts` → el panel Arbitrajes marca "estimativa" (antes la mostraba como
+  firme). El bug del 206 (PostgREST trunca a 1.000 y `sbSelect` lo tragaba) quedó cerrado.
+- **✅ Fase 1 IMPLEMENTADA y VALIDADA:** página `/graficos` con Recharts — motor de 2 patas genérico
+  (`series.ts`/`derivadas.ts`/`/api/series` + vista `series_catalogo` con 351 series), constructor,
+  chips de campañas, toggle eje/métrica/ventana, presets caso (a) + par del Excel, estado en URL
+  compartible. **Reproduce el Excel exacto** (spread 2021-04-05 = 125,6; ratio U7 = 0,5796),
+  verificado con Playwright en claro/oscuro. `lint`+`tsc`+`build` verdes.
+- **✅ Fase 2 PARCIAL (tras ver la preview, Lautaro pidió más):** banda histórica min–máx + mediana
+  (P13, toggle Vista) · percentil hoy vs historia a la misma altura (P14) · **mes de referencia en
+  el eje días-al-vto** (pedido nuevo) · fix de alineación de la campaña en curso (se ancla al vto
+  por ruedas hábiles faltantes). Falta de Fase 2: base pizarra−futuro, A3↔CBOT, presets definitivos
+  (P27) — ver `PLAN_GRAFICOS_SPREADS.md`.
+- **Lautaro respondió 26 de las 30 preguntas el 11/07** (vía chips en el chat; todas las
+  decisiones registradas en la sección 9 del plan). Highlights: eje días-al-vto por índice de
+  rueda · spread = lejana−cercana (empate: caro−barato) · ratio default maíz/soja · A3−CBOT en
+  USD/tn · base = pizarra−futuro · percentil por altura de campaña · ffill 3 ruedas marcado ·
+  solo `.ROS` · **el gráfico "alquiler en qq" se ELIMINÓ** (era solo un ejemplo).
+  **Quedan 4 abiertas:** P27 lista de presets · P13 ejemplo numérico de la banda · P12 y P17
+  (ejemplos reales, v2). Ninguna bloquea Fase 0+1 → **falta solo su "dale" para implementar**.
+- **Hallazgo derivado (P19):** el scrape del día `src/lib/pizarra.ts` NO captura el flag
+  estimativo → el panel Arbitrajes muestra pizarra estimativa como firme sin marcar. Fix chico
+  anotado en el plan (candidato a Fase 0).
+  Evidencia medida en `docs/sesiones/2026-07-11-plan-graficos-spreads.md`.
 
 **Recién entrado a `main` de otras sesiones (contexto + pendientes de Lautaro):**
+- **Calculadora "Negocios de planta" (PR #18, mergeada):** `src/components/calc-planta.tsx` en
+  Calculadoras — arranca de un precio (pizarra CAC editable) y descuenta 6 rubros (contra flete,
+  secada, merma volátil, paritaria, embolsado, otros) → Precio final + Total de gastos.
+  Detalle: `docs/sesiones/2026-07-11-calc-negocios-planta.md`.
 - **Portal de noticias (PR #12):** panel Noticias rediseñado (categorización propia por 6 temas, chips,
   15 fuentes) + cron horario `ingest-noticias.yml` → tabla `noticias`. Pendiente: 1ª carga a mano
   (Actions → *Ingesta noticias* → Run workflow); el cron arranca solo al estar en `main`.
@@ -74,12 +77,13 @@ arrancan solos al estar en `main`.
 | Rama | Estado |
 |---|---|
 | `main` | Única rama de integración y producción. |
-| `claude/futures-position-databases-j10vpr` | Bases de gráficos (PR #10, ABIERTO) → mergear + backfill CBOT. |
-| `claude/feed-a3-live-plan-obxzcz` · `claude/news-section-redesign-k3zctf` | PR #11 y #12 ya mergeados → borrar. |
+| `claude/timeline-spread-charts-plan-3zlt1g` | Plan de gráficos de spreads (PR draft) → Lautaro responde preguntas → implementar. |
+| `claude/futures-position-databases-j10vpr` · `claude/feed-a3-live-plan-obxzcz` · `claude/news-section-redesign-k3zctf` | PRs #10/#14, #11 y #12/#15/#16 ya mergeados → borrar. |
 
 **Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
-0. Cerrar las bases de gráficos: mergear PR #10 → disparar backfill CBOT → **gráficos** (curvas,
-   spreads, ratio A3↔CBOT, pizarra vs futuros). Detalle en `PLAN_BASES_GRAFICOS.md`.
+0. **Gráficos de spreads — Fase 2**: con el panel Fase 1 andando, sumar ratio+ⁿ vistas confirmadas,
+   base pizarra−futuro, A3↔CBOT, banda min–máx+mediana y percentil (falta el ejemplo numérico P13),
+   presets definitivos (P27). Fase 0+1 ya en el PR #17.
 1. **Fase 2 del Feed A3 — histórico intradiario**: cron GH Actions `*/15 13-20 * * 1-5` UTC +
    `scripts/ingest-rueda.mjs` + tabla `snapshots` + `ingest_log` (INFRAESTRUCTURA.md). Habilita gráficos
    intradía. (La frescura ya está resuelta web-directa; esto es SOLO para guardar historia.)
