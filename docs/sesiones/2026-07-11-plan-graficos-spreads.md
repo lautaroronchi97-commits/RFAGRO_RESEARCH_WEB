@@ -62,15 +62,22 @@
 - Paleta de 8 campañas validada (contraste 4/4 en ambos temas, ΔE CVD 58,4/46,9) — hexas en el plan.
 
 ## Quedó pendiente / en vuelo
-- **Lautaro respondió 4 preguntas en la sesión** (11/07, vía chips): P1 = días al vencimiento
-  (índice de rueda) · P30 = bases calculadas por default · P26 = NO cargar 2018/19 · P13 = banda
-  min–máx + mediana (falta el ejemplo numérico igual). Marcadas ✅ en el plan.
-- **Quedan 26 preguntas abiertas** (P2–P11 antes de Fase 2; ninguna bloquea Fase 1) → con su OK
-  general ya se puede arrancar la implementación (Fase 0: fix 206 · Fase 1: caso (a) + par del
-  Excel).
+- **Lautaro respondió 26 de las 30 preguntas** (11/07, vía chips en el chat, en 4 tandas). Todas
+  las decisiones quedaron registradas en la sección 9 del plan. Las que se apartaron de nuestra
+  recomendación: **spread = convención fija lejana−cercana** (no B−A con ⇄) · **ratio default
+  maíz/soja** (no soja/maíz) · **el gráfico "alquiler en qq" se ELIMINÓ** ("no me interesa, era
+  solo un ejemplo" — también su preset y su filtro).
+- **Quedan 4 abiertas:** P27 (lista definitiva de presets — "quiero cambiar la lista", falta que
+  pase sus pares diarios) · P13 (ejemplo numérico de la banda min–máx + mediana y qué campañas la
+  componen) · P12 y P17 (ejemplos reales de relaciones % y empalme front-month, ambas v2).
+  Ninguna bloquea Fase 0+1 → falta solo su "dale" para arrancar la implementación.
 - Sin cambios de código en esta sesión (solo docs) — no aplica lint/build.
 
 ## Trampas descubiertas (para la próxima sesión)
+- **El scrape del día `src/lib/pizarra.ts` NO captura el flag de pizarra estimativa** (solo extrae
+  $ y US$ del HTML `board-{grano}`) → el panel Arbitrajes muestra estimativos como pizarra firme.
+  Lautaro sospechaba justo esto ("la pizarra a veces sale estimativa, ¿podrá ser ese el
+  problema?") — verificado que sí. Fix chico anotado en el plan, candidato a Fase 0.
 - El límite de 1.000 filas de PostgREST + el 206 silencioso de `sbSelect` afecta a CUALQUIER
   consumidor futuro de series largas, no solo a este panel.
 - El Excel de Lautaro alinea campañas por índice de rueda (ventana al vto), NO por calendario —

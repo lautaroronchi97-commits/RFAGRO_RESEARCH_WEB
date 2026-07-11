@@ -38,10 +38,16 @@ gráficos de spreads entre cosechas ([`PLAN_GRAFICOS_SPREADS.md`](PLAN_GRAFICOS_
   vista `series_catalogo`), Recharts 3.9.2, fases 0→3.
 - **⚠️ Bug real encontrado planificando:** PostgREST trunca a 1.000 filas con HTTP 206 y `sbSelect`
   lo trata como éxito (truncado silencioso) → Fase 0 del plan = fix en `src/lib/supabase.ts`.
-- **Lautaro ya respondió 4 preguntas clave el 11/07** (eje X default = días al vto por índice de
-  rueda · multi-posición default = bases calculadas · NO cargar campañas 2018/19 · banda histórica
-  min–máx + mediana). **Quedan 26 abiertas** (sección 9 del plan; P2–P11 antes de la Fase 2,
-  ninguna bloquea la Fase 1) → con su OK general ya se puede arrancar Fase 0+1.
+- **Lautaro respondió 26 de las 30 preguntas el 11/07** (vía chips en el chat; todas las
+  decisiones registradas en la sección 9 del plan). Highlights: eje días-al-vto por índice de
+  rueda · spread = lejana−cercana (empate: caro−barato) · ratio default maíz/soja · A3−CBOT en
+  USD/tn · base = pizarra−futuro · percentil por altura de campaña · ffill 3 ruedas marcado ·
+  solo `.ROS` · **el gráfico "alquiler en qq" se ELIMINÓ** (era solo un ejemplo).
+  **Quedan 4 abiertas:** P27 lista de presets · P13 ejemplo numérico de la banda · P12 y P17
+  (ejemplos reales, v2). Ninguna bloquea Fase 0+1 → **falta solo su "dale" para implementar**.
+- **Hallazgo derivado (P19):** el scrape del día `src/lib/pizarra.ts` NO captura el flag
+  estimativo → el panel Arbitrajes muestra pizarra estimativa como firme sin marcar. Fix chico
+  anotado en el plan (candidato a Fase 0).
   Evidencia medida en `docs/sesiones/2026-07-11-plan-graficos-spreads.md`.
 
 **Recién entrado a `main` de otras sesiones (contexto + pendientes de Lautaro):**

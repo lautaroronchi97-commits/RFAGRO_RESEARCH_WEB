@@ -7,8 +7,8 @@
 > confirmar con ejemplo numérico" (regla del proyecto). Todo lo técnico fue **verificado hoy**
 > contra el repo, la base real (solo SELECT) y los docs de Next 16 en `node_modules/next/dist/docs/`
 > — la evidencia medida quedó en `docs/sesiones/2026-07-11-plan-graficos-spreads.md`. Bases:
-> `docs/PLAN_BASES_GRAFICOS.md`. La sección más importante es la última: **PREGUNTAS PARA
-> LAUTARO** (30, consolidadas).
+> `docs/PLAN_BASES_GRAFICOS.md`. La sección más importante es la última: **decisiones de
+> Lautaro** — respondió 26 de las 30 preguntas el 11/07; quedan 4 abiertas.
 
 ## 1. Objetivo y alcance
 
@@ -51,7 +51,7 @@ vistazo.
   más largas la pata CBOT sale parcial, marcada (→ P24).
 - El US$ de pizarra es el **BNA divisa comprador de la CAC, NO el A3500** (~0,4% de diferencia,
   `docs/PLAN_BASES_GRAFICOS.md`). Afecta la lectura fina de la base pizarra−futuro y de cualquier
-  ratio pizarra↔futuro (→ sub-pregunta en P11).
+  ratio pizarra↔futuro → se declara en el panel (InfoTip de la serie pizarra).
 
 ## 2. Catálogo de gráficos priorizado
 
@@ -62,15 +62,15 @@ señal, §2 base), `docs/PLANILLA_DIARIA.md` y `docs/FORMULAS_EXCEL.md`.
 
 | # | Gráfico | Pregunta de negocio | Fórmula / estado |
 |---|---|---|---|
-| 1 | **Spread USD entre 2 patas** (genérico; cubre caso a) | ¿Cuánto paga el diferimiento/sustitución y cómo venía? | `B − A` en USD/tn. Confirmada en el Excel (soja−maíz). Minuendo genérico → P7 |
-| 2 | **Ratio entre 2 patas + inverso** | Relación de sustitución entre productos | `A/B` y `B/A` (Excel: maíz/soja ≈0,59 · soja/maíz ≈1,7). Default → P8 |
-| 3 | **Superposición multi-campaña** (modo de vista de 1, 2, 5, 8) | ¿Dónde está ESTA campaña vs las mismas ruedas de las anteriores? | Sin fórmula nueva. Alineación de eje: dos modos (§3) → P1, P2 |
-| 4 | **A3 vs CBOT misma posición** (caso b) | ¿Rosario caro o barato contra Chicago? | `dif = A3 − CBOT` y `ratio = A3/CBOT` (conversión a USD/tn ya en la base). Vista default y numerador → P10 |
-| 5 | **Base pizarra − futuro A3** (caso c) | ¿El disponible arbitra contra el término? (riesgo de base, timing de fijación) | `pizarra_usd − futuro` (= −spread del panel Arbitrajes). Signo y versión % → P11. Estimativos → P19 |
+| 1 | **Spread USD entre 2 patas** (genérico; cubre caso a) | ¿Cuánto paga el diferimiento/sustitución y cómo venía? | `B − A` en USD/tn. ✅ Minuendo decidido (P7): **lejana − cercana**; vtos iguales: **más caro − más barato** |
+| 2 | **Ratio entre 2 patas + inverso** | Relación de sustitución entre productos | `A/B` con botón ⇄. ✅ Default decidido (P8): **maíz/soja ≈0,59** |
+| 3 | **Superposición multi-campaña** (modo de vista de 1, 2, 5, 8) | ¿Dónde está ESTA campaña vs las mismas ruedas de las anteriores? | Sin fórmula nueva. ✅ Alineación decidida (P1/P2): días-al-vto por índice de rueda default; calendario en el toggle |
+| 4 | **A3 vs CBOT misma posición** (caso b) | ¿Rosario caro o barato contra Chicago? | ✅ Decidido (P10): default **A3 − CBOT en USD/tn** (positivo = Rosario sobre Chicago); ratio a un click |
+| 5 | **Base pizarra − futuro A3** (caso c) | ¿El disponible arbitra contra el término? (riesgo de base, timing de fijación) | ✅ Decidido (P11/P19): **pizarra − futuro**, estimativos graficados marcados distinto |
 | 6 | **Banda histórica + campaña actual resaltada** (overlay de 3) | ¿La campaña actual está dentro o fuera de su rango? (LA señal) | Banda min/max o percentiles por punto del eje alineado. **A CONFIRMAR con ejemplo numérico** → P13 |
-| 7 | **Termómetro "hoy vs historia"** (stat tile) | ¿En qué percentil de su propia historia está el spread hoy? | `percentil(hoy, muestra)`. **A CONFIRMAR** qué muestra → P14 |
-| 8 | **Alquiler en qq** | ¿Cuántos qq de maíz cuesta un alquiler pactado en qq de soja? | `qq × soja/maíz`, qq editable (default 18). Confirmada en el Excel. Par default → P9 |
-| 9 | **Carry del spread en TNA** (mismo grano, 2 posiciones) | ¿Qué tasa anualizada paga rolear/diferir? | Confirmada en `src/lib/pases-cierres.ts`: `directa = larga/cercana − 1`, `TNA = directa × 365/días`. Días con vto **proxy** en históricos → P25. Entre granos distintos NO → P16 |
+| 7 | **Termómetro "hoy vs historia"** (stat tile) | ¿En qué percentil de su propia historia está el spread hoy? | ✅ Muestra decidida (P14): **misma altura de campaña** (mismo días-al-vto de campañas previas) |
+| 8 | ~~**Alquiler en qq**~~ | **ELIMINADO** (Lautaro 11/07: "no me interesa, era solo un ejemplo") | — |
+| 9 | **Carry del spread en TNA** (mismo grano, 2 posiciones) | ¿Qué tasa anualizada paga rolear/diferir? | Confirmada en `src/lib/pases-cierres.ts`: `directa = larga/cercana − 1`, `TNA = directa × 365/días`. ✅ Decidido: vto proxy OK (P25) y **solo mismo grano** (P16) |
 
 ### v2 — segunda tanda
 
@@ -80,10 +80,10 @@ señal, §2 base), `docs/PLANILLA_DIARIA.md` y `docs/FORMULAS_EXCEL.md`.
 | 11 | Ratio maíz/soja continuo (front-month) | Necesita serie continua → empalme **A CONFIRMAR** → P17 |
 | 12 | Relación % contra referencia ("180% pizarra maíz", "57% soja julio") | Semántica exacta **A CONFIRMAR** → P12 |
 | 13 | Curva forward por grano con "fantasma" (hoy vs t−k) | Sin fórmula nueva |
-| 14 | Base en % (`pizarra/futuro − 1`) | Si la quiere → P11 |
+| 14 | ~~Base en % (`pizarra/futuro − 1`)~~ | Descartada por ahora (P11: eligió solo la resta) |
 | 15 | Histograma del spread con marcador "hoy" | Misma muestra que P14 |
 | 16 | Volumen / open interest de las patas (subpanel) | Sin fórmula |
-| 17 | Pizarra ARS vs USD (girasol/sorgo incl.) | ARS histórico ¿sirve? → P23 |
+| 17 | Pizarra ARS vs USD (girasol/sorgo incl.) | ✅ Decidido (P23): histórico siempre USD; ARS por toggle |
 
 ### Ideas (backlog, validar interés)
 
@@ -129,10 +129,10 @@ brush/minimapa de zoom.
     días). Siempre anclar al vencimiento o a fecha.
 - **Join de calendarios distintos** (A3 vs CBOT vs pizarra; medido 2023: 244 vs 250 vs 243 ruedas,
   6 días A3 sin CBOT y 12 CBOT sin A3): el server devuelve series crudas fechadas y el join es
-  client-side con dos modos — **forward-fill acotado** (cada pata usa su último dato ≤ d, con tope
-  de antigüedad a definir, punto marcado `filled`) o **intersección estricta** (solo días comunes,
-  pierde ~5%). Default y tope → P18. Sin política explícita, los spreads A3↔CBOT saltan en falso
-  cada feriado de un solo país.
+  client-side. ✅ Decidido (P18): **forward-fill acotado** — cada pata usa su último dato ≤ d,
+  máx. 3 ruedas de antigüedad, punto marcado `filled`; la intersección estricta queda como opción
+  secundaria. Sin esta política, los spreads A3↔CBOT saltarían en falso cada feriado de un solo
+  país.
 - Todas las transformaciones (ventana, alineación, join, derivadas) viven en **un módulo TS puro y
   testeable client-side** (`derivadas.ts`), NO en SQL — porque las fórmulas las define Lautaro y
   van a iterar.
@@ -141,19 +141,18 @@ brush/minimapa de zoom.
 
 | Filtro | Detalle | Cuándo |
 |---|---|---|
-| Fuente / grano / posición por pata | A3 · CBOT · Pizarra, independiente por pata. El picker sale del catálogo real de la base (no lista fija): 129 CBOT + 5 pizarra + A3 según alcance de plazas → P21 (default `.ROS` = 219 contratos; con las otras plazas son 249) | **v1** |
+| Fuente / grano / posición por pata | A3 · CBOT · Pizarra, independiente por pata. El picker sale del catálogo real de la base (no lista fija): 129 CBOT + 5 pizarra + **219 A3 solo `.ROS`** (decidido P21) | **v1** |
 | Pata B opcional | Sin pata B = serie sola en modo "superponer" | **v1** |
-| Pata B múltiple (modo multi-posición) | Con 1 campaña activa, la pata B acepta varias posiciones (pizarra mz vs JUL+DIC) → P30 | **v1** |
-| Métrica | Spread USD / Ratio (con ⇄ e input "× qq") / Superponer crudas | **v1** |
+| Pata B múltiple (modo multi-posición) | Con 1 campaña activa, la pata B acepta varias posiciones; cualquier serie puede ser la base (decidido P30) | **v1** |
+| Métrica | Spread USD (default, P6) / Ratio con ⇄ / Superponer crudas | **v1** |
 | Campañas a superponer | Chips multi-select 2020…2026 + "Últ. 3"/"Todas" (aviso fijo "histórico desde 2020") | **v1** |
 | Ventana | 3/6/**12m al vto**/18/24m/custom; con 1 campaña o pizarra↔pizarra pasa a rango absoluto + atajos 1A/3A/5A/Todo | **v1** |
-| Eje X | Días al vencimiento ↔ calendario (default → P1) | **v1** |
-| Unidad pizarra | USD default / ARS (→ P23) | **v1** |
-| Estimativos pizarra | Marcar o excluir (→ P19) | **v1** |
-| qq del alquiler | Editable, default 18 | **v1** |
+| Eje X | Días al vencimiento (default, P1) ↔ calendario | **v1** |
+| Unidad pizarra | USD default / ARS por toggle (decidido P23) | **v1** |
+| Estimativos pizarra | Se grafican marcados distinto (decidido P19) | **v1** |
 | Banda histórica | Off / min-max / percentiles + qué campañas (→ P13) | v1 básica, v2 completa |
-| Media móvil | Off/5/10/20 ruedas (→ P15) | v2 |
-| Ruedas sin volumen | Filtro opcional (→ P20) | v2 |
+| Media móvil | Off default; sobre el spread calculado, 5 ruedas (decidido P15) | v2 |
+| Ruedas sin volumen | Se grafican igual; filtro opcional (decidido P20) | v2 |
 | Volumen/OI subpanel · export CSV/PNG · presets guardados | | v2 |
 
 ## 5. UX del panel
@@ -178,7 +177,8 @@ hoy, min/máx histórico a esta altura en v1; mediana y **percentil recién en F
   `history.replaceState` (sin round-trip; la página NO se vuelve dinámica). Un preset es una URL.
   Se manda por WhatsApp.
 - **Presets de fábrica:** los 3 casos canónicos + el par de validación del Excel (MAI ABR vs SOJ
-  MAY) + alquiler qq. Lista final de pares diarios → P27.
+  MAY). La lista definitiva quedó ABIERTA (P27: "quiero cambiar la lista") → Lautaro pasa sus
+  pares diarios.
   **Presets guardados del usuario: localStorage en fase 1** (escribir en Supabase requiere auth,
   que no existe; el preset es una URL re-guardable) → migrar a tabla si algún día hay login (→ P28).
 - **Frescura desigual por fuente** (hoy: A3 08/07, CBOT 09/07, pizarra 07/07): stamp "datos al
@@ -251,13 +251,13 @@ RPC `get_series(...)` como optimización futura, NO para v1.
 | # | Trampa | Mitigación |
 |---|---|---|
 | 1 | HTTP 206/truncado silencioso en `sbSelect` | Fix Fase 0 (tratar 206 como error o paginar) + paginación explícita de series continuas en `/api/series` |
-| 2 | Símbolos no-Rosario en `futuros_cierres` (`TRI.BA` ¡21 contratos, volumen real!, `ROSM`, `QQ`, `EXP`…) | El catálogo expone `raiz`; el picker agrupa por ella. ¿Se incluyen? → P21 |
+| 2 | Símbolos no-Rosario en `futuros_cierres` (`TRI.BA` ¡21 contratos, volumen real!, `ROSM`, `QQ`, `EXP`…) | Decidido (P21): el picker muestra solo `.ROS`; el catálogo igual expone `raiz` por si se suman |
 | 3 | Nomenclatura vieja del CEM: posición `DIS` = diciembre (4 símbolos `*/DIS19`, muertos en ene-2020) | Normalizar `DIS`→`DIC` al derivar `posicion`, o excluir por ventana (caen fuera de cualquier campaña útil) |
-| 4 | Ruedas sin volumen con settlement teórico (ABR21: 88/323 con vol 0) | Mostrar/marcar/filtrar → P20 |
+| 4 | Ruedas sin volumen con settlement teórico (ABR21: 88/323 con vol 0) | Decidido (P20): se grafican igual; filtro opcional en v2 |
 | 5 | Pizarra estimativa masiva: girasol **74%** de los días, sorgo **58%**, trigo 27%, soja 12%, maíz 7% | Flag `es_estimativo` viaja en el payload y se ve en el chart → P19 |
-| 6 | US$ pizarra = BNA divisa comprador ≠ A3500 (~0,4%) | Declararlo en el panel (stamp/InfoTip de la serie pizarra); sub-pregunta TC → P11 |
-| 7 | Vto proxy con overshoot (días post-vto en CEM) | OK para ventanas; TNAs históricas → P25 |
-| 8 | Feriados cruzados A3/CBOT | ffill acotado vs intersección → P18 |
+| 6 | US$ pizarra = BNA divisa comprador ≠ A3500 (~0,4%) | Se declara en el panel (InfoTip de la serie pizarra) |
+| 7 | Vto proxy con overshoot (días post-vto en CEM) | Decidido (P25): proxy OK para v1 |
+| 8 | Feriados cruzados A3/CBOT | Decidido (P18): ffill acotado a 3 ruedas, punto marcado |
 | 9 | Frescura desigual por fuente | Stamp por serie |
 | 10 | Región Vercel `iad1` vs Supabase `sa-east-1` (doble cruce de continente) | Evaluar setear funciones a `gru1` |
 | 11 | Símbolos con `/` y `.` en URLs PostgREST | Comillas + URL-encoding (verificado que funciona) |
@@ -311,137 +311,90 @@ sin percentil, sin ratio: solo lo confirmado.
 **Validación con Lautaro (gate):** revisar la Fase 1 contra su Excel + contestar las PREGUNTAS de
 la sección 9 (sobre todo P1–P11). Ninguna fórmula de Fase 2 se implementa sin su ejemplo numérico.
 
-**Fase 2 — métricas confirmadas + los otros 2 casos:**
-ratio + alquiler qq (post P8/P9) · base pizarra−futuro con flag estimativo (post P11/P19) · A3 vs
-CBOT con política de feriados (post P10/P18) · banda histórica + percentil "hoy" (post P13/P14) ·
-presets completos (post P27) · tabla alternativa + CSV · guard "parcial" por campaña.
+**Fase 2 — métricas confirmadas + los otros 2 casos** (P6–P25 ya decididas el 11/07):
+ratio maíz/soja con ⇄ · base pizarra−futuro con estimativos marcados · A3 − CBOT con ffill de
+feriados marcado · modo multi-posición (bases calculadas, cualquier serie como base) · banda
+min–máx + mediana y percentil por altura de campaña (solo falta el ejemplo numérico, P13) ·
+presets definitivos (post P27) · tabla alternativa + CSV · guard "parcial" por campaña.
 **Entregable:** los 3 casos canónicos + alquiler operables en preview, cada uno validado con un
 número del Excel o de la planilla diaria.
 
 **Fase 3 — profundidad (según interés validado):**
-TNA carry/arbitraje históricas (post P16/P25) · serie continua front-month (post P17) · curva
-forward con fantasma · volumen/OI subpanel · media móvil (post P15) · export PNG (reporte
-WhatsApp) · heatmap estacional · marcadores de eventos · import Excel 2018/2019 si P26 = sí ·
-evaluar región `gru1` en Vercel.
+TNA carry/arbitraje históricas (mismo grano, vto proxy — P16/P25 decididas) · serie continua
+front-month (post P17) · curva forward con fantasma · volumen/OI subpanel · media móvil (P15
+decidida) · export PNG (reporte WhatsApp) · heatmap estacional · marcadores de eventos · evaluar
+región `gru1` en Vercel. (El import del Excel 2018/2019 se descartó: P26 = no.)
 
 ---
 
-## 9. PREGUNTAS PARA LAUTARO
+## 9. Decisiones de Lautaro (11/07) y preguntas restantes
 
-Consolidadas de los 4 análisis (arquitectura, negocio, UX, librerías), deduplicadas. Formato:
-contexto → opciones → nuestra recomendación. **P1–P11 conviene contestarlas antes de la Fase 2;
-ninguna bloquea la Fase 1.** Las marcadas ✅ ya las respondió Lautaro el 11/07 (P1, P13, P26,
-P30) — quedan 26 abiertas.
+Las 30 preguntas del plan se respondieron casi todas en el chat del 11/07 — **quedan 4 abiertas**
+(al final de la sección). Registro compacto de lo decidido:
 
-### A. Defaults de visualización
+### A. Defaults de visualización — todos decididos
 
-1. **Eje X default al superponer campañas.** ✅ **RESPONDIDA 11/07: días al vencimiento** (la
-   alineación que su Excel hace de facto). El calendario ene→dic queda como el otro modo del
-   toggle. Se implementa como **índice de rueda** (exactamente lo que hace su hoja resumen); días
-   corridos queda como variante solo si la pide.
-2. **Eje calendario que cruza el año.** La ventana de un contrato abril va mayo→abril: con eje
-   ene→dic literal la línea se parte. Opciones: (a) el eje arranca en un mes fijo configurable
-   (default = mes siguiente al vto, ej. MAY→ABR) · (b) ene→dic literal aunque se parta.
-   **Recomendación: (a).**
-3. **Ventana de campaña default.** Tus hojas son ~1 año antes del vto → el vto (~240–260 ruedas).
-   Opciones: (a) 12 meses al vto, editable (3/6/18/24m/custom) · (b) toda la ventana listada
-   (algunas posiciones cotizan 15–17 meses, otras solo 4–6). **Recomendación: (a)**, mostrando el
-   rango real disponible por campaña. ¿Y la regla exacta es "N días antes del vto" o una fecha
-   calendario fija (ej. 1/mayo del año anterior)?
-4. **Dos patas con vto distinto** (maíz ABR vs soja MAY). ¿La ventana corta en el vto más temprano,
-   como tu Excel que termina en abril? **Recomendación: sí (min de los dos vtos).**
-5. **Etiqueta de campaña y apareo.** Opciones: (a) año del contrato ("2026" o "26") · (b) campaña
-   comercial ("25/26"). **Recomendación: (a), "26".** ¿Y el apareo entre patas de distinto mes es
-   siempre por año del contrato (ABR27 ↔ MAY27)? Confirmar con el caso trigo.
-6. **Modo default al abrir el panel.** Opciones: Spread US$ · Ratio · Superponer crudas.
-   **Recomendación: Spread US$.**
-7. **Minuendo del spread genérico.** Tu Excel: soja − maíz. Para dos patas cualesquiera, opciones:
-   (a) siempre "pata B − pata A" en el orden que las elegís, con botón ⇄ para invertir · (b)
-   convención fija (lejana − cercana / cara − barata). **Recomendación: (a)** — explícito y sin
-   magia.
-8. **Ratio default.** Tu Excel muestra maíz/soja (~0,59) y el inverso soja/maíz (~1,7). Opciones:
-   (a) uno solo con botón ⇄ · (b) ambos siempre. ¿Cuál primero? **Recomendación: (a), arrancando
-   soja/maíz (1,7), que es el que alimenta el alquiler.**
+| P | Decisión |
+|---|---|
+| P1 | Eje X default = **días al vencimiento, por índice de rueda** (lo que su Excel hace de facto); calendario ene→dic queda como el otro modo del toggle |
+| P2 | En eje calendario, ventanas que cruzan el año arrancan en **mes fijo configurable** (default: mes siguiente al vto) |
+| P3 | Ventana default = **12 meses al vto (365 días corridos), editable** (3/6/18/24m/custom) |
+| P4 | Patas con vto distinto: la ventana **corta en el vto más temprano** |
+| P5 | Etiqueta de campaña = **año del contrato ("26")**; apareo entre patas por año del contrato |
+| P6 | Modo default al abrir = **Spread US$** |
+| P7 | Minuendo del spread = **convención fija lejana − cercana**; si los vtos empatan: **más caro − más barato** (como su Excel: soja−maíz). A3−CBOT y pizarra−futuro ya tienen su propia convención (P10/P11) |
+| P8 | Ratio default = **maíz/soja (≈0,59)**, con botón ⇄ para invertir |
 
-### B. Fórmulas a confirmar con ejemplo numérico (regla del proyecto: sin ejemplo no se implementa)
+### B. Fórmulas
 
-9. **Alquiler qq.** En tu Excel: 18 × soja MAY / maíz ABR (futuros, no pizarra). Confirmá con
-   número: soja MAY 300, maíz ABR 176 → 300/176 = 1,7045 → × 18 = **30,68 qq de maíz**. ¿Así? ¿Ese
-   par es el default? ¿Sumamos otros pares (alquileres en qq de trigo)? qq editable, default 18.
-10. **A3 vs CBOT.** Opciones de vista: diferencia en USD/tn · ratio % · ambas. ¿Numerador A3 o
-    Chicago? **Recomendación: ambas vistas, default diferencia USD/tn con numerador A3** (positivo
-    = Rosario sobre Chicago). Dame un ejemplo numérico del ratio como lo mirás vos.
-11. **Base pizarra−futuro.** Opciones: (a) `pizarra − futuro` (negativa = físico barato, como tu
-    "RELACIÓN −X VS POS") · (b) `futuro − pizarra` (como el spread del panel Arbitrajes).
-    **Recomendación: (a)**, declarando el signo en pantalla. ¿Querés también la versión en %
-    (`pizarra/futuro − 1`)? Sub-pregunta: el US$ de pizarra viene con el TC de la CAC (BNA divisa
-    comprador, ~0,4% distinto del A3500) — ¿te sirve así o querés TC configurable?
-12. **"180% pizarra maíz" / "57% soja julio".** ¿Qué series exactas grafica cada relación? ¿Precio
-    del negocio ÷ pizarra del día? Dame un ejemplo real de cada una — sin eso no se puede
-    implementar el gráfico #12.
-13. **Banda histórica.** ✅ **RESPONDIDA 11/07: sí, min–máx + mediana.** Queda pendiente de la
-    validación Fase 1→2: el **ejemplo numérico** (regla del proyecto) y qué campañas la componen
-    (¿todas 2020→ o excluís alguna atípica, ej. 2020 COVID?).
-14. **Percentil "hoy vs historia" (KPI).** ¿Contra qué muestra? Opciones: (a) el mismo
-    días-al-vto de las campañas previas · (b) toda la historia del par · (c) últimos N años
-    móviles. **Recomendación: (a)** — compara manzanas con manzanas a la misma altura de campaña.
-    Ejemplo numérico requerido.
-15. **Media móvil (v2).** ¿Ventana default (5/10/20 ruedas)? ¿Se suaviza el spread ya calculado o
-    cada pata antes de restar? **Recomendación: el spread calculado, 5 ruedas.**
-16. **TNA entre granos distintos.** ¿Tiene sentido para vos anualizar un spread soja/maíz, o la
-    TNA queda restringida a dos posiciones del MISMO grano (carry real)? **Recomendación:
-    restringirla a mismo grano.**
-17. **Serie continua front-month (v2, #11).** Al vencer un contrato, ¿saltamos al siguiente sin
-    ajuste (como tu hoja "Maíz x Soja") o hay que empalmar con ajuste? Ejemplo numérico del cambio
-    de mes.
+| P | Decisión |
+|---|---|
+| P9 | **ELIMINADA** — el alquiler en qq no le interesa ("era solo un ejemplo") → el gráfico #8 sale del catálogo v1 y el preset también |
+| P10 | A3 vs CBOT: default **diferencia USD/tn, A3 − CBOT** (positivo = Rosario sobre Chicago); el ratio queda a un click |
+| P11 | Base = **pizarra − futuro** (negativa = físico barato contra el término). Sin versión % → el v2 #14 queda descartado por ahora |
+| P13 | Banda histórica: **sí, min–máx + mediana**. ABIERTO: el ejemplo numérico (regla del proyecto) y qué campañas la componen |
+| P14 | Percentil "hoy vs historia": contra la **misma altura de campaña** (el mismo días-al-vto de las campañas previas) |
+| P15 | Media móvil (v2): **sobre el spread ya calculado, 5 ruedas** |
+| P16 | TNA **solo entre posiciones del mismo grano** (carry real) |
 
 ### C. Datos y alcance
 
-18. **Feriados AR vs US en spreads A3↔CBOT** (medido: 6 días A3 sin CBOT y 12 CBOT sin A3 en 2023).
-    Opciones: (a) repetir el último dato del mercado cerrado, marcado en el gráfico, con un tope de
-    antigüedad — proponemos 3 ruedas pero es arbitrario, decilo vos · (b) graficar solo días
-    comunes. **Recomendación: (a)** — es lo que hace cualquier mesa y no inventa precios.
-19. **Pizarra estimativa** (girasol **74%** de los días, sorgo 58%, trigo 27%, soja 12%, maíz 7%).
-    Opciones: (a) incluir marcada distinto (punteada/atenuada) · (b) excluir por default con toggle.
-    **Recomendación: (a)** — excluirla dejaría girasol/sorgo casi sin serie.
-20. **Ruedas sin volumen** (ajuste teórico; ej. MAI ABR21: 88 de 323 ruedas con volumen 0).
-    Opciones: graficar igual · marcar · filtro opcional. **Recomendación: graficar igual con filtro
-    opcional en v2** (el ajuste es el dato oficial).
-21. **Series A3 no-Rosario** en la base: `TRI.BA` (21 contratos, volumen real, cotizó hasta 2023),
-    `MAI.ROSM`, `SOJ.QQ`, `SOJ.EXP`, etc. Pediste "todas las posiciones combinables" — decidí el
-    alcance exacto: (a) solo `.ROS` (219 contratos) · (b) `.ROS` + `TRI.BA` · (c) todas agrupadas
-    por plaza (249). **Recomendación: (a) en v1, sumando `TRI.BA` si la usás.**
-22. **Girasol y sorgo** (solo existen en pizarra). ¿Los querés en el comparador (pizarra vs
-    pizarra, o girasol vs soja)? **Recomendación: sí, ya están en la base y no cuestan nada.**
-23. **Pizarra en ARS.** La columna está completa 2020→hoy, pero es nominal con la inflación de por
-    medio. ¿Te sirve el histórico en ARS para algo o el histórico va siempre USD y ARS queda para
-    el día? **Recomendación: solo USD en históricos; toggle ARS igual disponible.**
-24. **CBOT solo 12 meses por contrato** (tu decisión de alcance). En ventanas más largas la pata
-    CBOT sale incompleta, marcada "parcial". ¿OK así? **Recomendación: OK; la ventana comparable
-    con A3 es esa.**
-25. **Vencimiento proxy para TNAs históricas.** Para contratos vencidos usamos MAX(fecha) por
-    symbol (puede errar por días — el CEM publica ruedas post-vto). Sirve para ventanas de campaña;
-    para TNA histórica (#9, #10) mete error chico en "días". Opciones: (a) aceptar el proxy ·
-    (b) cargar vencimientos reales históricos a la tabla `vencimientos`. **Recomendación: (a) para
-    v1; (b) si las TNAs históricas se vuelven centrales.**
-26. **Campañas 2018/2019.** ✅ **RESPONDIDA 11/07: no se cargan — desde 2020 alcanza.** El panel
-    arranca con el límite 2020-01-02 asumido. Si algún día cambia de idea, la vía es una tabla
-    aparte `series_manuales` (nunca ingestar a `futuros_cierres`: la escribe el cron CEM y
-    mezclar fuentes rompería la procedencia y la vista de posiciones vivas).
+| P | Decisión |
+|---|---|
+| P18 | Feriados A3↔CBOT: **repetir el último dato del mercado cerrado, marcado, máx. 3 ruedas** |
+| P19 | Estimativos de pizarra: **se grafican marcados distinto** (punteado/atenuado) |
+| P20 | Ruedas sin volumen (ajuste teórico): **se grafican igual**; filtro opcional en v2 |
+| P21 | Selector A3: **solo `.ROS`** (219 contratos) |
+| P22 | Girasol y sorgo: **entran** (pizarra vs pizarra o vs otros granos) |
+| P23 | Histórico **siempre en USD**; ARS disponible por toggle |
+| P24 | CBOT limitado a sus 12 meses: **OK**, pata marcada "parcial" en ventanas mayores |
+| P25 | Vencimientos históricos por **proxy MAX(fecha): OK** para v1 |
+| P26 | Campañas 2018/2019: **NO se cargan** — desde 2020 alcanza |
 
-### D. UX y alcance del panel
+### D. UX
 
-27. **Presets diarios.** Con tus 4 ejemplos del 11/07 la lista propuesta queda: pizarra maíz vs
-    JUL+DIC vigentes · MAI JUL vs DIC (multi-campaña) · SOJ NOV A3 vs ZS NOV (multi-campaña) ·
-    SOJ JUL vs MAI JUL (multi-campaña) · MAI ABR vs SOJ MAY (tu Excel, validación) · alquiler
-    18qq. ¿Confirmás esos 6? ¿Falta alguna relación que mires todos los días?
-28. **Presets guardados / compartir.** Todo estado es URL (se manda por WhatsApp); "guardar vista"
-    = localStorage por máquina (sin login no hay escritura segura en Supabase). Compartir presets
-    entre vos y Mauro de forma persistente requiere pensar login más adelante. ¿Alcanza URL +
-    guardado local por ahora? **Recomendación: sí.**
-29. **Ubicación.** Página propia `/graficos` con entrada en el menú + teaser en la home (la home no
-    carga el peso del panel). ¿OK? **Recomendación: sí.**
-30. **Modo multi-posición** (tu ejemplo "pizarra de mz 2026 vs JUL y DIC"). ✅ **RESPONDIDA
-    11/07: bases calculadas por default** (pizarra−JUL y pizarra−DIC como líneas de spread), con
-    toggle a las series crudas. Sub-pregunta que queda: ¿lo usás solo con pizarra como base o
-    también futuro vs varias posiciones (JUL vs SEP+DIC)?
+| P | Decisión |
+|---|---|
+| P28 | Compartir = **URL + guardado local** (sin login): alcanza |
+| P29 | **Página propia `/graficos`** con enlace en el menú: OK |
+| P30 | Multi-posición: **bases calculadas por default** (toggle a series crudas); la base puede ser **cualquier serie** (pizarra o un futuro, ej. MAI JUL vs SEP+DIC) |
+
+### Quedan ABIERTAS (4)
+
+1. **P27 — presets de fábrica.** La lista propuesta no lo convenció ("quiero cambiar la lista") →
+   falta que pase los pares/vistas que mira todos los días. Mientras tanto, la Fase 1 usa como
+   presets provisorios el caso (a) y el par de validación del Excel.
+2. **P13 (parte) — ejemplo numérico de la banda** min–máx + mediana y qué campañas la componen
+   (¿todas 2020→ o excluye alguna atípica, ej. 2020 COVID?). Gate de Fase 2; no bloquea Fase 1.
+3. **P12 — relaciones %** ("180% pizarra maíz" / "57% soja julio"): necesita un ejemplo real suyo
+   (v2, no urgente).
+4. **P17 — empalme de la serie continua front-month** (v2): ejemplo numérico del cambio de mes.
+
+### Mejora anotada fuera del panel (derivada de P19)
+
+Lautaro preguntó si "la pizarra a veces sale estimativa" podía ser un problema que notó:
+**verificado — sí**. El scrape del día (`src/lib/pizarra.ts`) que alimenta el panel **Arbitrajes**
+extrae solo $ y US$ del HTML y **no captura el flag de estimativo** → los días sin pizarra fijada
+el panel muestra la estimación de la Cámara como si fuera pizarra firme, sin marcar. Fix chico y
+separado del panel de gráficos: capturar el flag en el scrape y marcarlo en el panel (candidato a
+colarse junto a la Fase 0).
