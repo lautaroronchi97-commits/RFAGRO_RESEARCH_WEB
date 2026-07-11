@@ -1,5 +1,6 @@
 import { getCintaData } from "@/lib/market";
 import { getCurvaGranos } from "@/lib/curva";
+import { getPizarra } from "@/lib/pizarra";
 import { SiteHeader } from "@/components/site-header";
 import { Cinta } from "@/components/cinta";
 import { ArbitrajesTable } from "@/components/arbitrajes-table";
@@ -15,6 +16,7 @@ import { MejorCajaPanel } from "@/components/mejor-caja-panel";
 import { NoticiasPanel } from "@/components/noticias-panel";
 import { CalcDiferido } from "@/components/calc-diferido";
 import { CalcNegociosPago } from "@/components/calc-negocios-pago";
+import { CalcPlanta, type PizarraProducto } from "@/components/calc-planta";
 import { CalcArbitraje } from "@/components/calc-arbitraje";
 import { CalcEstrategias } from "@/components/calc-estrategias";
 import { CalcFijar } from "@/components/calc-fijar";
@@ -30,6 +32,13 @@ export const revalidate = 60;
 export default async function Home() {
   const cinta = await getCintaData();
   const curva = await getCurvaGranos();
+  const pizarra = await getPizarra();
+
+  const NOMBRES_PIZARRA: Record<string, string> = { SOJ: "Soja", MAI: "Maíz", TRI: "Trigo" };
+  const pizarraProd: PizarraProducto[] = ["SOJ", "MAI", "TRI"]
+    .map((u) => pizarra.granos[u])
+    .filter((g): g is NonNullable<typeof g> => !!g)
+    .map((g) => ({ underlying: g.underlying, nombre: NOMBRES_PIZARRA[g.underlying] ?? g.underlying, usd: g.usd }));
 
   return (
     <>
@@ -50,6 +59,7 @@ export default async function Home() {
 
           <h2 className="sec-title">Calculadoras</h2>
           <CalcDiferido />
+          <CalcPlanta pizarra={pizarraProd} />
           <CalcNegociosPago granos={curva.granos} />
           <CalcArbitraje granos={curva.granos} />
           <CalcEstrategias />

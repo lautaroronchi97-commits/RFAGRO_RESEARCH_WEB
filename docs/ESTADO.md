@@ -19,7 +19,22 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 10/07/2026, sesión bases de gráficos)
+## Ahora (última actualización: 11/07/2026, sesión calculadora negocios de planta)
+
+**Hecho esta sesión (rama `claude/plant-business-calculator-0sf28m`) — calculadora "Negocios de planta":**
+- Nueva calc (`src/components/calc-planta.tsx`) en la sección **Calculadoras**: arranca de un precio y
+  descuenta seis rubros editables → **Precio final** + **Total de gastos** (todo USD, aritmética local).
+- Rubros: **contra flete** · **secada** (`puntos × valor/punto`, modo Fijo 5 USD o "No fijo" editable, con
+  desglose) · **merma volátil** (%, default 0,3, sobre el arranque) · **paritaria** (4,5) · **embolsado** ·
+  **otros** (rubro abierto + concepto libre).
+- **Arranque = pizarra CAC** (soja/maíz/trigo, `getPizarra()` en `page.tsx`) con selector de producto +
+  precio editable (↺ vuelve a pizarra). lint/typecheck/build OK; aritmética y render verificados.
+- Pendiente menor: girasol/sorgo en el selector (vía `pizarra_historico`) si Lautaro lo pide.
+- Detalle: `docs/sesiones/2026-07-11-calc-negocios-planta.md`.
+
+---
+
+## Ahora previo (última actualización: 10/07/2026, sesión bases de gráficos)
 
 **✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
 de datos reales. Default de GitHub = `main` · Vercel Branch Tracking = `main`.
