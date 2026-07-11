@@ -139,18 +139,32 @@ function escribirURL(e: Estado) {
 
 /* ---------------- presets ---------------- */
 
-const PRESETS: { id: string; label: string; e: Partial<Estado> }[] = [
-  {
-    id: "mai-abr-jul",
-    label: "Maíz ABR vs JUL",
-    e: { a: { fuente: "a3", grano: "maiz", mon: "ABR" }, b: { fuente: "a3", grano: "maiz", mon: "JUL" }, metric: "spread" },
-  },
-  {
-    id: "mai-abr-soj-may",
-    label: "Maíz ABR vs Soja MAY (Excel)",
-    e: { a: { fuente: "a3", grano: "maiz", mon: "ABR" }, b: { fuente: "a3", grano: "soja", mon: "MAY" }, metric: "spread" },
-  },
+const a3Pata = (grano: string, mon: string): Pata => ({ fuente: "a3", grano, mon });
+
+// Presets de calendar spreads por grano (lista de Lautaro, 11/07). Avanzan
+// cronológicamente en base al carry; cuando el 2º mes es menor al 1º, la pata B
+// es de la campaña SIGUIENTE (lo maneja `offsetB`).
+const GRUPOS_PRESET: { grano: string; label: string; pares: [string, string][] }[] = [
+  { grano: "soja", label: "Soja", pares: [["MAY", "JUL"], ["MAY", "NOV"], ["JUL", "NOV"], ["NOV", "ENE"], ["NOV", "MAY"]] },
+  { grano: "maiz", label: "Maíz", pares: [["ABR", "JUL"], ["JUL", "SEP"], ["JUL", "DIC"], ["DIC", "ABR"], ["DIC", "JUL"]] },
+  { grano: "trigo", label: "Trigo", pares: [["DIC", "ENE"], ["DIC", "MAR"], ["ENE", "MAR"], ["MAR", "JUL"], ["JUL", "DIC"]] },
 ];
+const PRESET_EXCEL = { a: a3Pata("maiz", "ABR"), b: a3Pata("soja", "MAY") };
+const DEFAULT_A = a3Pata("maiz", "ABR");
+const DEFAULT_B = a3Pata("maiz", "JUL");
+
+/**
+ * Offset de año de la pata B respecto de la campaña (anclada en la pata A):
+ * +1 si el mes de B es menor al de A (el spread cruza al año siguiente, ej.
+ * soja NOV/MAY = Nov de una campaña vs May de la que sigue). 0 en cualquier
+ * otro caso, incluido mismo mes cruzando mercados (Nov A3 vs Nov CBOT).
+ */
+function offsetB(a: Pata, b: Pata | null): number {
+  if (!b || !a.mon || !b.mon) return 0;
+  const ma = mesDePosicion(`${a.mon}00`);
+  const mb = mesDePosicion(`${b.mon}00`);
+  return ma > 0 && mb > 0 && mb < ma ? 1 : 0;
+}
 
 /* ---------------- colores según tema ---------------- */
 
@@ -184,11 +198,10 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
 
   const inicial = React.useMemo(() => {
     const url = leerURL();
-    const base = PRESETS[0].e;
     return {
-      a: url.a ?? base.a!,
-      b: url.b !== undefined ? url.b : base.b ?? { fuente: "a3", grano: "maiz", mon: "JUL" },
-      metric: url.metric ?? base.metric ?? "spread",
+      a: url.a ?? DEFAULT_A,
+      b: url.b !== undefined ? url.b : DEFAULT_B,
+      metric: url.metric ?? "spread",
       eje: url.eje ?? "vto",
       vista: url.vista ?? "lineas",
       ventanaMeses: url.ventanaMeses ?? 12,
@@ -211,13 +224,14 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
   // eslint-disable-next-line react-hooks/set-state-in-effect
   React.useEffect(() => setMounted(true), []);
 
-  // Años disponibles = donde resuelven AMBAS patas (o una si no hay B).
+  // Años disponibles = donde resuelven AMBAS patas (B con su offset de campaña).
   const aniosDisponibles = React.useMemo(() => {
+    const off = offsetB(a, b);
     const cand = new Set<number>();
     for (let y = 2020; y <= 2030; y++) {
       const ra = idx.resolver(a, y);
       if (!ra) continue;
-      if (b) { if (!idx.resolver(b, y)) continue; }
+      if (b) { if (!idx.resolver(b, y + off)) continue; }
       cand.add(y);
     }
     // pizarra: años calendario disponibles
@@ -243,10 +257,11 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
   // Resolver campañas seleccionadas → serieIds + rango, y traer /api/series.
   React.useEffect(() => {
     const ventanaDias = Math.round(ventanaMeses * 30.4375);
+    const off = offsetB(a, b);
     const campanias = effectiveYears
       .map((year) => {
         const ra = idx.resolver(a, year);
-        const rb = b ? idx.resolver(b, year) : null;
+        const rb = b ? idx.resolver(b, year + off) : null;
         if (!ra || (b && !rb)) return null;
         const vtos = [ra.vto, rb?.vto].filter((v): v is string => !!v);
         const vto = vtos.length ? vtos.reduce((m, v) => (v < m ? v : m)) : `${year}-12-31`;
@@ -291,10 +306,11 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
   // Calcular las líneas del chart a partir de las series traídas.
   const lines = React.useMemo<CampLine[]>(() => {
     const ventanaDias = Math.round(ventanaMeses * 30.4375);
+    const off = offsetB(a, b);
     const out: CampLine[] = [];
     for (const year of [...effectiveYears].sort()) {
       const ra = idx.resolver(a, year);
-      const rb = b ? idx.resolver(b, year) : null;
+      const rb = b ? idx.resolver(b, year + off) : null;
       if (!ra) continue;
       const sa = series[ra.serieId];
       if (!sa) continue;
@@ -340,7 +356,7 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
   const refVto = React.useMemo(() => {
     if (vigenteYear == null) return undefined;
     const ra = idx.resolver(a, vigenteYear);
-    const rb = b ? idx.resolver(b, vigenteYear) : null;
+    const rb = b ? idx.resolver(b, vigenteYear + offsetB(a, b)) : null;
     const vtos = [ra?.vto, rb?.vto].filter((v): v is string => !!v);
     return vtos.length ? vtos.reduce((m, v) => (v < m ? v : m)) : undefined;
   }, [idx, a, b, vigenteYear]);
@@ -385,24 +401,41 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
     return { label: ln.label, hoy: hoy.y, min: Math.min(...ys), max: Math.max(...ys), pct, nHist: muestra.length };
   }, [lines]);
 
+  const aplicarPreset = React.useCallback((pa: Pata, pb: Pata) => {
+    setA(pa);
+    setB(pb);
+    setMetric("spread");
+    setYears([]); // = todas las campañas disponibles del par
+  }, []);
+
   return (
     <div className="gx-wrap">
-      <div className="gx-presets">
-        {PRESETS.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            className="gx-preset"
-            onClick={() => {
-              if (p.e.a) setA(p.e.a);
-              setB(p.e.b !== undefined ? p.e.b : { fuente: "a3", grano: "maiz", mon: "JUL" });
-              if (p.e.metric) setMetric(p.e.metric);
-              setYears([]);
-            }}
-          >
-            {p.label}
-          </button>
+      <div className="gx-preset-groups">
+        {GRUPOS_PRESET.map((g) => (
+          <div className="gx-preset-row" key={g.grano}>
+            <span className="gx-preset-glabel">{g.label}</span>
+            {g.pares.map(([monA, monB]) => {
+              const on = a.fuente === "a3" && a.grano === g.grano && a.mon === monA
+                && b?.fuente === "a3" && b?.grano === g.grano && b?.mon === monB;
+              return (
+                <button
+                  key={`${monA}-${monB}`}
+                  type="button"
+                  className={`gx-preset${on ? " on" : ""}`}
+                  onClick={() => aplicarPreset(a3Pata(g.grano, monA), a3Pata(g.grano, monB))}
+                >
+                  {monA}/{monB}
+                </button>
+              );
+            })}
+          </div>
         ))}
+        <div className="gx-preset-row">
+          <span className="gx-preset-glabel">Otros</span>
+          <button type="button" className="gx-preset" onClick={() => aplicarPreset(PRESET_EXCEL.a, PRESET_EXCEL.b)}>
+            Maíz ABR / Soja MAY (Excel)
+          </button>
+        </div>
       </div>
 
       <div className="gx-build">
