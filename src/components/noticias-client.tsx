@@ -3,7 +3,14 @@
 import { useState } from "react";
 
 /** Copia serializable de los tipos de src/lib/noticias.ts (patrón arbitrajes-editable). */
-export type NoticiaItemC = { titulo: string; fuente: string; link: string; fechaMs: number | null };
+export type NoticiaItemC = {
+  titulo: string;
+  fuente: string;
+  link: string;
+  fechaMs: number | null;
+  nMedios: number;
+  sinFecha: boolean;
+};
 export type NoticiaCatC = { id: string; nombre: string; items: NoticiaItemC[] };
 
 /** Glifos por categoría (mismo trazo que los del resto de los paneles). */
@@ -16,6 +23,14 @@ function Glifo({ id }: { id: string }) {
           <path d="M2 13h12" />
           <path d="M2.5 10.5 6 6.5l2.5 2.5L13.5 3.5" />
           <path d="M10.5 3.5h3v3" />
+        </svg>
+      );
+    case "informes": // documento con líneas
+      return (
+        <svg {...p}>
+          <path d="M4 2.5h5l3 3V13.5H4z" />
+          <path d="M9 2.5v3h3" />
+          <path d="M5.7 8.5h4.6M5.7 10.7h4.6" />
         </svg>
       );
     case "economia": // banco
@@ -57,16 +72,36 @@ function Glifo({ id }: { id: string }) {
   }
 }
 
-function hace(ahora: number, fechaMs: number | null): string | null {
-  if (!fechaMs) return null;
-  const min = Math.max(0, Math.round((ahora - fechaMs) / 60000));
+/** Tiempo relativo; "s/f" (sin fecha) cuando el feed no la trajo. */
+function hace(ahora: number, n: { fechaMs: number | null; sinFecha: boolean }): string | null {
+  if (n.sinFecha || !n.fechaMs) return "s/f";
+  const min = Math.max(0, Math.round((ahora - n.fechaMs) / 60000));
   if (min < 60) return `hace ${min} min`;
   const h = Math.round(min / 60);
   if (h < 48) return `hace ${h} h`;
   return `hace ${Math.round(h / 24)} d`;
 }
 
-export function NoticiasClient({ categorias, ahora }: { categorias: NoticiaCatC[]; ahora: number }) {
+function Meta({ ahora, n }: { ahora: number; n: NoticiaItemC }) {
+  const t = hace(ahora, n);
+  return (
+    <span className="news-meta">
+      <span className="news-src">{n.fuente}</span>
+      {n.nMedios > 1 && <span className="news-cobertura">· {n.nMedios} medios</span>}
+      {t && <span className="news-time">· {t}</span>}
+    </span>
+  );
+}
+
+export function NoticiasClient({
+  destacados,
+  categorias,
+  ahora,
+}: {
+  destacados: NoticiaItemC[];
+  categorias: NoticiaCatC[];
+  ahora: number;
+}) {
   const [sel, setSel] = useState("todas");
   const total = categorias.reduce((n, c) => n + c.items.length, 0);
   const visibles = sel === "todas" ? categorias : categorias.filter((c) => c.id === sel);
@@ -89,6 +124,27 @@ export function NoticiasClient({ categorias, ahora }: { categorias: NoticiaCatC[
           </button>
         ))}
       </div>
+
+      {sel === "todas" && destacados.length > 0 && (
+        <section className="news-brief" aria-label="Lo importante hoy">
+          <div className="news-brief-hd">
+            <span className="news-brief-dot" aria-hidden="true" />
+            <h3>Lo importante hoy</h3>
+          </div>
+          <ol className="news-brief-list">
+            {destacados.map((n, i) => (
+              <li key={n.link} className="news-brief-item">
+                <span className="news-brief-num">{i + 1}</span>
+                <a href={n.link} target="_blank" rel="noopener noreferrer" className="news-brief-title">
+                  {n.titulo}
+                </a>
+                <Meta ahora={ahora} n={n} />
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
       <div className="news-grid">
         {visibles.map((c) => (
           <section key={c.id} className={`news-cat${sel !== "todas" ? " full" : ""}`}>
@@ -100,20 +156,14 @@ export function NoticiasClient({ categorias, ahora }: { categorias: NoticiaCatC[
               <span className="news-cat-n">{c.items.length}</span>
             </header>
             <ul className="news-list">
-              {c.items.map((n) => {
-                const t = hace(ahora, n.fechaMs);
-                return (
-                  <li key={n.link} className="news-item">
-                    <a href={n.link} target="_blank" rel="noopener noreferrer" className="news-title">
-                      {n.titulo}
-                    </a>
-                    <span className="news-meta">
-                      <span className="news-src">{n.fuente}</span>
-                      {t && <span className="news-time">· {t}</span>}
-                    </span>
-                  </li>
-                );
-              })}
+              {c.items.map((n) => (
+                <li key={n.link} className="news-item">
+                  <a href={n.link} target="_blank" rel="noopener noreferrer" className="news-title">
+                    {n.titulo}
+                  </a>
+                  <Meta ahora={ahora} n={n} />
+                </li>
+              ))}
             </ul>
           </section>
         ))}
