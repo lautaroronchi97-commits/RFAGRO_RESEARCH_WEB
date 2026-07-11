@@ -45,7 +45,8 @@ vistazo.
 **Límites duros y honestos:**
 - Las 3 bases arrancan el **2020-01-02** — nada anterior existe ni se puede scrapear de las
   fuentes actuales. Las campañas **2018 y 2019 del Excel de Lautaro NO se pueden graficar**, y la
-  campaña ABR20 quedó truncada (78 ruedas de ~250). Única vía: carga única desde su Excel (→ P26).
+  campaña ABR20 quedó truncada (78 ruedas de ~250). **Lautaro decidió (11/07) aceptar el límite:
+  no se cargan** (→ P26).
 - CBOT guarda **solo 12 meses previos al vto** por contrato (decisión de Lautaro) → en ventanas
   más largas la pata CBOT sale parcial, marcada (→ P24).
 - El US$ de pizarra es el **BNA divisa comprador de la CAC, NO el A3500** (~0,4% de diferencia,
@@ -114,7 +115,8 @@ brush/minimapa de zoom.
 - **Dos patas de vto distinto** (maíz ABR vs soja MAY): la ventana termina en el **vto más
   temprano** (como el Excel, que corta en abril) (→ P4). Apareo de campañas entre plantillas = por
   año de posición (ABR27 ↔ MAY27) (→ P5).
-- **Superposición — dos alineaciones de eje X, van LAS DOS como toggle** (default → P1):
+- **Superposición — dos alineaciones de eje X, van LAS DOS como toggle** (✅ default confirmado
+  11/07: días al vencimiento, por índice de rueda — P1):
   1. **Días al vencimiento** (x = días hasta el vto, todas terminan en x=0): es lo que el Excel de
      Lautaro hace *de facto* — la hoja resumen reusa las fechas de 2020 como eje de las 8 campañas
      = alinear por índice dentro de la ventana que termina en el vto. Superposición exacta, inmune
@@ -328,17 +330,15 @@ evaluar región `gru1` en Vercel.
 
 Consolidadas de los 4 análisis (arquitectura, negocio, UX, librerías), deduplicadas. Formato:
 contexto → opciones → nuestra recomendación. **P1–P11 conviene contestarlas antes de la Fase 2;
-ninguna bloquea la Fase 1.**
+ninguna bloquea la Fase 1.** Las marcadas ✅ ya las respondió Lautaro el 11/07 (P1, P13, P26,
+P30) — quedan 26 abiertas.
 
 ### A. Defaults de visualización
 
-1. **Eje X default al superponer campañas.** Tu Excel resumen alinea por índice de rueda dentro de
-   la ventana que termina en el vto (usa las fechas de 2020 como eje de todas), pero pediste "eje x
-   de enero a diciembre" — son dos alineaciones distintas. Van las dos como toggle.
-   Opciones: (a) días al vencimiento arranca seleccionado · (b) calendario arranca seleccionado.
-   **Recomendación: (a)** — es lo que tu Excel hace de facto y superpone exacto, inmune a feriados
-   distintos entre años. Sub-pregunta: dentro de "días al vto", ¿índice de rueda (como tu Excel) o
-   días corridos? Difieren por feriados. **Recomendación: índice de rueda.**
+1. **Eje X default al superponer campañas.** ✅ **RESPONDIDA 11/07: días al vencimiento** (la
+   alineación que su Excel hace de facto). El calendario ene→dic queda como el otro modo del
+   toggle. Se implementa como **índice de rueda** (exactamente lo que hace su hoja resumen); días
+   corridos queda como variante solo si la pide.
 2. **Eje calendario que cruza el año.** La ventana de un contrato abril va mayo→abril: con eje
    ene→dic literal la línea se parte. Opciones: (a) el eje arranca en un mes fijo configurable
    (default = mes siguiente al vto, ej. MAY→ABR) · (b) ene→dic literal aunque se parta.
@@ -379,11 +379,9 @@ ninguna bloquea la Fase 1.**
 12. **"180% pizarra maíz" / "57% soja julio".** ¿Qué series exactas grafica cada relación? ¿Precio
     del negocio ÷ pizarra del día? Dame un ejemplo real de cada una — sin eso no se puede
     implementar el gráfico #12.
-13. **Banda histórica.** Convierte 7 líneas spaghetti en "historia como sombra" + campaña actual
-    encima. Opciones: (a) banda min–máx + mediana · (b) percentiles (¿P25–P75? ¿P10–P90?) · (c) las
-    dos. ¿Qué campañas la componen — todas 2020→ o excluís alguna atípica (2020 COVID)? ¿Te sirve
-    como default? **Recomendación: (a) para arrancar, es la lectura más simple.** Necesita tu OK +
-    ejemplo numérico.
+13. **Banda histórica.** ✅ **RESPONDIDA 11/07: sí, min–máx + mediana.** Queda pendiente de la
+    validación Fase 1→2: el **ejemplo numérico** (regla del proyecto) y qué campañas la componen
+    (¿todas 2020→ o excluís alguna atípica, ej. 2020 COVID?).
 14. **Percentil "hoy vs historia" (KPI).** ¿Contra qué muestra? Opciones: (a) el mismo
     días-al-vto de las campañas previas · (b) toda la historia del par · (c) últimos N años
     móviles. **Recomendación: (a)** — compara manzanas con manzanas a la misma altura de campaña.
@@ -426,12 +424,10 @@ ninguna bloquea la Fase 1.**
     para TNA histórica (#9, #10) mete error chico en "días". Opciones: (a) aceptar el proxy ·
     (b) cargar vencimientos reales históricos a la tabla `vencimientos`. **Recomendación: (a) para
     v1; (b) si las TNAs históricas se vuelven centrales.**
-26. **Campañas 2018/2019.** Las bases arrancan 2020-01-02 (y ABR20 quedó con 78 ruedas): esas hojas
-    de tu Excel NO se pueden reproducir desde Supabase. Opciones: (a) aceptar el límite · (b) carga
-    única desde tu Excel a una **tabla aparte `series_manuales`** (nunca a `futuros_cierres`: esa
-    la escribe el cron CEM y mezclar fuentes rompería la procedencia y la vista de posiciones
-    vivas). Una tarde de trabajo, queda para siempre. **Recomendación: (b) si esas campañas te
-    importan para las bandas; si no, (a).**
+26. **Campañas 2018/2019.** ✅ **RESPONDIDA 11/07: no se cargan — desde 2020 alcanza.** El panel
+    arranca con el límite 2020-01-02 asumido. Si algún día cambia de idea, la vía es una tabla
+    aparte `series_manuales` (nunca ingestar a `futuros_cierres`: la escribe el cron CEM y
+    mezclar fuentes rompería la procedencia y la vista de posiciones vivas).
 
 ### D. UX y alcance del panel
 
@@ -445,8 +441,7 @@ ninguna bloquea la Fase 1.**
     guardado local por ahora? **Recomendación: sí.**
 29. **Ubicación.** Página propia `/graficos` con entrada en el menú + teaser en la home (la home no
     carga el peso del panel). ¿OK? **Recomendación: sí.**
-30. **Modo multi-posición** (tu ejemplo "pizarra de mz 2026 vs JUL y DIC"). ¿Qué preferís ver ahí?
-    Opciones: (a) las series crudas superpuestas (pizarra + JUL + DIC, 3 líneas de precio) ·
-    (b) las bases calculadas (pizarra−JUL y pizarra−DIC, 2 líneas de spread) · (c) toggle entre
-    ambas. **Recomendación: (c) con default (b)** — la base es la señal, las crudas dan contexto.
-    ¿Y lo usás solo con pizarra como base o también futuro vs varias posiciones (JUL vs SEP+DIC)?
+30. **Modo multi-posición** (tu ejemplo "pizarra de mz 2026 vs JUL y DIC"). ✅ **RESPONDIDA
+    11/07: bases calculadas por default** (pizarra−JUL y pizarra−DIC como líneas de spread), con
+    toggle a las series crudas. Sub-pregunta que queda: ¿lo usás solo con pizarra como base o
+    también futuro vs varias posiciones (JUL vs SEP+DIC)?

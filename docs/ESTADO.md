@@ -38,8 +38,10 @@ gráficos de spreads entre cosechas ([`PLAN_GRAFICOS_SPREADS.md`](PLAN_GRAFICOS_
   vista `series_catalogo`), Recharts 3.9.2, fases 0→3.
 - **⚠️ Bug real encontrado planificando:** PostgREST trunca a 1.000 filas con HTTP 206 y `sbSelect`
   lo trata como éxito (truncado silencioso) → Fase 0 del plan = fix en `src/lib/supabase.ts`.
-- **Espera de Lautaro: responder las 30 PREGUNTAS del plan** (sección 9; P1–P11 antes de la Fase 2,
-  ninguna bloquea la Fase 1) y aprobar → recién ahí se implementa.
+- **Lautaro ya respondió 4 preguntas clave el 11/07** (eje X default = días al vto por índice de
+  rueda · multi-posición default = bases calculadas · NO cargar campañas 2018/19 · banda histórica
+  min–máx + mediana). **Quedan 26 abiertas** (sección 9 del plan; P2–P11 antes de la Fase 2,
+  ninguna bloquea la Fase 1) → con su OK general ya se puede arrancar Fase 0+1.
   Evidencia medida en `docs/sesiones/2026-07-11-plan-graficos-spreads.md`.
 
 **Recién entrado a `main` de otras sesiones (contexto + pendientes de Lautaro):**

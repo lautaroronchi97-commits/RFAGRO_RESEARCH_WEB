@@ -62,8 +62,12 @@
 - Paleta de 8 campañas validada (contraste 4/4 en ambos temas, ΔE CVD 58,4/46,9) — hexas en el plan.
 
 ## Quedó pendiente / en vuelo
-- **Lautaro responde las preguntas del plan** (P1–P11 antes de Fase 2; ninguna bloquea Fase 1) y
-  aprueba el plan → recién ahí se implementa (Fase 0: fix 206 · Fase 1: caso (a) + par del Excel).
+- **Lautaro respondió 4 preguntas en la sesión** (11/07, vía chips): P1 = días al vencimiento
+  (índice de rueda) · P30 = bases calculadas por default · P26 = NO cargar 2018/19 · P13 = banda
+  min–máx + mediana (falta el ejemplo numérico igual). Marcadas ✅ en el plan.
+- **Quedan 26 preguntas abiertas** (P2–P11 antes de Fase 2; ninguna bloquea Fase 1) → con su OK
+  general ya se puede arrancar la implementación (Fase 0: fix 206 · Fase 1: caso (a) + par del
+  Excel).
 - Sin cambios de código en esta sesión (solo docs) — no aplica lint/build.
 
 ## Trampas descubiertas (para la próxima sesión)
