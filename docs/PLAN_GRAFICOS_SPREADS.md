@@ -7,8 +7,8 @@
 > confirmar con ejemplo numérico" (regla del proyecto). Todo lo técnico fue **verificado hoy**
 > contra el repo, la base real (solo SELECT) y los docs de Next 16 en `node_modules/next/dist/docs/`
 > — la evidencia medida quedó en `docs/sesiones/2026-07-11-plan-graficos-spreads.md`. Bases:
-> `docs/PLAN_BASES_GRAFICOS.md`. La sección más importante es la última: **PREGUNTAS PARA LAUTARO**
-> (29, consolidadas).
+> `docs/PLAN_BASES_GRAFICOS.md`. La sección más importante es la última: **PREGUNTAS PARA
+> LAUTARO** (30, consolidadas).
 
 ## 1. Objetivo y alcance
 
@@ -23,6 +23,19 @@ eje X compartido. Los tres pedidos de Lautaro son configuraciones de ese motor:
 | (a) Maíz ABR vs maíz JUL Rosario, por campaña | A3 `MAI.ROS/ABR*` vs `MAI.ROS/JUL*` | Spread USD |
 | (b) Soja NOV Rosario vs soja NOV Chicago | A3 `SOJ.ROS/NOV*` vs CBOT `ZSX*` (`settlement_usd_tn`) | Spread USD / ratio % |
 | (c) Pizarra vs posición de futuro A3 seleccionable | `pizarra_historico.precio_usd` vs `futuros_cierres` | Base (pizarra−futuro) |
+
+**Casos de uso diarios (mensaje de Lautaro del 11/07 — "son todos ejemplos"):**
+
+| Uso diario | Ejemplo suyo | Cómo lo cubre el motor |
+|---|---|---|
+| 1. Pizarra vs las posiciones A3 de la campaña vigente | Pizarra de maíz durante 2026 vs MAI JUL26 **y** DIC26 | Caso (c) generalizado: **una base vs VARIAS posiciones a la vez** → modo multi-posición (§3) |
+| 2. Spread de esta campaña vs los históricos | Maíz JUL/DIC 2026 vs los años anteriores | Caso (a) + superposición de campañas |
+| 3. Spread A3↔CBOT de esta campaña vs histórico | SOJ NOV26 vs ZS NOV26, la relación vs años anteriores | Caso (b) + superposición de campañas |
+| 4. Spread entre productos vs histórico | Soja JUL vs maíz JUL 26, vs años anteriores | Spread genérico entre granos + superposición |
+
+Los usos 2–4 confirman que la **superposición histórica aplica a TODAS las métricas** (spread mismo
+grano, entre productos, A3↔CBOT y base pizarra−futuro), no solo al caso (a). El uso 1 agrega un
+requisito nuevo: comparar **más de dos patas** (ver modo multi-posición en §3).
 
 **Ancla de negocio** (`docs/negocio/02_logicas_y_principios.md` §1, textual): *"un spread solo
 significa algo contra su propia historia entre posiciones específicas. El desvío del rango
@@ -85,6 +98,13 @@ brush/minimapa de zoom.
 - **Pata (plantilla):** fuente + grano + posición **sin año** — "maíz abril Rosario". Es lo que se
   elige en el constructor; el año lo ponen los chips de campañas. Pizarra no tiene posición (serie
   diaria continua).
+- **Dos modos de vista ortogonales** (los usos diarios del 11/07 piden ambos):
+  1. **Multi-campaña:** UNA relación (pata A vs pata B) × N campañas superpuestas — "maíz JUL/DIC
+     26 vs años anteriores". Es el modo central del plan.
+  2. **Multi-posición:** UNA campaña (típicamente la vigente) × N relaciones contra una base común
+     — "pizarra de maíz 2026 vs JUL26 **y** DIC26" (una línea de base por posición, o las series
+     crudas superpuestas). El constructor permite que la pata B sea **multi-select de posiciones**
+     cuando hay una sola campaña activa (→ P30).
 - **Campaña (instancia):** un contrato concreto de la plantilla (`MAI.ROS/ABR24` = campaña 2024).
   Ventana = `[vencimiento − W, vencimiento]` con **W = 12 meses default, editable** (≈ las 240–260
   ruedas de las hojas del Excel) (→ P3). Vencimiento de posiciones vencidas = **proxy
@@ -121,6 +141,7 @@ brush/minimapa de zoom.
 |---|---|---|
 | Fuente / grano / posición por pata | A3 · CBOT · Pizarra, independiente por pata. El picker sale del catálogo real de la base (no lista fija): 129 CBOT + 5 pizarra + A3 según alcance de plazas → P21 (default `.ROS` = 219 contratos; con las otras plazas son 249) | **v1** |
 | Pata B opcional | Sin pata B = serie sola en modo "superponer" | **v1** |
+| Pata B múltiple (modo multi-posición) | Con 1 campaña activa, la pata B acepta varias posiciones (pizarra mz vs JUL+DIC) → P30 | **v1** |
 | Métrica | Spread USD / Ratio (con ⇄ e input "× qq") / Superponer crudas | **v1** |
 | Campañas a superponer | Chips multi-select 2020…2026 + "Últ. 3"/"Todas" (aviso fijo "histórico desde 2020") | **v1** |
 | Ventana | 3/6/**12m al vto**/18/24m/custom; con 1 campaña o pizarra↔pizarra pasa a rango absoluto + atajos 1A/3A/5A/Todo | **v1** |
@@ -414,13 +435,18 @@ ninguna bloquea la Fase 1.**
 
 ### D. UX y alcance del panel
 
-27. **Presets diarios.** ¿Cuáles son los 5–10 pares que mirás todos los días, para dejarlos a un
-    click? Propuestos: MAI ABR vs JUL · MAI ABR vs SOJ MAY (tu Excel) · SOJ MAY vs NOV · TRI ENE
-    vs JUL · SOJ NOV A3 vs ZS NOV · base pizarra−futuro por grano · alquiler 18qq. ¿Falta alguna
-    relación que mires y no esté en este plan?
+27. **Presets diarios.** Con tus 4 ejemplos del 11/07 la lista propuesta queda: pizarra maíz vs
+    JUL+DIC vigentes · MAI JUL vs DIC (multi-campaña) · SOJ NOV A3 vs ZS NOV (multi-campaña) ·
+    SOJ JUL vs MAI JUL (multi-campaña) · MAI ABR vs SOJ MAY (tu Excel, validación) · alquiler
+    18qq. ¿Confirmás esos 6? ¿Falta alguna relación que mires todos los días?
 28. **Presets guardados / compartir.** Todo estado es URL (se manda por WhatsApp); "guardar vista"
     = localStorage por máquina (sin login no hay escritura segura en Supabase). Compartir presets
     entre vos y Mauro de forma persistente requiere pensar login más adelante. ¿Alcanza URL +
     guardado local por ahora? **Recomendación: sí.**
 29. **Ubicación.** Página propia `/graficos` con entrada en el menú + teaser en la home (la home no
     carga el peso del panel). ¿OK? **Recomendación: sí.**
+30. **Modo multi-posición** (tu ejemplo "pizarra de mz 2026 vs JUL y DIC"). ¿Qué preferís ver ahí?
+    Opciones: (a) las series crudas superpuestas (pizarra + JUL + DIC, 3 líneas de precio) ·
+    (b) las bases calculadas (pizarra−JUL y pizarra−DIC, 2 líneas de spread) · (c) toggle entre
+    ambas. **Recomendación: (c) con default (b)** — la base es la señal, las crudas dan contexto.
+    ¿Y lo usás solo con pizarra como base o también futuro vs varias posiciones (JUL vs SEP+DIC)?

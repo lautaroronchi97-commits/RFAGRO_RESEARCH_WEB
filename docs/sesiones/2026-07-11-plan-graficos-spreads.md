@@ -12,7 +12,11 @@
   de ideas, modelo de serie/campaña con las DOS alineaciones de eje X, filtros, UX (página
   `/graficos`, constructor de 2 patas, chips-leyenda por campaña, URL compartible), arquitectura
   (route handler `/api/series` + vista `series_catalogo`), librería (Recharts 3.9.2, plan B uPlot),
-  fases 0→3, y **29 preguntas numeradas para Lautaro** con opciones y recomendación.
+  fases 0→3, y **30 preguntas numeradas para Lautaro** con opciones y recomendación.
+- **Lautaro mandó en la sesión sus 4 usos diarios reales** (pizarra vs posiciones vigentes ·
+  spread de la campaña vs históricos · A3↔CBOT vs histórico · entre productos vs histórico) →
+  incorporados al plan (§1) + nuevo **modo multi-posición** (una base vs varias posiciones, §3,
+  P30) + presets actualizados (P27).
 - Se analizó su Excel real (`SPREAD MAIZ ABRIL vs SOJA MAYO.xlsx`): una hoja por campaña
   (2018–2025, ~240–260 ruedas c/u terminando en el vto de abril; columnas spread, ratio y
   "Alquiler 18qq" = 18×soja/maíz) y la hoja resumen que superpone las 8 campañas usando las fechas
