@@ -3,8 +3,8 @@
 import * as React from "react";
 import type { SerieCat, SeriePuntos, Fuente } from "@/lib/series-types";
 import {
-  joinFfill, metricaDiaria, alinear, mesDePosicion,
-  type Metric, type Eje,
+  joinFfill, metricaDiaria, alinear, mesDePosicion, mediana, percentil,
+  type Metric, type Eje, type BandaPunto, type PuntoXY,
 } from "@/lib/derivadas";
 import { nfmt } from "@/lib/format";
 import { SpreadChart, type CampLine } from "./spread-chart";
@@ -98,8 +98,9 @@ function pataFromStr(s: string | null): Pata | null {
   return { fuente, grano, mon: mon || null };
 }
 
+type Vista = "lineas" | "banda";
 type Estado = {
-  a: Pata; b: Pata | null; metric: Metric; eje: Eje; ventanaMeses: number; years: number[];
+  a: Pata; b: Pata | null; metric: Metric; eje: Eje; ventanaMeses: number; years: number[]; vista: Vista;
 };
 
 function leerURL(): Partial<Estado> {
@@ -109,6 +110,7 @@ function leerURL(): Partial<Estado> {
   const b = pataFromStr(q.get("b"));
   const metric = (["spread", "ratio", "crudo"] as const).find((m) => m === q.get("m"));
   const eje = (["vto", "cal"] as const).find((e) => e === q.get("eje"));
+  const vista = (["lineas", "banda"] as const).find((s) => s === q.get("vista"));
   const v = Number(q.get("v"));
   const years = (q.get("c") ?? "").split(",").map(Number).filter((n) => n >= 2020 && n <= 2100);
   const out: Partial<Estado> = {};
@@ -116,6 +118,7 @@ function leerURL(): Partial<Estado> {
   if (b) out.b = b;
   if (metric) out.metric = metric;
   if (eje) out.eje = eje;
+  if (vista) out.vista = vista;
   if (Number.isFinite(v) && v > 0) out.ventanaMeses = v;
   if (years.length) out.years = years;
   return out;
@@ -128,6 +131,7 @@ function escribirURL(e: Estado) {
   if (e.b) q.set("b", pataToStr(e.b));
   q.set("m", e.metric);
   q.set("eje", e.eje);
+  q.set("vista", e.vista);
   q.set("v", String(e.ventanaMeses));
   q.set("c", e.years.join(","));
   window.history.replaceState(null, "", `?${q.toString()}`);
@@ -186,6 +190,7 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
       b: url.b !== undefined ? url.b : base.b ?? { fuente: "a3", grano: "maiz", mon: "JUL" },
       metric: url.metric ?? base.metric ?? "spread",
       eje: url.eje ?? "vto",
+      vista: url.vista ?? "lineas",
       ventanaMeses: url.ventanaMeses ?? 12,
       years: url.years ?? [],
     } as Estado;
@@ -195,6 +200,7 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
   const [b, setB] = React.useState<Pata | null>(inicial.b);
   const [metric, setMetric] = React.useState<Metric>(inicial.metric);
   const [eje, setEje] = React.useState<Eje>(inicial.eje);
+  const [vista, setVista] = React.useState<Vista>(inicial.vista);
   const [ventanaMeses, setVentanaMeses] = React.useState<number>(inicial.ventanaMeses);
   const [years, setYears] = React.useState<number[]>(inicial.years);
 
@@ -226,10 +232,13 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
     return valid.length ? valid : aniosDisponibles;
   }, [years, aniosDisponibles]);
 
+  // La banda solo aplica a métricas de valor único (spread/ratio), no a crudas.
+  const modo: Vista = vista === "banda" && metric !== "crudo" ? "banda" : "lineas";
+
   // Sincronizar estado → URL (external sync, sin setState).
   React.useEffect(() => {
-    escribirURL({ a, b, metric, eje, ventanaMeses, years: effectiveYears });
-  }, [a, b, metric, eje, ventanaMeses, effectiveYears]);
+    escribirURL({ a, b, metric, eje, ventanaMeses, years: effectiveYears, vista });
+  }, [a, b, metric, eje, ventanaMeses, effectiveYears, vista]);
 
   // Resolver campañas seleccionadas → serieIds + rango, y traer /api/series.
   React.useEffect(() => {
@@ -327,15 +336,53 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
     return (m % 12) + 1;
   }, [a.mon]);
 
+  // Vto de la campaña vigente (min de las patas) → rotula los meses del eje días-al-vto.
+  const refVto = React.useMemo(() => {
+    if (vigenteYear == null) return undefined;
+    const ra = idx.resolver(a, vigenteYear);
+    const rb = b ? idx.resolver(b, vigenteYear) : null;
+    const vtos = [ra?.vto, rb?.vto].filter((v): v is string => !!v);
+    return vtos.length ? vtos.reduce((m, v) => (v < m ? v : m)) : undefined;
+  }, [idx, a, b, vigenteYear]);
+
   const decimals = metric === "ratio" ? 3 : 2;
 
-  // KPI de la campaña vigente (v1: valor de la última rueda + min/máx de la ventana).
+  // Banda histórica (P13): a cada altura x, min–máx + mediana de las campañas
+  // históricas (todas las seleccionadas MENOS la vigente). Se agrupan por x.
+  const banda = React.useMemo<BandaPunto[]>(() => {
+    if (modo !== "banda") return [];
+    const hist = lines.filter((l) => !l.vigente);
+    if (hist.length < 2) return []; // sin al menos 2 campañas no hay banda útil
+    const byX = new Map<number, number[]>();
+    for (const l of hist) for (const p of l.data) {
+      const arr = byX.get(p.x);
+      if (arr) arr.push(p.y); else byX.set(p.x, [p.y]);
+    }
+    return [...byX.entries()]
+      .filter(([, ys]) => ys.length >= 2)
+      .map(([x, ys]) => ({ x, min: Math.min(...ys), max: Math.max(...ys), med: mediana(ys) }))
+      .sort((p, q) => p.x - q.x);
+  }, [modo, lines]);
+
+  // KPI de la campaña vigente: última rueda + min/máx de su ventana + percentil
+  // "hoy vs historia" a la misma altura de campaña (P14).
   const kpi = React.useMemo(() => {
     const ln = lines.find((l) => l.vigente) ?? lines.at(-1);
     if (!ln || ln.data.length === 0) return null;
     const ys = ln.data.map((p) => p.y);
     const hoy = ln.data.reduce((m, p) => (p.x > m.x ? p : m), ln.data[0]);
-    return { label: ln.label, hoy: hoy.y, min: Math.min(...ys), max: Math.max(...ys) };
+    // Percentil: muestra = valores de las campañas históricas a la misma x (hoy.x).
+    const hist = lines.filter((l) => !l.vigente);
+    const muestra: number[] = [];
+    for (const l of hist) {
+      const p = l.data.find((q) => q.x === hoy.x) ?? l.data.reduce<null | PuntoXY>(
+        (best, q) => (Math.abs(q.x - hoy.x) < (best ? Math.abs(best.x - hoy.x) : Infinity) ? q : best),
+        null,
+      );
+      if (p) muestra.push(p.y);
+    }
+    const pct = muestra.length >= 3 ? percentil(hoy.y, muestra) : null;
+    return { label: ln.label, hoy: hoy.y, min: Math.min(...ys), max: Math.max(...ys), pct, nHist: muestra.length };
   }, [lines]);
 
   return (
@@ -389,6 +436,22 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
             {[3, 6, 12, 18, 24].map((m) => <option key={m} value={m}>{m} meses</option>)}
           </select>
         </div>
+
+        <div className="gx-pata">
+          <span className="gx-pata-lbl">Vista</span>
+          <div className="gx-seg" role="group" aria-label="Vista">
+            <button type="button" className={vista === "lineas" ? "on" : ""} onClick={() => setVista("lineas")}>Líneas</button>
+            <button
+              type="button"
+              className={vista === "banda" ? "on" : ""}
+              disabled={metric === "crudo"}
+              title={metric === "crudo" ? "La banda no aplica a series crudas" : "Sombra min–máx + mediana de las campañas históricas"}
+              onClick={() => setVista("banda")}
+            >
+              Banda
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="gx-chips">
@@ -431,7 +494,7 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
             {cargando ? "Trayendo datos…" : "Elegí dos patas y al menos una campaña para ver el spread."}
           </div>
         ) : (
-          <SpreadChart lines={lines} eje={eje} metric={metric} anchorMes={anchorMes} decimals={decimals} />
+          <SpreadChart lines={lines} eje={eje} metric={metric} anchorMes={anchorMes} decimals={decimals} modo={modo} banda={banda} refVto={refVto} />
         )}
       </div>
 
@@ -440,14 +503,22 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
           <div className="gx-kpi"><span className="k">Campaña {kpi.label} · última</span><span className="v">{nfmt(kpi.hoy, decimals)}</span></div>
           <div className="gx-kpi"><span className="k">Mín ventana</span><span className="v">{nfmt(kpi.min, decimals)}</span></div>
           <div className="gx-kpi"><span className="k">Máx ventana</span><span className="v">{nfmt(kpi.max, decimals)}</span></div>
+          {kpi.pct !== null && (
+            <div className="gx-kpi">
+              <span className="k">Percentil hoy vs {kpi.nHist} campañas</span>
+              <span className="v">{nfmt(kpi.pct, 0)}%</span>
+            </div>
+          )}
         </div>
       )}
 
       <p className="gx-note">
         <b>Spread</b> = pata lejana − pata cercana (en empate de vencimiento, cara − barata; ej. soja − maíz).
         <b> Eje días al vto</b> alinea las campañas por índice de rueda terminando en el vencimiento
-        (como la planilla). Datos de cierre desde 2020 · A3/CEM, CBOT (USD/tn) y pizarra CAC.
-        Bandas históricas y percentil llegan en la próxima fase.
+        (como la planilla); debajo del nº de ruedas va el mes de referencia de la campaña vigente.
+        <b> Banda</b> = sombra min–máx + mediana de las campañas históricas, con la vigente gruesa encima;
+        el <b>percentil</b> ubica el valor de hoy contra esas campañas a la misma altura.
+        Datos de cierre desde 2020 · A3/CEM, CBOT (USD/tn) y pizarra CAC.
       </p>
     </div>
   );

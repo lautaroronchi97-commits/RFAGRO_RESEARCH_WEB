@@ -23,6 +23,16 @@
   resumen; KPI vigente 146,50 = SOJ MAY27 − MAI ABR27. `lint`+`tsc`+`build` verdes, sin errores de
   consola. Trampa hallada y corregida: PostgREST NO acepta el símbolo entrecomillado (`eq."..."`
   devuelve []); va sin comillas, solo encodeando el `/` (`eq.MAI.ROS%2FABR22`).
+- **Fase 2 parcial (mismo día, tras feedback de Lautaro sobre la preview):**
+  - Banda histórica min–máx + mediana (P13: toggle Vista Líneas|Banda; sombra = campañas
+    históricas, vigente gruesa encima) · KPI percentil hoy vs historia a la misma altura (P14) ·
+    mes de referencia en el eje días-al-vto (proyectado desde el vto: 258→ABR, 0→ABR).
+  - Recharts: la Area de la banda **no se dibuja dentro de `<LineChart>`** → hay que usar
+    `<ComposedChart>` para mezclar Area + Line.
+  - **Bug de alineación corregido:** la campaña en curso (vto futuro) se anclaba a su último dato,
+    no al vto → quedaba mal contra las históricas. Ahora se corre por ruedas hábiles faltantes al
+    vto (`ruedasHasta`), y queda a la misma altura de campaña (el percentil pasó de 71% a 86%, ya
+    correcto).
 
 ---
 

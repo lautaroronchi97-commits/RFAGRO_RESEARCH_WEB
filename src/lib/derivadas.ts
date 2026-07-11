@@ -105,13 +105,38 @@ export function alinear(
   if (win.length === 0) return [];
 
   if (eje === "vto") {
+    // x = índice de rueda ANCLADO al vencimiento (no al último dato). Para
+    // campañas cerradas la última rueda ≈ vto → offset 0. Para la campaña EN
+    // CURSO (vto futuro, todavía sin datos hasta el vto) se corre a la izquierda
+    // las ruedas hábiles que faltan para el vto, para que quede a la misma altura
+    // que las históricas a esa distancia del vencimiento.
     const n = win.length;
-    return win.map((p, i) => ({ x: i - (n - 1), y: p.y, f: p.f }));
+    const offset = ruedasHasta(win[n - 1].f, vtoISO);
+    return win.map((p, i) => ({ x: i - (n - 1) - offset, y: p.y, f: p.f }));
   }
 
   // Calendario: mes ancla = mes del vto + 1 (la temporada arranca ahí).
   const anchor = ((mesDeISO(vtoISO) % 12) + 1); // 1..12, mes siguiente al vto
   return win.map((p) => ({ x: diaDeTemporada(p.f, anchor), y: p.y, f: p.f }));
+}
+
+/**
+ * Ruedas hábiles (L-V) aproximadas entre dos fechas ISO (0 si `hasta` ≤ `desde`).
+ * Proxy sin tabla de feriados: suficiente para anclar el eje al vencimiento de la
+ * campaña en curso. Cuenta días de lunes a viernes posteriores a `desde`.
+ */
+export function ruedasHasta(desdeISO: string, hastaISO: string): number {
+  let d = Date.parse(`${desdeISO}T12:00:00-03:00`);
+  const end = Date.parse(`${hastaISO}T12:00:00-03:00`);
+  if (!(end > d)) return 0;
+  let count = 0;
+  d += 86_400_000;
+  while (d <= end) {
+    const dow = new Date(d).getUTCDay(); // mediodía ART → 15:00 UTC, mismo día
+    if (dow !== 0 && dow !== 6) count++;
+    d += 86_400_000;
+  }
+  return count;
 }
 
 /** Resta días a una fecha ISO y devuelve ISO. */
@@ -138,8 +163,51 @@ function diaDeTemporada(iso: string, anchorMes: number): number {
 
 /** Etiqueta del eje calendario: convierte x de temporada a "MMM". */
 export function etiquetaCalendario(x: number, anchorMes: number): string {
-  const nombres = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
   const offMes = Math.floor(x / 31);
   const mes = ((anchorMes - 1 + offMes) % 12);
-  return nombres[mes] ?? "";
+  return MES_NOMBRE[mes] ?? "";
 }
+
+export const MES_NOMBRE = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+
+/** Nombre del mes de una fecha ISO ("2024-04-15" → "ABR"). */
+export function mesDeFecha(iso: string): string {
+  return MES_NOMBRE[Number(iso.slice(5, 7)) - 1] ?? "";
+}
+
+/**
+ * Mes calendario a `ruedas` ruedas hábiles ANTES del vencimiento. Sirve para
+ * rotular el eje días-al-vto con el mes real proyectando desde el vto (aunque la
+ * campaña vigente todavía no haya llegado a esa altura). ruedas ≥ 0.
+ */
+export function mesEnRuedasAlVto(vtoISO: string, ruedas: number): string {
+  let d = Date.parse(`${vtoISO}T12:00:00-03:00`);
+  let cnt = 0;
+  while (cnt < ruedas) {
+    d -= 86_400_000;
+    const dow = new Date(d).getUTCDay();
+    if (dow !== 0 && dow !== 6) cnt++;
+  }
+  return MES_NOMBRE[new Date(d).getUTCMonth()] ?? "";
+}
+
+/** Mediana de una muestra (NaN si vacía). */
+export function mediana(xs: number[]): number {
+  if (xs.length === 0) return NaN;
+  const s = [...xs].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+/**
+ * Percentil (0..100) de `v` dentro de `muestra`: fracción de la muestra ≤ v.
+ * Ej. v mayor que 3 de 4 valores previos → 75%. NaN si la muestra está vacía.
+ */
+export function percentil(v: number, muestra: number[]): number {
+  if (muestra.length === 0) return NaN;
+  const menores = muestra.filter((x) => x <= v).length;
+  return (menores / muestra.length) * 100;
+}
+
+/** Punto de banda histórica: rango min–máx + mediana a una altura x del eje. */
+export type BandaPunto = { x: number; min: number; max: number; med: number };

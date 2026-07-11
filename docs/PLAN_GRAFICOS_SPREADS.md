@@ -317,11 +317,20 @@ consola. Sin bandas ni percentil todavía (Fase 2, pendiente del ejemplo numéri
 **Validación con Lautaro (gate):** revisar la Fase 1 contra su Excel + contestar las PREGUNTAS de
 la sección 9 (sobre todo P1–P11). Ninguna fórmula de Fase 2 se implementa sin su ejemplo numérico.
 
-**Fase 2 — métricas confirmadas + los otros 2 casos** (P6–P25 ya decididas el 11/07):
-ratio maíz/soja con ⇄ · base pizarra−futuro con estimativos marcados · A3 − CBOT con ffill de
-feriados marcado · modo multi-posición (bases calculadas, cualquier serie como base) · banda
-min–máx + mediana y percentil por altura de campaña (solo falta el ejemplo numérico, P13) ·
-presets definitivos (post P27) · tabla alternativa + CSV · guard "parcial" por campaña.
+**Fase 2 — ✅ PARCIAL (banda + percentil + mes en el eje, 11/07):**
+- **Banda histórica min–máx + mediana** (P13 confirmada por Lautaro): toggle Vista Líneas|Banda; la
+  sombra son las campañas históricas (todas menos la vigente), la vigente va gruesa encima.
+- **Percentil hoy vs historia** (P14): KPI del valor vigente contra las campañas previas a la misma
+  altura (mismo días-al-vto).
+- **Mes de referencia en el eje días-al-vto** (pedido nuevo de Lautaro): debajo del nº de ruedas va
+  el mes calendario, proyectado desde el vencimiento (ej. 258→ABR · 193→JUL · 0→ABR).
+- **Fix de alineación:** la campaña EN CURSO (vto futuro) se ancla al vencimiento por ruedas hábiles
+  faltantes (`ruedasHasta`), no al último dato → queda a la misma altura que las históricas.
+- Ratio maíz/soja y modo crudo ya andaban de Fase 1.
+
+**Fase 2 — resto (pendiente):** base pizarra−futuro con estimativos marcados · A3 − CBOT con ffill
+de feriados · modo multi-posición (bases calculadas, cualquier serie como base) · presets
+definitivos (post P27) · tabla alternativa + CSV · guard "parcial" por campaña.
 **Entregable:** los 3 casos canónicos + alquiler operables en preview, cada uno validado con un
 número del Excel o de la planilla diaria.
 
@@ -358,7 +367,7 @@ Las 30 preguntas del plan se respondieron casi todas en el chat del 11/07 — **
 | P9 | **ELIMINADA** — el alquiler en qq no le interesa ("era solo un ejemplo") → el gráfico #8 sale del catálogo v1 y el preset también |
 | P10 | A3 vs CBOT: default **diferencia USD/tn, A3 − CBOT** (positivo = Rosario sobre Chicago); el ratio queda a un click |
 | P11 | Base = **pizarra − futuro** (negativa = físico barato contra el término). Sin versión % → el v2 #14 queda descartado por ahora |
-| P13 | Banda histórica: **sí, min–máx + mediana**. ABIERTO: el ejemplo numérico (regla del proyecto) y qué campañas la componen |
+| P13 | Banda histórica: **sí, min–máx + mediana** ("es la realidad"), **todas las campañas** (11/07). ✅ IMPLEMENTADA |
 | P14 | Percentil "hoy vs historia": contra la **misma altura de campaña** (el mismo días-al-vto de las campañas previas) |
 | P15 | Media móvil (v2): **sobre el spread ya calculado, 5 ruedas** |
 | P16 | TNA **solo entre posiciones del mismo grano** (carry real) |
@@ -385,16 +394,15 @@ Las 30 preguntas del plan se respondieron casi todas en el chat del 11/07 — **
 | P29 | **Página propia `/graficos`** con enlace en el menú: OK |
 | P30 | Multi-posición: **bases calculadas por default** (toggle a series crudas); la base puede ser **cualquier serie** (pizarra o un futuro, ej. MAI JUL vs SEP+DIC) |
 
-### Quedan ABIERTAS (4)
+### Quedan ABIERTAS (2)
 
 1. **P27 — presets de fábrica.** La lista propuesta no lo convenció ("quiero cambiar la lista") →
-   falta que pase los pares/vistas que mira todos los días. Mientras tanto, la Fase 1 usa como
-   presets provisorios el caso (a) y el par de validación del Excel.
-2. **P13 (parte) — ejemplo numérico de la banda** min–máx + mediana y qué campañas la componen
-   (¿todas 2020→ o excluye alguna atípica, ej. 2020 COVID?). Gate de Fase 2; no bloquea Fase 1.
-3. **P12 — relaciones %** ("180% pizarra maíz" / "57% soja julio"): necesita un ejemplo real suyo
-   (v2, no urgente).
-4. **P17 — empalme de la serie continua front-month** (v2): ejemplo numérico del cambio de mes.
+   falta que pase los pares/vistas que mira todos los días (dijo que después los cambia). Mientras
+   tanto quedan los provisorios: caso (a) y el par de validación del Excel.
+2. **P12 — relaciones %** ("180% pizarra maíz" / "57% soja julio"): necesita un ejemplo real suyo
+   (v2, no urgente). (P17 — empalme front-month — queda para cuando se haga esa serie, v2.)
+
+**Cerradas por Lautaro el 11/07:** P13 (banda min–máx + mediana, todas las campañas → implementada).
 
 ### Mejora anotada fuera del panel (derivada de P19)
 

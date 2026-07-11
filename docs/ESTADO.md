@@ -42,6 +42,11 @@ panel de gráficos de spreads ([`PLAN_GRAFICOS_SPREADS.md`](PLAN_GRAFICOS_SPREAD
   chips de campañas, toggle eje/métrica/ventana, presets caso (a) + par del Excel, estado en URL
   compartible. **Reproduce el Excel exacto** (spread 2021-04-05 = 125,6; ratio U7 = 0,5796),
   verificado con Playwright en claro/oscuro. `lint`+`tsc`+`build` verdes.
+- **✅ Fase 2 PARCIAL (tras ver la preview, Lautaro pidió más):** banda histórica min–máx + mediana
+  (P13, toggle Vista) · percentil hoy vs historia a la misma altura (P14) · **mes de referencia en
+  el eje días-al-vto** (pedido nuevo) · fix de alineación de la campaña en curso (se ancla al vto
+  por ruedas hábiles faltantes). Falta de Fase 2: base pizarra−futuro, A3↔CBOT, presets definitivos
+  (P27) — ver `PLAN_GRAFICOS_SPREADS.md`.
 - **Lautaro respondió 26 de las 30 preguntas el 11/07** (vía chips en el chat; todas las
   decisiones registradas en la sección 9 del plan). Highlights: eje días-al-vto por índice de
   rueda · spread = lejana−cercana (empate: caro−barato) · ratio default maíz/soja · A3−CBOT en
