@@ -31,9 +31,11 @@ export async function NoticiasPanel() {
       )}
       <div className="panel-note">
         <span>
-          <span className="k">Fuentes</span> Ingesta horaria (cron → Supabase) de BCR resumen de diarios, InfoCampo,
-          Bichos de Campo, Ámbito, La Nación Campo, Clarín Rural, Agrositio, dataPORTUARIA, TodoAgro, Cebada
-          Cervecera, Agrofy News, G1 Agronegócios y World-Grain. Titulares con link a cada medio (no se republica
+          <span className="k">Fuentes</span> Ingesta horaria (cron → Supabase) de medios del agro (InfoCampo, Bichos
+          de Campo, Ámbito, La Nación Campo, Clarín Rural, Agrositio, dataPORTUARIA, TodoAgro, Cebada Cervecera,
+          Agrofy News, G1 Brasil, World-Grain) + resumen de diarios de BCR, y —vía Google News— las bolsas
+          (Rosario, Buenos Aires, Córdoba), internacional (Reuters, Bloomberg, AgWeb, CME…), informes (USDA, CONAB,
+          CFTC) e instituciones (CIARA, CREA, Aapresid, Coninagro). Titulares con link a cada medio (no se republica
           contenido). Categorías propias por reglas editables (<code>src/lib/noticias-reglas.json</code>); directorio
           completo en <code>docs/FUENTES.md</code>.
         </span>

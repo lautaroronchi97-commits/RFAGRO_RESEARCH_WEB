@@ -45,6 +45,26 @@
   stamp REAL, 6 categorías, filtro operativo, sin titulares de servicio. Verificado el filtro de ruido
   con casos (6 servicio + 5 notas reales, todos correctos).
 
+## Ampliación de fuentes (tras #13) — bolsas, internacional, informes e instituciones vía Google News
+- Pedido de Lautaro: sumar noticias de las **bolsas** (Rosario/BsAs/Córdoba) referidas a sus informes,
+  **Reuters/Bloomberg**, y **CIARA / Grupo CREA / Aapresid / Coninagro**.
+- **Ninguna tiene feed directo usable** (BCR sin RSS; Bolsa de Cereales BsAs tras Cloudflare; Córdoba y las
+  4 instituciones sin feed; Reuters bloquea bots + discontinuó RSS; Bloomberg paywall). Verificado con
+  requests reales.
+- Solución: **nuevo tipo de fuente `gnews`** en `scripts/ingest-noticias.mjs` que consulta **Google News
+  RSS** (titular + `<source>` con el medio real + link a la nota; link-out puro). 9 consultas nuevas:
+  bolsas ×3, internacional (inglés, trae Reuters/Bloomberg/AgWeb/Pro Farmer/CME), informes (USDA/CONAB/
+  CFTC), e instituciones ×4. Categorización propia + filtro de ruido iguales; `def` por fuente.
+- **Dedup por título** (además de la de link): la misma nota llega directo (link del medio) y por Google
+  (link redirect) → se colapsa quedándose con el registro directo/con fecha. Nuevo `claveTitulo` exportado
+  de `noticias-clasificar.ts`, aplicado en el cron y en `agrupar` (web).
+- Salvedad de Reuters/Bloomberg: el link va vía Google y al hacer clic puede aparecer SU paywall (solo
+  linkeamos, no republicamos). El resto de FUENTES.md que no son medios (USDA/CONAB/pizarra/NABSA…) siguen
+  siendo insumo del futuro **Calendario de informes**, no del feed.
+- Verificado: dry-run 22/24 fuentes OK, 305 titulares únicos, 6 categorías; render sin duplicados de
+  link/título ni warnings; lint + tsc + build ✅. La 1ª carga con las fuentes nuevas se dispara corriendo
+  el cron a mano tras el merge.
+
 ## Ajuste posterior (mismo día, tras el merge del PR #12) — ventana de "últimos 3 días hábiles"
 - Pedido de Lautaro: no mostrar noticias más viejas que los **últimos 3 días hábiles** (antes la ventana
   era 72 h fijas). Cambio SOLO de display en `src/lib/noticias.ts`: nuevo `corteHabilesMs(3)` (usa

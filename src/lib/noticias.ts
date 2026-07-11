@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import type { Meta } from "./market";
 import { sbSelect } from "./supabase";
-import { CATEGORIA_FALLBACK, ORDEN_PANEL, clasificar, esRuido, nombreCategoria } from "./noticias-clasificar";
+import { CATEGORIA_FALLBACK, ORDEN_PANEL, claveTitulo, clasificar, esRuido, nombreCategoria } from "./noticias-clasificar";
 import { hoyCordobaISO } from "./dates";
 
 /**
@@ -66,10 +66,20 @@ type ItemCat = NoticiaItem & { categoria: string };
 function agrupar(items: ItemCat[]): NoticiaCategoria[] {
   const porCat = new Map<string, NoticiaItem[]>();
   const vistos = new Set<string>();
+  // dedup por título: la misma nota puede llegar directo (link del medio) y vía Google News (link
+  // redirect). Se queda el registro directo (no Google) y con fecha. score: directo=2 · fecha=+1.
+  const esGoogle = (l: string) => /news\.google\./i.test(l);
+  const score = (x: ItemCat) => (esGoogle(x.link) ? 0 : 2) + (x.fechaMs ? 1 : 0);
+  const porTitulo = new Map<string, ItemCat>();
   for (const it of items) {
     if (esRuido(it.titulo)) continue; // descarta páginas de servicio (dólar por provincia, clima puntual…)
-    if (vistos.has(it.link)) continue; // dedup por link: evita choque de keys y notas duplicadas (BCR + RSS)
+    if (vistos.has(it.link)) continue; // dedup exacta por link (evita choque de keys de React)
     vistos.add(it.link);
+    const k = claveTitulo(it.titulo);
+    const prev = porTitulo.get(k);
+    if (!prev || score(it) > score(prev)) porTitulo.set(k, it);
+  }
+  for (const it of porTitulo.values()) {
     const id = ORDEN_PANEL.includes(it.categoria) ? it.categoria : CATEGORIA_FALLBACK;
     const lista = porCat.get(id) ?? [];
     lista.push({ titulo: it.titulo, fuente: it.fuente, link: it.link, fechaMs: it.fechaMs });
