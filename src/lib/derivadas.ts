@@ -211,3 +211,14 @@ export function percentil(v: number, muestra: number[]): number {
 
 /** Punto de banda histórica: rango min–máx + mediana a una altura x del eje. */
 export type BandaPunto = { x: number; min: number; max: number; med: number };
+
+/**
+ * Posición en el eje calendario ene→dic de una fecha ISO: (mes−1)×31 + día.
+ * Da un x monótono 0..~372 que, con `etiquetaCalendario(x, 1)`, rotula por mes.
+ * Se usa en el modo Período (eje calendario real del año).
+ */
+export function posCalendario(iso: string): number {
+  const mes = Number(iso.slice(5, 7));
+  const dia = Number(iso.slice(8, 10));
+  return (mes - 1) * 31 + dia;
+}

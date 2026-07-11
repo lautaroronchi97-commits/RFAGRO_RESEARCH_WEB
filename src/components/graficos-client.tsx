@@ -8,6 +8,7 @@ import {
 } from "@/lib/derivadas";
 import { nfmt } from "@/lib/format";
 import { SpreadChart, type CampLine } from "./spread-chart";
+import { PeriodoPanel } from "./periodo-panel";
 
 /**
  * Panel de gráficos de spreads entre cosechas (/graficos). Motor genérico:
@@ -240,6 +241,7 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
   const [series, setSeries] = React.useState<Record<string, SeriePuntos>>({});
   const [cargando, setCargando] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [modoComp, setModoComp] = React.useState<"campanias" | "periodo">("campanias");
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   React.useEffect(() => setMounted(true), []);
@@ -276,6 +278,7 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
 
   // Resolver campañas seleccionadas → serieIds + rango, y traer /api/series.
   React.useEffect(() => {
+    if (modoComp === "periodo") return; // en modo Período no se traen campañas
     const ventanaDias = Math.round(ventanaMeses * 30.4375);
     const off = offsetB(a, b);
     const campanias = effectiveYears
@@ -318,7 +321,7 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
       .catch((e: unknown) => { if (!cancel) setError(e instanceof Error ? e.message : "error"); })
       .finally(() => { if (!cancel) setCargando(false); });
     return () => { cancel = true; };
-  }, [idx, a, b, effectiveYears, ventanaMeses]);
+  }, [idx, a, b, effectiveYears, ventanaMeses, modoComp]);
 
   const colors = useCampColors(aniosDisponibles);
   const vigenteYear = effectiveYears.length ? Math.max(...effectiveYears) : null;
@@ -433,8 +436,36 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
   // para evitar mismatch de hidratación; recién ahí se pinta el panel real.
   if (!mounted) return <div className="gx-wrap" aria-busy="true" />;
 
+  const modoToggle = (
+    <div className="gx-modo">
+      <div className="gx-seg" role="group" aria-label="Modo de comparación">
+        <button type="button" className={modoComp === "campanias" ? "on" : ""} onClick={() => setModoComp("campanias")}>
+          Campañas
+        </button>
+        <button type="button" className={modoComp === "periodo" ? "on" : ""} onClick={() => setModoComp("periodo")}>
+          Período
+        </button>
+      </div>
+      <span className="gx-modo-hint">
+        {modoComp === "campanias"
+          ? "Una relación de 2 patas, superponiendo campañas por vencimiento."
+          : "Una base vs varias posiciones sobre un año, en eje calendario."}
+      </span>
+    </div>
+  );
+
+  if (modoComp === "periodo") {
+    return (
+      <div className="gx-wrap">
+        {modoToggle}
+        <PeriodoPanel catalogo={catalogo} anioActual={new Date().getFullYear()} />
+      </div>
+    );
+  }
+
   return (
     <div className="gx-wrap">
+      {modoToggle}
       <div className="gx-preset-groups">
         {GRUPOS_PRESET.map((g) => (
           <div className="gx-preset-row" key={g.grano}>

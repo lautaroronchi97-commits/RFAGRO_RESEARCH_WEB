@@ -55,6 +55,20 @@
   - Hallazgo: la posición homónima NO siempre es la que mejor correlaciona; los presets de Chicago
     quedan pendientes de que Lautaro confirme el mapeo (por eso NO se hardcodearon).
 
+## Hecho — Modo Período (base vs varias posiciones)
+- **Toggle Campañas | Período** en `/graficos`. Modo Período = `periodo-panel.tsx`: una **base**
+  (pizarra grano o una posición A3) contra **todas las posiciones** de un grano que cotizan en un
+  año, en **eje calendario real**. Cada línea = spread base − posición; corre hasta donde esa
+  posición cotiza (su vto). Muestra las DOS cosechas que operan en el año (decisión de Lautaro:
+  "todas las que cotizan") + chips para apagar posiciones. Presets de pizarra (maíz ABR/JUL/DIC,
+  soja MAY/JUL/NOV, trigo DIC/ENE/MAR/JUL).
+- Reusa `SpreadChart` en modo `eje="cal"` con `posCalendario(fecha)` = (mes−1)×31+día y
+  `anchorMes=1` → eje ene→dic. El fetch de campañas se gatea cuando el modo es Período.
+- Verificado (Playwright): pizarra maíz vs 2026 muestra ENE26…DIC26 + ABR27/JUL27 (nueva cosecha),
+  eje ENE→JUL (año en curso), sin errores. `lint`+`tsc`+`build` verdes.
+- **Pendiente Período (v2):** estado del modo Período en la URL (hoy no se persiste), base =
+  posición además de pizarra ya anda, percentil/banda no aplican a este modo.
+
 ## Hecho — PLAN (fase previa de la sesión)
 
 ## Hecho

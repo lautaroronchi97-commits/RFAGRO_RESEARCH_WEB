@@ -610,3 +610,8 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
 .gx-preset-row { display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
 .gx-preset-glabel { font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.06em;
   color:var(--brand-deep); font-weight:800; min-width:44px; }
+
+/* Toggle de modo de comparación (Campañas | Período) */
+.gx-modo { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+.gx-modo-hint { font-size:var(--fs-2xs); color:var(--ink-3); }
+.gx-modo .gx-seg button { padding:6px 14px; font-size:var(--fs-sm); }
