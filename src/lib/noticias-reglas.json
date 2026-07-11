@@ -1,15 +1,37 @@
 {
-  "_doc": "Reglas de categorización PROPIA del portal de noticias RF AGRO (no se copia la de BCR). La PRIMERA categoría cuya lista matchea el titular gana → el orden va de la más específica a la más general. Palabras: sin distinción de mayúsculas ni acentos; una palabra suelta matchea por palabra entera, una frase por secuencia de palabras. Hay términos en español, portugués (G1) e inglés (World-Grain). Si nada matchea se usa la categoría default de la fuente (scripts/ingest-noticias.mjs). Editar acá ajusta al cron y a la web juntos.",
+  "_doc": "Reglas de categorización y RELEVANCIA del portal RF AGRO (no se copia la de BCR). Objetivo: solo info que sirva para decidir (mercado de granos, macro dura, clima productivo, logística, demanda internacional, informes). CLASIFICACIÓN: la PRIMERA categoría del array `categorias` cuya lista matchee gana → el array va de la más específica a la más general (informes → internacional → clima → logística → economía → empresas → mercados). Palabras sin mayúsculas ni acentos; palabra suelta = palabra entera, frase = secuencia. Español + inglés (World-Grain/AgWeb) + portugués (G1). `ordenClasificacion` no se usa (manda el orden del array); `ordenPanel` es el orden de los CHIPS que ve el usuario. RELEVANCIA: `exclusion` (ganadería/regionales: se descartan salvo co-ocurrencia con `granos`), `granos` (señal de grano), `ruido` (páginas de servicio). Fuentes marcadas `estricto` en el cron exigen que alguna palabra matchee (si no, descarte). `siglas` normaliza abreviaturas; `fuenteTier` da prioridad editorial (0=agencias/bolsas, 1=nacionales/especializados, 2=resto). Editar acá ajusta cron y web juntos (el cron tiene un espejo de la LÓGICA).",
   "categorias": [
+    {
+      "id": "informes",
+      "nombre": "Informes",
+      "palabras": [
+        "wasde", "export sales", "crop progress", "grain stocks", "prospective plantings", "acreage",
+        "commitments of traders", "cftc", "nopa", "conab", "panorama agricola", "informe gea", "gea",
+        "informe semanal", "estimacion mensual", "usda report", "crop production", "supply and demand"
+      ]
+    },
+    {
+      "id": "internacional",
+      "nombre": "Internacional",
+      "palabras": [
+        "usda", "chicago", "cbot", "cme", "matif", "mar negro", "rusia", "ucrania", "china", "chino", "chinos",
+        "estados unidos", "eeuu", "trump", "brasil", "brazil", "brasileño", "brasileña", "brasileira",
+        "europa", "europeo", "union europea", "parlamento europeo", "francia", "iran", "aranceles", "arancel",
+        "safra", "safrinha", "milho", "india", "indonesia", "malasia", "egipto", "argelia", "vietnam",
+        "paraguay", "uruguay", "bolivia", "black sea", "russia", "ukraine", "soybean", "soybeans",
+        "wheat", "corn", "grains", "palm oil", "canola", "tariff", "tariffs"
+      ]
+    },
     {
       "id": "clima",
       "nombre": "Clima",
       "palabras": [
-        "lluvia", "lluvias", "sequía", "seca", "helada", "heladas", "granizo", "tormenta", "tormentas",
+        "lluvia", "lluvias", "sequía", "seca", "seco", "helada", "heladas", "granizo", "tormenta", "tormentas",
         "clima", "climática", "climático", "meteorológico", "meteorológica", "pronóstico", "pronósticos",
-        "el niño", "la niña", "súper niño", "niño fuerte", "enso", "precipitaciones", "hídrico", "hídrica", "hídricas", "humedad",
-        "temperaturas", "ola de calor", "ola polar", "agua útil", "reservas de agua", "inundación", "inundaciones",
-        "drought", "rainfall", "weather", "frost", "heat wave", "monsoon",
+        "el niño", "la niña", "súper niño", "niño fuerte", "enso", "precipitaciones", "hídrico", "hídrica",
+        "hídricas", "humedad", "temperaturas", "ola de calor", "ola polar", "agua útil", "reservas de agua",
+        "inundación", "inundaciones", "anegamiento", "anegamientos",
+        "drought", "rainfall", "weather", "frost", "heat wave", "heat stress", "storms", "monsoon",
         "chuva", "chuvas", "estiagem", "geada", "clima seco"
       ]
     },
@@ -19,42 +41,28 @@
       "palabras": [
         "puerto", "puertos", "portuario", "portuaria", "portuarias", "portuarios", "buque", "buques",
         "embarque", "embarques", "line-up", "lineup", "hidrovía", "dragado", "calado", "camiones",
-        "ferrocarril", "flete", "fletes", "logística", "transporte de cargas", "estibadores", "paro", "amarre", "bodega", "bodegas",
-        "vessel", "vessels", "shipping", "freight", "port", "ports",
+        "ferrocarril", "flete", "fletes", "logística", "transporte de cargas", "estibadores", "amarre",
         "navio", "navios", "porto", "portos"
-      ]
-    },
-    {
-      "id": "internacional",
-      "nombre": "Internacional",
-      "palabras": [
-        "usda", "wasde", "chicago", "cbot", "cme", "export sales", "crop progress", "conab", "matif",
-        "mar negro", "rusia", "ucrania", "china", "estados unidos", "eeuu", "trump", "brasil", "brazil",
-        "europa", "unión europea", "aranceles", "arancel", "safra", "safrinha", "milho",
-        "india", "indonesia", "malasia", "egipto", "argelia", "vietnam", "paraguay", "uruguay", "bolivia",
-        "black sea", "russia", "ukraine", "soybean", "soybeans", "wheat", "corn", "grain", "grains",
-        "palm oil", "canola", "tariff", "tariffs"
       ]
     },
     {
       "id": "economia",
       "nombre": "Economía y política",
       "palabras": [
-        "dólar", "blue", "cambiario", "cambiaria", "tipo de cambio", "retenciones", "derechos de exportación",
-        "bcra", "banco central", "inflación", "ipc", "tasa de interés", "tasas", "milei", "caputo",
-        "gobierno", "congreso", "senado", "diputados", "ley", "decreto", "impuesto", "impuestos", "fiscal",
-        "cepo", "brecha", "fmi", "bonos", "lecap", "lecaps", "riesgo país", "elecciones", "electoral",
-        "subsidios", "iva", "afip", "presupuesto", "deuda", "política", "casa rosada"
+        "dólar", "cambiario", "cambiaria", "tipo de cambio", "retenciones", "derechos de exportación",
+        "bcra", "banco central", "inflación", "ipc", "tasa de interés", "cepo", "brecha cambiaria",
+        "fmi", "bonos", "lecap", "lecaps", "riesgo país", "deuda", "reservas", "liquidación de divisas",
+        "divisas", "liquidación", "liquidó", "liquidaron", "ingreso de divisas", "ciara",
+        "devaluación", "superávit", "déficit fiscal", "dólar soja", "dólar exportador"
       ]
     },
     {
       "id": "empresas",
       "nombre": "Empresas y negocios",
       "palabras": [
-        "empresa", "empresas", "compañía", "inversión", "inversiones", "invierten", "adquisición", "fusión",
-        "planta", "fábrica", "bayer", "syngenta", "cargill", "bunge", "dreyfus", "cofco", "viterra",
-        "aceitera", "molinos", "vicentin", "startup", "agtech", "lanzamiento", "quiebra",
-        "concurso de acreedores", "negocios"
+        "adquisición", "fusión", "planta", "aceitera", "molinos", "bayer", "syngenta", "cargill", "bunge",
+        "dreyfus", "cofco", "viterra", "amaggi", "vicentin", "quiebra", "concurso de acreedores",
+        "crushing", "capacidad de molienda"
       ]
     },
     {
@@ -64,12 +72,34 @@
         "soja", "maíz", "trigo", "girasol", "cebada", "sorgo", "granos", "poroto", "oleaginosas", "cereales",
         "precio", "precios", "pizarra", "cotización", "cotizaciones", "futuros", "matba", "rofex",
         "mercado", "mercados", "siembra", "cosecha", "rinde", "rindes", "campaña", "hectáreas", "toneladas",
-        "exportación", "exportaciones", "molienda", "etanol", "biodiésel", "biocombustibles", "fas", "fob",
-        "hacienda", "ganadería", "novillo", "feedlot", "leche", "tambo", "carne"
+        "exportación", "exportaciones", "agroexportación", "agroexportador", "agroexportadora",
+        "molienda", "etanol", "biodiésel", "biocombustibles", "fas teórico", "precio fas", "fob"
       ]
     }
   ],
-  "_ruidoDoc": "Titulares de SERVICIO/widget que ensucian el portal (cotización del dólar por provincia, pizarra diaria, clima puntual, ‘minuto a minuto’). Se descartan en la ingesta y en la web. Son regex (flag i) probadas contra el título crudo. Editar con cuidado: deben matchear páginas de servicio, no noticias reales.",
+  "_relevanciaDoc": "exclusion: si el título matchea alguna y NO trae señal de `granos`, se DESCARTA (ganadería/carne/leche y economías regionales quedan fuera del portal, decisión de Lautaro). granos: señal de grano para la co-ocurrencia y para el gate de relevancia.",
+  "exclusion": [
+    "ganadería", "ganadero", "ganaderos", "hacienda", "novillo", "novillos", "vaca", "vacas", "vacuno",
+    "bovino", "bovina", "feedlot", "tambo", "tambos", "leche", "lácteo", "lácteos", "láctea", "frigorífico",
+    "frigoríficos", "faena", "carne", "cerdo", "porcino", "avícola", "pollo", "yerba", "yerbatera", "vino",
+    "vinos", "vitivinícola", "bodega", "olivo", "aceituna", "miel", "apícola", "apicultura", "algodón",
+    "tabaco", "azúcar", "caña de azúcar", "aserradero", "forestal"
+  ],
+  "granos": [
+    "soja", "maíz", "maiz", "trigo", "girasol", "cebada", "sorgo", "granos", "grano", "poroto",
+    "oleaginosa", "oleaginosas", "cereal", "cereales", "soybean", "soybeans", "corn", "wheat", "milho",
+    "chicago", "cbot", "matba", "rofex", "pizarra", "molienda", "wasde", "conab", "harina de soja",
+    "aceite de soja", "biodiésel", "etanol"
+  ],
+  "_siglasDoc": "Pares [buscar, reemplazar] aplicados sobre el título ya normalizado (minúsculas, sin acentos, puntuación→espacio, con padding). Arregla abreviaturas que la limpieza parte (EE.UU.→'ee uu'→'eeuu').",
+  "siglas": [
+    [" ee uu ", " eeuu "],
+    [" e e u u ", " eeuu "],
+    [" u e ", " ue "],
+    [" u s a ", " usa "],
+    [" u s ", " usa "]
+  ],
+  "_ruidoDoc": "Titulares de SERVICIO/widget o interés-humano que ensucian el portal. Regex (flag i) probadas contra el título crudo. Se EXTIENDEN, no se reescriben.",
   "ruido": [
     "a cu[aá]nto (cotiza|cotizan|est[aá])",
     "minuto a minuto",
@@ -77,8 +107,18 @@
     "^(precio|precios) (del|de la|de los|de las|de) .+(hoy|rosario)",
     "(d[oó]lar|euro) .*\\bhoy\\b.*\\d{4}",
     "cotiza(n|ci[oó]n) .*(hoy|este) .*\\d{4}",
-    "^(d[oó]lar|euro) (blue|oficial|mep|ccl|mayorista|tarjeta|cripto)"
+    "^(d[oó]lar|euro) (blue|oficial|mep|ccl|mayorista|tarjeta|cripto)",
+    "plazo fijo.*(cu[aá]nto|paga|rinde|invertir|banco)",
+    "peaje|autopista|vacaciones|costa atl[aá]ntica",
+    "\\b(names?|appointed|promotes?|hires?|joins|dies|obituary|passes away|ceo|cfo)\\b",
+    "como (montar|hacer|plantar|cultivar) .*(casa|huerta|jard[ií]n|maceta)",
+    "horta em casa|mini.?horse|pets?|mascota"
   ],
-  "ordenPanel": ["mercados", "economia", "internacional", "clima", "logistica", "empresas"],
-  "fallback": "mercados"
+  "ordenPanel": ["mercados", "informes", "internacional", "economia", "clima", "logistica", "empresas"],
+  "fallback": "mercados",
+  "_tierDoc": "Prioridad editorial por fuente para elegir el representante de un cluster y para el ranking. 0=agencias/oficiales/bolsas · 1=nacionales serios y agro-especializados fuertes · 2=resto (provinciales, radios, agregadores). Match por substring sobre el nombre de fuente en minúsculas.",
+  "fuenteTier": {
+    "0": ["reuters", "bloomberg", "usda", " cme", "bcr.com", "bolsa de", "conab", "cftc", "world-grain", "world grain", "matba", "rofex", "a3 "],
+    "1": ["la nacion", "la nación", "ámbito", "ambito", "infobae", "clarin", "clarín", "infocampo", "bichos de campo", "agrofy", "agrolatam", "agrositio", "dtn", "agweb", "successful farming", "farm progress", "pro farmer", "cebada cervecera", "dataportuaria", "todoagro"]
+  }
 }

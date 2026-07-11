@@ -46,77 +46,98 @@ const gnES = (q) => GN_ES + encodeURIComponent(q);
 const gnEN = (q) => GN_EN + encodeURIComponent(q);
 
 /**
- * `def` = categoría si ninguna regla matchea el titular (p. ej. todo lo de
- * World-Grain/G1 es internacional aunque el título no nombre países).
+ * `def` = categoría si ninguna palabra matchea (solo para fuentes ESPECIALIZADAS confiables).
+ * `estricto: true` = fuente generalista/institucional: si NINGUNA palabra matchea (o está excluida por
+ * ganadería/regional o es ruido) → se DESCARTA, no cae en el default. Filtro de relevancia (Lautaro).
  */
 const FUENTES = [
   { id: "bcr", nombre: "BCR · Diarios", tipo: "bcr", url: BCR_URL, def: "mercados" },
   { id: "infocampo", nombre: "InfoCampo", tipo: "rss", url: "https://www.infocampo.com.ar/feed/", def: "mercados" },
   { id: "bichos", nombre: "Bichos de Campo", tipo: "rss", url: "https://bichosdecampo.com/feed/", def: "mercados" },
-  { id: "ambito", nombre: "Ámbito", tipo: "rss", url: "https://www.ambito.com/rss/economia.xml", def: "economia" },
-  { id: "lanacion", nombre: "La Nación Campo", tipo: "rss", url: "https://www.lanacion.com.ar/arc/outboundfeeds/rss/category/economia/campo/?outputType=xml", def: "mercados" },
-  { id: "clarin", nombre: "Clarín Rural", tipo: "rss", url: "https://www.clarin.com/rss/rural/", def: "mercados" },
+  { id: "ambito", nombre: "Ámbito", tipo: "rss", url: "https://www.ambito.com/rss/economia.xml", def: "economia", estricto: true },
+  { id: "lanacion", nombre: "La Nación Campo", tipo: "rss", url: "https://www.lanacion.com.ar/arc/outboundfeeds/rss/category/economia/campo/?outputType=xml", def: "mercados", estricto: true },
+  { id: "clarin", nombre: "Clarín Rural", tipo: "rss", url: "https://www.clarin.com/rss/rural/", def: "mercados", estricto: true },
   { id: "agrositio-granos", nombre: "Agrositio", tipo: "rss", url: "https://www.agrositio.com.ar/rss/rss.php?area=granos", def: "mercados" },
   { id: "agrositio-economia", nombre: "Agrositio", tipo: "rss", url: "https://www.agrositio.com.ar/rss/rss.php?area=economia", def: "economia" },
   { id: "agrositio-clima", nombre: "Agrositio", tipo: "rss", url: "https://www.agrositio.com.ar/rss/rss.php?area=clima", def: "clima" },
   { id: "dataportuaria", nombre: "dataPORTUARIA", tipo: "rss", url: "https://dataportuaria.com.ar/rss", def: "logistica" },
   { id: "todoagro", nombre: "TodoAgro", tipo: "rss", url: "https://www.todoagro.com.ar/feed/", def: "mercados" },
   { id: "cebada", nombre: "Cebada Cervecera", tipo: "rss", url: "https://www.cebadacervecera.com.ar/feed/", def: "mercados" },
-  { id: "g1", nombre: "G1 Agronegócios", tipo: "rss", url: "https://g1.globo.com/rss/g1/economia/agronegocios/", def: "internacional" },
-  { id: "worldgrain", nombre: "World-Grain", tipo: "rss", url: "https://www.world-grain.com/rss/articles", def: "internacional" },
+  { id: "g1", nombre: "G1 Agronegócios", tipo: "rss", url: "https://g1.globo.com/rss/g1/economia/agronegocios/", def: "internacional", estricto: true },
+  { id: "worldgrain", nombre: "World-Grain", tipo: "rss", url: "https://www.world-grain.com/rss/articles", def: "internacional", estricto: true },
   { id: "agrofy", nombre: "Agrofy News", tipo: "agrofy", url: "https://news.agrofy.com.ar/", def: "mercados" },
   // --- Google News (link-out) ---
   // Bolsas argentinas (sus informes: GEA, PAS, estimaciones, pizarra) — no tienen feed propio usable.
-  { id: "gn-rosario", nombre: "Bolsa de Rosario", tipo: "gnews", def: "mercados",
+  // Estrictas: solo pasan sus notas de mercado/informe (no la vida institucional).
+  { id: "gn-rosario", nombre: "Bolsa de Rosario", tipo: "gnews", def: "mercados", estricto: true,
     url: gnES('"Bolsa de Comercio de Rosario" (soja OR maíz OR trigo OR granos OR cosecha OR GEA OR estimación OR pizarra OR mercado OR exportación)') },
-  { id: "gn-bcba", nombre: "Bolsa de Cereales (BsAs)", tipo: "gnews", def: "mercados",
+  { id: "gn-bcba", nombre: "Bolsa de Cereales (BsAs)", tipo: "gnews", def: "mercados", estricto: true,
     url: gnES('"Bolsa de Cereales de Buenos Aires" OR "Panorama Agrícola Semanal"') },
-  { id: "gn-cordoba", nombre: "Bolsa de Cereales de Córdoba", tipo: "gnews", def: "mercados",
+  { id: "gn-cordoba", nombre: "Bolsa de Cereales de Córdoba", tipo: "gnews", def: "mercados", estricto: true,
     url: gnES('"Bolsa de Cereales de Córdoba"') },
   // Internacional (surtido de Reuters/Bloomberg/AgWeb/Pro Farmer/CME) + informes oficiales.
   { id: "gn-intl", nombre: "Internacional", tipo: "gnews", def: "internacional",
     url: gnEN('(soybean OR corn OR wheat OR grains) (market OR export OR harvest OR prices OR crop)') },
-  { id: "gn-informes", nombre: "Informes USDA/CONAB", tipo: "gnews", def: "internacional",
+  { id: "gn-informes", nombre: "Informes USDA/CONAB", tipo: "gnews", def: "informes",
     url: gnEN('WASDE OR "USDA crop" OR "CONAB safra" OR "CFTC commitments" OR "export sales" grain') },
-  // Instituciones de la cadena (sin feed propio).
-  { id: "gn-ciara", nombre: "CIARA-CEC", tipo: "gnews", def: "economia",
+  // Mercado local (hueco de mesa: A3/Matba tenía 0 titulares).
+  { id: "gn-matba", nombre: "Matba/A3", tipo: "gnews", def: "mercados",
+    url: gnES('"Matba Rofex" OR "A3 Mercados" OR "mercado a término" (soja OR maíz OR trigo OR posiciones)') },
+  // Instituciones de la cadena (sin feed propio) — estrictas: solo lo que toca mercado/informe.
+  { id: "gn-ciara", nombre: "CIARA-CEC", tipo: "gnews", def: "economia", estricto: true,
     url: gnES('CIARA OR "liquidación de divisas" agroexportación') },
-  { id: "gn-crea", nombre: "Grupo CREA", tipo: "gnews", def: "mercados",
+  { id: "gn-crea", nombre: "Grupo CREA", tipo: "gnews", def: "mercados", estricto: true,
     url: gnES('"grupo CREA" OR "movimiento CREA" OR AACREA') },
-  { id: "gn-aapresid", nombre: "Aapresid", tipo: "gnews", def: "mercados", url: gnES('Aapresid') },
-  { id: "gn-coninagro", nombre: "Coninagro", tipo: "gnews", def: "economia", url: gnES('Coninagro') },
+  { id: "gn-aapresid", nombre: "Aapresid", tipo: "gnews", def: "mercados", estricto: true, url: gnES('Aapresid') },
+  { id: "gn-coninagro", nombre: "Coninagro", tipo: "gnews", def: "economia", estricto: true, url: gnES('Coninagro') },
 ];
 
 /* ---------------- clasificador (espejo de src/lib/noticias-clasificar.ts) ---------------- */
 
 function normalizar(s) {
-  const plano = s
+  let plano = ` ${s
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-  return ` ${plano} `;
+    .trim()} `;
+  for (const [buscar, reemplazo] of REGLAS.siglas) plano = plano.split(buscar).join(reemplazo);
+  return plano;
 }
 
-const COMPILADAS = REGLAS.categorias.map((c) => ({
-  id: c.id,
-  palabras: c.palabras.map((p) => normalizar(p)),
-}));
+const COMPILADAS = REGLAS.categorias.map((c) => ({ id: c.id, palabras: c.palabras.map(normalizar) }));
+const EXCLUSION = REGLAS.exclusion.map(normalizar);
+const GRANOS = REGLAS.granos.map(normalizar);
+const RUIDO = REGLAS.ruido.map((r) => new RegExp(r, "i"));
 
-function clasificar(titulo, categoriaDefault) {
+/** Categoría por primera coincidencia, o null si ninguna palabra matchea. */
+function clasificarStrict(titulo) {
   const t = normalizar(titulo);
   for (const cat of COMPILADAS) {
     if (cat.palabras.some((p) => t.includes(p))) return cat.id;
   }
-  return categoriaDefault ?? REGLAS.fallback;
+  return null;
 }
 
-const RUIDO = REGLAS.ruido.map((r) => new RegExp(r, "i"));
+function clasificar(titulo, categoriaDefault) {
+  return clasificarStrict(titulo) ?? categoriaDefault ?? REGLAS.fallback;
+}
 
-/** Descarta páginas de servicio/widget (cotización del dólar por provincia, clima puntual, pizarra diaria). */
+/** Descarta páginas de servicio/widget/interés-humano. */
 function esRuido(titulo) {
   return RUIDO.some((re) => re.test(titulo));
+}
+
+/** Ganadería / economía regional: se excluye salvo co-ocurrencia con granos. */
+function esExcluido(titulo) {
+  const t = normalizar(titulo);
+  return EXCLUSION.some((e) => t.includes(e)) && !GRANOS.some((g) => t.includes(g));
+}
+
+/** ¿Relevante para decidir? matchea alguna categoría y no es ruido ni excluida. */
+function esRelevante(titulo) {
+  if (esRuido(titulo) || esExcluido(titulo)) return false;
+  return clasificarStrict(titulo) !== null;
 }
 
 /* ---------------- parsers (espejo de la lectura en vivo de src/lib/noticias.ts) ---------------- */
@@ -248,7 +269,9 @@ async function leerFuente(f) {
 
   const limite = Date.now() - MAX_EDAD_DIAS * 86400000;
   return items
-    .filter((it) => !esRuido(it.titulo)) // descarta páginas de servicio/widget
+    .filter((it) => !esRuido(it.titulo)) // descarta páginas de servicio/widget/interés-humano
+    .filter((it) => !esExcluido(it.titulo)) // ganadería/regionales fuera (salvo que hable de granos)
+    .filter((it) => !f.estricto || esRelevante(it.titulo)) // fuentes generalistas: exigen señal temática
     .filter((it) => !it.fecha_pub || new Date(it.fecha_pub).getTime() >= limite)
     .map((it) => ({
       link: it.link.slice(0, 600),
