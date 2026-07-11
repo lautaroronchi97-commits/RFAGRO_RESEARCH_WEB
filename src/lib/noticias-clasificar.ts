@@ -42,6 +42,11 @@ export function esRuido(titulo: string): boolean {
   return RUIDO.some((re) => re.test(titulo));
 }
 
+/** Clave normalizada de un título, para deduplicar la misma nota que llega por más de una fuente. */
+export function claveTitulo(titulo: string): string {
+  return normalizar(titulo).trim();
+}
+
 /** Primera categoría (en el orden del JSON) con alguna palabra en el titular; si no, el default. */
 export function clasificar(titulo: string, categoriaDefault?: string): string {
   const t = normalizar(titulo);

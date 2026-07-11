@@ -37,6 +37,14 @@ const MAX_EDAD_DIAS = 14; // ignora ítems viejos que algunos feeds arrastran
 const BCR_URL =
   "https://www.bcr.com.ar/es/mercados/investigacion-y-desarrollo/resumen-de-noticias/resumen-de-diarios";
 
+// Google News RSS: devuelve titular + <source> (el medio real) + link a la nota. Se usa para fuentes
+// sin feed propio usable (bolsas AR tras Cloudflare / sin RSS, Reuters/Bloomberg que bloquean bots,
+// informes USDA/CONAB, instituciones CIARA/CREA/Aapresid/Coninagro). Es link-out: sólo titular + link.
+const GN_ES = "https://news.google.com/rss/search?hl=es-419&gl=AR&ceid=AR:es-419&q=";
+const GN_EN = "https://news.google.com/rss/search?hl=en-US&gl=US&ceid=US:en&q=";
+const gnES = (q) => GN_ES + encodeURIComponent(q);
+const gnEN = (q) => GN_EN + encodeURIComponent(q);
+
 /**
  * `def` = categoría si ninguna regla matchea el titular (p. ej. todo lo de
  * World-Grain/G1 es internacional aunque el título no nombre países).
@@ -57,6 +65,26 @@ const FUENTES = [
   { id: "g1", nombre: "G1 Agronegócios", tipo: "rss", url: "https://g1.globo.com/rss/g1/economia/agronegocios/", def: "internacional" },
   { id: "worldgrain", nombre: "World-Grain", tipo: "rss", url: "https://www.world-grain.com/rss/articles", def: "internacional" },
   { id: "agrofy", nombre: "Agrofy News", tipo: "agrofy", url: "https://news.agrofy.com.ar/", def: "mercados" },
+  // --- Google News (link-out) ---
+  // Bolsas argentinas (sus informes: GEA, PAS, estimaciones, pizarra) — no tienen feed propio usable.
+  { id: "gn-rosario", nombre: "Bolsa de Rosario", tipo: "gnews", def: "mercados",
+    url: gnES('"Bolsa de Comercio de Rosario" (soja OR maíz OR trigo OR granos OR cosecha OR GEA OR estimación OR pizarra OR mercado OR exportación)') },
+  { id: "gn-bcba", nombre: "Bolsa de Cereales (BsAs)", tipo: "gnews", def: "mercados",
+    url: gnES('"Bolsa de Cereales de Buenos Aires" OR "Panorama Agrícola Semanal"') },
+  { id: "gn-cordoba", nombre: "Bolsa de Cereales de Córdoba", tipo: "gnews", def: "mercados",
+    url: gnES('"Bolsa de Cereales de Córdoba"') },
+  // Internacional (surtido de Reuters/Bloomberg/AgWeb/Pro Farmer/CME) + informes oficiales.
+  { id: "gn-intl", nombre: "Internacional", tipo: "gnews", def: "internacional",
+    url: gnEN('(soybean OR corn OR wheat OR grains) (market OR export OR harvest OR prices OR crop)') },
+  { id: "gn-informes", nombre: "Informes USDA/CONAB", tipo: "gnews", def: "internacional",
+    url: gnEN('WASDE OR "USDA crop" OR "CONAB safra" OR "CFTC commitments" OR "export sales" grain') },
+  // Instituciones de la cadena (sin feed propio).
+  { id: "gn-ciara", nombre: "CIARA-CEC", tipo: "gnews", def: "economia",
+    url: gnES('CIARA OR "liquidación de divisas" agroexportación') },
+  { id: "gn-crea", nombre: "Grupo CREA", tipo: "gnews", def: "mercados",
+    url: gnES('"grupo CREA" OR "movimiento CREA" OR AACREA') },
+  { id: "gn-aapresid", nombre: "Aapresid", tipo: "gnews", def: "mercados", url: gnES('Aapresid') },
+  { id: "gn-coninagro", nombre: "Coninagro", tipo: "gnews", def: "economia", url: gnES('Coninagro') },
 ];
 
 /* ---------------- clasificador (espejo de src/lib/noticias-clasificar.ts) ---------------- */
@@ -183,6 +211,21 @@ function parseAgrofy(html, base) {
   return items;
 }
 
+/** Google News RSS: título "Titular - Medio", <source> con el medio real, link = redirect de Google. */
+function parseGnews(xml) {
+  const blocks = xml.split(/<item[\s>]/i).slice(1);
+  const items = [];
+  for (const b of blocks) {
+    if (items.length >= MAX_POR_FUENTE) break;
+    const link = pick(b, "link");
+    let titulo = pick(b, "title");
+    const src = pick(b, "source"); // el medio real (ej. "Reuters", "bcr.com.ar")
+    if (src && titulo.endsWith(` - ${src}`)) titulo = titulo.slice(0, -(src.length + 3)).trim();
+    if (titulo.length > 25 && link) items.push({ titulo, fuente: src || "Google News", link, fecha_pub: fechaISO(pick(b, "pubDate")) });
+  }
+  return items;
+}
+
 /* ---------------- fetch + upsert ---------------- */
 
 async function fetchText(url) {
@@ -200,6 +243,7 @@ async function leerFuente(f) {
   let items;
   if (f.tipo === "rss") items = parseRss(text, f.nombre);
   else if (f.tipo === "bcr") items = parseBcr(text);
+  else if (f.tipo === "gnews") items = parseGnews(text);
   else items = parseAgrofy(text, f.url);
 
   const limite = Date.now() - MAX_EDAD_DIAS * 86400000;
@@ -262,7 +306,17 @@ async function main() {
     const prev = byLink.get(r.link);
     if (!prev || (!prev.fecha_pub && r.fecha_pub)) byLink.set(r.link, r);
   }
-  const rows = [...byLink.values()];
+  // dedup por TÍTULO: la misma nota llega directo (link del medio) y vía Google News (link redirect).
+  // Gana el registro directo (no Google) y con fecha. score: directo=2 · fecha=+1 → directo+fecha=3 gana.
+  const esGoogle = (l) => /news\.google\./i.test(l);
+  const score = (r) => (esGoogle(r.link) ? 0 : 2) + (r.fecha_pub ? 1 : 0);
+  const byTitulo = new Map();
+  for (const r of byLink.values()) {
+    const k = normalizar(r.titulo);
+    const prev = byTitulo.get(k);
+    if (!prev || score(r) > score(prev)) byTitulo.set(k, r);
+  }
+  const rows = [...byTitulo.values()];
 
   const porCat = {};
   for (const r of rows) porCat[r.categoria] = (porCat[r.categoria] ?? 0) + 1;
