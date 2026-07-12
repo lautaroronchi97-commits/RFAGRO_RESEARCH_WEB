@@ -19,12 +19,31 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 12/07/2026, Sesión B del módulo — estimaciones USDA + CONAB)
+## Ahora (última actualización: 12/07/2026, Sesión C del módulo — estimaciones Argentina)
 
 **✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
 de datos reales. Default de GitHub = `main` · Vercel Branch Tracking = `main`.
 
-**Hecho esta sesión (rama `claude/session-b-pr20-wwijnz`, draft) — Sesión B: ingestas USDA + CONAB:**
+**Hecho esta sesión (rama `claude/session-c-local-production-pvqf6f`, draft) — Sesión C: estimaciones Argentina:**
+- **Ingestas + workflow**: `scripts/ingest-gea.mjs` (BCR-GEA: tablas `bcr-estimaciones` de soja/maíz/trigo +
+  fecha/PDF del informe; **backfill Wayback** 2020→hoy por CDX), `scripts/ingest-dea.mjs` (DEA-SAGyP: POST del CSV
+  oficial → nacional por cultivo/campaña de los 6 granos, snapshot semanal = vintage), `scripts/ingest-pas.mjs`
+  (BCBA-PAS **probe-first, pendiente de validar desde Actions** — el dominio está tras Cloudflare; no inserta datos
+  sin verificar ni scrapea noticias). Workflow único `ingest-estimaciones-ar.yml` (GEA mié + DEA vie + dispatch).
+- **Comparador AR real**: la lib/UI ya eran genéricas → con GEA + DEA + USDA la pizarra muestra BCR vs SAGyP vs USDA
+  lado a lado ("quién está más alcista"), el gráfico de evolución (BCR vs USDA por campaña) y las tarjetas de cambios.
+  Dos fixes: `campaniaVigente` prefiere la última campaña **con producción** (BCR-trigo 29,5 de 2025/26, no "—" de
+  2026/27); y la tarjeta de "Cambios" ahora usa el organismo real (antes mostraba "USDA" en la tarjeta de SAGyP).
+- **Verificado**: lint/tsc/build ✅; parsers y lógica contra datos reales (GEA soja 51,5 / maíz 68 / trigo 29,5 Mt;
+  backfill feb-2026 soja 48,0 = coincide con el plan; DEA soja 22/23 25,0 Mt = la sequía, soja 24/25 51,1 Mt); UI en
+  navegador claro/oscuro (comparador AR de 3 vías, screenshots).
+- **⚠️ FALTA POBLAR Supabase** (mismo bloqueo del MCP que la Sesión B): **tras el merge, correr el `workflow_dispatch`
+  de *Ingesta estimaciones Argentina*** con `backfill_gea=true` + `dea_since=2019` (+ los de la Sesión B si faltan) →
+  después los crons mantienen solo. Hasta entonces `/produccion` degrada al roadmap. Para el PAS: correr `pas_probe=true`
+  desde Actions y ver si esa IP pasa el Cloudflare. Detalle: [`sesiones/2026-07-12-estimaciones-argentina.md`](sesiones/2026-07-12-estimaciones-argentina.md).
+- **Módulo Calendario + estimaciones COMPLETO (A+B+C)**: solo resta poblar Supabase por dispatch + validar el PAS.
+
+**Hecho antes (rama `claude/session-b-pr20-wwijnz`, PR #21 mergeado) — Sesión B: ingestas USDA + CONAB:**
 - **Ingestas + workflows**: `scripts/ingest-usda.mjs` (WASDE = producción por país incl. mundo + vintages;
   PSD bulk = área/rinde de los 6 granos + producción de girasol/sorgo/cebada — ZIP descomprimido sin
   dependencias), `scripts/ingest-conab.mjs` (`LevantamentoGraos.txt`, 27 UF → nacional Brasil, milho = 3
@@ -40,7 +59,7 @@ de datos reales. Default de GitHub = `main` · Vercel Branch Tracking = `main`.
   correr los `workflow_dispatch`**: *Ingesta USDA* backfill (from 2020-01) + snapshot_psd=true, e *Ingesta CONAB*
   full=true → después el cron mantiene solo. Hasta entonces la UI muestra el roadmap (degrada solo).
   Detalle: [`sesiones/2026-07-12-estimaciones-usda-conab.md`](sesiones/2026-07-12-estimaciones-usda-conab.md).
-- **Sigue: Sesión C (Argentina)** — `ingest-gea/dea/pas.mjs` + comparador AR (la UI ya lo soporta).
+- **Sesión C (Argentina) HECHA** (arriba) — solo resta poblar Supabase por dispatch + validar el PAS desde Actions.
 
 **Hecho antes (PR #20) — módulo Calendario de informes + estimaciones de producción:**
 - **[`PLAN_CALENDARIO_PRODUCCION.md`](PLAN_CALENDARIO_PRODUCCION.md)**: investigación verificada con
@@ -109,7 +128,8 @@ feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→
 | `main` | Única rama de integración y producción. |
 | `claude/timeline-spread-charts-plan-3zlt1g` | Panel de gráficos (PR #17 **MERGEADO**) → borrar. |
 | `claude/production-forecast-calendar-zdpmd6` | Módulo calendario — plan + Sesión A (PR #20). |
-| `claude/session-b-pr20-wwijnz` | Sesión B — ingestas USDA+CONAB + UI estimaciones (draft). Falta poblar Supabase por dispatch tras merge. |
+| `claude/session-b-pr20-wwijnz` | Sesión B — ingestas USDA+CONAB (PR #21 **MERGEADO**) → borrar. |
+| `claude/session-c-local-production-pvqf6f` | Sesión C — ingestas Argentina (GEA/DEA/PAS) + comparador AR (draft). Falta poblar Supabase por dispatch tras merge + validar PAS desde Actions. |
 | `claude/futures-position-databases-j10vpr` · `claude/feed-a3-live-plan-obxzcz` · `claude/news-section-redesign-k3zctf` · `claude/plant-business-calculator-0sf28m` | PRs #10/#14, #11, #12/#15/#16 y #18 ya mergeados → borrar. |
 
 **Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
@@ -117,10 +137,12 @@ feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→
    ratio/base en % · export PNG/CSV · media móvil · volumen/OI · presets del usuario (login) ·
    P12 (relaciones %) y P17 (serie continua) con ejemplos de Lautaro · import 2018/19. Lista
    completa arriba en «Ahora».
-1. **Módulo Calendario + estimaciones — Sesión C (Argentina)** (A y B ya hechas): `ingest-gea/dea/pas.mjs`
-   + backfill GEA (Wayback) + comparador AR (BCR vs BCBA vs DEA vs USDA — la UI ya lo soporta). **Antes:
-   correr los `workflow_dispatch` de la Sesión B** para poblar `estimaciones_produccion` (USDA backfill +
-   snapshot PSD, CONAB full). Urgencia: cada mes sin snapshotear PSD es un vintage de girasol/cebada/sorgo perdido.
+1. **Módulo Calendario + estimaciones — POBLAR Supabase** (A+B+C ya hechas en código): correr los
+   `workflow_dispatch` para poblar `estimaciones_produccion` — *Ingesta estimaciones Argentina*
+   (`backfill_gea=true` + `dea_since=2019`) + *Ingesta USDA* (backfill from 2020-01 + snapshot_psd=true) +
+   *Ingesta CONAB* (full=true). Después los crons mantienen solo. Urgencia: cada mes sin snapshotear PSD es un
+   vintage de girasol/cebada/sorgo perdido. **PAS (BCBA)**: correr `pas_probe=true` desde Actions para ver si esa
+   IP pasa el Cloudflare; si pasa, endurecer el parser con el HTML real y activarlo en el schedule.
 2. **Fase 2 del Feed A3 — histórico intradiario**: cron GH Actions `*/15 13-20 * * 1-5` UTC +
    `scripts/ingest-rueda.mjs` + tabla `snapshots` + `ingest_log` (INFRAESTRUCTURA.md). Habilita gráficos
    intradía. (La frescura ya está resuelta web-directa; esto es SOLO para guardar historia.)

@@ -1,0 +1,72 @@
+name: Ingesta estimaciones Argentina (GEA · SAGyP · PAS → Supabase)
+
+# Popula estimaciones_produccion con las estimaciones nacionales de Argentina:
+#   - BCR-GEA  (scripts/ingest-gea.mjs): soja/maíz/trigo, informe mensual + backfill Wayback.
+#   - DEA-SAGyP(scripts/ingest-dea.mjs): los 6 granos, snapshot semanal del CSV oficial.
+#   - BCBA-PAS (scripts/ingest-pas.mjs): PENDIENTE de validar — el dominio está tras Cloudflare; corre
+#     SOLO por dispatch (pas_probe) para diagnosticar si la IP de Actions pasa el challenge.
+# Un solo workflow para no multiplicar YAML (plan §3). Los upserts son idempotentes.
+# Los `schedule` corren desde la rama default del repo. Secrets: SUPABASE_URL / SUPABASE_SERVICE_KEY.
+
+on:
+  schedule:
+    - cron: "0 1 * * 4" # mié 22:00 AR — tras la estimación mensual de GEA (2° miércoles)
+    - cron: "0 12 * * 5" # vie 09:00 AR — tras el informe semanal de la DEA (jueves)
+  workflow_dispatch:
+    inputs:
+      backfill_gea:
+        description: "GEA: reconstruir vintages 2020→hoy desde Wayback."
+        type: boolean
+        default: false
+      dea_full:
+        description: "DEA: snapshotear TODAS las campañas del CSV (1969/70→hoy)."
+        type: boolean
+        default: false
+      dea_since:
+        description: "DEA: año de campaña mínimo (ej. 2019). Vacío = últimas 3 campañas."
+        type: string
+        default: ""
+      pas_probe:
+        description: "PAS: correr el probe de conectividad de BCBA (Cloudflare)."
+        type: boolean
+        default: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: GEA (BCR)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.backfill_gea }}" = "true" ]; then
+            node scripts/ingest-gea.mjs --backfill
+          else
+            node scripts/ingest-gea.mjs
+          fi
+
+      - name: DEA (SAGyP)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.dea_full }}" = "true" ]; then
+            node scripts/ingest-dea.mjs --full
+          elif [ -n "${{ github.event.inputs.dea_since }}" ]; then
+            node scripts/ingest-dea.mjs --since "${{ github.event.inputs.dea_since }}"
+          else
+            node scripts/ingest-dea.mjs
+          fi
+
+      - name: PAS (BCBA) — solo probe por dispatch
+        if: ${{ github.event.inputs.pas_probe == 'true' }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/ingest-pas.mjs --probe
