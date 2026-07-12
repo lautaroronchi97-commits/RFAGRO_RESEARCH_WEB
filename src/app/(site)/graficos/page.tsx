@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
 import { getCatalogo } from "@/lib/series";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
-import { RefreshOnFocus } from "@/components/refresh-on-focus";
 import { GraficosClient } from "@/components/graficos-client";
 
 /**
@@ -24,8 +21,6 @@ export default async function GraficosPage() {
   return (
     <>
       <h1 className="sr">RF AGRO — Gráficos de spreads entre cosechas</h1>
-      <RefreshOnFocus />
-      <SiteHeader active="graficos" />
       <main className="wrap">
         <div className="col">
           <h2 className="sec-title">Gráficos de spreads entre cosechas</h2>
@@ -36,8 +31,6 @@ export default async function GraficosPage() {
           )}
         </div>
       </main>
-      <div className="awn" aria-hidden="true" />
-      <SiteFooter />
     </>
   );
 }

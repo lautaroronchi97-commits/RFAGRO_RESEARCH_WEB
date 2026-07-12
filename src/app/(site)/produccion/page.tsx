@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getEventos, type Organismo } from "@/lib/calendario";
 import { hoyCordobaISO } from "@/lib/dates";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import { CalendarioCliente } from "@/components/calendario-cliente";
 import { EstimacionesPanel } from "@/components/estimaciones-panel";
 import { Panel } from "@/components/panel";
@@ -30,7 +28,6 @@ export default function ProduccionPage() {
   return (
     <>
       <h1 className="sr">RF AGRO — Calendario de informes y estimaciones de producción</h1>
-      <SiteHeader active="produccion" />
       <main className="wrap">
         <div className="col">
           <div className="prod-intro">
@@ -57,8 +54,6 @@ export default function ProduccionPage() {
           <EstimacionesPanel />
         </div>
       </main>
-      <div className="awn" aria-hidden="true" />
-      <SiteFooter />
     </>
   );
 }

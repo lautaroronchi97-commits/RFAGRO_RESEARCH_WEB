@@ -9,7 +9,13 @@
 - **Análisis de IA/UX** con agente especialista de front-end (inventario de los 22 paneles + 9 calculadoras,
   diagnóstico de la tira larga y del menú mezclado anclas/links, 3 arquitecturas comparadas).
 - **[`docs/PLAN_UX_NAVEGACION.md`](../PLAN_UX_NAVEGACION.md)**: plan por fases (0→6) del rediseño de
-  navegación. Solo plan, no toca código.
+  navegación.
+- **Fase 0 construida — layout compartido (sin cambio visual):** route group `src/app/(site)/` con
+  `layout.tsx` que monta el andamiaje común (masthead + `RefreshOnFocus` + veta `awn` + pie) una sola vez;
+  las 3 páginas (`/`, `/graficos`, `/produccion`) se movieron a `(site)/` con `git mv` (URLs intactas) y
+  dejaron de repetir ese andamiaje. El nav se extrajo a `src/components/nav-links.tsx` (client, `usePathname`)
+  porque los layouts no re-renderizan al navegar; `site-header.tsx` perdió el prop `active`. La **cinta sigue
+  solo en la home** (sumarla al resto es de la Fase 3).
 
 ## Decisiones tomadas (y por qué)
 - **Navegación = sitio por páginas (hub)** — Lautaro eligió "clickear un tópico y entrar" (multipágina),
@@ -30,7 +36,9 @@
 - Es un plan (docs). No hay build para correr. Rama al día con `main` (0 adelante / 0 atrás) al arrancar.
 
 ## Quedó pendiente / en vuelo
-- **Construcción por fases** (0→6 del plan), en sesiones siguientes. Nada tocado de código todavía.
+- **Fase 0 hecha.** Siguen fases **1→6**: ocultar puentes de fuentes + frescura · rutas por grupo
+  (`/granos`, `/dolar`, `/comercio`) · inicio tablero · calculadoras sub-hub con link propio · capa
+  explicativa "¿Qué es esto?" · pulido nav/mobile.
 
 ## Decisiones de detalle (2ª ronda, ya cerradas — §7 del plan)
 - Nombres del menú: estilo "equilibrado" (Granos · Dólar y tasas · Comercio exterior · Calculadoras ·

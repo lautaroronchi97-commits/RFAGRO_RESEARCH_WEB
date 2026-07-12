@@ -1,7 +1,6 @@
 import { getCintaData } from "@/lib/market";
 import { getCurvaGranos } from "@/lib/curva";
 import { getPizarra } from "@/lib/pizarra";
-import { SiteHeader } from "@/components/site-header";
 import { Cinta } from "@/components/cinta";
 import { ArbitrajesTable } from "@/components/arbitrajes-table";
 import { PasesPanel } from "@/components/pases-panel";
@@ -25,8 +24,6 @@ import { CalcFijar } from "@/components/calc-fijar";
 import { CalcCostos } from "@/components/calc-costos";
 import { CalcPorcentaje } from "@/components/calc-porcentaje";
 import { CalcPases } from "@/components/calc-pases";
-import { SiteFooter } from "@/components/site-footer";
-import { RefreshOnFocus } from "@/components/refresh-on-focus";
 
 // Revalida los datos de la cinta cada 60s (caché corto).
 export const revalidate = 60;
@@ -45,8 +42,6 @@ export default async function Home() {
   return (
     <>
       <h1 className="sr">RF AGRO — Pizarra electrónica de granos</h1>
-      <RefreshOnFocus />
-      <SiteHeader />
       <Cinta data={cinta} />
       <main className="wrap">
         <div className="col">
@@ -81,8 +76,6 @@ export default async function Home() {
           <DjvePanel />
         </div>
       </main>
-      <div className="awn" aria-hidden="true" />
-      <SiteFooter />
     </>
   );
 }
