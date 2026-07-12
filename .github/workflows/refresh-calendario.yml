@@ -1,0 +1,22 @@
+name: Refresh calendario (centinela mensual)
+
+# En v1 el calendario del módulo Producción se genera en código (src/lib/calendario.ts).
+# Este cron mensual no ingiere nada: chequea si ya aparecieron las fuentes del AÑO SIGUIENTE
+# (ICS de NASS, calendario BCR) para avisar cuándo sembrar el seed del próximo año. Emite una
+# anotación ::warning:: en el run cuando el seed próximo está disponible. No usa secrets.
+
+on:
+  schedule:
+    - cron: "0 12 1 * *" # día 1 de cada mes, 09:00 AR
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Chequear fuentes del próximo año
+        run: node scripts/refresh-calendario.mjs

@@ -15,6 +15,7 @@ import { CapacidadPanel } from "@/components/capacidad-panel";
 import { MejorCajaPanel } from "@/components/mejor-caja-panel";
 import { NoticiasPanel } from "@/components/noticias-panel";
 import { InformesPanel } from "@/components/informes-panel";
+import { EstimacionesMini } from "@/components/estimaciones-mini";
 import { CalcDiferido } from "@/components/calc-diferido";
 import { CalcNegociosPago } from "@/components/calc-negocios-pago";
 import { CalcPlanta, type PizarraProducto } from "@/components/calc-planta";
@@ -52,6 +53,7 @@ export default async function Home() {
           <h2 className="sec-title">Noticias</h2>
           <NoticiasPanel />
           <InformesPanel />
+          <EstimacionesMini />
 
           <h2 className="sec-title">Granos</h2>
           <ArbitrajesTable />

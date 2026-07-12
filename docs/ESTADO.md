@@ -19,12 +19,30 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 12/07/2026, sesión módulo calendario + estimaciones de producción)
+## Ahora (última actualización: 12/07/2026, Sesión B del módulo — estimaciones USDA + CONAB)
 
 **✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
 de datos reales. Default de GitHub = `main` · Vercel Branch Tracking = `main`.
 
-**Hecho esta sesión (PR #20) — módulo Calendario de informes + estimaciones de producción:**
+**Hecho esta sesión (rama `claude/session-b-pr20-wwijnz`, draft) — Sesión B: ingestas USDA + CONAB:**
+- **Ingestas + workflows**: `scripts/ingest-usda.mjs` (WASDE = producción por país incl. mundo + vintages;
+  PSD bulk = área/rinde de los 6 granos + producción de girasol/sorgo/cebada — ZIP descomprimido sin
+  dependencias), `scripts/ingest-conab.mjs` (`LevantamentoGraos.txt`, 27 UF → nacional Brasil, milho = 3
+  safras, vintages 2017/18→hoy, fecha derivada por cadencia), `scripts/refresh-calendario.mjs` (centinela
+  mensual del seed del año siguiente). Workflows `ingest-usda.yml` / `ingest-conab.yml` / `refresh-calendario.yml`.
+- **UI de `/produccion`**: reemplazado el bloque "En construcción" por la **pizarra de estimaciones** (última
+  por organismo/país/grano + Δ vs anterior, filtrable), el **gráfico de evolución** (SVG multi-serie, USDA vs
+  CONAB) y las **tarjetas de cambios** del último informe (`estimaciones-panel/cliente.tsx`, `evolucion-chart.tsx`,
+  `src/lib/estimaciones.ts`). **Home**: mini-tabla "Última estimación" (USDA, `estimaciones-mini.tsx`).
+- **Verificado**: lint/tsc/build ✅; parsers y lógica contra datos reales (soja AR 48→50 Mt, soja BR CONAB
+  177,6→180,25 Mt, maíz EEUU 406,4 Mt en Mt — no bushels); UI en navegador claro/oscuro (screenshots).
+- **⚠️ FALTA POBLAR Supabase**: el MCP de este entorno no resolvió la aprobación de escritura. **Tras el merge,
+  correr los `workflow_dispatch`**: *Ingesta USDA* backfill (from 2020-01) + snapshot_psd=true, e *Ingesta CONAB*
+  full=true → después el cron mantiene solo. Hasta entonces la UI muestra el roadmap (degrada solo).
+  Detalle: [`sesiones/2026-07-12-estimaciones-usda-conab.md`](sesiones/2026-07-12-estimaciones-usda-conab.md).
+- **Sigue: Sesión C (Argentina)** — `ingest-gea/dea/pas.mjs` + comparador AR (la UI ya lo soporta).
+
+**Hecho antes (PR #20) — módulo Calendario de informes + estimaciones de producción:**
 - **[`PLAN_CALENDARIO_PRODUCCION.md`](PLAN_CALENDARIO_PRODUCCION.md)**: investigación verificada con
   requests reales del núcleo v1 (USDA WASDE/PSD/NASS, CONAB, BCR-GEA, BCBA-PAS, DEA-SAGyP): qué publica
   cada uno, calendarios oficiales 2026, endpoints de datos e histórico/vintages desde 2020. FAO-AMIS tiene
@@ -90,7 +108,8 @@ feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→
 |---|---|
 | `main` | Única rama de integración y producción. |
 | `claude/timeline-spread-charts-plan-3zlt1g` | Panel de gráficos (PR #17 **MERGEADO**) → borrar. |
-| `claude/production-forecast-calendar-zdpmd6` | Módulo calendario — plan + Sesión A (PR #20, draft). |
+| `claude/production-forecast-calendar-zdpmd6` | Módulo calendario — plan + Sesión A (PR #20). |
+| `claude/session-b-pr20-wwijnz` | Sesión B — ingestas USDA+CONAB + UI estimaciones (draft). Falta poblar Supabase por dispatch tras merge. |
 | `claude/futures-position-databases-j10vpr` · `claude/feed-a3-live-plan-obxzcz` · `claude/news-section-redesign-k3zctf` · `claude/plant-business-calculator-0sf28m` | PRs #10/#14, #11, #12/#15/#16 y #18 ya mergeados → borrar. |
 
 **Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
@@ -98,9 +117,10 @@ feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→
    ratio/base en % · export PNG/CSV · media móvil · volumen/OI · presets del usuario (login) ·
    P12 (relaciones %) y P17 (serie continua) con ejemplos de Lautaro · import 2018/19. Lista
    completa arriba en «Ahora».
-1. **Módulo Calendario + estimaciones — Sesión B (USDA+CONAB) y C (Argentina)** (Sesión A ya hecha):
-   ingestas + backfill de vintages 2020→hoy + pizarra de estimaciones + gráficos + `refresh-calendario.yml`.
-   Urgencia: cada mes sin snapshotear PSD es un vintage de girasol/cebada/sorgo que se pierde.
+1. **Módulo Calendario + estimaciones — Sesión C (Argentina)** (A y B ya hechas): `ingest-gea/dea/pas.mjs`
+   + backfill GEA (Wayback) + comparador AR (BCR vs BCBA vs DEA vs USDA — la UI ya lo soporta). **Antes:
+   correr los `workflow_dispatch` de la Sesión B** para poblar `estimaciones_produccion` (USDA backfill +
+   snapshot PSD, CONAB full). Urgencia: cada mes sin snapshotear PSD es un vintage de girasol/cebada/sorgo perdido.
 2. **Fase 2 del Feed A3 — histórico intradiario**: cron GH Actions `*/15 13-20 * * 1-5` UTC +
    `scripts/ingest-rueda.mjs` + tabla `snapshots` + `ingest_log` (INFRAESTRUCTURA.md). Habilita gráficos
    intradía. (La frescura ya está resuelta web-directa; esto es SOLO para guardar historia.)

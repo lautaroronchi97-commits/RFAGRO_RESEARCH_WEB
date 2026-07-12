@@ -1,0 +1,241 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { nfmt, sfmt } from "@/lib/format";
+import { ORG_LABEL } from "@/lib/calendario";
+import {
+  construirPizarra,
+  construirCambios,
+  construirSerie,
+  campaniasDe,
+  paisesDe,
+  GRANO_LABEL,
+  PAIS_LABEL,
+  VAR_LABEL,
+  type EstimRow,
+  type Variable,
+} from "@/lib/estimaciones";
+import { EvolucionChart } from "./evolucion-chart";
+
+const UNIDAD: Record<Variable, string> = { produccion: "Mt", area: "Mha", rinde: "tn/ha" };
+
+/** Campaña (para grano+país) con más puntos totales — el mejor default para el gráfico. */
+function campaniaMasRica(rows: EstimRow[], grano: string, pais: string): string {
+  const camps = campaniasDe(rows, grano, pais);
+  let best = camps[0] ?? "";
+  let bestN = -1;
+  for (const c of camps) {
+    const n = rows.filter((r) => r.grano === grano && r.pais === pais && r.campania === c && r.variable === "produccion").length;
+    if (n > bestN) {
+      bestN = n;
+      best = c;
+    }
+  }
+  return best;
+}
+
+export function EstimacionesCliente({ rows, granos, organismos }: { rows: EstimRow[]; granos: string[]; organismos: string[] }) {
+  /* ---------- Pizarra (con filtros) ---------- */
+  const [granosOff, setGranosOff] = useState<Set<string>>(new Set());
+  const pizarra = useMemo(() => construirPizarra(rows), [rows]);
+  const pizarraFilt = useMemo(() => pizarra.filter((c) => !granosOff.has(c.grano)), [pizarra, granosOff]);
+
+  function toggleGrano(g: string) {
+    setGranosOff((prev) => {
+      const next = new Set(prev);
+      if (next.has(g)) next.delete(g);
+      else next.add(g);
+      return next;
+    });
+  }
+
+  /* ---------- Gráfico de evolución (selectores) ---------- */
+  const granoIni = granos.includes("soja") ? "soja" : granos[0];
+  const paisesIni = paisesDe(rows, granoIni);
+  const paisIni = paisesIni.includes("brasil") ? "brasil" : paisesIni[0];
+  const [gGrano, setGGrano] = useState(granoIni);
+  const [gPais, setGPais] = useState(paisIni);
+  const [gVar, setGVar] = useState<Variable>("produccion");
+
+  const paisesGrano = useMemo(() => paisesDe(rows, gGrano), [rows, gGrano]);
+  const paisEfectivo = paisesGrano.includes(gPais) ? gPais : paisesGrano[0];
+  const campanias = useMemo(() => campaniasDe(rows, gGrano, paisEfectivo), [rows, gGrano, paisEfectivo]);
+  const [gCampManual, setGCampManual] = useState<string | null>(null);
+  const gCamp = gCampManual && campanias.includes(gCampManual) ? gCampManual : campaniaMasRica(rows, gGrano, paisEfectivo);
+
+  const serie = useMemo(
+    () => construirSerie(rows, gGrano, paisEfectivo, gCamp, gVar),
+    [rows, gGrano, paisEfectivo, gCamp, gVar],
+  );
+
+  /* ---------- Cambios del último informe ---------- */
+  const cambiosPorOrg = useMemo(
+    () => organismos.map((o) => construirCambios(rows, o)).filter((c) => c.fecha),
+    [rows, organismos],
+  );
+
+  return (
+    <div className="estim">
+      {/* ---- Pizarra ---- */}
+      <div className="estim-block">
+        <div className="cal-filters" role="group" aria-label="Filtrar granos">
+          {granos.map((g) => (
+            <button
+              key={g}
+              type="button"
+              className={`cal-fchip ${granosOff.has(g) ? "is-off" : ""}`}
+              aria-pressed={!granosOff.has(g)}
+              onClick={() => toggleGrano(g)}
+            >
+              {GRANO_LABEL[g] ?? g}
+            </button>
+          ))}
+        </div>
+        <div className="estim-tbl-wrap">
+          <table className="estim-tbl">
+            <thead>
+              <tr>
+                <th className="l">Grano</th>
+                <th className="l">País</th>
+                <th className="l">Organismo</th>
+                <th className="r">Producción</th>
+                <th className="r">Δ ant.</th>
+                <th className="r">Área</th>
+                <th className="r">Rinde</th>
+                <th className="l">Campaña · dato</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pizarraFilt.map((c, i) => (
+                <tr key={`${c.grano}-${c.pais}-${c.organismo}-${i}`}>
+                  <td className="l estim-grano">{GRANO_LABEL[c.grano] ?? c.grano}</td>
+                  <td className="l">{PAIS_LABEL[c.pais] ?? c.pais}</td>
+                  <td className="l">
+                    <span className={`cal-org org-${c.organismo}`}>{ORG_LABEL[c.organismo as keyof typeof ORG_LABEL] ?? c.organismo}</span>
+                  </td>
+                  <td className="r num strong">{c.produccion != null ? `${nfmt(c.produccion, 2)}` : "—"}</td>
+                  <td className="r num">
+                    {c.deltaProd != null && c.deltaProd !== 0 ? (
+                      <span className={`chip ${c.deltaProd > 0 ? "up" : "down"}`}>
+                        <span className="ar">{c.deltaProd > 0 ? "▲" : "▼"}</span>
+                        {sfmt(c.deltaProd, 2)}
+                      </span>
+                    ) : c.deltaProd === 0 ? (
+                      <span className="estim-flat">=</span>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                  <td className="r num">{c.area != null ? nfmt(c.area, 2) : "—"}</td>
+                  <td className="r num">{c.rinde != null ? nfmt(c.rinde, 2) : "—"}</td>
+                  <td className="l estim-vint">
+                    <span className="estim-camp">{c.campania}</span>
+                    {c.url ? (
+                      <a href={c.url} target="_blank" rel="noopener noreferrer" className="estim-inf">
+                        {c.informe} ↗
+                      </a>
+                    ) : (
+                      <span className="estim-inf">{c.informe}</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="estim-units">
+          Producción en <b>Mt</b> (millones de t) · Área en <b>Mha</b> · Rinde en <b>tn/ha</b>. El Δ compara
+          con la publicación anterior del mismo organismo y campaña. USDA por país sale del WASDE (producción)
+          + PSD (área/rinde); CONAB agrega las 27 UF de Brasil.
+        </p>
+      </div>
+
+      {/* ---- Evolución ---- */}
+      <div className="estim-block">
+        <h3 className="estim-h3">Evolución de la estimación</h3>
+        <div className="estim-sels">
+          <label className="estim-sel">
+            <span>Grano</span>
+            <select value={gGrano} onChange={(e) => { setGGrano(e.target.value); setGCampManual(null); }}>
+              {granos.map((g) => (
+                <option key={g} value={g}>{GRANO_LABEL[g] ?? g}</option>
+              ))}
+            </select>
+          </label>
+          <label className="estim-sel">
+            <span>País</span>
+            <select value={paisEfectivo} onChange={(e) => { setGPais(e.target.value); setGCampManual(null); }}>
+              {paisesGrano.map((p) => (
+                <option key={p} value={p}>{PAIS_LABEL[p] ?? p}</option>
+              ))}
+            </select>
+          </label>
+          <label className="estim-sel">
+            <span>Campaña</span>
+            <select value={gCamp} onChange={(e) => setGCampManual(e.target.value)}>
+              {campanias.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </label>
+          <label className="estim-sel">
+            <span>Variable</span>
+            <select value={gVar} onChange={(e) => setGVar(e.target.value as Variable)}>
+              {(["produccion", "area", "rinde"] as Variable[]).map((v) => (
+                <option key={v} value={v}>{VAR_LABEL[v]}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <EvolucionChart series={serie} unidad={UNIDAD[gVar]} />
+        <p className="estim-units">
+          {GRANO_LABEL[gGrano] ?? gGrano} · {PAIS_LABEL[paisEfectivo] ?? paisEfectivo} · campaña {gCamp} —{" "}
+          {VAR_LABEL[gVar]} de cada organismo, publicación a publicación. Cada punto es un vintage guardado.
+        </p>
+      </div>
+
+      {/* ---- Cambios del último informe ---- */}
+      <div className="estim-block">
+        <h3 className="estim-h3">Cambios del último informe</h3>
+        <div className="estim-cambios">
+          {cambiosPorOrg.length === 0 && <div className="cal-empty">Todavía no hay dos publicaciones para comparar.</div>}
+          {cambiosPorOrg.map((c) => (
+            <div className="estim-cam-card" key={c.informe + c.fecha}>
+              <div className="estim-cam-hd">
+                <span className={`cal-org org-${c.cambios[0]?.organismo ?? organismos[0]}`}>
+                  {ORG_LABEL[(c.cambios[0]?.organismo ?? organismos[0]) as keyof typeof ORG_LABEL] ?? c.cambios[0]?.organismo}
+                </span>
+                <span className="estim-cam-inf">{c.informe}</span>
+                <span className="estim-cam-fecha">{c.fecha}</span>
+              </div>
+              {c.cambios.length === 0 ? (
+                <div className="estim-cam-none">Sin cambios de producción (o primer registro).</div>
+              ) : (
+                <ul className="estim-cam-list">
+                  {c.cambios.slice(0, 6).map((ch, i) => (
+                    <li key={i}>
+                      <span className="estim-cam-lbl">
+                        {GRANO_LABEL[ch.grano] ?? ch.grano} · {PAIS_LABEL[ch.pais] ?? ch.pais} <span className="estim-cam-camp">{ch.campania}</span>
+                      </span>
+                      <span className="estim-cam-vals">
+                        {nfmt(ch.antes, 2)} → <b>{nfmt(ch.ahora, 2)}</b>
+                        {ch.delta !== 0 ? (
+                          <span className={`chip ${ch.delta > 0 ? "up" : "down"}`}>
+                            <span className="ar">{ch.delta > 0 ? "▲" : "▼"}</span>
+                            {sfmt(ch.delta, 2)}
+                          </span>
+                        ) : (
+                          <span className="estim-flat">=</span>
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

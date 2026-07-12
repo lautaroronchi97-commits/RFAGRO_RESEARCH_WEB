@@ -1,0 +1,54 @@
+name: Ingesta estimaciones USDA (WASDE + PSD → Supabase)
+
+# Popula estimaciones_produccion con la producción/área/rinde de USDA:
+#   - WASDE del mes (producción por país de soja/maíz/trigo + mundo) = vintage nuevo.
+#   - PSD bulk snapshot (área/rinde de los 6 granos + producción de girasol/sorgo/cebada).
+# El WASDE sale ~día 9-12 a las 12:00 ET; el PSD se regenera el mismo día. Corremos varios
+# días para cubrir la fecha variable (el upsert es idempotente; si el WASDE del mes no salió,
+# el script lo saltea). Los `schedule` corren desde la rama default del repo.
+
+on:
+  schedule:
+    - cron: "0 20 9,10,11,12,13 * *" # 17:00 AR, tras el release del WASDE + regeneración del PSD
+  workflow_dispatch:
+    inputs:
+      backfill:
+        description: "Backfill de vintages WASDE (soja/maíz/trigo por país) 2020→hoy."
+        type: boolean
+        default: false
+      from:
+        description: "Mes desde para el backfill (YYYY-MM, default 2020-01)"
+        required: false
+      to:
+        description: "Mes hasta para el backfill (YYYY-MM, default mes actual)"
+        required: false
+      snapshot_psd:
+        description: "Correr también el snapshot PSD del día (área/rinde + girasol/sorgo/cebada)."
+        type: boolean
+        default: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Ingesta
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.backfill }}" = "true" ]; then
+            # Backfill de vintages históricos = solo WASDE (el PSD no se puede reconstruir hacia atrás).
+            args="--backfill-wasde --no-psd --from ${{ github.event.inputs.from || '2020-01' }}"
+            if [ -n "${{ github.event.inputs.to }}" ]; then args="$args --to ${{ github.event.inputs.to }}"; fi
+            node scripts/ingest-usda.mjs $args
+            # Opcionalmente, además, el snapshot PSD del día (útil en el primer backfill).
+            if [ "${{ github.event.inputs.snapshot_psd }}" = "true" ]; then
+              node scripts/ingest-usda.mjs --no-wasde
+            fi
+          else
+            node scripts/ingest-usda.mjs
+          fi
