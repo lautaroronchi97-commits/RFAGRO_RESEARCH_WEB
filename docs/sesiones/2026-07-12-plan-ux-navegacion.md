@@ -70,9 +70,20 @@
   futuro/linked/implícitas/sintéticos/cambiario · DJVE · noticias · estimaciones panel/cliente/mini · gráficos
   +página · calc-planta · cierres-panel · produccion). Barrido final de puentes en HTML servido = **limpio**.
 
+- **Fase 6 construida — cierre:** `src/components/breadcrumbs.tsx` (client `usePathname`) monta las migas
+  `Inicio › Sección › Subpágina` en el layout compartido (no en el Inicio; las subpáginas de calculadoras
+  muestran el nombre de la calc). Estilos `.crumbs`. El nav ya scrollea horizontal en mobile → se deja.
+
+## Estado: PLAN UX COMPLETO (Fases 0→6)
+Sitio por páginas con portada tablero · calculadoras con link propio · fuentes "institución sí, puente no" ·
+capa explicativa "¿Qué es esto?" en todo · migas de pan. Todo con build/lint/tsc ✅ en cada fase.
+
 ## Quedó pendiente / en vuelo
-- **Sigue la Fase 6** (última): migas de pan (`Inicio › Sección › Subpágina`) + pulido nav/mobile (drawer si
-  hace falta) + revisar `robots noindex`. El resto del plan UX está hecho.
+- **`robots noindex` se mantiene** hasta que no queden datos provisorios en pantalla (cinta pizarra de ejemplo,
+  paneles parciales sin poblar). Cuando esté todo real, evaluar pasar a `index`.
+- **Drawer/hamburguesa mobile** (opcional): hoy el nav de 7 ítems scrollea horizontal; si se quiere, se puede
+  hacer un menú colapsable más adelante.
+- Merge del PR #22 a `main` cuando Lautaro lo apruebe.
 
 ## Decisiones de detalle (2ª ronda, ya cerradas — §7 del plan)
 - Nombres del menú: estilo "equilibrado" (Granos · Dólar y tasas · Comercio exterior · Calculadoras ·
