@@ -19,7 +19,18 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 12/07/2026, Sesión B del módulo — estimaciones USDA + CONAB)
+## Ahora (última actualización: 12/07/2026, Plan UX — navegación "web en capas")
+
+**🗺️ PLAN DE NAVEGACIÓN LISTO (solo plan, no toca código) — rama `claude/website-ux-redesign-plan-irvt6k`,
+draft.** [`docs/PLAN_UX_NAVEGACION.md`](PLAN_UX_NAVEGACION.md): se deja la tira vertical larga y se pasa a
+**sitio por páginas (hub)** — portada tablero → clickeás un tópico y entrás a esa sección con link propio.
+Decisiones de Lautaro: multipágina (no acordeón/pestañas de esqueleto) · **sin** vista trader "tira" (todos
+por secciones) · calculadoras con **link propio** por calc · Noticias sección propia + titulares en Inicio ·
+DJVE → sección propia "Comercio exterior" · fuentes **"institución sí, puente no"** (mostrar el organismo/
+mercado de origen, ocultar el proveedor técnico; nunca "vía") · explicaciones "¿Qué es esto?" por calc/reporte.
+Sitemap: Inicio · Granos · Dólar y tasas · Comercio exterior · Calculadoras · Gráficos · Producción · Noticias,
+con layout compartido `(site)/layout.tsx`. **Sigue:** construir por fases 0→6 en sesiones siguientes.
+Detalle: [`sesiones/2026-07-12-plan-ux-navegacion.md`](sesiones/2026-07-12-plan-ux-navegacion.md).
 
 **✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
 de datos reales. Default de GitHub = `main` · Vercel Branch Tracking = `main`.
@@ -107,6 +118,7 @@ feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→
 | Rama | Estado |
 |---|---|
 | `main` | Única rama de integración y producción. |
+| `claude/website-ux-redesign-plan-irvt6k` | Plan UX / navegación "web en capas" (draft, solo plan). |
 | `claude/timeline-spread-charts-plan-3zlt1g` | Panel de gráficos (PR #17 **MERGEADO**) → borrar. |
 | `claude/production-forecast-calendar-zdpmd6` | Módulo calendario — plan + Sesión A (PR #20). |
 | `claude/session-b-pr20-wwijnz` | Sesión B — ingestas USDA+CONAB + UI estimaciones (draft). Falta poblar Supabase por dispatch tras merge. |
