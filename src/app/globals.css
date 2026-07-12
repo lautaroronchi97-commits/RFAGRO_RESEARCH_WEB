@@ -615,3 +615,95 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
 .gx-modo { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
 .gx-modo-hint { font-size:var(--fs-2xs); color:var(--ink-3); }
 .gx-modo .gx-seg button { padding:6px 14px; font-size:var(--fs-sm); }
+
+/* ============================================================
+   Calendario de informes + estimaciones de producción
+   ============================================================ */
+/* color por organismo (acento discreto sobre el sistema verde+oro) */
+.org-USDA  { --org-c:#3E86A0; }
+.org-CONAB { --org-c:#4E9C3A; }
+.org-BCR   { --org-c:#C08A2E; }
+.org-BCBA  { --org-c:#5B7FC7; }
+.org-DEA   { --org-c:#8A6D9E; }
+.org-CFTC  { --org-c:#B06A4A; }
+.org-EIA   { --org-c:#7E8C74; }
+.org-NOPA  { --org-c:#7E8C74; }
+
+.cal-org { font-family:var(--font-mono); font-weight:700; font-size:var(--fs-2xs); letter-spacing:.04em;
+  text-transform:uppercase; white-space:nowrap; padding:2.5px 7px; border-radius:var(--r-chip);
+  color:var(--org-c); background:color-mix(in srgb, var(--org-c) 12%, transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--org-c) 32%, transparent);
+  flex:0 0 auto; align-self:flex-start; min-width:66px; text-align:center; }
+
+.cal-more { margin-left:auto; font-size:var(--fs-2xs); font-family:var(--font-mono); font-weight:700;
+  text-transform:uppercase; letter-spacing:.05em; color:var(--brand-deep); white-space:nowrap; }
+.cal-more:hover { color:var(--gold-text); }
+.cal-inline-link { color:var(--brand-deep); font-weight:600; border-bottom:1px dotted currentColor; }
+.cal-inline-link:hover { color:var(--gold-text); }
+
+/* --- lista compacta (home) --- */
+.cal-list { display:flex; flex-direction:column; }
+.cal-empty { padding:16px; font-size:var(--fs-sm); color:var(--ink-3); text-align:center; }
+.cal-day { display:flex; gap:12px; padding:9px 16px; border-bottom:1px solid var(--line); }
+.cal-day:last-child { border-bottom:0; }
+.cal-date { flex:0 0 66px; padding-top:3px; }
+.cal-date-txt { font-family:var(--font-mono); font-size:var(--fs-2xs); font-weight:700; text-transform:uppercase;
+  letter-spacing:.04em; color:var(--brand-deep); }
+.cal-evs { display:flex; flex-direction:column; gap:7px; min-width:0; flex:1; }
+
+/* --- evento (compartido home + página) --- */
+.cal-ev { display:flex; align-items:flex-start; gap:10px; min-width:0; padding:2px 0; }
+.cal-ev:hover .cal-ev-title { color:var(--gold-text); }
+.cal-ev-body { display:flex; flex-direction:column; gap:1px; min-width:0; flex:1; }
+.cal-ev-title { font-size:var(--fs-sm); font-weight:600; color:var(--ink); display:inline-flex; align-items:center; gap:6px; }
+.cal-hot { color:var(--gold); font-size:7px; line-height:1; }
+.cal-ev-sub { font-size:var(--fs-2xs); color:var(--ink-3); font-family:var(--font-mono); }
+.cal-ev-note { font-size:var(--fs-2xs); color:var(--ink-2); margin-top:2px; line-height:1.4; }
+.cal-when { flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-end; gap:2px; text-align:right; }
+.cal-hora { font-family:var(--font-mono); font-size:var(--fs-sm); font-weight:700; color:var(--ink); }
+.cal-hora.dim { color:var(--ink-3); font-weight:400; }
+.cal-est { font-family:var(--font-mono); font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+  color:var(--ink-3); border:1px dashed var(--line-2); padding:0 4px; border-radius:3px; }
+.cal-of { font-family:var(--font-mono); font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+  color:var(--pos); background:var(--pos-weak); padding:0 4px; border-radius:3px; }
+
+/* --- página /produccion --- */
+.prod-intro { padding:2px 2px 0; }
+.prod-h1 { font-family:var(--font-ui); font-size:var(--fs-xl); font-weight:800; letter-spacing:-.01em;
+  color:var(--ink); margin:8px 0 6px; }
+.prod-lede { font-size:var(--fs-base); color:var(--ink-2); max-width:78ch; margin:0; line-height:1.5; }
+
+.cal-full-wrap { padding:12px 16px 16px; }
+.cal-filters { display:flex; flex-wrap:wrap; gap:6px; padding:0 0 12px; }
+.cal-fchip { font-family:var(--font-mono); font-weight:700; font-size:var(--fs-2xs); letter-spacing:.04em;
+  text-transform:uppercase; padding:4px 9px; border-radius:999px; cursor:pointer;
+  color:var(--org-c, var(--ink-2)); background:color-mix(in srgb, var(--org-c, var(--ink-3)) 12%, transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--org-c, var(--ink-3)) 32%, transparent); }
+.cal-fchip.is-off { color:var(--ink-3); background:transparent; box-shadow:inset 0 0 0 1px var(--line);
+  opacity:.6; text-decoration:line-through; }
+.cal-fchip-alto { --org-c:var(--gold-text); }
+.cal-fchip-alto.is-on { color:var(--gold-ink); background:var(--gold); box-shadow:none; }
+
+.cal-full { display:flex; flex-direction:column; }
+.cal-fday { padding:10px 0; border-top:1px solid var(--line); }
+.cal-fday:first-child { border-top:0; padding-top:0; }
+.cal-fdate { font-family:var(--font-ui); font-size:var(--fs-xs); font-weight:800; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--brand-deep); margin-bottom:8px; }
+.cal-fevs { display:flex; flex-direction:column; gap:11px; }
+.cal-fevs .cal-ev-title { font-size:var(--fs-base); }
+
+/* --- estimaciones "en construcción" --- */
+.prod-soon { padding:14px 16px 16px; }
+.prod-soon-lede { font-size:var(--fs-sm); color:var(--ink-2); line-height:1.5; margin:0 0 12px; max-width:80ch; }
+.prod-soon-lede .k { background:var(--gold); color:var(--gold-ink); padding:1px 6px; border-radius:3px;
+  font-weight:700; text-transform:uppercase; letter-spacing:.05em; font-size:var(--fs-2xs); margin-right:6px; }
+.prod-soon-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px; }
+.prod-soon-list li { display:flex; gap:11px; align-items:flex-start; }
+.prod-soon-body { display:flex; flex-direction:column; gap:1px; min-width:0; }
+.prod-soon-region { font-family:var(--font-mono); font-size:var(--fs-2xs); color:var(--ink-3); text-transform:uppercase; letter-spacing:.04em; }
+.prod-soon-det { font-size:var(--fs-sm); color:var(--ink-2); line-height:1.45; }
+
+@media (max-width:560px){
+  .cal-day { flex-direction:column; gap:5px; }
+  .cal-date { flex-basis:auto; padding-top:0; }
+}

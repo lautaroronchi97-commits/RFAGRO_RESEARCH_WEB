@@ -25,7 +25,7 @@ export default async function GraficosPage() {
     <>
       <h1 className="sr">RF AGRO — Gráficos de spreads entre cosechas</h1>
       <RefreshOnFocus />
-      <SiteHeader />
+      <SiteHeader active="graficos" />
       <main className="wrap">
         <div className="col">
           <h2 className="sec-title">Gráficos de spreads entre cosechas</h2>
