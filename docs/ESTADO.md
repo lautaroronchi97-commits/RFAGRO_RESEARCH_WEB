@@ -34,7 +34,9 @@ nav a client component `usePathname`, URLs intactas). **Fase 1 (estructural) hec
 Actualizado HH:MM` con nombre propio de institución — Matba Rofex, Bolsa de Comercio de Rosario, MAE, Mercado
 de deuda local, SAGyP, USDA·CONAB; pie sin chips técnicos; cinta "prov."; marca `.st-prov`). Todo con
 build/lint/tsc ✅. **Falta de Fase 1:** las notas al pie de los paneles aún nombran puentes → se limpian en la
-**Fase 5** (capa explicativa). **Siguen fases 2→6.**
+**Fase 5** (capa explicativa). **Fase 2 hecha** (páginas por grupo aditivas `/granos /dolar /comercio
+/calculadoras /noticias`; nav a los 7 destinos reales, activo por `pathname`; logo → Inicio; la home sigue
+como tira larga hasta la Fase 3 → duplicación interina). Build/lint/tsc ✅. **Siguen fases 3→6.**
 Detalle: [`sesiones/2026-07-12-plan-ux-navegacion.md`](sesiones/2026-07-12-plan-ux-navegacion.md).
 
 **✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
