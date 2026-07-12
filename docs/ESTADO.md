@@ -19,10 +19,24 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 11/07/2026, sesión panel de gráficos de spreads)
+## Ahora (última actualización: 12/07/2026, sesión módulo calendario + estimaciones de producción)
 
 **✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
 de datos reales. Default de GitHub = `main` · Vercel Branch Tracking = `main`.
+
+**Hecho esta sesión (PR #20) — módulo Calendario de informes + estimaciones de producción:**
+- **[`PLAN_CALENDARIO_PRODUCCION.md`](PLAN_CALENDARIO_PRODUCCION.md)**: investigación verificada con
+  requests reales del núcleo v1 (USDA WASDE/PSD/NASS, CONAB, BCR-GEA, BCBA-PAS, DEA-SAGyP): qué publica
+  cada uno, calendarios oficiales 2026, endpoints de datos e histórico/vintages desde 2020. FAO-AMIS tiene
+  un proxy BigQuery abierto con vintages 2020→hoy de FAO+IGC+USDA (tier-2, candidato barato a sesión B).
+  Un 2º pase de verificadores re-testeó los ~50 endpoints: todo se sostiene (ESMIS 0-indexed, ICS NASS
+  sin TZID, Wayback OK para backfill GEA — en §8 del plan).
+- **✅ SESIÓN A del build hecha**: tablas `calendario_informes` + `estimaciones_produccion`
+  (migración `20260712020000`), motor `src/lib/calendario.ts` (seed oficial 2026 + reglas + hora DST-aware),
+  panel "Próximos informes" en la home y **página nueva `/produccion`** con el calendario cronológico
+  filtrable + sección de estimaciones "en construcción". Verificado con navegador (claro/oscuro) + build.
+- **Sigue: Sesión B (USDA+CONAB) y C (Argentina)** — ingestas + vintages + pizarra de estimaciones +
+  gráficos. El `refresh-calendario.yml` va con la B (en v1 el calendario rinde solo desde código).
 
 **✅ LAS 3 BASES DE GRÁFICOS ESTÁN COMPLETAS (verificado por SQL el 11/07):** PR #10 mergeado
 (merge #14) y **backfill CBOT ya corrido** — `futuros_cierres` 31.049 filas (2020-01-02→08/07,
@@ -75,7 +89,8 @@ feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→
 | Rama | Estado |
 |---|---|
 | `main` | Única rama de integración y producción. |
-| `claude/timeline-spread-charts-plan-3zlt1g` | Panel de gráficos (PR #17 **MERGEADO**) → borrar. Reusada para este apunte de pendientes (PR nuevo). |
+| `claude/timeline-spread-charts-plan-3zlt1g` | Panel de gráficos (PR #17 **MERGEADO**) → borrar. |
+| `claude/production-forecast-calendar-zdpmd6` | Módulo calendario — plan + Sesión A (PR #20, draft). |
 | `claude/futures-position-databases-j10vpr` · `claude/feed-a3-live-plan-obxzcz` · `claude/news-section-redesign-k3zctf` · `claude/plant-business-calculator-0sf28m` | PRs #10/#14, #11, #12/#15/#16 y #18 ya mergeados → borrar. |
 
 **Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
@@ -83,9 +98,12 @@ feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→
    ratio/base en % · export PNG/CSV · media móvil · volumen/OI · presets del usuario (login) ·
    P12 (relaciones %) y P17 (serie continua) con ejemplos de Lautaro · import 2018/19. Lista
    completa arriba en «Ahora».
-1. **Fase 2 del Feed A3 — histórico intradiario**: cron GH Actions `*/15 13-20 * * 1-5` UTC +
+1. **Módulo Calendario + estimaciones — Sesión B (USDA+CONAB) y C (Argentina)** (Sesión A ya hecha):
+   ingestas + backfill de vintages 2020→hoy + pizarra de estimaciones + gráficos + `refresh-calendario.yml`.
+   Urgencia: cada mes sin snapshotear PSD es un vintage de girasol/cebada/sorgo que se pierde.
+2. **Fase 2 del Feed A3 — histórico intradiario**: cron GH Actions `*/15 13-20 * * 1-5` UTC +
    `scripts/ingest-rueda.mjs` + tabla `snapshots` + `ingest_log` (INFRAESTRUCTURA.md). Habilita gráficos
    intradía. (La frescura ya está resuelta web-directa; esto es SOLO para guardar historia.)
-2. Sintéticos TIR (pago final por letra, IAMC). [Requiere tabla de Lautaro]
-3. Fase B (resiliencia, tests, mobile) y backlog de datos (reactivar scrapers `lineup`/`compras`,
+3. Sintéticos TIR (pago final por letra, IAMC). [Requiere tabla de Lautaro]
+4. Fase B (resiliencia, tests, mobile) y backlog de datos (reactivar scrapers `lineup`/`compras`,
    lineups, calendario, reporte WhatsApp — lista completa en CONTEXTO «Pendientes» punto 5).

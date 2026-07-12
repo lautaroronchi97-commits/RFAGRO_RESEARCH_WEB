@@ -1,12 +1,15 @@
+import Link from "next/link";
 import { WheatMark } from "./icons";
 import { RuedaClock } from "./rueda-clock";
 import { RuedaStatus } from "./rueda-status";
 import { ThemeToggle } from "./theme-toggle";
 
-const NAV: { label: string; href: string; disabled?: boolean }[] = [
+// Los anchors llevan "/" adelante para navegar también desde /produccion y /graficos.
+const NAV: { label: string; href: string; key?: string; disabled?: boolean }[] = [
   { label: "Noticias", href: "/#noticias" },
   { label: "Arbitrajes", href: "/#arbitrajes" },
-  { label: "Gráficos", href: "/graficos" },
+  { label: "Gráficos", href: "/graficos", key: "graficos" },
+  { label: "Producción", href: "/produccion", key: "produccion" },
   { label: "Pases", href: "/#pases" },
   { label: "Dólar futuro", href: "/#dolar-futuro" },
   { label: "Dólar linked", href: "/#dolar-linked" },
@@ -14,7 +17,7 @@ const NAV: { label: string; href: string; disabled?: boolean }[] = [
   { label: "Cambiario", href: "/#cambiario" },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ active }: { active?: string }) {
   return (
     <header className="masthead">
       <div className="masthead-in">
@@ -31,9 +34,14 @@ export function SiteHeader() {
 
         <nav className="nav" aria-label="Secciones">
           {NAV.map((n) => (
-            <a key={n.label} href={n.href} aria-disabled={n.disabled ? "true" : undefined}>
+            <Link
+              key={n.label}
+              href={n.href}
+              aria-disabled={n.disabled ? "true" : undefined}
+              aria-current={n.key && n.key === active ? "page" : undefined}
+            >
               {n.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
