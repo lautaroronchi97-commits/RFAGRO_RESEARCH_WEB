@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getEventos, type Organismo } from "@/lib/calendario";
 import { hoyCordobaISO } from "@/lib/dates";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import { CalendarioCliente } from "@/components/calendario-cliente";
 import { EstimacionesPanel } from "@/components/estimaciones-panel";
+import { QueEsEsto } from "@/components/que-es-esto";
 import { Panel } from "@/components/panel";
 
 export const metadata: Metadata = {
@@ -30,7 +29,6 @@ export default function ProduccionPage() {
   return (
     <>
       <h1 className="sr">RF AGRO — Calendario de informes y estimaciones de producción</h1>
-      <SiteHeader active="produccion" />
       <main className="wrap">
         <div className="col">
           <div className="prod-intro">
@@ -41,8 +39,7 @@ export default function ProduccionPage() {
             <p className="prod-lede">
               Cuándo publica cada organismo y qué proyecta para la producción de cada país y grano.
               Horarios en hora Argentina. Las fechas <b>oficiales</b> las publica el organismo; las marcadas{" "}
-              <b>est.</b> se generan por regla (jueves del PAS, 2° miércoles de GEA, etc.) para los que no
-              tienen agenda pública.
+              <b>est.</b> son estimadas para los que no tienen agenda pública.
             </p>
           </div>
 
@@ -54,11 +51,13 @@ export default function ProduccionPage() {
           </Panel>
 
           <h2 className="sec-title">Última estimación por organismo</h2>
+          <QueEsEsto
+            paraQue="Muestra cuánto proyecta cada organismo que se va a producir de cada grano en cada país, y cómo cambió respecto de su informe anterior."
+            comoSeCalcula="Toma la última estimación publicada por cada organismo y la compara con la anterior de la misma campaña; el gráfico sigue la evolución de cada campaña a lo largo del tiempo."
+          />
           <EstimacionesPanel />
         </div>
       </main>
-      <div className="awn" aria-hidden="true" />
-      <SiteFooter />
     </>
   );
 }

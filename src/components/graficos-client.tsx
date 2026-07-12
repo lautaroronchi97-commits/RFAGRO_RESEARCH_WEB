@@ -616,7 +616,7 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
         (como la planilla); debajo del nº de ruedas va el mes de referencia de la campaña vigente.
         <b> Banda</b> = sombra min–máx + mediana de las campañas históricas, con la vigente gruesa encima;
         el <b>percentil</b> ubica el valor de hoy contra esas campañas a la misma altura.
-        Datos de cierre desde 2020 · A3/CEM, CBOT (USD/tn) y pizarra CAC.
+        Datos de cierre desde 2020 · Matba Rofex, Chicago (USD/tn) y pizarra.
       </p>
     </div>
   );

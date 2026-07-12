@@ -4,6 +4,7 @@ import { Panel, PanelHead } from "./panel";
 import { GlyphSoja, GlyphMaiz, GlyphTrigo } from "./icons";
 import { InfoTip } from "./infotip";
 import { SourceStamp } from "./source-stamp";
+import { QueEsEsto } from "./que-es-esto";
 
 function glyphFor(u: string) {
   if (u === "SOJ") return <GlyphSoja />;
@@ -95,13 +96,10 @@ export async function MejorCajaPanel() {
           </tbody>
         </table>
       </div>
-      <div className="panel-note">
-        <span>
-          <span className="k">Real</span> Ordena soja/maíz/trigo por la <b>menor tasa implícita</b> (USD) entre
-          el disponible y sus posiciones siguientes. El de arriba es el que menos carry resigna al venderse
-          hoy → el mejor para <b>hacer caja</b>. Sale de la misma pizarra y cierres de Arbitrajes.
-        </span>
-      </div>
+      <QueEsEsto
+        paraQue="Te dice, para cada grano, cuál es la venta que menos te cuesta en términos de esperar: la mejor opción si lo que necesitás es hacer caja hoy."
+        comoSeCalcula="Para soja, maíz y trigo busca la posición con la menor tasa anual en dólares entre el precio de hoy y las entregas siguientes. La de arriba es la que menos rendimiento resigna al vender hoy."
+      />
     </Panel>
   );
 }

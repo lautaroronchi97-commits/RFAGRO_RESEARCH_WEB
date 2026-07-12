@@ -3,6 +3,7 @@ import { getFuturosLive, mergeLiveMeta } from "@/lib/a3-live";
 import { Panel, PanelHead } from "./panel";
 import { IconArb } from "./icons";
 import { SourceStamp } from "./source-stamp";
+import { QueEsEsto } from "./que-es-esto";
 import { ArbitrajesEditable, type ArbGranoClient } from "./arbitrajes-editable";
 
 export async function ArbitrajesTable() {
@@ -37,15 +38,10 @@ export async function ArbitrajesTable() {
         stamp={<SourceStamp meta={meta} />}
       />
       <ArbitrajesEditable granos={granos} />
-      <div className="panel-note">
-        <span>
-          <span className="k">Real</span> Futuro = ajuste (settlement) de A3/CEM · Pizarra = disponible USD de
-          CAC-BCR{data.pizarraFecha ? ` (al ${data.pizarraFecha})` : ""}, <b>editable</b>: cambiá el precio
-          del día y se recalculan spread, tasa directa y TNA. Precios A3 = <b>futuro</b>, no es lo que se
-          paga hoy. Comprador/Vendedor = puntas del futuro en la rueda de A3, en vivo (solo lectura; — fuera
-          de rueda).
-        </span>
-      </div>
+      <QueEsEsto
+        paraQue="Te muestra cuánto te reconoce el mercado por esperar a entregar tu grano más adelante en vez de venderlo hoy. Si esa espera rinde una tasa alta en dólares, conviene vender a futuro y cobrar después; si rinde poco, conviene hacer caja hoy."
+        comoSeCalcula="Toma el precio de venta de hoy y el precio para entregar en cada posición futura. La diferencia es el spread; puesta como porcentaje sobre el precio de hoy es la tasa directa, y anualizada por los días que faltan, la tasa anual en dólares. Podés cargar tu propio precio de hoy y todo se recalcula. Comprador y Vendedor son las puntas del futuro en la rueda, cuando está abierta."
+      />
     </Panel>
   );
 }

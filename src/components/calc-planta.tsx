@@ -184,7 +184,7 @@ export function CalcPlanta({ pizarra = [] }: { pizarra?: PizarraProducto[] }) {
           <span className="k">Planta</span> Precio final = arranque − (contra flete + secada + merma +
           paritaria + embolsado + otros). Secada = puntos × valor del punto (fijo 5 USD/punto, o editable en
           &quot;no fijo&quot;). Merma = {nfmt(pctMerma, 2)}% sobre el precio de arranque. El arranque trae la
-          pizarra USD de CAC del grano elegido y es editable. Todo en USD.
+          pizarra USD del grano elegido y es editable. Todo en USD.
         </span>
       </div>
     </Panel>

@@ -3,6 +3,7 @@ import { getVolumenCambiario } from "@/lib/market";
 import { nfmt, pfmt, dirOf, arrowOf } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
 import { SourceStamp } from "./source-stamp";
+import { QueEsEsto } from "./que-es-esto";
 
 function IconFx() {
   return (
@@ -88,13 +89,10 @@ export async function PanelCambiario() {
           </tbody>
         </table>
       </div>
-      <div className="panel-note">
-        <span>
-          <span className="k">Real</span> Volumen de rueda de MAE (en USD). FOREX = contado de cambios ·
-          Futuro de Dólar = DDF. <b>Compras netas del BCRA</b>: sin API pública intradía — pendiente
-          (proxy Δreservas / dato de X).
-        </span>
-      </div>
+      <QueEsEsto
+        paraQue="Muestra el volumen operado en el mercado de cambios: cuánto se movió en el contado y en el dólar futuro."
+        comoSeCalcula="Toma el volumen de la rueda en dólares, separando el contado de cambios del dólar futuro. Las compras netas del Banco Central quedan pendientes."
+      />
     </Panel>
   );
 }

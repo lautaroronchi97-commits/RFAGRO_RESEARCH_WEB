@@ -58,7 +58,7 @@ export const getCurvaGranos = cache(async (): Promise<CurvaData> => {
     900,
   );
   if (!res.ok) {
-    return { granos: [], meta: { source: "CEM · Matba ROFEX", updatedAt: null, status: "parcial", problemas: ["Sin curva A3 cargada"] } };
+    return { granos: [], meta: { source: "Matba Rofex", updatedAt: null, status: "parcial", problemas: ["Sin curva A3 cargada"] } };
   }
   const raw = (Array.isArray(res.data) ? res.data : []) as RawRow[];
   const hoyYM = hoyVencKey();
@@ -83,7 +83,7 @@ export const getCurvaGranos = cache(async (): Promise<CurvaData> => {
   return {
     granos,
     meta: {
-      source: "CEM · Matba ROFEX",
+      source: "Matba Rofex",
       updatedAt: Date.now(),
       status: granos.length > 0 ? "real" : "parcial",
       problemas: granos.length > 0 ? [] : ["Sin curva A3 cargada todavía"],

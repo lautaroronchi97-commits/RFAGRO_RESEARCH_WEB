@@ -1,0 +1,95 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getCurvaGranos } from "@/lib/curva";
+import { getPizarra } from "@/lib/pizarra";
+import { CALCULADORAS, getCalc } from "@/lib/calculadoras";
+import { CalcDiferido } from "@/components/calc-diferido";
+import { CalcNegociosPago } from "@/components/calc-negocios-pago";
+import { CalcPlanta, type PizarraProducto } from "@/components/calc-planta";
+import { CalcArbitraje } from "@/components/calc-arbitraje";
+import { CalcEstrategias } from "@/components/calc-estrategias";
+import { CalcFijar } from "@/components/calc-fijar";
+import { CalcCostos } from "@/components/calc-costos";
+import { CalcPorcentaje } from "@/components/calc-porcentaje";
+import { CalcPases } from "@/components/calc-pases";
+import { QueEsEsto } from "@/components/que-es-esto";
+
+export const revalidate = 60;
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return CALCULADORAS.map((c) => ({ slug: c.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const calc = getCalc(slug);
+  if (!calc) return { title: "Calculadora · RF AGRO" };
+  return { title: `${calc.nombre} · RF AGRO`, description: calc.desc };
+}
+
+export default async function CalculadoraPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const calc = getCalc(slug);
+  if (!calc) notFound();
+
+  // Se traen las dos fuentes de curva/pizarra (cache-deduped); cada calc usa lo suyo.
+  const curva = await getCurvaGranos();
+  const pizarra = await getPizarra();
+
+  const NOMBRES_PIZARRA: Record<string, string> = { SOJ: "Soja", MAI: "Maíz", TRI: "Trigo" };
+  const pizarraProd: PizarraProducto[] = ["SOJ", "MAI", "TRI"]
+    .map((u) => pizarra.granos[u])
+    .filter((g): g is NonNullable<typeof g> => !!g)
+    .map((g) => ({ underlying: g.underlying, nombre: NOMBRES_PIZARRA[g.underlying] ?? g.underlying, usd: g.usd }));
+
+  function renderCalc() {
+    switch (slug) {
+      case "a-fijar":
+        return <CalcFijar granos={curva.granos} />;
+      case "por-porcentaje":
+        return <CalcPorcentaje granos={curva.granos} />;
+      case "negocios-con-pagos":
+        return <CalcNegociosPago granos={curva.granos} />;
+      case "pago-diferido":
+        return <CalcDiferido />;
+      case "pases":
+        return <CalcPases granos={curva.granos} />;
+      case "carry":
+        return <CalcArbitraje granos={curva.granos} />;
+      case "costos":
+        return <CalcCostos />;
+      case "estrategias":
+        return <CalcEstrategias />;
+      case "negocios-de-planta":
+        return <CalcPlanta pizarra={pizarraProd} />;
+      default:
+        return null;
+    }
+  }
+
+  return (
+    <>
+      <h1 className="sr">RF AGRO — {calc.nombre}</h1>
+      <main className="wrap">
+        <div className="col">
+          <Link href="/calculadoras" className="cal-inline-link">
+            ← Calculadoras
+          </Link>
+          <h2 className="sec-title">{calc.nombre}</h2>
+          <QueEsEsto paraQue={calc.paraQue} comoSeCalcula={calc.comoSeCalcula} />
+          {renderCalc()}
+        </div>
+      </main>
+    </>
+  );
+}

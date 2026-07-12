@@ -46,7 +46,7 @@ export async function CierresPanel() {
             {data.granos.length === 0 && (
               <tr>
                 <td className="l dim" colSpan={7}>
-                  Sin cierres cargados todavía (pendiente el backfill desde el CEM).
+                  Sin cierres cargados todavía.
                 </td>
               </tr>
             )}
@@ -55,7 +55,7 @@ export async function CierresPanel() {
       </div>
       <div className="panel-note">
         <span>
-          <span className="k">Real</span> CEM (Matba ROFEX), guardado en Supabase. Ajuste = precio de
+          <span className="k">Real</span> Matba Rofex. Ajuste = precio de
           liquidación diario · Var = variación % del cierre · Int. abierto = contratos abiertos (Δ vs día
           previo) · Tasa impl. = tasa implícita de la posición. Muestra el último cierre disponible.
         </span>

@@ -2,6 +2,7 @@ import { getDolarLinked } from "@/lib/market";
 import { nfmt, pfmt, sfmt, rfmt, dirOf, arrowOf } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
 import { SourceStamp } from "./source-stamp";
+import { QueEsEsto } from "./que-es-esto";
 
 function IconLink() {
   return (
@@ -65,19 +66,17 @@ export async function DolarLinkedPanel() {
             {data.bonos.length === 0 && (
               <tr>
                 <td className="l dim" colSpan={10}>
-                  Sin dólar-linked en data912 en este momento.
+                  Sin dólar-linked disponible en este momento.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-      <div className="panel-note">
-        <span>
-          <span className="k">Real</span> data912. TC implícito = Px÷100 · Spread of. = Oficial MAE − TC
-          implícito · TNA/TEM/TEA vs oficial MAE, base 365 (vto inferido del ticker). Dif. MEP = MEP − TC implícito.
-        </span>
-      </div>
+      <QueEsEsto
+        paraQue="Muestra el rendimiento de los bonos que ajustan por el dólar oficial (dollar-linked): cuánto pagan por encima o por debajo del oficial."
+        comoSeCalcula="Del precio de cada bono sale un tipo de cambio implícito; la diferencia contra el dólar oficial es el spread, y se anualiza en tasa nominal, efectiva anual y mensual. El vencimiento se toma de cada instrumento."
+      />
     </Panel>
   );
 }

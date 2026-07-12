@@ -3,6 +3,7 @@ import { arbitrajes } from "@/lib/sample";
 import { Panel, PanelHead } from "./panel";
 import { ImplicitasChart } from "./implicitas-chart";
 import { SourceStamp } from "./source-stamp";
+import { QueEsEsto } from "./que-es-esto";
 
 function IconLayers() {
   return (
@@ -18,7 +19,7 @@ export async function ImplicitasPanel() {
   const [fut, link] = await Promise.all([getDolarFuturo(), getDolarLinked()]);
 
   const meta = {
-    source: "MAE + data912",
+    source: "MAE · Mercado de deuda local",
     updatedAt: Math.max(fut.meta.updatedAt ?? 0, link.meta.updatedAt ?? 0) || null,
     status: "parcial" as const, // granos siguen siendo ejemplo
     problemas: [...fut.meta.problemas, ...link.meta.problemas, "granos: ejemplo hasta conectar A3"],
@@ -49,12 +50,10 @@ export async function ImplicitasPanel() {
         stamp={<SourceStamp meta={meta} />}
       />
       <ImplicitasChart series={series} />
-      <div className="panel-note">
-        <span>
-          <span className="k">Real</span> TNA de dólar futuro (MAE) y dólar linked (data912). Granos =
-          ejemplo hasta conectar A3. Eje X = días al vencimiento; eje Y = TNA USD.
-        </span>
-      </div>
+      <QueEsEsto
+        paraQue="Junta en un solo gráfico las tasas en dólares que se pueden sacar por distintos caminos (dólar futuro y dólar linked), para comparar cuál rinde más a cada plazo."
+        comoSeCalcula="Para cada instrumento calcula la tasa anual en dólares y la ubica según los días que faltan hasta el vencimiento: el eje horizontal son los días al vencimiento y el vertical, la tasa anual."
+      />
     </Panel>
   );
 }

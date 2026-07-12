@@ -11,15 +11,11 @@ export function SiteFooter() {
         <span className="fb-sub">Research de granos</span>
       </div>
       <div className="src">
-        <b>Fuentes</b>
-        <span className="src-chip">A3 Primary</span>
-        <span className="src-chip">MAE</span>
-        <span className="src-chip">data912</span>
-        <span className="src-chip">BCRA v4</span>
-        <span className="src-chip">CAC-BCR</span>
+        <b>RF AGRO</b>
+        <span className="src-chip">Elaboración propia · datos de mercado</span>
       </div>
       <span className="maqueta">
-        <span className="k">v0</span> datos de cierre · algunos de ejemplo
+        <span className="k">v0</span> datos de cierre · algunos provisorios
       </span>
       <p className="disc">
         Información de mercado con fines informativos. No constituye recomendación ni

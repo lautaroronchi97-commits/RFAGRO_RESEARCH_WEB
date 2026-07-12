@@ -6,6 +6,7 @@ import { Panel, PanelHead } from "./panel";
 import { GlyphSoja, GlyphMaiz, GlyphTrigo } from "./icons";
 import { InfoTip } from "./infotip";
 import { SourceStamp } from "./source-stamp";
+import { QueEsEsto } from "./que-es-esto";
 
 function glyphFor(u: string) {
   if (u === "SOJ") return <GlyphSoja />;
@@ -141,16 +142,10 @@ export async function PasesPanel() {
           </tbody>
         </table>
       </div>
-      <div className="panel-note">
-        <span>
-          <span className="k">Real</span> Pase = diferencia de ajuste (settlement) de la posición cercana
-          contra cada más lejana del mismo grano, desde los cierres del CEM guardados en Supabase. TNA = tasa directa
-          anualizada por los días entre vencimientos (CEM). Últ. op. = spread sobre el último precio operado
-          (— si alguna posición no operó ese día). Comprador/Vendedor/Último/Vol = puntas y operado del
-          instrumento de pase en A3, en vivo (~1 min con rueda abierta; fuera de rueda las puntas quedan —).
-          Próximo: histórico desde los snapshots.
-        </span>
-      </div>
+      <QueEsEsto
+        paraQue="Compara dos fechas de entrega del mismo grano y te dice cuánto cuesta (o cuánto te pagan) por correr la venta de la más cercana a la más lejana. Sirve para decidir si te conviene estirar o adelantar un compromiso ya tomado."
+        comoSeCalcula="Es la diferencia de precio entre la posición cercana y la lejana; esa diferencia, anualizada por los días que hay entre una y otra fecha, te da la tasa del pase. Comprador, Vendedor, Último y Volumen son del pase en la rueda, cuando está abierta."
+      />
     </Panel>
   );
 }

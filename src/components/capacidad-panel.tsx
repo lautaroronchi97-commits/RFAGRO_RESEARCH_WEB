@@ -4,6 +4,7 @@ import { Panel, PanelHead } from "./panel";
 import { GlyphSoja, GlyphMaiz, GlyphTrigo } from "./icons";
 import { InfoTip } from "./infotip";
 import { SourceStamp } from "./source-stamp";
+import { QueEsEsto } from "./que-es-esto";
 
 function glyphFor(u: string) {
   if (u === "SOJ") return <GlyphSoja />;
@@ -43,13 +44,13 @@ export async function CapacidadPanel() {
               <th className="l" scope="col">Grano</th>
               <th scope="col">
                 <InfoTip term="Capacidad de pago">
-                  FAS Teórico de BCR: lo que teóricamente puede pagar el exportador (FOB − retenciones −
-                  gastos), en u$s por tonelada. Referencia Up River (Gran Rosario).
+                  Lo que teóricamente puede pagar el exportador (precio de exportación − retenciones −
+                  gastos), en u$s por tonelada. Referencia Gran Rosario.
                 </InfoTip>
               </th>
               <th scope="col">
                 <InfoTip term="Pizarra disponible">
-                  Precio del disponible en u$s de la Cámara (CAC-BCR), como contexto de mercado.
+                  Precio del disponible en u$s, como contexto de mercado.
                 </InfoTip>
               </th>
             </tr>
@@ -79,14 +80,10 @@ export async function CapacidadPanel() {
           </tbody>
         </table>
       </div>
-      <div className="panel-note">
-        <span>
-          <span className="k">Base</span> FAS Teórico de BCR{data.fecha ? ` (al ${data.fecha})` : ""} =
-          capacidad de pago teórica del exportador · u$s/tn, referencia Up River (Gran Rosario). Es la base;
-          el modelo propio de Lautaro (con el dato del día) se enchufa por <code>CAPACIDAD_OVERRIDE</code>.
-          Pizarra = disponible CAC como contexto.
-        </span>
-      </div>
+      <QueEsEsto
+        paraQue="Es una referencia de cuánto puede pagar el comprador por tu grano hoy, en dólares por tonelada. Sirve para ubicar si un precio que te ofrecen está cerca del techo del mercado."
+        comoSeCalcula="Parte del precio de exportación y le descuenta las retenciones y los gastos, con referencia al Gran Rosario. Al lado se muestra el precio de pizarra como contexto."
+      />
     </Panel>
   );
 }

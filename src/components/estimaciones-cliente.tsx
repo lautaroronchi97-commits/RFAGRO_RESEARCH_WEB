@@ -145,9 +145,8 @@ export function EstimacionesCliente({ rows, granos, organismos }: { rows: EstimR
         </div>
         <p className="estim-units">
           Producción en <b>Mt</b> (millones de t) · Área en <b>Mha</b> · Rinde en <b>tn/ha</b>. El Δ compara
-          con la publicación anterior del mismo organismo y campaña. USDA por país sale del WASDE (producción)
-          + PSD (área/rinde); CONAB agrega las 27 UF de Brasil; en Argentina, BCR (GEA) y SAGyP (DEA, nacional
-          desde las estimaciones por provincia) se pueden mirar lado a lado.
+          con la publicación anterior del mismo organismo y campaña. En Argentina, BCR y SAGyP se pueden
+          mirar lado a lado.
         </p>
       </div>
 

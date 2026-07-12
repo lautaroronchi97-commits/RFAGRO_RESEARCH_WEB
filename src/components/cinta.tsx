@@ -19,8 +19,8 @@ export function Cinta({ data }: { data: CintaData }) {
                   </span>
                 )}
                 {it.sample && (
-                  <span className="rib-ej" title="Dato de ejemplo — pendiente pizarra CAC-BCR">
-                    ej.
+                  <span className="rib-ej" title="Dato provisorio">
+                    prov.
                   </span>
                 )}
               </span>
