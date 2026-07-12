@@ -35,10 +35,20 @@
 ## Verificado
 - Es un plan (docs). No hay build para correr. Rama al día con `main` (0 adelante / 0 atrás) al arrancar.
 
+- **Fase 1 construida (parte estructural) — sellos de origen sin puentes + frescura:** decisión de Lautaro =
+  **nombre propio de la institución**. `meta.source` relabeleado en libs y paneles (CEM/Matba ROFEX → Matba
+  Rofex · CAC/BCR → Bolsa de Comercio de Rosario · data912 → Mercado de deuda local · criptoya/dolarapi →
+  Mercado de cambios · Supabase/MAGyP → SAGyP · USDA(WASDE+PSD)/CONAB → USDA · CONAB), sin sufijos internos
+  (+override/+modelo propio/+A3 en vivo). `source-stamp.tsx` → `[origen] · Actualizado HH:MM` + marca discreta
+  `provisorio` (nuevo `.st-prov`) en vez del badge REAL/PARCIAL/EJEMPLO. `site-footer.tsx` sin chips técnicos
+  (→ "Elaboración propia"). `cinta.tsx` chip "prov." con title genérico. Relabel bulk con `scratchpad/relabel.mjs`.
+
 ## Quedó pendiente / en vuelo
-- **Fase 0 hecha.** Siguen fases **1→6**: ocultar puentes de fuentes + frescura · rutas por grupo
-  (`/granos`, `/dolar`, `/comercio`) · inicio tablero · calculadoras sub-hub con link propio · capa
-  explicativa "¿Qué es esto?" · pulido nav/mobile.
+- **Fase 1 — parte pendiente:** las **notas al pie** de cada panel (`<span class="k">Real</span> …`) todavía
+  nombran puentes (CEM, Supabase, data912, WASDE…). Son la **capa explicativa** → se reescriben limpias en la
+  **Fase 5** (bloques "¿Qué es esto?"), para no hacer el trabajo dos veces. (Se puede adelantar si Lautaro quiere.)
+- **Siguen fases 2→6**: rutas por grupo (`/granos`, `/dolar`, `/comercio`) · inicio tablero · calculadoras
+  sub-hub con link propio · capa explicativa "¿Qué es esto?" · pulido nav/mobile.
 
 ## Decisiones de detalle (2ª ronda, ya cerradas — §7 del plan)
 - Nombres del menú: estilo "equilibrado" (Granos · Dólar y tasas · Comercio exterior · Calculadoras ·
