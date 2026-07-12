@@ -13,6 +13,7 @@ import { CalcFijar } from "@/components/calc-fijar";
 import { CalcCostos } from "@/components/calc-costos";
 import { CalcPorcentaje } from "@/components/calc-porcentaje";
 import { CalcPases } from "@/components/calc-pases";
+import { QueEsEsto } from "@/components/que-es-esto";
 
 export const revalidate = 60;
 export const dynamicParams = false;
@@ -85,6 +86,7 @@ export default async function CalculadoraPage({
             ← Calculadoras
           </Link>
           <h2 className="sec-title">{calc.nombre}</h2>
+          <QueEsEsto paraQue={calc.paraQue} comoSeCalcula={calc.comoSeCalcula} />
           {renderCalc()}
         </div>
       </main>

@@ -466,6 +466,19 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
 .hub-card:hover .hub-card-go { opacity:1; transform:translateX(2px); }
 .strat-exp { font-size:var(--fs-xs); color:var(--ink-2); line-height:1.5; padding:8px 11px;
   background:var(--panel-2); border:1px solid var(--line); border-radius:8px; }
+
+/* Bloque desplegable "¿Qué es esto?" (explicación para no técnicos) */
+.qee { margin:4px 0 2px; border:1px solid var(--line); border-radius:8px; background:var(--panel-2); overflow:hidden; }
+.qee-sum { cursor:pointer; list-style:none; padding:8px 11px; font-family:var(--font-ui); font-size:var(--fs-xs);
+  font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--gold-text);
+  display:flex; align-items:center; gap:7px; }
+.qee-sum::-webkit-details-marker { display:none; }
+.qee-sum::before { content:"▸"; font-size:10px; transition:transform var(--t-fast) ease; }
+.qee[open] .qee-sum::before { transform:rotate(90deg); }
+.qee-sum:hover { color:var(--ink); }
+.qee-body { padding:0 11px 10px; font-size:var(--fs-xs); color:var(--ink-2); line-height:1.55; }
+.qee-body p { margin:6px 0 0; }
+.qee-body b { color:var(--ink); }
 .calc-btns { display:flex; gap:10px; flex-wrap:wrap; }
 /* ---- Noticias (portal): chips de filtro + grilla por categoría ---- */
 .news-body { display:flex; flex-direction:column; }
