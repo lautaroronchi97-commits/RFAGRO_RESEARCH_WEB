@@ -145,7 +145,8 @@ export function EstimacionesCliente({ rows, granos, organismos }: { rows: EstimR
         </div>
         <p className="estim-units">
           Producción en <b>Mt</b> (millones de t) · Área en <b>Mha</b> · Rinde en <b>tn/ha</b>. El Δ compara
-          con la publicación anterior del mismo organismo y campaña.
+          con la publicación anterior del mismo organismo y campaña. En Argentina, BCR y SAGyP se pueden
+          mirar lado a lado.
         </p>
       </div>
 
@@ -199,10 +200,10 @@ export function EstimacionesCliente({ rows, granos, organismos }: { rows: EstimR
         <div className="estim-cambios">
           {cambiosPorOrg.length === 0 && <div className="cal-empty">Todavía no hay dos publicaciones para comparar.</div>}
           {cambiosPorOrg.map((c) => (
-            <div className="estim-cam-card" key={c.informe + c.fecha}>
+            <div className="estim-cam-card" key={c.organismo + c.fecha}>
               <div className="estim-cam-hd">
-                <span className={`cal-org org-${c.cambios[0]?.organismo ?? organismos[0]}`}>
-                  {ORG_LABEL[(c.cambios[0]?.organismo ?? organismos[0]) as keyof typeof ORG_LABEL] ?? c.cambios[0]?.organismo}
+                <span className={`cal-org org-${c.organismo}`}>
+                  {ORG_LABEL[c.organismo as keyof typeof ORG_LABEL] ?? c.organismo}
                 </span>
                 <span className="estim-cam-inf">{c.informe}</span>
                 <span className="estim-cam-fecha">{c.fecha}</span>

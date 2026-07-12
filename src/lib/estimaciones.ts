@@ -160,15 +160,22 @@ function vintagesDe(
     .sort((a, b) => (a.fecha_publicacion < b.fecha_publicacion ? -1 : 1));
 }
 
-/** Campaña más reciente presente para (organismo, pais, grano) — formato "YYYY/YY" ordena bien. */
+/**
+ * Campaña más reciente presente para (organismo, pais, grano) — formato "YYYY/YY" ordena bien.
+ * Prefiere la campaña más nueva que YA tenga producción (así el titular de la pizarra no queda en "—"
+ * cuando un organismo abre una campaña nueva con solo el área — ej. GEA publica área de trigo 2026/27
+ * antes que rinde/producción). Si ninguna campaña tiene producción, cae a la más nueva con cualquier dato.
+ */
 function campaniaVigente(rows: EstimRow[], organismo: string, pais: string, grano: string): string | null {
-  let max: string | null = null;
+  let maxAny: string | null = null;
+  let maxProd: string | null = null;
   for (const r of rows) {
     if (r.organismo === organismo && r.pais === pais && r.grano === grano) {
-      if (max === null || r.campania > max) max = r.campania;
+      if (maxAny === null || r.campania > maxAny) maxAny = r.campania;
+      if (r.variable === "produccion" && (maxProd === null || r.campania > maxProd)) maxProd = r.campania;
     }
   }
-  return max;
+  return maxProd ?? maxAny;
 }
 
 export function granosPresentes(rows: EstimRow[]): string[] {
@@ -261,9 +268,9 @@ export function ultimaFecha(rows: EstimRow[], organismo: string): string | null 
  * Qué tocó el último informe de `organismo`: para cada fila de la última fecha, busca el vintage
  * inmediatamente anterior (misma serie) y devuelve el delta. Solo producción (la variable estrella).
  */
-export function construirCambios(rows: EstimRow[], organismo: string): { fecha: string | null; informe: string; cambios: Cambio[] } {
+export function construirCambios(rows: EstimRow[], organismo: string): { organismo: string; fecha: string | null; informe: string; cambios: Cambio[] } {
   const fecha = ultimaFecha(rows, organismo);
-  if (!fecha) return { fecha: null, informe: "", cambios: [] };
+  if (!fecha) return { organismo, fecha: null, informe: "", cambios: [] };
 
   const delDia = rows.filter(
     (r) => r.organismo === organismo && r.fecha_publicacion === fecha && r.variable === "produccion",
@@ -291,7 +298,7 @@ export function construirCambios(rows: EstimRow[], organismo: string): { fecha: 
   }
   // Los movimientos más grandes primero (por magnitud absoluta).
   cambios.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
-  return { fecha, informe, cambios };
+  return { organismo, fecha, informe, cambios };
 }
 
 /* ------------------------------------------------------------------ */

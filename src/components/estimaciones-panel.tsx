@@ -10,12 +10,12 @@ import { EstimacionesCliente } from "./estimaciones-cliente";
 const QUE_VIENE: { org: Organismo; region: string; detalle: string }[] = [
   { org: "USDA", region: "EEUU · Argentina · Brasil · mundo", detalle: "Producción, área y rinde por país, con revisiones mensuales desde 2020." },
   { org: "CONAB", region: "Brasil (por estado)", detalle: "Estimaciones mensuales de Brasil, con el historial desde 2017/18." },
-  { org: "BCR", region: "Argentina", detalle: "Estimación mensual de soja, maíz y trigo." },
-  { org: "BCBA", region: "Argentina", detalle: "Panorama Agrícola Semanal: los 6 granos, actualización semanal." },
-  { org: "DEA", region: "Argentina (por provincia)", detalle: "Estimaciones oficiales de los 6 granos, con histórico 1969/70 → hoy." },
+  { org: "BCR", region: "Argentina", detalle: "Estimación mensual de soja, maíz y trigo, con histórico desde 2020." },
+  { org: "DEA", region: "Argentina (por provincia)", detalle: "Estimaciones oficiales de los 6 granos, actualización semanal con histórico." },
+  { org: "BCBA", region: "Argentina", detalle: "Panorama Agrícola Semanal: los 6 granos (pendiente de acceso)." },
 ];
 
-const SOURCE = "USDA · CONAB";
+const SOURCE = "USDA · CONAB · BCR · SAGyP";
 
 /**
  * Panel "Última estimación por organismo" de /produccion. Lee los vintages de
