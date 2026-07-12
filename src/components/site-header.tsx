@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { WheatMark } from "./icons";
 import { RuedaClock } from "./rueda-clock";
 import { RuedaStatus } from "./rueda-status";
@@ -8,7 +9,7 @@ export function SiteHeader() {
   return (
     <header className="masthead">
       <div className="masthead-in">
-        <div className="brand">
+        <Link href="/" className="brand" aria-label="RF AGRO — Inicio">
           <span className="mark">
             <WheatMark />
           </span>
@@ -17,7 +18,7 @@ export function SiteHeader() {
             <span className="agro">AGRO</span>
           </span>
           <span className="brand-sub">Pizarra electrónica · granos</span>
-        </div>
+        </Link>
 
         <NavLinks />
 
