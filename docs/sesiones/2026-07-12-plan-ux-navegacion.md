@@ -62,11 +62,17 @@
   `generateMetadata` por calc + back link. Cada calc recibe su curva/pizarra (cache-deduped). Se puede mandar
   el link directo de UNA calc (ej. `/calculadoras/a-fijar`).
 
+- **Fase 5 construida — capa explicativa + limpieza total de puentes (cierra también el pendiente de la Fase 1):**
+  · **5a**: `src/components/que-es-esto.tsx` (`<details>` nativo, cerrado, "Para qué sirve" / "Cómo se hacen las
+  cuentas"; estilos `.qee`) + explicaciones de las 9 calcs en `src/lib/calculadoras.ts`, renderizadas en
+  `/calculadoras/[slug]`. · **5b**: se reemplazó la nota al pie de cada reporte por un "¿Qué es esto?" limpio y
+  se sacaron TODOS los puentes que quedaban (arbitrajes, mejor caja, pases, capacidad +InfoTips · dólar
+  futuro/linked/implícitas/sintéticos/cambiario · DJVE · noticias · estimaciones panel/cliente/mini · gráficos
+  +página · calc-planta · cierres-panel · produccion). Barrido final de puentes en HTML servido = **limpio**.
+
 ## Quedó pendiente / en vuelo
-- **Fase 1 — parte pendiente:** las **notas al pie** de cada panel todavía nombran puentes (CEM, Supabase,
-  data912, WASDE…). Son la **capa explicativa** → se reescriben limpias en la **Fase 5**.
-- **Siguen fases 5→6**: capa explicativa "¿Qué es esto?" por calc/reporte + limpieza de las notas al pie
-  (Fase 5) · migas de pan + pulido nav/mobile (Fase 6).
+- **Sigue la Fase 6** (última): migas de pan (`Inicio › Sección › Subpágina`) + pulido nav/mobile (drawer si
+  hace falta) + revisar `robots noindex`. El resto del plan UX está hecho.
 
 ## Decisiones de detalle (2ª ronda, ya cerradas — §7 del plan)
 - Nombres del menú: estilo "equilibrado" (Granos · Dólar y tasas · Comercio exterior · Calculadoras ·

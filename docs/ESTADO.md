@@ -39,8 +39,10 @@ build/lint/tsc ✅. **Falta de Fase 1:** las notas al pie de los paneles aún no
 (la home dejó de ser la tira: ahora es el tablero = cinta + "Lo importante hoy" con titulares del día + grilla
 de 7 tarjetas por sección; se sacaron los paneles de la home → fin de la duplicación). **Fase 4 hecha**
 (calculadoras con link propio: `src/lib/calculadoras.ts` + `/calculadoras` índice de tarjetas + ruta dinámica
-`/calculadoras/[slug]` con las 9 en SSG, slug inválido → 404). Build/lint/tsc ✅. **Siguen fases 5→6** (capa
-explicativa "¿Qué es esto?" + limpieza de notas al pie · migas de pan + pulido mobile).
+`/calculadoras/[slug]` con las 9 en SSG, slug inválido → 404). **Fase 5 hecha** (capa explicativa: componente
+`que-es-esto.tsx` desplegable "¿Qué es esto?" en las 9 calcs + todos los reportes, reemplazando las notas al
+pie; **se sacaron TODOS los puentes** que quedaban → barrido del HTML servido limpio; cierra el pendiente de la
+Fase 1). Build/lint/tsc ✅. **Sigue la Fase 6** (última): migas de pan + pulido nav/mobile + revisar noindex.
 Detalle: [`sesiones/2026-07-12-plan-ux-navegacion.md`](sesiones/2026-07-12-plan-ux-navegacion.md).
 
 **✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
