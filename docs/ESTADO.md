@@ -24,7 +24,7 @@
 **✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
 de datos reales. Default de GitHub = `main` · Vercel Branch Tracking = `main`.
 
-**Hecho esta sesión (rama `claude/session-c-local-production-pvqf6f`, draft) — Sesión C: estimaciones Argentina:**
+**Hecho esta sesión (rama `claude/session-c-local-production-pvqf6f`, PR #23 MERGEADO a `main`) — Sesión C: estimaciones Argentina:**
 - **Ingestas + workflow**: `scripts/ingest-gea.mjs` (BCR-GEA: tablas `bcr-estimaciones` de soja/maíz/trigo +
   fecha/PDF del informe; **backfill Wayback** 2020→hoy por CDX), `scripts/ingest-dea.mjs` (DEA-SAGyP: POST del CSV
   oficial → nacional por cultivo/campaña de los 6 granos, snapshot semanal = vintage), `scripts/ingest-pas.mjs`
@@ -37,11 +37,16 @@ de datos reales. Default de GitHub = `main` · Vercel Branch Tracking = `main`.
 - **Verificado**: lint/tsc/build ✅; parsers y lógica contra datos reales (GEA soja 51,5 / maíz 68 / trigo 29,5 Mt;
   backfill feb-2026 soja 48,0 = coincide con el plan; DEA soja 22/23 25,0 Mt = la sequía, soja 24/25 51,1 Mt); UI en
   navegador claro/oscuro (comparador AR de 3 vías, screenshots).
-- **⚠️ FALTA POBLAR Supabase** (mismo bloqueo del MCP que la Sesión B): **tras el merge, correr el `workflow_dispatch`
-  de *Ingesta estimaciones Argentina*** con `backfill_gea=true` + `dea_since=2019` (+ los de la Sesión B si faltan) →
-  después los crons mantienen solo. Hasta entonces `/produccion` degrada al roadmap. Para el PAS: correr `pas_probe=true`
-  desde Actions y ver si esa IP pasa el Cloudflare. Detalle: [`sesiones/2026-07-12-estimaciones-argentina.md`](sesiones/2026-07-12-estimaciones-argentina.md).
-- **Módulo Calendario + estimaciones COMPLETO (A+B+C)**: solo resta poblar Supabase por dispatch + validar el PAS.
+- **✅ SUPABASE POBLADO (12/07, post-merge)**: se corrieron los `workflow_dispatch` y **terminaron en verde** —
+  *Ingesta estimaciones Argentina* (`backfill_gea` + `dea_since=2019` + `pas_probe`), *Ingesta USDA* (backfill 2020→
+  + PSD) e *Ingesta CONAB* (full). Como cada script sale con error si el upsert falla, el `success` confirma que los
+  datos entraron. Los crons ahora mantienen solo. **OJO ISR**: `/produccion` es estática con `revalidate=3600` →
+  la pizarra real aparece en la próxima regeneración (~1 h) o con cualquier redeploy en Vercel.
+- **⚠️ PAS (BCBA) — validar**: el `pas_probe` corrió dentro del run de Argentina; **falta leer el log** (Actions →
+  *Ingesta estimaciones Argentina* → paso "PAS (BCBA)") para ver si la IP de Actions pasó el Cloudflare. Si pasó,
+  endurecer el parser de `ingest-pas.mjs` con el HTML real y activarlo en el schedule; si no, respaldo por mail.
+  El comparador AR ya es sólido con BCR + SAGyP + USDA. Detalle: [`sesiones/2026-07-12-estimaciones-argentina.md`](sesiones/2026-07-12-estimaciones-argentina.md).
+- **✅ Módulo Calendario + estimaciones COMPLETO (A+B+C) y poblado**: solo resta validar el PAS (arriba).
 
 **Hecho antes (rama `claude/session-b-pr20-wwijnz`, PR #21 mergeado) — Sesión B: ingestas USDA + CONAB:**
 - **Ingestas + workflows**: `scripts/ingest-usda.mjs` (WASDE = producción por país incl. mundo + vintages;
@@ -129,7 +134,7 @@ feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→
 | `claude/timeline-spread-charts-plan-3zlt1g` | Panel de gráficos (PR #17 **MERGEADO**) → borrar. |
 | `claude/production-forecast-calendar-zdpmd6` | Módulo calendario — plan + Sesión A (PR #20). |
 | `claude/session-b-pr20-wwijnz` | Sesión B — ingestas USDA+CONAB (PR #21 **MERGEADO**) → borrar. |
-| `claude/session-c-local-production-pvqf6f` | Sesión C — ingestas Argentina (GEA/DEA/PAS) + comparador AR (draft). Falta poblar Supabase por dispatch tras merge + validar PAS desde Actions. |
+| `claude/session-c-local-production-pvqf6f` | Sesión C — ingestas Argentina (GEA/DEA/PAS) + comparador AR (PR #23 **MERGEADO**, Supabase poblado) → borrar. Solo queda validar el PAS. |
 | `claude/futures-position-databases-j10vpr` · `claude/feed-a3-live-plan-obxzcz` · `claude/news-section-redesign-k3zctf` · `claude/plant-business-calculator-0sf28m` | PRs #10/#14, #11, #12/#15/#16 y #18 ya mergeados → borrar. |
 
 **Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
@@ -137,12 +142,11 @@ feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→
    ratio/base en % · export PNG/CSV · media móvil · volumen/OI · presets del usuario (login) ·
    P12 (relaciones %) y P17 (serie continua) con ejemplos de Lautaro · import 2018/19. Lista
    completa arriba en «Ahora».
-1. **Módulo Calendario + estimaciones — POBLAR Supabase** (A+B+C ya hechas en código): correr los
-   `workflow_dispatch` para poblar `estimaciones_produccion` — *Ingesta estimaciones Argentina*
-   (`backfill_gea=true` + `dea_since=2019`) + *Ingesta USDA* (backfill from 2020-01 + snapshot_psd=true) +
-   *Ingesta CONAB* (full=true). Después los crons mantienen solo. Urgencia: cada mes sin snapshotear PSD es un
-   vintage de girasol/cebada/sorgo perdido. **PAS (BCBA)**: correr `pas_probe=true` desde Actions para ver si esa
-   IP pasa el Cloudflare; si pasa, endurecer el parser con el HTML real y activarlo en el schedule.
+1. **Módulo Calendario + estimaciones — COMPLETO y poblado** (A+B+C + dispatches corridos en verde). Solo resta:
+   **validar el PAS (BCBA)** — leer el log del `pas_probe` (Actions → *Ingesta estimaciones Argentina* → paso "PAS
+   (BCBA)"); si la IP de Actions pasó el Cloudflare, endurecer el parser de `ingest-pas.mjs` con el HTML real y
+   activarlo en el schedule; si no, respaldo por mail. Opcional: backfill histórico DEA por PDFs mensuales (`?mes=`)
+   y el candidato tier-2 `ingest-amis.mjs` (proxy BigQuery de FAO-AMIS, vintages de 3 organismos).
 2. **Fase 2 del Feed A3 — histórico intradiario**: cron GH Actions `*/15 13-20 * * 1-5` UTC +
    `scripts/ingest-rueda.mjs` + tabla `snapshots` + `ingest_log` (INFRAESTRUCTURA.md). Habilita gráficos
    intradía. (La frescura ya está resuelta web-directa; esto es SOLO para guardar historia.)
