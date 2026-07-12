@@ -439,6 +439,31 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
   text-transform:uppercase; color:var(--ink-2); margin:14px 2px 2px; padding-top:10px;
   border-top:1px solid var(--line); }
 .sec-title:first-child { border-top:none; padding-top:0; margin-top:0; }
+
+/* ===== Portada / tablero (hub) ===== */
+.hub-hoy-hd { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+.hub-hoy-more { font-size:var(--fs-2xs); font-weight:800; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--gold-text); white-space:nowrap; }
+.hub-hoy-more:hover { color:var(--ink); }
+.hub-titulares { list-style:none; margin:6px 0 0; padding:0; border:1px solid var(--edge);
+  border-radius:var(--r-panel); background:var(--panel); box-shadow:var(--shadow); overflow:hidden; }
+.hub-titulares li + li { border-top:1px solid var(--line); }
+.hub-titulares a { display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  padding:11px 14px; transition:background var(--t-fast) ease; }
+.hub-titulares a:hover { background:color-mix(in srgb, var(--panel-2) 80%, transparent); }
+.ht-titulo { font-size:var(--fs-base); font-weight:600; color:var(--ink); line-height:1.35; }
+.ht-fuente { font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3);
+  white-space:nowrap; flex-shrink:0; }
+.hub-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; margin-top:6px; }
+.hub-card { position:relative; display:flex; flex-direction:column; gap:5px; padding:16px 16px 15px;
+  border:1px solid var(--edge); border-radius:var(--r-panel); background:var(--panel); box-shadow:var(--shadow);
+  transition:border-color var(--t-fast) ease, transform var(--t-fast) ease; }
+.hub-card:hover { border-color:color-mix(in srgb, var(--gold) 55%, var(--edge)); transform:translateY(-1px); }
+.hub-card-name { font-family:var(--font-ui); font-size:var(--fs-md); font-weight:800; color:var(--ink); letter-spacing:.01em; }
+.hub-card-desc { font-size:var(--fs-sm); color:var(--ink-2); line-height:1.4; padding-right:14px; }
+.hub-card-go { position:absolute; top:14px; right:15px; color:var(--gold-text); font-weight:700; opacity:.5;
+  transition:opacity var(--t-fast) ease, transform var(--t-fast) ease; }
+.hub-card:hover .hub-card-go { opacity:1; transform:translateX(2px); }
 .strat-exp { font-size:var(--fs-xs); color:var(--ink-2); line-height:1.5; padding:8px 11px;
   background:var(--panel-2); border:1px solid var(--line); border-radius:8px; }
 .calc-btns { display:flex; gap:10px; flex-wrap:wrap; }
