@@ -3,6 +3,7 @@ import { nfmt, pfmt, rfmt, dirOf, arrowOf } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
 import { DolarFuturoChart } from "./dolar-futuro-chart";
 import { SourceStamp } from "./source-stamp";
+import { QueEsEsto } from "./que-es-esto";
 
 function IconCurve() {
   return (
@@ -93,13 +94,10 @@ export async function DolarFuturoPanel() {
         </div>
       </div>
 
-      <div className="panel-note">
-        <span>
-          <span className="k">Real</span> Precios y volumen de MAE (dólar DDF). Tasas implícitas —
-          metodología A3, spot mayorista, base 365: TNA = (Fut/Spot−1)×365/días · TEA =
-          (Fut/Spot)^(365/días)−1 · TEM = (1+TEA)^(1/12)−1.
-        </span>
-      </div>
+      <QueEsEsto
+        paraQue="Muestra los contratos de dólar futuro y qué tasa en pesos implica cada uno: cuánto rinde comprar dólar a futuro frente al mayorista de hoy."
+        comoSeCalcula="Compara cada precio futuro contra el dólar mayorista de hoy; de esa relación salen la tasa nominal anual, la efectiva anual y la mensual, según los días hasta el vencimiento."
+      />
     </Panel>
   );
 }

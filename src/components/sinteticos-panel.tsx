@@ -2,6 +2,7 @@ import { getLecaps } from "@/lib/market";
 import { nfmt, pfmt, dirOf, arrowOf } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
 import { SourceStamp } from "./source-stamp";
+import { QueEsEsto } from "./que-es-esto";
 
 function IconSint() {
   return (
@@ -52,20 +53,17 @@ export async function SinteticosPanel() {
             {lecaps.length === 0 && (
               <tr>
                 <td className="l dim" colSpan={4}>
-                  Sin LECAPs en data912 en este momento.
+                  Sin LECAPs disponibles en este momento.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-      <div className="panel-note">
-        <span>
-          <span className="k">Parcial</span> Precios de LECAPs reales (data912). Para la <b>TIR</b> y el
-          <b> sintético</b> (LECAP + dólar futuro vs futuro directo) falta tu tabla de <b>pago final por
-          letra</b> y confirmar la fórmula — lo sumamos cuando la pases.
-        </span>
-      </div>
+      <QueEsEsto
+        paraQue="Muestra los precios de las letras del Tesoro (LECAPs). El cálculo de la tasa efectiva y del sintético todavía está en preparación."
+        comoSeCalcula="Por ahora se listan los precios de las letras. La tasa efectiva (TIR) y la comparación sintética contra el dólar futuro se agregan más adelante."
+      />
     </Panel>
   );
 }

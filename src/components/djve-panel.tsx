@@ -2,6 +2,7 @@ import { getDjveResumen } from "@/lib/djve";
 import { nfmt } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
 import { SourceStamp } from "./source-stamp";
+import { QueEsEsto } from "./que-es-esto";
 
 function IconExport() {
   return (
@@ -64,13 +65,10 @@ export async function DjvePanel() {
           </tbody>
         </table>
       </div>
-      <div className="panel-note">
-        <span>
-          <span className="k">Real</span> DJVE (Ley 21.453) publicadas por el MAGyP, guardadas a diario en
-          Supabase. Acum. año = toneladas registradas en el año calendario en curso · ventanas 7/30 días por
-          fecha de registro. Fuente de datos que Lautaro ya venía capturando.
-        </span>
-      </div>
+      <QueEsEsto
+        paraQue="Muestra las declaraciones de venta al exterior (DJVE) de granos y subproductos: cuánto se anotó para exportar, un termómetro de la demanda externa."
+        comoSeCalcula="Suma las toneladas registradas en el año en curso, con ventanas de los últimos 7 y 30 días por fecha de registro."
+      />
     </Panel>
   );
 }

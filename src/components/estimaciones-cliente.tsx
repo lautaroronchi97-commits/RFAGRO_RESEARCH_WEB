@@ -145,8 +145,7 @@ export function EstimacionesCliente({ rows, granos, organismos }: { rows: EstimR
         </div>
         <p className="estim-units">
           Producción en <b>Mt</b> (millones de t) · Área en <b>Mha</b> · Rinde en <b>tn/ha</b>. El Δ compara
-          con la publicación anterior del mismo organismo y campaña. USDA por país sale del WASDE (producción)
-          + PSD (área/rinde); CONAB agrega las 27 UF de Brasil.
+          con la publicación anterior del mismo organismo y campaña.
         </p>
       </div>
 

@@ -84,7 +84,7 @@ export async function EstimacionesMini() {
       </div>
       <div className="panel-note">
         <span>
-          <span className="k">Campaña vigente</span> según USDA, con el cambio vs. el WASDE anterior. La
+          <span className="k">Campaña vigente</span> según USDA, con el cambio vs. la publicación anterior. La
           comparación entre organismos (USDA, CONAB, BCR…), el área/rinde y la evolución están en{" "}
           <Link href="/produccion" className="cal-inline-link">Producción</Link>.
         </span>

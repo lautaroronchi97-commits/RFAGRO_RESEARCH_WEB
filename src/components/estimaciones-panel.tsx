@@ -8,11 +8,11 @@ import { EstimacionesCliente } from "./estimaciones-cliente";
 
 // Roadmap para el estado vacío (mientras las ingestas no corrieron / sin datos).
 const QUE_VIENE: { org: Organismo; region: string; detalle: string }[] = [
-  { org: "USDA", region: "EEUU · Argentina · Brasil · mundo", detalle: "WASDE + PSD: producción/área/rinde por país, con revisiones mensuales desde 2020." },
-  { org: "CONAB", region: "Brasil (por estado)", detalle: "Levantamentos mensuales con todos los vintages desde 2017/18." },
-  { org: "BCR", region: "Argentina", detalle: "Estimación mensual GEA de soja, maíz y trigo. (Sesión C)" },
-  { org: "BCBA", region: "Argentina", detalle: "Panorama Agrícola Semanal: los 6 granos, actualización semanal. (Sesión C)" },
-  { org: "DEA", region: "Argentina (por provincia)", detalle: "Estimaciones oficiales SAGyP de los 6 granos + histórico 1969/70→hoy. (Sesión C)" },
+  { org: "USDA", region: "EEUU · Argentina · Brasil · mundo", detalle: "Producción, área y rinde por país, con revisiones mensuales desde 2020." },
+  { org: "CONAB", region: "Brasil (por estado)", detalle: "Estimaciones mensuales de Brasil, con el historial desde 2017/18." },
+  { org: "BCR", region: "Argentina", detalle: "Estimación mensual de soja, maíz y trigo." },
+  { org: "BCBA", region: "Argentina", detalle: "Panorama Agrícola Semanal: los 6 granos, actualización semanal." },
+  { org: "DEA", region: "Argentina (por provincia)", detalle: "Estimaciones oficiales de los 6 granos, con histórico 1969/70 → hoy." },
 ];
 
 const SOURCE = "USDA · CONAB";
@@ -37,8 +37,8 @@ export async function EstimacionesPanel() {
         <div className="prod-soon">
           <p className="prod-soon-lede">
             <span className="k">En preparación</span> Acá va la última estimación de cada organismo por país
-            y grano, el cambio vs. la publicación anterior y la evolución de cada campaña desde 2020. Las bases
-            y la ingesta ya están listas; los datos aparecen cuando corre la primera actualización.
+            y grano, el cambio vs. la publicación anterior y la evolución de cada campaña desde 2020. Los datos
+            aparecen en cuanto se publica la primera actualización.
           </p>
           <ul className="prod-soon-list">
             {QUE_VIENE.map((q) => (
