@@ -56,11 +56,17 @@
   quitan los paneles/calcs de la home → fin de la duplicación de la Fase 2. Estilos del hub en `globals.css`
   (`.hub-titulares`, `.hub-grid`, `.hub-card`, estética hairline + sombra + acento dorado).
 
+- **Fase 4 construida — calculadoras con link propio:** `src/lib/calculadoras.ts` (registro slug/nombre/desc
+  de las 9). `/calculadoras` pasa a índice de tarjetas (reusa `.hub-grid/.hub-card`). Ruta dinámica
+  `/calculadoras/[slug]` con `generateStaticParams` (las 9) + `dynamicParams=false` (slug inválido → 404) +
+  `generateMetadata` por calc + back link. Cada calc recibe su curva/pizarra (cache-deduped). Se puede mandar
+  el link directo de UNA calc (ej. `/calculadoras/a-fijar`).
+
 ## Quedó pendiente / en vuelo
 - **Fase 1 — parte pendiente:** las **notas al pie** de cada panel todavía nombran puentes (CEM, Supabase,
   data912, WASDE…). Son la **capa explicativa** → se reescriben limpias en la **Fase 5**.
-- **Siguen fases 4→6**: calculadoras con **link propio** por calc (Fase 4) · capa explicativa "¿Qué es esto?"
-  por calc/reporte + limpieza de las notas al pie (Fase 5) · migas de pan + pulido nav/mobile (Fase 6).
+- **Siguen fases 5→6**: capa explicativa "¿Qué es esto?" por calc/reporte + limpieza de las notas al pie
+  (Fase 5) · migas de pan + pulido nav/mobile (Fase 6).
 
 ## Decisiones de detalle (2ª ronda, ya cerradas — §7 del plan)
 - Nombres del menú: estilo "equilibrado" (Granos · Dólar y tasas · Comercio exterior · Calculadoras ·
