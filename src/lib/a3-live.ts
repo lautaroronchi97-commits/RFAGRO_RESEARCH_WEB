@@ -191,7 +191,7 @@ export function mergeLiveMeta(base: Meta, live: LiveResult): Meta {
 
   const hayVivo = live.respondidos > 0;
   return {
-    source: hayVivo ? `${base.source} + A3 en vivo` : base.source,
+    source: base.source,
     updatedAt: hayVivo ? live.updatedAt : base.updatedAt,
     status,
     problemas,

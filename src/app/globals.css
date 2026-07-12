@@ -414,6 +414,10 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
   background:color-mix(in srgb, var(--gold) 8%, transparent); }
 .st-ejemplo { color:var(--ink-3); box-shadow:inset 0 0 0 1px var(--line-2); }
 .st-warn { color:var(--gold-text); cursor:help; }
+/* Marca discreta "provisorio" para paneles que aún no son 100% firmes (reemplaza al badge REAL/PARCIAL/EJEMPLO de cara al cliente). */
+.st-prov { font-weight:700; font-size:9px; letter-spacing:.06em; padding:1px 6px; border-radius:3px;
+  color:var(--gold-text); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--gold) 45%, transparent);
+  background:color-mix(in srgb, var(--gold) 7%, transparent); }
 
 /* ===== Módulos de datos (calculadoras, curva, noticias, pizarra editable, rueda) =====
    Clases traídas de la línea de features al unificar con el rediseño premium. */

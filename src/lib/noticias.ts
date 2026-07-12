@@ -240,7 +240,7 @@ function desdeSupabase(rows: RawRow[]): NoticiasData | null {
     nFuentes: contarFuentes(categorias, destacados),
     generadoMs: Date.now(),
     meta: {
-      source: "Portal RF AGRO · ingesta horaria de medios",
+      source: "Portal RF AGRO",
       updatedAt: ultimoVisto || Date.now(),
       status: "real",
       problemas: [],
@@ -370,7 +370,7 @@ async function enVivo(problema: string): Promise<NoticiasData> {
     nFuentes: contarFuentes(categorias, destacados),
     generadoMs: Date.now(),
     meta: {
-      source: "Lectura en vivo (BCR + RSS)",
+      source: "Portal RF AGRO",
       updatedAt: items.length ? Date.now() : null,
       status: "parcial",
       problemas,

@@ -76,7 +76,7 @@ function hoyVencKey(): number {
   return anio * 100 + mes;
 }
 
-const SOURCE = "CEM · Matba ROFEX";
+const SOURCE = "Matba Rofex";
 
 export const getCierresGranos = cache(async (): Promise<CierresData> => {
   const res = await sbSelect(

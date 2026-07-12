@@ -17,7 +17,7 @@ import type { Meta } from "./market";
  */
 
 const URL_CAC = "https://www.cac.bcr.com.ar/es/precios-de-pizarra";
-const SOURCE = "CAC · BCR (pizarra)";
+const SOURCE = "Bolsa de Comercio de Rosario";
 const CLASES: Record<string, string> = { SOJ: "soja", MAI: "maiz", TRI: "trigo" };
 
 export type PizarraGrano = { underlying: string; usd: number; ars: number | null; estimativo: boolean };
@@ -87,7 +87,6 @@ export const getPizarra = cache(async (): Promise<PizarraData> => {
   const tcBna = tcM ? arNum(tcM[1]) : null;
 
   const n = Object.keys(granos).length;
-  const usaOverride = Object.keys(ov).length > 0;
   const updatedAtRaw = fecha ? Date.parse(`${fecha}T00:00:00-03:00`) : null;
   const updatedAt = updatedAtRaw !== null && !Number.isNaN(updatedAtRaw) ? updatedAtRaw : null;
 
@@ -100,7 +99,7 @@ export const getPizarra = cache(async (): Promise<PizarraData> => {
     fecha,
     tcBna,
     meta: {
-      source: usaOverride ? `${SOURCE} + override` : SOURCE,
+      source: SOURCE,
       updatedAt,
       status: n === 3 && !caida ? "real" : n > 0 ? "parcial" : "parcial",
       problemas,

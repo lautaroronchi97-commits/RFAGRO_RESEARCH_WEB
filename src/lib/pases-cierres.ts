@@ -93,7 +93,7 @@ export const getPases = cache(async (): Promise<PasesData> => {
   return {
     granos: out,
     meta: {
-      source: "CEM · Matba ROFEX (pases)",
+      source: "Matba Rofex",
       updatedAt: meta.updatedAt,
       status: hayDatos ? "real" : "parcial",
       problemas: hayDatos

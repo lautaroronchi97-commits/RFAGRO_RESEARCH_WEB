@@ -31,7 +31,7 @@ export async function EstimacionesMini() {
   const maxFecha = rows.reduce((m, r) => (r.fecha_publicacion > m ? r.fecha_publicacion : m), rows[0].fecha_publicacion);
   const updatedAt = Date.parse(`${maxFecha}T00:00:00-03:00`);
   const meta: Meta = {
-    source: "USDA · WASDE",
+    source: "USDA",
     updatedAt: Number.isNaN(updatedAt) ? null : updatedAt,
     status: "real",
     problemas: [],
@@ -41,7 +41,7 @@ export async function EstimacionesMini() {
     <Panel id="estimaciones-mini">
       <PanelHead
         title="Última estimación de producción"
-        sub="USDA · WASDE — millones de t"
+        sub="USDA — millones de t"
         stamp={<SourceStamp meta={meta} />}
       />
       <div className="estim-mini-wrap">

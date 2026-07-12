@@ -228,7 +228,7 @@ export const getCintaData = cache(async (): Promise<CintaData> => {
       value: cripto?.oficial?.price ?? null,
       decimals: 2,
       change: cripto?.oficial?.variation ?? null,
-      source: "criptoya",
+      source: "Mercado de cambios",
     },
     {
       label: "Mayorista",
@@ -237,8 +237,8 @@ export const getCintaData = cache(async (): Promise<CintaData> => {
       change: mae.varPct,
       source: "MAE",
     },
-    { label: "MEP", value: byCasa("bolsa")?.venta ?? null, decimals: 2, change: null, source: "dolarapi" },
-    { label: "CCL", value: byCasa("contadoconliqui")?.venta ?? null, decimals: 2, change: null, source: "dolarapi" },
+    { label: "MEP", value: byCasa("bolsa")?.venta ?? null, decimals: 2, change: null, source: "Mercado de cambios" },
+    { label: "CCL", value: byCasa("contadoconliqui")?.venta ?? null, decimals: 2, change: null, source: "Mercado de cambios" },
     {
       label: fut ? `Fut ${fut.p.label}` : "Dólar futuro",
       value: fut?.row.ultimo ?? null,
@@ -247,15 +247,15 @@ export const getCintaData = cache(async (): Promise<CintaData> => {
       source: "MAE",
     },
     // Pizarra: ejemplo hasta enganchar CAC-BCR (Fase C).
-    { label: "Soja pizarra USD", value: 312.9, decimals: 1, change: 1.2, source: "CAC-BCR", sample: true },
-    { label: "Maíz pizarra USD", value: 182.0, decimals: 1, change: 0.0, source: "CAC-BCR", sample: true },
-    { label: "Trigo pizarra USD", value: 207.0, decimals: 1, change: -0.5, source: "CAC-BCR", sample: true },
+    { label: "Soja pizarra USD", value: 312.9, decimals: 1, change: 1.2, source: "Bolsa de Comercio de Rosario", sample: true },
+    { label: "Maíz pizarra USD", value: 182.0, decimals: 1, change: 0.0, source: "Bolsa de Comercio de Rosario", sample: true },
+    { label: "Trigo pizarra USD", value: 207.0, decimals: 1, change: -0.5, source: "Bolsa de Comercio de Rosario", sample: true },
   ];
 
   return {
     items,
     meta: {
-      source: "criptoya + MAE + dolarapi",
+      source: "Mercado de cambios",
       updatedAt: Date.now(),
       status: "parcial", // mezcla dato real + pizarra de ejemplo
       problemas,
@@ -438,7 +438,7 @@ export const getDolarLinked = cache(async (): Promise<DolarLinkedData> => {
     oficial,
     bonos,
     meta: {
-      source: "data912",
+      source: "Mercado de deuda local",
       updatedAt: now,
       status: notes && oficial !== null ? "real" : "parcial",
       problemas,
@@ -526,7 +526,7 @@ export const getLecaps = cache(async (): Promise<LecapsData> => {
   return {
     lecaps,
     meta: {
-      source: "data912",
+      source: "Mercado de deuda local",
       updatedAt: now,
       status: notes ? "parcial" : "parcial", // parcial: TIR/sintético pendiente de "pago final por letra"
       problemas: notes ? ["TIR y sintético pendientes (falta pago final por letra)"] : ["data912 caído"],

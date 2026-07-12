@@ -91,7 +91,7 @@ export const getArbitrajes = cache(async (): Promise<ArbData> => {
     granos,
     pizarraFecha: pizarra.fecha,
     meta: {
-      source: "A3/CEM + CAC",
+      source: "Matba Rofex · Bolsa de Comercio de Rosario",
       updatedAt: cierres.meta.updatedAt,
       status: hayCierres && hayPizarra ? "real" : "parcial",
       problemas,

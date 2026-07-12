@@ -18,7 +18,7 @@ export async function ImplicitasPanel() {
   const [fut, link] = await Promise.all([getDolarFuturo(), getDolarLinked()]);
 
   const meta = {
-    source: "MAE + data912",
+    source: "MAE · Mercado de deuda local",
     updatedAt: Math.max(fut.meta.updatedAt ?? 0, link.meta.updatedAt ?? 0) || null,
     status: "parcial" as const, // granos siguen siendo ejemplo
     problemas: [...fut.meta.problemas, ...link.meta.problemas, "granos: ejemplo hasta conectar A3"],

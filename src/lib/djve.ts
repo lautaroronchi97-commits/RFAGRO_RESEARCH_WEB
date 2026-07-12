@@ -35,7 +35,7 @@ type RawRow = {
   actualizado_en: string | null;
 };
 
-const SOURCE = "Supabase · DJVE (MAGyP)";
+const SOURCE = "SAGyP";
 
 function tsMs(iso: string | null): number | null {
   if (!iso) return null;

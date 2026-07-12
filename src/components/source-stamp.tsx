@@ -1,27 +1,22 @@
-import type { Meta, FuenteStatus } from "@/lib/market";
+import type { Meta } from "@/lib/market";
 import { horaCordoba } from "@/lib/format";
 
-const LABELS: Record<FuenteStatus, string> = {
-  real: "REAL",
-  parcial: "PARCIAL",
-  ejemplo: "EJEMPLO",
-};
-
 /**
- * Sello de frescura de un panel: estado (REAL/PARCIAL/EJEMPLO) + fuente +
- * hora real de los datos (hora Córdoba). Si hubo fuentes caídas, muestra ⚠
- * con el detalle en el title.
+ * Sello de frescura de un panel (de cara al cliente): origen del dato +
+ * "Actualizado HH:MM" (hora Córdoba). Los paneles que aún no son 100% firmes
+ * llevan una marca discreta "provisorio". No se nombra ningún proveedor técnico
+ * intermedio: `meta.source` ya trae solo la institución/mercado de origen.
  */
 export function SourceStamp({ meta }: { meta: Meta }) {
   return (
     <span className="stamp">
-      <span className={`st-badge st-${meta.status}`}>{LABELS[meta.status]}</span>
-      <span>{meta.source}</span>
+      {meta.status !== "real" && <span className="st-prov">provisorio</span>}
+      {meta.source && <span>{meta.source}</span>}
       {meta.updatedAt !== null && meta.status !== "ejemplo" && (
-        <span>· datos al {horaCordoba(new Date(meta.updatedAt), false)}</span>
+        <span>· Actualizado {horaCordoba(new Date(meta.updatedAt), false)}</span>
       )}
       {meta.problemas.length > 0 && (
-        <span className="st-warn" title={meta.problemas.join(" · ")}>
+        <span className="st-warn" title="Algún dato puede estar demorado">
           ⚠
         </span>
       )}
@@ -29,7 +24,7 @@ export function SourceStamp({ meta }: { meta: Meta }) {
   );
 }
 
-/** Meta constante para módulos que todavía muestran datos de ejemplo. */
+/** Meta constante para módulos que todavía muestran datos provisorios. */
 export function metaEjemplo(source: string): Meta {
   return { source, updatedAt: null, status: "ejemplo", problemas: [] };
 }

@@ -21,7 +21,7 @@ import type { Meta } from "./market";
 
 const URL_BCR =
   "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-1";
-const SOURCE = "BCR · FAS teórico";
+const SOURCE = "Bolsa de Comercio de Rosario";
 const NOMBRES: Record<string, string> = { SOJ: "Soja", MAI: "Maíz", TRI: "Trigo" };
 const GRANOS: Record<string, string> = { Trigo: "TRI", Maíz: "MAI", Maiz: "MAI", Soja: "SOJ" };
 
@@ -120,7 +120,6 @@ export const getCapacidad = cache(async (): Promise<CapData> => {
     .filter((g) => g.fas != null || g.pizarra != null);
 
   const n = granos.filter((g) => g.fas != null).length;
-  const usaOverride = Object.keys(ov).length > 0;
   const problemas: string[] = [];
   if (caida) problemas.push("BCR no respondió");
   else if (n < 3) problemas.push("BCR: faltan granos en el FAS teórico");
@@ -132,7 +131,7 @@ export const getCapacidad = cache(async (): Promise<CapData> => {
     granos,
     fecha,
     meta: {
-      source: usaOverride ? `${SOURCE} + modelo propio` : SOURCE,
+      source: SOURCE,
       updatedAt,
       status: n === 3 && !caida ? "real" : n > 0 ? "parcial" : "parcial",
       problemas,

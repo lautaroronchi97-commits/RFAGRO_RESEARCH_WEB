@@ -15,7 +15,7 @@ const QUE_VIENE: { org: Organismo; region: string; detalle: string }[] = [
   { org: "DEA", region: "Argentina (por provincia)", detalle: "Estimaciones oficiales SAGyP de los 6 granos + histórico 1969/70→hoy. (Sesión C)" },
 ];
 
-const SOURCE = "USDA (WASDE + PSD) · CONAB";
+const SOURCE = "USDA · CONAB";
 
 /**
  * Panel "Última estimación por organismo" de /produccion. Lee los vintages de
