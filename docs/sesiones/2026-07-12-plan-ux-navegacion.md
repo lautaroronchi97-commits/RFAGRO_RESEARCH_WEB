@@ -50,11 +50,17 @@
   el logo lleva al Inicio. La home sigue como tira larga hasta la Fase 3 (queda duplicación interina paneles
   home ↔ página de grupo). `/calculadoras` muestra las 9 juntas; la Fase 4 les da link propio.
 
+- **Fase 3 construida — la home es el tablero:** `src/app/(site)/page.tsx` deja de ser la tira y pasa a
+  portada = cinta + "Lo importante hoy" (titulares del día `noticias.destacados`, link-out + "Ver todas" a
+  /noticias) + grilla de 7 tarjetas por sección (nombre + "para qué sirve") que linkean a cada grupo. Se
+  quitan los paneles/calcs de la home → fin de la duplicación de la Fase 2. Estilos del hub en `globals.css`
+  (`.hub-titulares`, `.hub-grid`, `.hub-card`, estética hairline + sombra + acento dorado).
+
 ## Quedó pendiente / en vuelo
 - **Fase 1 — parte pendiente:** las **notas al pie** de cada panel todavía nombran puentes (CEM, Supabase,
   data912, WASDE…). Son la **capa explicativa** → se reescriben limpias en la **Fase 5**.
-- **Siguen fases 3→6**: inicio = tablero (tarjetas + titulares de noticias) → saca la duplicación · calculadoras
-  con link propio (Fase 4) · capa explicativa "¿Qué es esto?" (Fase 5) · pulido nav/mobile + breadcrumbs (Fase 6).
+- **Siguen fases 4→6**: calculadoras con **link propio** por calc (Fase 4) · capa explicativa "¿Qué es esto?"
+  por calc/reporte + limpieza de las notas al pie (Fase 5) · migas de pan + pulido nav/mobile (Fase 6).
 
 ## Decisiones de detalle (2ª ronda, ya cerradas — §7 del plan)
 - Nombres del menú: estilo "equilibrado" (Granos · Dólar y tasas · Comercio exterior · Calculadoras ·

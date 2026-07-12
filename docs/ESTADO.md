@@ -35,8 +35,11 @@ Actualizado HH:MM` con nombre propio de institución — Matba Rofex, Bolsa de C
 de deuda local, SAGyP, USDA·CONAB; pie sin chips técnicos; cinta "prov."; marca `.st-prov`). Todo con
 build/lint/tsc ✅. **Falta de Fase 1:** las notas al pie de los paneles aún nombran puentes → se limpian en la
 **Fase 5** (capa explicativa). **Fase 2 hecha** (páginas por grupo aditivas `/granos /dolar /comercio
-/calculadoras /noticias`; nav a los 7 destinos reales, activo por `pathname`; logo → Inicio; la home sigue
-como tira larga hasta la Fase 3 → duplicación interina). Build/lint/tsc ✅. **Siguen fases 3→6.**
+/calculadoras /noticias`; nav a los 7 destinos reales, activo por `pathname`; logo → Inicio). **Fase 3 hecha**
+(la home dejó de ser la tira: ahora es el tablero = cinta + "Lo importante hoy" con titulares del día + grilla
+de 7 tarjetas por sección; se sacaron los paneles de la home → fin de la duplicación). Build/lint/tsc ✅.
+**Siguen fases 4→6** (calculadoras con link propio · capa explicativa "¿Qué es esto?" + limpieza de notas al
+pie · migas de pan + pulido mobile).
 Detalle: [`sesiones/2026-07-12-plan-ux-navegacion.md`](sesiones/2026-07-12-plan-ux-navegacion.md).
 
 **✅ SWITCH COMPLETO. Producción (Vercel) sirve `main`** con el rediseño premium + todos los paneles
