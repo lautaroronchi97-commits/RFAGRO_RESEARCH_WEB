@@ -25,7 +25,9 @@ Next.js 16 (App Router) + TypeScript · Tailwind v4 · next-themes · gráficos 
 **Supabase CONECTADO** (proyecto `lineup-argentina`, lectura anon con RLS; tablas `futuros_cierres`,
 `vencimientos`, `djve`, `lineup`, `compras`, **`pizarra_historico`** (pizarra CAC 2020→hoy, $ y US$,
 5 granos), **`cbot_cierres`** (futuros CBOT maíz/soja/trigo, ¢/bu + USD/tn), `noticias` (portal del agro,
-`sesiones/2026-07-10-portal-noticias.md`) — detalle en las sesiones abajo) · Deploy en Vercel.
+`sesiones/2026-07-10-portal-noticias.md`), **`estimaciones_produccion`** (una fila por vintage: producción/área/
+rinde por organismo/país/grano/campaña — USDA, CONAB, BCR-GEA, SAGyP-DEA; poblada 12/07) y `calendario_informes`
+(base; en v1 el calendario se genera en código) — detalle en las sesiones abajo) · Deploy en Vercel.
 TZ America/Argentina/Cordoba.
 
 ## Design system — "Pizarra electrónica" (aprobado; rediseño premium aplicado 09/07/2026, PR #5)
@@ -50,6 +52,8 @@ fades, tablas con hover/tick dorado, charts con grilla punteada + área en degra
 | Macro / reservas | BCRA v4 | `api.bcra.gob.ar/estadisticas/v4.0/monetarias` (v3 deprecada) |
 | Pizarra soja/maíz/trigo (día) | **CAC-BCR** | `www.cac.bcr.com.ar/es/precios-de-pizarra` (scrape HTML; trae `$` y `US$` + TC BNA) |
 | Pizarra histórica 2020→hoy (5 granos, $ y US$) | **CAC-BCR (consulta)** | `www.cac.bcr.com.ar/es/precios-de-pizarra/consultas?product={13\|3\|8\|9\|6}&type=any&period=day&date_start=&date_end=` → JSON en `drupalSettings.app_prices.plot.data` (`y`=$/tn, `y_usd`=US$/tn). US$ = BNA divisa comprador. Trocear en ventanas ≤3 años. → `pizarra_historico` |
+| Estimaciones de producción — USDA (WASDE+PSD), CONAB | **USDA / CONAB** | `ingest-usda.mjs` (CSV tidy del WASDE por edición = vintages soja/maíz/trigo por país + mundo; PSD bulk ZIP = área/rinde 6 granos + producción girasol/sorgo/cebada) · `ingest-conab.mjs` (`LevantamentoGraos.txt`, 27 UF → nacional Brasil, vintages 2017/18→hoy). → `estimaciones_produccion`. Detalle: `sesiones/2026-07-12-estimaciones-usda-conab.md` |
+| Estimaciones de producción — Argentina (BCR-GEA, SAGyP-DEA, BCBA-PAS) | **BCR / SAGyP / BCBA** | `ingest-gea.mjs` (scrape tablas `bcr-estimaciones` de soja/maíz/trigo + backfill Wayback) · `ingest-dea.mjs` (POST del CSV oficial `datosestimaciones.magyp.gob.ar` → nacional por cultivo/campaña, 6 granos, snapshot=vintage) · `ingest-pas.mjs` (BCBA probe-first, **pendiente**: dominio tras Cloudflare). → `estimaciones_produccion`. Detalle: `sesiones/2026-07-12-estimaciones-argentina.md` |
 | Futuros CBOT maíz/soja/trigo (por posición, vencidos incl.) | **Barchart (API interno)** | `barchart.com/proxies/core-api/v1/historical/get` (auth por cookie `XSRF-TOKEN` del `/overview` + header `x-xsrf-token`). ¢/bu fraccionario (`"565-2"`=565,25). USD/tn: maíz ×0.3936826, soja/trigo ×0.3674371. → `cbot_cierres` |
 | **Noticias del agro** (portal) | **medios + Google News** (RSS + scrape) | Cron horario `ingest-noticias.mjs` → tabla Supabase `noticias`. Medios directos: BCR resumen + InfoCampo, Bichos de Campo, Ámbito, La Nación Campo, Clarín Rural, Agrositio (granos/economía/clima), dataPORTUARIA, TodoAgro, Cebada Cervecera, Agrofy News (scrape), G1 Brasil, World-Grain. **+ vía Google News RSS** (link-out, para fuentes sin feed propio/bloqueadas): bolsas (Rosario/BsAs/Córdoba), internacional (Reuters/Bloomberg/AgWeb/CME…), informes (USDA/CONAB/CFTC) e instituciones (CIARA/CREA/Aapresid/Coninagro). Categorización PROPIA por reglas (`noticias-reglas.json`); dedup por link + por título (colapsa la misma nota directa vs. Google). Detalle: `sesiones/2026-07-10-portal-noticias.md` |
 
@@ -86,6 +90,7 @@ fades, tablas con hover/tick dorado, charts con grilla punteada + área en degra
 | 6 | Sintéticos/LECAPs | PARCIAL: precios LECAP reales; TIR/sintético pendiente ("pago final por letra"). |
 | 7 | Panel cambiario | REAL (volumen MAE). Compras netas BCRA = pendiente (sin API; proxy / vía X). |
 | 8 | Noticias (portal) | **REAL** (`noticias.ts` lee Supabase `noticias` + fallback en vivo; `noticias-panel.tsx` + `noticias-client.tsx`). 15 medios vía cron horario, **categorización propia** por reglas (`noticias-reglas.json` + `noticias-clasificar.ts`), filtro de ruido, chips de filtro, link-out. Detalle: `sesiones/2026-07-10-portal-noticias.md`. |
+| 9 | Producción — calendario + estimaciones (página `/produccion`) | **REAL** (poblado 12/07). Calendario de informes generado en código (`calendario.ts`); pizarra de estimaciones + gráfico de evolución + tarjetas de cambios desde `estimaciones_produccion` (`estimaciones.ts` + `estimaciones-panel/cliente.tsx` + `evolucion-chart.tsx`). Fuentes: USDA (WASDE+PSD), CONAB, BCR-GEA, SAGyP-DEA (comparador AR lado a lado). BCBA-PAS pendiente (Cloudflare). Home: mini-tabla USDA (`estimaciones-mini.tsx`). Crons: `ingest-usda/conab.yml` + `ingest-estimaciones-ar.yml`. Detalle: `sesiones/2026-07-12-estimaciones-argentina.md`. |
 
 ## Secretos / entorno
 - **A3** en variables de entorno (Vercel → Settings → Environment Variables): `A3_API_BASE=https://api.cocos.xoms.com.ar`,
