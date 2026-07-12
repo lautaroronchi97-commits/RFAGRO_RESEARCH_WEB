@@ -31,9 +31,15 @@
 
 ## Quedó pendiente / en vuelo
 - **Construcción por fases** (0→6 del plan), en sesiones siguientes. Nada tocado de código todavía.
-- **Decisiones abiertas menores** (§7 del plan): rótulos client-facing exactos y rótulo de origen de
-  Dólar linked/Sintéticos; agrupamiento fino de las 9 calcs; contenido exacto del "Lo importante hoy";
-  cómo mostrar el estado EJEMPLO/PARCIAL a clientes.
+
+## Decisiones de detalle (2ª ronda, ya cerradas — §7 del plan)
+- Nombres del menú: estilo "equilibrado" (Granos · Dólar y tasas · Comercio exterior · Calculadoras ·
+  Gráficos · Producción · Noticias).
+- Origen de Dólar linked / Sintéticos·LECAPs: rótulo "Mercado de deuda local".
+- Calculadoras: sin subgrupos (las 9 en grilla simple, cada una con link propio).
+- Portada "Lo importante hoy": solo titulares de noticias del día.
+- Estado provisorio: marca discreta "provisorio" en los paneles aún no 100% reales.
+- Ayudas de navegación: migas de pan + logo siempre-al-Inicio (cinta clickeable = más adelante).
 
 ## Trampas descubiertas (para la próxima sesión)
 - Las fuentes se filtran en **3 lugares** a la vez: `source-stamp.tsx` (el principal, cubre casi todo),

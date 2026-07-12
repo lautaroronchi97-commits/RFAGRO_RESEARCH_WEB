@@ -66,7 +66,9 @@ src/app/
 - **Layout compartido** (`(site)/layout.tsx`): renderiza header, cinta y pie **una sola vez**; cada página
   solo pone SUS paneles. Hoy cada `page.tsx` repite ese andamiaje a mano — esto lo elimina.
 - **Navegación** con `<Link>` (ya se usa). El menú del header pasa a tener los **destinos reales** (Granos ·
-  Dólar · Comercio · Calculadoras · Gráficos · Producción · Noticias) — se termina la mezcla anclas/links.
+  Dólar y tasas · Comercio exterior · Calculadoras · Gráficos · Producción · Noticias) — se termina la mezcla
+  anclas/links. El **logo "RF AGRO" siempre lleva al Inicio** (estándar) y cada página muestra **migas de
+  pan** (`Inicio › Sección › Subpágina`) para ubicarse y volver con un click.
 - **Rendimiento**: cada página trae **solo lo suyo** (hoy la home regenera 31 componentes juntos). Cada
   ruta con su propio `revalidate`. Se puede bajar la cadencia de las páginas pesadas.
 - **Las islas interactivas** (gráficos, calculadoras, noticias-client, pizarra editable) siguen igual: son
@@ -81,7 +83,7 @@ src/app/
 ```
 INICIO  (/)  — TABLERO, no la tira
    ├─ Cinta de precios (fija arriba, en el layout)
-   ├─ "Lo importante hoy": titulares de noticias + próximo informe + última estimación
+   ├─ "Lo importante hoy": titulares de noticias del día (link a la sección Noticias)
    └─ Grilla de tarjetas → una por sección, cada una con nombre + "para qué sirve" en 1 línea
                             (Granos · Dólar y tasas · Comercio exterior · Calculadoras ·
                              Gráficos · Producción · Noticias)
@@ -99,11 +101,9 @@ DÓLAR Y TASAS  (/dolar)
 COMERCIO EXTERIOR  (/comercio)
    └─ DJVE (declaraciones de exportación)
 
-CALCULADORAS  (/calculadoras)  — índice con las 9, cada una con link propio
-   ├─ Fijaciones:  A fijar · Por porcentaje · Negocios con pagos · Pago diferido
-   ├─ Estructura:  Pases · Carry implícito entre 2 posiciones
-   └─ Operación:   Costos de operar · Estrategias con opciones · Negocios de planta
-        (el agrupamiento fino de las 9 queda "a confirmar" — Lautaro conoce el flujo de la mesa)
+CALCULADORAS  (/calculadoras)  — índice con las 9 en grilla simple (sin subgrupos), cada una con link propio:
+   A fijar · Por porcentaje · Negocios con pagos · Pago diferido · Pases · Carry implícito ·
+   Costos de operar · Estrategias con opciones · Negocios de planta
 
 GRÁFICOS  (/graficos)      — YA EXISTE (spreads entre cosechas). Solo entra al layout y a la nav nueva.
 
@@ -132,7 +132,7 @@ puede estar demorado" pero con texto genérico.
 | Pases | Mercado de futuros | endpoint técnico |
 | Capacidad de pago | Bolsa de Comercio | scrape |
 | Dólar futuro / Panel cambiario | Mercado mayorista de cambios | — (ya es origen) |
-| Dólar linked / Sintéticos · LECAPs | Mercado local de deuda — *a confirmar el rótulo* | agregador |
+| Dólar linked / Sintéticos · LECAPs | Mercado de deuda local | agregador |
 | DJVE | Registro oficial de exportaciones | scrape |
 | Producción / Estimaciones | Los organismos: USDA · CONAB · BCR · BCBA · SAGyP | endpoints, nombres de informe, base de datos |
 | Gráficos (spreads) | Mercado de futuros local · Chicago · Bolsa/Cámara | endpoints técnicos |
@@ -147,10 +147,9 @@ puede estar demorado" pero con texto genérico.
 3. Textos sueltos — cinta (`title` con nombre de fuente) y textos de `/produccion` que hoy nombran
    endpoints/siglas técnicas → reescribir genérico.
 
-> **Estados REAL/PARCIAL/EJEMPLO** (badge interno de honestidad de datos): NO revelan fuentes, pero
-> "EJEMPLO" no debería mostrarse como si fuera dato firme a un cliente. Decisión de presentación **a
-> confirmar** (§7): dejar un indicador discreto "provisorio" en los paneles que aún no son 100% reales, o
-> no destacarlos en la portada hasta que lo sean. No se inventa dato: se es prolijo, no engañoso.
+> **Estados REAL/PARCIAL/EJEMPLO** (badge interno de honestidad de datos): NO revelan fuentes. **Decidido:**
+> de cara al cliente se reemplaza ese badge por una **marca discreta "provisorio"** solo en los paneles que
+> aún no son 100% reales (el resto, sin marca). No se inventa dato: se es prolijo, no engañoso.
 
 ---
 
@@ -204,17 +203,23 @@ navegador claro/oscuro. Ninguna fase toca fórmulas ni lógica de datos: es **re
 
 ---
 
-## 7. Decisiones abiertas (menores — resolver al construir)
+## 7. Decisiones cerradas (2ª ronda con Lautaro) y lo que queda fino
 
-- **Rótulos exactos client-facing** de cada grupo/origen (ej. "Granos" vs "Mercado de granos"; cómo nombrar
-  el origen de Dólar linked/Sintéticos — fila "a confirmar" de la tabla §4).
-- **Agrupamiento fino de las 9 calculadoras** en el índice (§3): la propuesta Fijaciones/Estructura/Operación
-  la afina Lautaro según el flujo de la mesa.
-- **Contenido exacto del "Lo importante hoy"** en la portada (¿cuántos titulares? ¿qué dato vivo en cada
-  tarjeta?).
-- **Badge de estado** (REAL/PARCIAL/EJEMPLO) de cara al cliente: indicador discreto "provisorio" vs. no
-  destacar esos paneles hasta que sean reales (§4).
-- **Accesos directos**: ¿la cinta clickea a alguna sección? ¿breadcrumbs para volver al Inicio?
+**Cerradas:**
+- **Nombres del menú:** Granos · Dólar y tasas · Comercio exterior · Calculadoras · Gráficos · Producción ·
+  Noticias (estilo "equilibrado").
+- **Origen de Dólar linked / Sintéticos · LECAPs:** rótulo **"Mercado de deuda local"** (se oculta el agregador).
+- **Calculadoras:** **sin subgrupos** — las 9 en una grilla simple, cada una con link propio.
+- **"Lo importante hoy" (portada):** **solo titulares de noticias del día** (con link a Noticias).
+- **Estado provisorio:** **marca discreta "provisorio"** en los paneles que aún no son 100% reales; el resto,
+  sin marca (§4).
+- **Ayudas de navegación:** **migas de pan** (`Inicio › Sección › Subpágina`) + **logo siempre-al-Inicio**.
+  La **cinta clickeable queda para más adelante** (hoy el mapeo ítem→sección sería arbitrario).
+
+**Fino, al construir (no bloquea):**
+- Redacción final de cada explicación "¿Qué es esto?" (usar los ejemplos de §5 como molde).
+- Cuántos titulares exactos en la portada (arrancamos con 3–4).
+- Si más adelante Lautaro quiere reordenar/agrupar las 9 calculadoras, se cambia en un toque.
 
 ---
 
