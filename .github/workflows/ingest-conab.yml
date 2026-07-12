@@ -1,0 +1,37 @@
+name: Ingesta estimaciones CONAB (LevantamentoGraos → Supabase)
+
+# Popula estimaciones_produccion con la producción/área/rinde nacional de Brasil (CONAB).
+# El TXT (LevantamentoGraos.txt) se regenera ~08:00 Brasília; el levantamento nuevo entra al
+# día siguiente. Corremos L-V a la mañana AR. El upsert es idempotente (trae todos los vintages
+# del TXT). Los `schedule` corren desde la rama default del repo.
+
+on:
+  schedule:
+    - cron: "30 11 * * 1-5" # 08:30 AR, tras la regeneración del TXT
+  workflow_dispatch:
+    inputs:
+      full:
+        description: "Traer TODOS los vintages desde 2017/18 (default: solo últimas 2 campañas)."
+        type: boolean
+        default: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Ingesta
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.full }}" = "true" ]; then
+            node scripts/ingest-conab.mjs
+          else
+            # En el cron alcanza con las últimas 2 campañas (los vintages viejos no cambian).
+            YEAR=$(date -u +%Y)
+            node scripts/ingest-conab.mjs --since $((YEAR - 1))
+          fi
