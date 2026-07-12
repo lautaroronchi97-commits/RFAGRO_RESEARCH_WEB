@@ -464,6 +464,16 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
 .hub-card-go { position:absolute; top:14px; right:15px; color:var(--gold-text); font-weight:700; opacity:.5;
   transition:opacity var(--t-fast) ease, transform var(--t-fast) ease; }
 .hub-card:hover .hub-card-go { opacity:1; transform:translateX(2px); }
+
+/* Migas de pan (Inicio › Sección › Subpágina) */
+.crumbs { max-width:1360px; margin:0 auto; padding:12px clamp(10px,2.4vw,26px) 0;
+  display:flex; flex-wrap:wrap; align-items:center; gap:6px;
+  font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); }
+.crumbs a { color:var(--ink-3); }
+.crumbs a:hover { color:var(--ink); }
+.crumbs .crumb { display:inline-flex; align-items:center; gap:6px; }
+.crumbs .sep { opacity:.55; }
+.crumbs [aria-current="page"] { color:var(--ink-2); font-weight:700; }
 .strat-exp { font-size:var(--fs-xs); color:var(--ink-2); line-height:1.5; padding:8px 11px;
   background:var(--panel-2); border:1px solid var(--line); border-radius:8px; }
 

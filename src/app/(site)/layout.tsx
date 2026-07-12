@@ -1,6 +1,7 @@
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { RefreshOnFocus } from "@/components/refresh-on-focus";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 
 /**
  * Layout compartido del sitio. Renderiza el andamiaje común (masthead, refresh
@@ -13,6 +14,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
     <>
       <RefreshOnFocus />
       <SiteHeader />
+      <Breadcrumbs />
       {children}
       <div className="awn" aria-hidden="true" />
       <SiteFooter />
