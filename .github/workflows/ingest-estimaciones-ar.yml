@@ -52,6 +52,9 @@ jobs:
           fi
 
       - name: DEA (SAGyP)
+        # Corre aunque GEA haya fallado (0 filas / HTML roto): son fuentes independientes. El workflow
+        # igual queda en rojo por GEA (alerta), pero no perdemos el snapshot de la DEA.
+        if: ${{ !cancelled() }}
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
@@ -65,7 +68,7 @@ jobs:
           fi
 
       - name: PAS (BCBA) — solo probe por dispatch
-        if: ${{ github.event.inputs.pas_probe == 'true' }}
+        if: ${{ !cancelled() && github.event.inputs.pas_probe == 'true' }}
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}

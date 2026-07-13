@@ -181,9 +181,11 @@ async function main() {
     console.log(`Escrito ${outFile} (dry-run, no se subió nada).`);
     return;
   }
+  // Guard anti "falso verde": el CSV oficial siempre trae las campañas vigentes; 0 filas = cambió
+  // el export de SAGyP o cayó la fuente. No pasar en verde sin insertar.
   if (rows.length === 0) {
-    console.log("Sin filas — nada que subir.");
-    return;
+    console.error("ERROR: DEA devolvió 0 filas (cambió el CSV oficial de SAGyP o cayó la fuente). No se da por bueno.");
+    process.exit(1);
   }
   console.log("Upsert a estimaciones_produccion...");
   await upsert(rows);

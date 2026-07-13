@@ -2,12 +2,17 @@ name: Ingesta pizarra Rosario (CAC → Supabase)
 
 # Mantiene al día la tabla pizarra_historico con la pizarra de la Cámara Arbitral
 # de Cereales de Rosario (soja/maíz/trigo/girasol/sorgo, en $ y US$).
-# Corre después del cierre de la pizarra (L-V) y también se puede lanzar a mano.
+# Corre cada día hábil a la mañana (cuando la CAC publica) y también se puede lanzar a mano.
+# Tres corridas 10:30/10:45/11:00 ART: si la pizarra del día aún no salió a las 10:30, la agarra la
+# de 10:45 u 11:00. El script es idempotente (ventana móvil de 10 días + upsert por (grano,fecha)),
+# así que re-correr es inocuo: la primera que tenga el dato lo mete y las otras re-pisan igual.
 # Los `schedule` de GitHub Actions corren desde la rama default del repo.
 
 on:
   schedule:
-    - cron: "0 21 * * 1-5" # 21:00 UTC = 18:00 ART, tras la pizarra
+    - cron: "30 13 * * 1-5" # 10:30 ART
+    - cron: "45 13 * * 1-5" # 10:45 ART (reintento si aún no había datos)
+    - cron: "0 14 * * 1-5" #  11:00 ART (reintento final; a esta hora ya debería estar)
   workflow_dispatch:
     inputs:
       from:

@@ -148,6 +148,12 @@ async function main() {
     return true;
   });
 
+  // Guard anti "falso verde": en modo diario (sin --from) 0 filas = el CEM no devolvió nada para
+  // una ventana de varios días → cambió el formato o cayó la fuente. Falla ruidoso, no pasa en verde.
+  if (all.length === 0 && !process.argv.includes("--from")) {
+    console.error("ERROR: 0 filas en la ventana diaria del CEM. No se da por bueno (probable cambio de formato / fuente caída).");
+    process.exit(1);
+  }
   console.log(`Upsert de ${all.length} filas...`);
   await upsert(all);
   console.log("OK");

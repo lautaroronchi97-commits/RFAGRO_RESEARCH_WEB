@@ -357,6 +357,13 @@ async function main() {
     return;
   }
 
+  // Guard anti "falso verde": fuentes OK pero 0 titulares únicos = parsers rotos o filtro demasiado
+  // agresivo. No pasar en verde sin insertar nada.
+  if (rows.length === 0) {
+    console.error("ERROR: 0 titulares únicos pese a fuentes OK (parsers rotos o filtro demasiado agresivo).");
+    process.exit(1);
+  }
+
   await upsert(rows);
   console.log("OK");
 }
