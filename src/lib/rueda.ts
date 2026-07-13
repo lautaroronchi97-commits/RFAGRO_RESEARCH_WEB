@@ -40,3 +40,25 @@ export function ruedaAbierta(r: Rueda, ahora: { min: number; dow: number } = aho
 export function ruedaAgroAbierta(d?: Date): boolean {
   return ruedaAbierta(RUEDA_AGRO, ahoraCordoba(d));
 }
+
+/** ¿Está abierta ahora alguna de las ruedas (Dólar o Agro)? */
+export function algunaRuedaAbierta(d?: Date): boolean {
+  const ahora = ahoraCordoba(d);
+  return RUEDAS.some((r) => ruedaAbierta(r, ahora));
+}
+
+/**
+ * ¿La rueda `r` YA ABRIÓ hoy? (hábil L-V y pasó su horario de apertura, sin
+ * importar si ya cerró). Sirve para la tabla de arbitrajes: desde que abre la
+ * rueda hasta que sale el ajuste del día, la referencia es el último operado —
+ * y eso incluye el rato post-cierre, antes de que se publique el ajuste.
+ */
+export function ruedaCorrioHoy(r: Rueda, ahora: { min: number; dow: number } = ahoraCordoba()): boolean {
+  const habil = ahora.dow >= 1 && ahora.dow <= 5;
+  return habil && ahora.min >= r.abre;
+}
+
+/** Atajo: ¿ya abrió hoy la rueda de granos (Agro)? */
+export function ruedaAgroCorrioHoy(d?: Date): boolean {
+  return ruedaCorrioHoy(RUEDA_AGRO, ahoraCordoba(d));
+}

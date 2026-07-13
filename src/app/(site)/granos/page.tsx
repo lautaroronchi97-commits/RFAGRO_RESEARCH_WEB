@@ -4,7 +4,9 @@ import { MejorCajaPanel } from "@/components/mejor-caja-panel";
 import { PasesPanel } from "@/components/pases-panel";
 import { CapacidadPanel } from "@/components/capacidad-panel";
 
-export const revalidate = 60;
+// 30s para que la 1ª columna de Arbitrajes (último operado en vivo) y las puntas
+// se actualicen seguido durante la rueda; el poll del cliente refresca en ese ritmo.
+export const revalidate = 30;
 
 export const metadata: Metadata = {
   title: "Granos · RF AGRO",

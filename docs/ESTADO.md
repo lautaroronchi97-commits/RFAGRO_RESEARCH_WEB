@@ -19,7 +19,25 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 12/07/2026 — Rediseño UX «web en capas» MERGEADO · Sesión C estimaciones Argentina)
+## Ahora (última actualización: 13/07/2026 — Arbitrajes: 1ª columna en vivo + fix "no actualiza")
+
+**🟡 EN VUELO (rama `claude/arbitrage-table-updates-lt5qhm`, PR #_) — Arbitrajes en vivo:**
+- **Fix "no actualiza":** `RefreshOnFocus` solo refrescaba al volver a la pestaña → una pestaña abierta
+  todo el día quedaba congelada. Ahora **poll cada 30s mientras hay rueda abierta** (`refresh-on-focus.tsx`
+  + `algunaRuedaAbierta()` en `rueda.ts`); `/granos` bajó a `revalidate=30`.
+- **1ª columna de Arbitrajes = referencia dinámica** (pedido de Lautaro): fuera de rueda muestra el
+  **último ajuste**; al abrir la rueda se **borra el ajuste** y pasa al **último operado** en vivo de A3
+  (— hasta la 1ª operación del día), y se sostiene post-cierre **hasta que sale el próximo ajuste**
+  (`ruedaAgroCorrioHoy()` + `arbitrajes-table.tsx`). Spread/tasa directa/TNA se **recalculan sobre el
+  operado** (confirmado "todo en vivo"). Header pasa a "Últ. operado" con punto en vivo. Sin A3 cae al ajuste.
+- **Pizarra:** NO se tocó — Lautaro dijo que no actualizaba por el cron parado y lo arregla en otra sesión.
+- Verificado: lint/tsc/build ✅ + test de la máquina de estados (7 momentos del día × 6 escenarios de
+  referencia, todo OK). Falta validar en producción en horario de rueda.
+  Detalle: [`sesiones/2026-07-13-arbitrajes-en-vivo.md`](sesiones/2026-07-13-arbitrajes-en-vivo.md).
+
+---
+
+**Contexto previo (12/07/2026 — Rediseño UX «web en capas» MERGEADO · Sesión C estimaciones Argentina):**
 
 **✅ REDISEÑO UX «WEB EN CAPAS» MERGEADO a `main` (PR #22).** [`docs/PLAN_UX_NAVEGACION.md`](PLAN_UX_NAVEGACION.md): se dejó la tira vertical larga y se pasó a
 **sitio por páginas (hub)** — portada tablero → clickeás un tópico y entrás a esa sección con link propio.
