@@ -47,9 +47,13 @@
 > relacionado en el repo, se anota el link para no duplicar research.
 
 **Bloque 1**
-- [ ] 1. Verificación puntual de las bases de datos actuales (auditar que lo que dice `CONTEXTO.md`
-  "Estado de módulos" siga siendo cierto: futuros_cierres, pizarra_historico, cbot_cierres, noticias,
-  estimaciones_produccion — datos al día, sin huecos).
+- [x] 1. **Verificación de bases de datos + resiliencia de ingestas — HECHO (13/07, PR #25).** Auditoría
+  en vivo de las 10 tablas + 8 crons + 10 scripts. Hallazgo raíz: **"falso verde"** (0 filas → `upsert([])`
+  no hace POST → run verde sin insertar) que dejó a **BCR-GEA congelado en feb-2026**. Arreglos: guard
+  anti falso-verde en los 8 scripts (0 filas live = `exit 1`) + aislar pasos del workflow AR; cron de
+  pizarra a **10:30/10:45/11:00 ART**; **healthcheck de frescura** diario (`healthcheck-frescura.mjs` +
+  `healthcheck.yml`, rojo+mail si algo se atrasa); y **descongelado de GEA** por dispatch (live #196 julio
+  + backfill Wayback mayo). Detalle: [`sesiones/2026-07-13-verificacion-bases-datos.md`](sesiones/2026-07-13-verificacion-bases-datos.md).
 - [ ] 2. Logo integrado a la web (hoy hay glifos/marca "RF AGRO" en el design system; falta el logo real
   de Lautaro como asset).
 - [ ] 3. Landing + presentación de servicios (página institucional, separada del dashboard de datos).
