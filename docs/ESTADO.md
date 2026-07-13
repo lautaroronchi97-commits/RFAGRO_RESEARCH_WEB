@@ -26,15 +26,17 @@
 en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `algunaRuedaAbierta`);
 `/granos` a `revalidate=30`. (Pizarra no se tocó — cron, va aparte.)
 
-**🟡 EN VUELO (rama `claude/arbitrage-table-updates-lt5qhm`, PR #_) — Fix: mostrar el operado en TODAS las
-posiciones.** Al mirarlo en vivo, Lautaro comparó con su Excel conectado a mercado (eTrader): su columna
-PRECIO muestra el último operado para TODAS las posiciones. Mi versión filtraba por **volumen del día**
-(`vol>0`) → las poco líquidas que no operaron hoy quedaban en "—". **Fix:** en `arbitrajes-table.tsx` la
-referencia en rueda ahora es el último operado de A3 (`last`/LA) **sin filtrar por volumen** — igual que la
-pantalla de mercado; "—" solo si A3 no tiene último operado. El **punto verde en vivo** queda solo en las que
-operaron hoy (`vivo = operoHoy`). lint/tsc/build ✅. **Pendiente:** verificar en el deploy que las posiciones
-sin operar hoy muestren su LA (riesgo: que A3 gate el LA por sesión — si pasa, sumar fallback).
-Detalle: [`sesiones/2026-07-13-arbitrajes-en-vivo.md`](sesiones/2026-07-13-arbitrajes-en-vivo.md).
+**🟡 EN VUELO (rama `claude/arbitrage-table-updates-lt5qhm`, PR #27) — Feed A3 por WebSocket (adiós 429).**
+Mirándolo en vivo, muchas posiciones que ESTABAN operando (maíz/trigo, ej. TRI ENE27) salían vacías.
+Diagnóstico (endpoint debug temporal, ya borrado): el REST `marketdata/get` es **de a un símbolo** y A3 lo
+**rate-limitea con HTTP 429** al pedir muchos seguidos (2 OK, el resto 429) → el panel dropeaba posiciones.
+La doc oficial de A3 (PDFs de Lautaro) dice usar **WebSocket** para tiempo real. **Fix (`src/lib/a3-live.ts`):**
+`fetchPuntas` abre **una conexión WS** (`wss://<host>/`, header `X-Auth-Token`) y suscribe TODOS los
+instrumentos en un mensaje `smd`; Primary manda el snapshot de cada uno. `serverExternalPackages:["ws"]` +
+dep `ws`. **Verificado contra el mercado (rueda abierta):** probe 15/15 símbolos en ~1,2s sin un 429; `/granos`
+en Preview con 10 posiciones en vivo (🟢) + 5 en "—" (vol 0 real), maíz/trigo llenos, coincide con el Excel de
+mercado de Lautaro. El filtro de volumen ya no era el problema; el 429 sí. lint/tsc/build ✅. **Falta:** merge a
+`main`. Detalle: [`sesiones/2026-07-13-arbitrajes-en-vivo.md`](sesiones/2026-07-13-arbitrajes-en-vivo.md) (Follow-up 2).
 
 ---
 
