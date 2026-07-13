@@ -1,0 +1,27 @@
+name: Healthcheck de frescura (Supabase)
+
+# Revisa a diario que las tablas que alimenta este repo (futuros_cierres, cbot_cierres,
+# pizarra_historico, noticias, estimaciones_produccion por organismo) no se hayan atrasado de su
+# cadencia esperada. Si algo está viejo, el job FALLA (rojo) → GitHub avisa por mail (notificación
+# default de un scheduled workflow que falla). Es la alerta que faltaba: hasta ahora un parser roto
+# terminaba en verde sin insertar y nadie se enteraba.
+# Los `schedule` de GitHub Actions corren desde la rama default del repo.
+
+on:
+  schedule:
+    - cron: "45 23 * * *" # 20:45 ART, tras el cron de cierres (23:00 UTC) — ve el dato más fresco del día
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Healthcheck
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/healthcheck-frescura.mjs
