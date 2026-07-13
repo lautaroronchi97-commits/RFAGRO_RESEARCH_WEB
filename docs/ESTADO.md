@@ -31,8 +31,10 @@
   (`ruedaAgroCorrioHoy()` + `arbitrajes-table.tsx`). Spread/tasa directa/TNA se **recalculan sobre el
   operado** (confirmado "todo en vivo"). Header pasa a "Últ. operado" con punto en vivo. Sin A3 cae al ajuste.
 - **Pizarra:** NO se tocó — Lautaro dijo que no actualizaba por el cron parado y lo arregla en otra sesión.
-- Verificado: lint/tsc/build ✅ + test de la máquina de estados (7 momentos del día × 6 escenarios de
-  referencia, todo OK). Falta validar en producción en horario de rueda.
+- Verificado: lint/tsc/build ✅ + test de la máquina de estados (7 momentos × 6 escenarios, todo OK)
+  **+ VALIDADO EN VIVO en el Preview con la rueda abierta** (13/07 13:50 Córdoba): "Últ. operado" con
+  A3 respondiendo en Preview (creds sí scopeadas), operado en vivo en las posiciones que operaron hoy
+  (Soja NOV26 343,00 → +15,4% TNA) y "—" en las que no. Solo queda **mergear a `main`** (decisión de Lautaro).
   Detalle: [`sesiones/2026-07-13-arbitrajes-en-vivo.md`](sesiones/2026-07-13-arbitrajes-en-vivo.md).
 
 ---

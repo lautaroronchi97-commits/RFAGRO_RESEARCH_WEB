@@ -49,11 +49,23 @@
   operar→—, rueda con operado→operado, post-cierre→operado, ajuste del día salió→ajuste, sin A3→ajuste).
   **Todo OK.**
 - `/granos` server-renderiza sin errores (dev, HTTP 200; sin creds cae al estado vacío, header nuevo
-  presente). Live real (operado/puntas) no se puede probar en sandbox: requiere A3 + horario de rueda.
+  presente).
+- **✅ VALIDADO EN VIVO en el Preview con la rueda abierta** (13/07 ~13:50 Córdoba, lunes): la 1ª columna
+  del Arbitrajes muestra **"Últ. operado"** con el punto en vivo; A3 responde en el Preview (las creds
+  **sí están scopeadas a Preview** → no hizo falta tocar Vercel); las posiciones que **operaron hoy**
+  muestran el último operado en vivo con spread/tasa/TNA recalculados (ej. Soja NOV26 = 343,00 →
+  +17,78 / +5,47% / **+15,4% TNA**), y las que **no operaron** quedan en **"—"** (ajuste borrado). El
+  Vol muestra el volumen operado de HOY. Producción sigue con el código viejo (header "Ajuste") hasta el
+  merge. (El "cerrada" del `RuedaStatus` en el HTML crudo es el estado pre-hidratación — `now=null` en
+  SSR —, se corrige en el browser; no es bug ni afecta la lógica server del panel.)
+
+## Decisión validada mirando en vivo
+- **Posiciones sin operar hoy quedan en "—"** (no se rellenan con el ajuste) — confirmado por Lautaro
+  viéndolo en la rueda ("dejar en —, como pedí"). A media rueda deja maíz/trigo vacíos hasta que operan;
+  es el comportamiento buscado.
 
 ## Quedó pendiente / en vuelo
-- **Validar en producción** (Vercel, horario de rueda 10:30–17:00 L-V con las 3 vars A3 en scope):
-  ver que la 1ª columna pase a "Últ. operado" y que spread/tasa/TNA se muevan en vivo.
+- **Merge a `main`** para llevarlo a producción (validación live ya hecha en Preview). Es decisión de Lautaro.
 - Pizarra: la arregla Lautaro en otra sesión (cron).
 
 ## Trampas descubiertas (para la próxima sesión)
