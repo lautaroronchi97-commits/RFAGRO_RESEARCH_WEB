@@ -21,21 +21,20 @@
 
 ## Ahora (última actualización: 13/07/2026 — Arbitrajes: 1ª columna en vivo + fix "no actualiza")
 
-**🟡 EN VUELO (rama `claude/arbitrage-table-updates-lt5qhm`, PR #_) — Arbitrajes en vivo:**
-- **Fix "no actualiza":** `RefreshOnFocus` solo refrescaba al volver a la pestaña → una pestaña abierta
-  todo el día quedaba congelada. Ahora **poll cada 30s mientras hay rueda abierta** (`refresh-on-focus.tsx`
-  + `algunaRuedaAbierta()` en `rueda.ts`); `/granos` bajó a `revalidate=30`.
-- **1ª columna de Arbitrajes = referencia dinámica** (pedido de Lautaro): fuera de rueda muestra el
-  **último ajuste**; al abrir la rueda se **borra el ajuste** y pasa al **último operado** en vivo de A3
-  (— hasta la 1ª operación del día), y se sostiene post-cierre **hasta que sale el próximo ajuste**
-  (`ruedaAgroCorrioHoy()` + `arbitrajes-table.tsx`). Spread/tasa directa/TNA se **recalculan sobre el
-  operado** (confirmado "todo en vivo"). Header pasa a "Últ. operado" con punto en vivo. Sin A3 cae al ajuste.
-- **Pizarra:** NO se tocó — Lautaro dijo que no actualizaba por el cron parado y lo arregla en otra sesión.
-- Verificado: lint/tsc/build ✅ + test de la máquina de estados (7 momentos × 6 escenarios, todo OK)
-  **+ VALIDADO EN VIVO en el Preview con la rueda abierta** (13/07 13:50 Córdoba): "Últ. operado" con
-  A3 respondiendo en Preview (creds sí scopeadas), operado en vivo en las posiciones que operaron hoy
-  (Soja NOV26 343,00 → +15,4% TNA) y "—" en las que no. Solo queda **mergear a `main`** (decisión de Lautaro).
-  Detalle: [`sesiones/2026-07-13-arbitrajes-en-vivo.md`](sesiones/2026-07-13-arbitrajes-en-vivo.md).
+**✅ Arbitrajes en vivo — 1ª columna + fix "no actualiza" MERGEADO a `main` (PR #26).** Fuera de rueda =
+último ajuste; en rueda = último operado de A3, spread/tasa/TNA recalculados; header "Últ. operado" + punto
+en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `algunaRuedaAbierta`);
+`/granos` a `revalidate=30`. (Pizarra no se tocó — cron, va aparte.)
+
+**🟡 EN VUELO (rama `claude/arbitrage-table-updates-lt5qhm`, PR #_) — Fix: mostrar el operado en TODAS las
+posiciones.** Al mirarlo en vivo, Lautaro comparó con su Excel conectado a mercado (eTrader): su columna
+PRECIO muestra el último operado para TODAS las posiciones. Mi versión filtraba por **volumen del día**
+(`vol>0`) → las poco líquidas que no operaron hoy quedaban en "—". **Fix:** en `arbitrajes-table.tsx` la
+referencia en rueda ahora es el último operado de A3 (`last`/LA) **sin filtrar por volumen** — igual que la
+pantalla de mercado; "—" solo si A3 no tiene último operado. El **punto verde en vivo** queda solo en las que
+operaron hoy (`vivo = operoHoy`). lint/tsc/build ✅. **Pendiente:** verificar en el deploy que las posiciones
+sin operar hoy muestren su LA (riesgo: que A3 gate el LA por sesión — si pasa, sumar fallback).
+Detalle: [`sesiones/2026-07-13-arbitrajes-en-vivo.md`](sesiones/2026-07-13-arbitrajes-en-vivo.md).
 
 ---
 

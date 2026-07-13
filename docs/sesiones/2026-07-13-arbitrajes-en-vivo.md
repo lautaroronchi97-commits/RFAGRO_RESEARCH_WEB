@@ -76,3 +76,26 @@
 - El `@keyframes live` de `globals.css` vive dentro de `@media (prefers-reduced-motion: no-preference)`;
   para reusarlo, la animación de `.ref-live` va en un media-query igual (el punto estático queda si hay
   reduced-motion).
+
+---
+
+## Follow-up (mismo día, PR #_) — mostrar el operado en TODAS las posiciones
+
+Con el #26 ya en producción y la rueda abierta, Lautaro vio que **muchas posiciones quedaban en "—"** y
+lo comparó con **su Excel conectado a mercado (eTrader/Primary = A3)**: ahí la columna PRECIO muestra el
+**último operado para TODAS las posiciones** (MAI JUL26 182,50 / DIC26 190,00 / JUL27 182,00…), solo TRI
+JUL26 en $0,00 (nunca operó). Verificado además que su Excel usa las **mismas fórmulas**: spread = PRECIO −
+pizarra, con pizarra maíz = 182,00 (spread 0,50/2,50/8,00… cierra en todas), soja ≈ 324,98.
+
+**Diagnóstico:** NO era el refresco (se comprobó que JUL26 soja pasó de "—" a 333,00 y los volúmenes
+avanzaban entre dos fetch). El bug era **mío**: filtraba el último operado por **volumen del día** (`vol>0`),
+así que las posiciones poco líquidas que no operaron HOY quedaban en "—" aunque A3 tenga su último operado.
+
+**Fix (`arbitrajes-table.tsx`):** en rueda, `ref = last` (A3 LA) **sin filtrar por volumen** — igual que la
+pantalla de mercado. "—" solo si A3 no trae último operado. El **punto verde** (`vivo`) queda solo en las que
+operaron hoy (`modoOperado && operoHoy`), para distinguir lo que se mueve ahora del último operado arrastrado.
+`arbitrajes-editable.tsx`: nuevo campo `vivo` por fila; el punto del header usa `hayVivo`.
+
+**Riesgo a verificar en el deploy:** que A3 devuelva `LA` para posiciones sin operar hoy (si lo gatea por
+sesión, seguirían en "—" y habría que sumar un fallback — bid/mid/ajuste). El Excel de Lautaro (mismo feed)
+sí lo muestra, así que la expectativa es que `LA` persista entre sesiones.
