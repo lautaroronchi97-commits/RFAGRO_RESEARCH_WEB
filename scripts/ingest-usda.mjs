@@ -364,6 +364,12 @@ async function main() {
     console.log(`Escrito ${outFile} (dry-run, no se subió nada).`);
     return;
   }
+  // Guard anti "falso verde": el PSD siempre trae cientos de filas; si con doPsd quedó 0, algo se
+  // rompió (ZIP / columnas cambiadas). El WASDE del mes puede faltar (0 legítimo), por eso se exige doPsd.
+  if (all.length === 0 && doPsd && !hasFlag("backfill-wasde")) {
+    console.error("ERROR: 0 filas USDA con PSD activo. No se da por bueno (probable cambio de formato del PSD/WASDE).");
+    process.exit(1);
+  }
   console.log(`Upsert a estimaciones_produccion...`);
   await upsert(all);
   console.log("OK");

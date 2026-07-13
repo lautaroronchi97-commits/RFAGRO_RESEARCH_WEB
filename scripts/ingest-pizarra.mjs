@@ -152,6 +152,12 @@ async function main() {
     console.log(`  ${grano}: ${rows.length} filas`);
     all.push(...rows);
   }
+  // Guard anti "falso verde": en modo diario (ventana de 10 días, sin --from) 0 filas = CAC no trae
+  // la serie (cambió el JSON de Drupal o cayó la fuente) → falla ruidoso en vez de verde vacío.
+  if (all.length === 0 && !process.argv.includes("--from")) {
+    console.error("ERROR: 0 filas de pizarra CAC en la ventana de 10 días. No se da por bueno (probable cambio de estructura / fuente caída).");
+    process.exit(1);
+  }
   console.log(`Upsert de ${all.length} filas...`);
   await upsert(all);
   console.log("OK");

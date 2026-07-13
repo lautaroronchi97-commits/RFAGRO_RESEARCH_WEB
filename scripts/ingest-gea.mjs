@@ -250,6 +250,13 @@ async function main() {
     return;
   }
   if (all.length === 0) {
+    // Backfill Wayback: un rango sin snapshots parseables es legítimo → return blando.
+    // Live (cron): 0 filas = cambió el HTML de BCR-GEA o hay un interstitial. Falla ruidoso para
+    // NO congelar en silencio (fue exactamente lo que dejó a GEA clavado en feb-2026).
+    if (!hasFlag("backfill")) {
+      console.error("ERROR: GEA live devolvió 0 filas — cambió el HTML de BCR-GEA o hay un interstitial. No se congela en silencio.");
+      process.exit(1);
+    }
     console.log("Sin filas — nada que subir.");
     return;
   }

@@ -177,6 +177,12 @@ async function main() {
     console.log(`Escrito ${outFile} (dry-run, no se subió nada).`);
     return;
   }
+  // Guard anti "falso verde": el TXT nacional siempre trae la safra vigente; 0 filas = cambió el
+  // LevantamentoGraos.txt o cayó la fuente. No pasar en verde.
+  if (rows.length === 0) {
+    console.error("ERROR: 0 filas CONAB (cambió LevantamentoGraos.txt o cayó la fuente). No se da por bueno.");
+    process.exit(1);
+  }
   console.log("Upsert a estimaciones_produccion...");
   await upsert(rows);
   console.log("OK");

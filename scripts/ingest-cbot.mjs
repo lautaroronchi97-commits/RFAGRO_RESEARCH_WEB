@@ -254,6 +254,12 @@ async function main() {
     seen.add(k);
     return true;
   });
+  // Guard anti "falso verde": en el diario 0 filas = todos los contratos fallaron (429/403) o
+  // cambió Barchart → no dejar pasar en verde. En backfill un 0 puede ser legítimo.
+  if (dedup.length === 0 && !backfill) {
+    console.error("ERROR: 0 filas CBOT en modo diario (todos los contratos fallaron o cambió Barchart). No se da por bueno.");
+    process.exit(1);
+  }
   console.log(`Contratos con datos: ${ok}. Upsert de ${dedup.length} filas...`);
   await upsert(dedup);
   console.log("OK");
