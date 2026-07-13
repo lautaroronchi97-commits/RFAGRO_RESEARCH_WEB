@@ -39,6 +39,56 @@
 
 ---
 
+## Plan RF AGRO (backlog priorizado por Lautaro, registrado 13/07/2026)
+
+> Lista de tareas que Lautaro quiere hacer. **Las fechas/semanas son solo agrupación de orden, NO
+> deadlines duros** — no hay que forzar nada por calendario. Cada sesión que arranque revisa esta lista,
+> marca lo que se hizo (`[x]`) y anota en «Ahora» el detalle. Si una tarea ya tiene algo hecho o
+> relacionado en el repo, se anota el link para no duplicar research.
+
+**Bloque 1**
+- [ ] 1. Verificación puntual de las bases de datos actuales (auditar que lo que dice `CONTEXTO.md`
+  "Estado de módulos" siga siendo cierto: futuros_cierres, pizarra_historico, cbot_cierres, noticias,
+  estimaciones_produccion — datos al día, sin huecos).
+- [ ] 2. Logo integrado a la web (hoy hay glifos/marca "RF AGRO" en el design system; falta el logo real
+  de Lautaro como asset).
+- [ ] 3. Landing + presentación de servicios (página institucional, separada del dashboard de datos).
+- [ ] 4. Home = novedades del día (repensar `/` para que lo primero que se vea sean las novedades/
+  titulares del día, no solo la cinta + grilla de secciones del rediseño UX de PR #22).
+- [ ] 5. Extender el reporte diario: Matba (volumen) + CBOT + metales + petróleo + Merval + SPY + EWZ
+  (hoy `cbot_cierres` ya tiene CBOT maíz/soja/trigo; falta sumar metales/petróleo/Merval/SPY/EWZ — ver
+  fuentes candidatas `barchart`/`investing`/`yahoo-finance` en `CONTEXTO.md`).
+- [ ] 6. Seguir desarrollando barcos / lineups en puerto (scraper `lineup` está frenado desde ~jun,
+  ver `CONTEXTO.md` Pendientes punto 5 — reactivar + panel).
+
+**Bloque 2**
+- [ ] 7. Login (cliente / Lautaro / Mauro) — roles distintos, hoy la web es 100% pública/anónima.
+- [ ] 8. Total negociado por producto (día/semana), histograma, % sobre cosecha.
+- [ ] 9. SIOGRANOS semanal/mensual (mencionado también en `CONTEXTO.md` Pendientes punto 5).
+
+**Bloque 3**
+- [ ] 10. Terminar login (si sigue abierto del bloque 2).
+- [ ] 11. Automatizar informe diario/semanal (armar la estructura del envío, formato imagen/PDF para
+  WhatsApp según lo charlado — ver `CONTEXTO.md` "Reporte diario").
+- [ ] 12. Acumulado de rueda USD + compras BCRA (compras netas BCRA hoy es proxy/manual, ver módulo 7
+  "Panel cambiario" en `CONTEXTO.md`).
+- [ ] 13. Variación semanal del USD (gráfico).
+- [ ] 14. Movimiento de camiones en puerto (fuente a confirmar, probablemente BCR).
+- [ ] 15. Comercio exterior (incluye tablas DJVE) — solo si sobra tiempo. Ya existe `djve`/`djve_resumen`
+  en Supabase y el sitemap del rediseño UX ya reservó la sección "Comercio exterior"; falta el contenido.
+
+**Bloque 4 (post-Bloque 3)**
+- [ ] 16. Cron/automatizaciones — revisión integral (todos los workflows de GitHub Actions: cierres,
+  USDA/CONAB/estimaciones AR, noticias, calendario).
+- [ ] 17. Comercio exterior (si no cerró antes, ver ítem 15).
+- [ ] 18. Vista por grano (hoy los paneles son transversales a los 3 granos; falta una vista filtrada
+  por un solo grano).
+- [ ] 19. Mejora front-end general · revisión de calculadoras · pegar `ESTADO.md`/`CONTEXTO.md` (mantener
+  la documentación de sesiones al día).
+- [ ] 20. Skill de escritura · skill de informes (herramientas internas de generación de contenido).
+
+---
+
 **Contexto previo (12/07/2026 — Rediseño UX «web en capas» MERGEADO · Sesión C estimaciones Argentina):**
 
 **✅ REDISEÑO UX «WEB EN CAPAS» MERGEADO a `main` (PR #22).** [`docs/PLAN_UX_NAVEGACION.md`](PLAN_UX_NAVEGACION.md): se dejó la tira vertical larga y se pasó a
