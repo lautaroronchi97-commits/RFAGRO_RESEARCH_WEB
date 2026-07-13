@@ -82,7 +82,7 @@ fades, tablas con hover/tick dorado, charts con grilla punteada + área en degra
 | # | Módulo | Estado |
 |---|--------|--------|
 | 0 | Cinta | REAL (dólares). Pizarra en la cinta = ejemplo (falta usar CAC). |
-| 1 | Arbitrajes | **REAL** (`arbitrajes-cierres.ts` + `arbitrajes-editable.tsx`): futuro (ajuste A3/CEM) vs pizarra USD de CAC (`pizarra.ts`, scrape + override). **Pizarra editable** (recalcula TNA en vivo). Spread + tasa directa + **TNA USD** (días al vto desde `vencimientos`) + Vol. **+ Comprador/Vendedor del futuro en vivo** (`a3-live.ts`, A3 en horario de rueda). |
+| 1 | Arbitrajes | **REAL** (`arbitrajes-cierres.ts` + `arbitrajes-editable.tsx`): futuro vs pizarra USD de CAC (`pizarra.ts`, scrape + override). **1ª columna dinámica** (`arbitrajes-table.tsx` + `ruedaAgroCorrioHoy`): fuera de rueda = último **ajuste** (A3/CEM); en rueda se borra y muestra el último **operado** en vivo (— hasta operar), post-cierre hasta que sale el próximo ajuste. Spread/tasa directa/**TNA USD**/Vol se recalculan sobre esa referencia (todo en vivo). **Pizarra editable**. **+ Comprador/Vendedor del futuro en vivo** (`a3-live.ts`, A3 en horario de rueda). Refresh en vivo por poll cada 30s con rueda abierta (`refresh-on-focus.tsx`). |
 | 2 | Pases | **REAL** (`pases-cierres.ts`): spread de ajuste + tasa directa + **TNA** (días entre vtos, tabla `vencimientos`). **+ Comprador/Vendedor/Último/Vol del pase en vivo** (`a3-live.ts`, instrumento `GRANO.ROS/POS1/POS2` de A3, en horario de rueda). |
 | 3 | Dólar futuro | REAL (MAE) + TNA/TEM/TEA. |
 | 4 | Dólar linked | REAL (data912) + TNA/TEM/TEA + spread oficial MAE. |

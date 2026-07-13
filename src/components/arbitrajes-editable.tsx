@@ -14,7 +14,8 @@ import { InfoTip } from "./infotip";
 
 type Row = {
   pos: string;
-  ajuste: number | null;
+  ref: number | null; // referencia: último ajuste (fuera de rueda) o último operado (en rueda)
+  refMode: "ajuste" | "operado";
   dias: number | null;
   volume: number | null;
   bid: number | null; // comprador (A3 en vivo, solo lectura)
@@ -52,13 +53,29 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
 
   const setOne = (u: string, v: string) => setPz((prev) => ({ ...prev, [u]: v }));
 
+  // Durante la rueda la 1ª columna muestra el último operado; fuera de rueda, el ajuste.
+  const hayOperado = granos.some((g) => g.rows.some((r) => r.refMode === "operado"));
+
   return (
     <div className="table-scroll">
       <table className="tbl" style={{ minWidth: 760 }}>
         <thead>
           <tr>
             <th className="l" scope="col">Posición</th>
-            <th scope="col">Ajuste</th>
+            <th scope="col">
+              <InfoTip
+                term={
+                  <span className="ref-th">
+                    {hayOperado && <span className="ref-live" aria-hidden="true" />}
+                    {hayOperado ? "Últ. operado" : "Ajuste"}
+                  </span>
+                }
+              >
+                Fuera de rueda: el último ajuste (settlement de cierre). Al abrir la rueda se borra el
+                ajuste y pasa a mostrar el último precio operado en vivo (A3), hasta que salga el próximo
+                ajuste. En blanco (—) si la rueda abrió pero todavía no hubo operaciones.
+              </InfoTip>
+            </th>
             <th scope="col">
               <InfoTip term="Comprador">
                 Mejor punta compradora (bid) del futuro en A3, en vivo (~1 min con rueda abierta).
@@ -72,7 +89,8 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
             </th>
             <th scope="col">
               <InfoTip term="Spread US$">
-                Diferencia entre el ajuste del futuro y la pizarra del disponible.
+                Diferencia entre el precio del futuro (ajuste o, en rueda, último operado) y la pizarra
+                del disponible.
               </InfoTip>
             </th>
             <th scope="col">
@@ -138,10 +156,10 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
                   </td>
                 </tr>
                 {g.rows.map((r) => {
-                  const spread = r.ajuste != null && pizarra != null ? round2(r.ajuste - pizarra) : null;
+                  const spread = r.ref != null && pizarra != null ? round2(r.ref - pizarra) : null;
                   const directa =
-                    r.ajuste != null && pizarra != null && pizarra > 0
-                      ? round2((r.ajuste / pizarra - 1) * 100)
+                    r.ref != null && pizarra != null && pizarra > 0
+                      ? round2((r.ref / pizarra - 1) * 100)
                       : null;
                   const tna =
                     directa != null && r.dias != null && r.dias > 0
@@ -151,7 +169,12 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
                   return (
                     <tr key={r.pos}>
                       <td className="l sym">{r.pos}</td>
-                      <td>{nfmt(r.ajuste, 2)}</td>
+                      <td>
+                        {r.refMode === "operado" && r.ref != null && (
+                          <span className="ref-live" aria-hidden="true" />
+                        )}
+                        {nfmt(r.ref, 2)}
+                      </td>
                       <td>{nfmt(r.bid, 2)}</td>
                       <td>{nfmt(r.ask, 2)}</td>
                       <td className={cls(spread)}>{sfmt(spread, 2)}</td>
