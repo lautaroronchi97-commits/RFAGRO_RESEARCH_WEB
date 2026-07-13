@@ -103,11 +103,13 @@ fades, tablas con hover/tick dorado, charts con grilla punteada + área en degra
 ## A3 — verificado OK
 Token válido, 349 instrumentos DDA (granos) + 69 DDF (dólar), market data real llegando. Formatos de símbolo:
 futuros `SOJ.ROS/JUL26`, pases `MAI.ROS/SEP26/DIC26`, dólar `DLR/JUL26`; opciones traen strike+`C/P` (excluir),
-disponible = `/DISPO`. **Límites:** no hay cap diario documentado; A3 recomienda WebSocket para MD en vivo;
-el caché de Next ya acota las llamadas (una regeneración por ventana, no por usuario). Todo hoy es **REST**.
-**Feed en vivo (09/07):** `src/lib/a3-live.ts` conecta el cliente A3 a los paneles Pases/Arbitrajes
-**web-directa** (por la regeneración ISR de la página, `revalidate = 60` + MD `revalidate = 30`), NO por un
-cron — un cron de 60s no existe gratis (GitHub Actions mín. 5 min; Vercel Hobby crons 1×/día). Un cron
+disponible = `/DISPO`. **Límites:** el REST `marketdata/get` es **de a UN símbolo** y A3 lo **rate-limitea
+(HTTP 429)** al pedir muchos seguidos → por eso la MD en vivo va por **WebSocket** (la doc oficial lo indica).
+**Feed en vivo (WebSocket, 13/07):** `src/lib/a3-live.ts` (`fetchPuntas`) abre **una conexión WS**
+(`wss://<host>/`, header `X-Auth-Token`) y suscribe TODOS los instrumentos en un mensaje `smd`; Primary manda
+el snapshot de cada uno (puntas + último + volumen). Reemplazó el polling REST (que dropeaba posiciones por el
+429). Se abre por la regeneración ISR de la página (`revalidate = 30`), NO por un cron. Dep `ws` +
+`serverExternalPackages:["ws"]`. Detalle: `sesiones/2026-07-13-arbitrajes-en-vivo.md` (Follow-up 2). Un cron
 queda SOLO para el histórico intradiario (Fase 2, tabla `snapshots`).
 
 ## Auditoría integral (07/07/2026) — hecha, Fase 0+A aplicada

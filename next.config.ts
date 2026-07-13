@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // `ws` (WebSocket a A3 para la marketdata en vivo) es un módulo Node: no lo
+  // bundleamos, se resuelve en runtime del server.
+  serverExternalPackages: ["ws"],
   async headers() {
     return [
       {

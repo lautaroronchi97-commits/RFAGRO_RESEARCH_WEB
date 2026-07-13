@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
-import { a3Configured, getA3Token, getA3MarketData, getA3InstrumentsBySegment } from "./a3";
+import WebSocket from "ws";
+import { a3Configured, getA3Token, getA3InstrumentsBySegment } from "./a3";
 import { getPases } from "./pases-cierres";
 import { getCierresGranos } from "./futuros";
 import { ruedaAgroAbierta } from "./rueda";
@@ -8,11 +9,15 @@ import type { Meta } from "./market";
 
 /**
  * Feed A3 en vivo: puntas (comprador/vendedor), último y volumen operado de la
- * rueda, tomados de la API REST de A3/Cocos xOMS (`getA3MarketData`). Es la capa
- * "viva" que el cierre diario del CEM no puede dar (el CEM no publica instrumentos
- * de pase ni puntas). Se sirve por la MISMA regeneración ISR de la página
- * (`revalidate = 60` + `getA3MarketData` con `revalidate: 30`), no por un cron:
- * cuando alguien mira el panel en horario de rueda, ve datos de ~1 minuto.
+ * rueda. Es la capa "viva" que el cierre diario del CEM no puede dar (el CEM no
+ * publica instrumentos de pase ni puntas).
+ *
+ * Transporte = **WebSocket** (una conexión, un mensaje `smd` que suscribe TODOS
+ * los símbolos, Primary manda el snapshot al suscribir). El REST `marketdata/get`
+ * es de a un símbolo y A3 lo rate-limitea con 429 al pedir muchos seguidos —la
+ * doc oficial dice "para tiempo real … Websocket"—, así que dropeaba posiciones.
+ * Se abre una conexión por regeneración ISR de la página (no un cron): cuando
+ * alguien mira el panel en horario de rueda, ve datos de ~1 minuto.
  *
  * Todo degrada solo: sin credenciales (Preview / sandbox), sin token o con A3
  * caído, las columnas muestran "—" y el resto del panel sigue intacto.
@@ -37,9 +42,9 @@ export type LiveResult = {
   updatedAt: number | null; // epoch ms del armado (si hubo al menos una respuesta)
 };
 
-const ENTRIES = "BI,OF,LA,TV"; // una sola URL cacheable por símbolo (más chica que el default de 7)
-const CONCURRENCY = 6;
-const DEADLINE_MS = 10_000; // tope global: no lanzar requests nuevos pasado esto (la regeneración ISR no puede colgar)
+const WS_ENTRIES = ["BI", "OF", "LA", "TV"]; // puntas + último + volumen del día
+const WS_DEADLINE_MS = 6000; // tope: la regeneración ISR no puede colgar esperando el socket
+const WS_URL = (process.env.A3_API_BASE ?? "https://api.cocos.xoms.com.ar").replace(/^http/, "ws") + "/";
 
 const SIN_CONFIG: LiveResult = {
   puntas: new Map(),
@@ -92,7 +97,7 @@ function toPuntas(md: unknown): Puntas {
   };
 }
 
-/* ---------------- fetch con concurrencia limitada + deadline global ---------------- */
+/* ---------------- snapshot por WebSocket (una conexión, suscribe todo) ---------------- */
 
 async function fetchPuntas(symbols: string[]): Promise<LiveResult> {
   if (!a3Configured()) return SIN_CONFIG;
@@ -104,37 +109,77 @@ async function fetchPuntas(symbols: string[]): Promise<LiveResult> {
     return { puntas: new Map(), estado: "caido", pedidos: symbols.length, respondidos: 0, updatedAt: null };
   }
 
-  const deadline = Date.now() + DEADLINE_MS;
-  const puntas = new Map<string, Puntas>();
-  let idx = 0;
-  let fallidos = 0;
+  return new Promise<LiveResult>((resolve) => {
+    const puntas = new Map<string, Puntas>();
+    let settled = false;
+    let ws: WebSocket | null = null;
 
-  const worker = async () => {
-    while (idx < symbols.length) {
-      const sym = symbols[idx++];
-      if (!sym) continue;
-      if (Date.now() > deadline) {
-        fallidos++;
-        continue;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      try {
+        ws?.close();
+      } catch {
+        /* noop */
       }
-      const md = await getA3MarketData(sym, ENTRIES); // por-URL: revalidate 30 + timeout 8s propios de a3.ts
-      if (md) puntas.set(sym, toPuntas(md));
-      else fallidos++;
+      const respondidos = puntas.size;
+      const estado: LiveEstado =
+        respondidos === 0 ? "caido" : respondidos < symbols.length ? "parcial" : "ok";
+      if (respondidos < symbols.length) {
+        console.error(`[a3-live] WS ${symbols.length - respondidos}/${symbols.length} símbolos sin snapshot`);
+      }
+      resolve({
+        puntas,
+        estado,
+        pedidos: symbols.length,
+        respondidos,
+        updatedAt: respondidos > 0 ? Date.now() : null,
+      });
+    };
+
+    // Idempotente por `settled`: si el snapshot llega antes, este timeout dispara
+    // igual pero no hace nada. `unref` para no demorar el freeze de la función.
+    setTimeout(finish, WS_DEADLINE_MS).unref?.();
+
+    try {
+      ws = new WebSocket(WS_URL, { headers: { "X-Auth-Token": token } });
+    } catch {
+      return finish();
     }
-  };
 
-  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, symbols.length) }, worker));
+    ws.on("open", () => {
+      // Un solo mensaje suscribe TODOS los instrumentos; Primary responde con el
+      // snapshot actual de cada uno (evita el 429 de pedir de a un símbolo por REST).
+      ws?.send(
+        JSON.stringify({
+          type: "smd",
+          level: 1,
+          entries: WS_ENTRIES,
+          products: symbols.map((s) => ({ symbol: s, marketId: "ROFX" })),
+          depth: 1,
+        }),
+      );
+    });
 
-  const respondidos = puntas.size;
-  const estado: LiveEstado = respondidos === 0 ? "caido" : fallidos > 0 ? "parcial" : "ok";
-  if (fallidos > 0) console.error(`[a3-live] ${fallidos}/${symbols.length} símbolos sin marketdata`);
-  return {
-    puntas,
-    estado,
-    pedidos: symbols.length,
-    respondidos,
-    updatedAt: respondidos > 0 ? Date.now() : null,
-  };
+    ws.on("message", (data: WebSocket.RawData) => {
+      let msg: Record<string, unknown>;
+      try {
+        msg = JSON.parse(data.toString()) as Record<string, unknown>;
+      } catch {
+        return;
+      }
+      if (msg.type !== "Md") return;
+      const inst = msg.instrumentId as { symbol?: unknown } | undefined;
+      const sym = typeof inst?.symbol === "string" ? inst.symbol : null;
+      if (sym && !puntas.has(sym)) {
+        puntas.set(sym, toPuntas(msg.marketData));
+        if (puntas.size >= symbols.length) finish();
+      }
+    });
+
+    ws.on("error", () => finish());
+    ws.on("close", () => finish());
+  });
 }
 
 /* ---------------- entradas públicas ---------------- */

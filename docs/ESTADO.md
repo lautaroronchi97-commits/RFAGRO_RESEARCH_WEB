@@ -21,21 +21,22 @@
 
 ## Ahora (última actualización: 13/07/2026 — Arbitrajes: 1ª columna en vivo + fix "no actualiza")
 
-**🟡 EN VUELO (rama `claude/arbitrage-table-updates-lt5qhm`, PR #_) — Arbitrajes en vivo:**
-- **Fix "no actualiza":** `RefreshOnFocus` solo refrescaba al volver a la pestaña → una pestaña abierta
-  todo el día quedaba congelada. Ahora **poll cada 30s mientras hay rueda abierta** (`refresh-on-focus.tsx`
-  + `algunaRuedaAbierta()` en `rueda.ts`); `/granos` bajó a `revalidate=30`.
-- **1ª columna de Arbitrajes = referencia dinámica** (pedido de Lautaro): fuera de rueda muestra el
-  **último ajuste**; al abrir la rueda se **borra el ajuste** y pasa al **último operado** en vivo de A3
-  (— hasta la 1ª operación del día), y se sostiene post-cierre **hasta que sale el próximo ajuste**
-  (`ruedaAgroCorrioHoy()` + `arbitrajes-table.tsx`). Spread/tasa directa/TNA se **recalculan sobre el
-  operado** (confirmado "todo en vivo"). Header pasa a "Últ. operado" con punto en vivo. Sin A3 cae al ajuste.
-- **Pizarra:** NO se tocó — Lautaro dijo que no actualizaba por el cron parado y lo arregla en otra sesión.
-- Verificado: lint/tsc/build ✅ + test de la máquina de estados (7 momentos × 6 escenarios, todo OK)
-  **+ VALIDADO EN VIVO en el Preview con la rueda abierta** (13/07 13:50 Córdoba): "Últ. operado" con
-  A3 respondiendo en Preview (creds sí scopeadas), operado en vivo en las posiciones que operaron hoy
-  (Soja NOV26 343,00 → +15,4% TNA) y "—" en las que no. Solo queda **mergear a `main`** (decisión de Lautaro).
-  Detalle: [`sesiones/2026-07-13-arbitrajes-en-vivo.md`](sesiones/2026-07-13-arbitrajes-en-vivo.md).
+**✅ Arbitrajes en vivo — 1ª columna + fix "no actualiza" MERGEADO a `main` (PR #26).** Fuera de rueda =
+último ajuste; en rueda = último operado de A3, spread/tasa/TNA recalculados; header "Últ. operado" + punto
+en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `algunaRuedaAbierta`);
+`/granos` a `revalidate=30`. (Pizarra no se tocó — cron, va aparte.)
+
+**🟡 EN VUELO (rama `claude/arbitrage-table-updates-lt5qhm`, PR #27) — Feed A3 por WebSocket (adiós 429).**
+Mirándolo en vivo, muchas posiciones que ESTABAN operando (maíz/trigo, ej. TRI ENE27) salían vacías.
+Diagnóstico (endpoint debug temporal, ya borrado): el REST `marketdata/get` es **de a un símbolo** y A3 lo
+**rate-limitea con HTTP 429** al pedir muchos seguidos (2 OK, el resto 429) → el panel dropeaba posiciones.
+La doc oficial de A3 (PDFs de Lautaro) dice usar **WebSocket** para tiempo real. **Fix (`src/lib/a3-live.ts`):**
+`fetchPuntas` abre **una conexión WS** (`wss://<host>/`, header `X-Auth-Token`) y suscribe TODOS los
+instrumentos en un mensaje `smd`; Primary manda el snapshot de cada uno. `serverExternalPackages:["ws"]` +
+dep `ws`. **Verificado contra el mercado (rueda abierta):** probe 15/15 símbolos en ~1,2s sin un 429; `/granos`
+en Preview con 10 posiciones en vivo (🟢) + 5 en "—" (vol 0 real), maíz/trigo llenos, coincide con el Excel de
+mercado de Lautaro. El filtro de volumen ya no era el problema; el 429 sí. lint/tsc/build ✅. **Falta:** merge a
+`main`. Detalle: [`sesiones/2026-07-13-arbitrajes-en-vivo.md`](sesiones/2026-07-13-arbitrajes-en-vivo.md) (Follow-up 2).
 
 ---
 

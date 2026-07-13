@@ -41,12 +41,18 @@ export async function ArbitrajesTable() {
         const last = p?.last ?? null;
         const volLive = p?.vol ?? null; // volumen operado HOY (A3 TV, resetea por rueda)
         const operoHoy = volLive != null && volLive > 0;
-        // En rueda: último operado (o — si aún no operó). Fuera de rueda: ajuste.
-        const ref = modoOperado ? (operoHoy ? last : null) : r.ajuste;
+        // En rueda: el último operado (A3 LA) tal cual, como la pantalla de mercado
+        // (eTrader) — SIN filtrar por volumen del día: una posición poco líquida que
+        // no operó hoy igual muestra su último precio operado. Solo queda "—" si A3
+        // no tiene último operado. Fuera de rueda: el ajuste.
+        const ref = modoOperado ? last : r.ajuste;
         return {
           pos: r.pos,
           ref,
           refMode: modoOperado ? ("operado" as const) : ("ajuste" as const),
+          // Punto verde en vivo SOLO en las que operaron hoy (distingue lo que se
+          // mueve ahora del último operado arrastrado de la rueda anterior).
+          vivo: modoOperado && operoHoy && last != null,
           dias: r.dias,
           volume: modoOperado ? volLive : r.volume,
           bid: p?.bid ?? null,

@@ -16,6 +16,7 @@ type Row = {
   pos: string;
   ref: number | null; // referencia: último ajuste (fuera de rueda) o último operado (en rueda)
   refMode: "ajuste" | "operado";
+  vivo: boolean; // operó hoy → mostrar el punto en vivo
   dias: number | null;
   volume: number | null;
   bid: number | null; // comprador (A3 en vivo, solo lectura)
@@ -55,6 +56,7 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
 
   // Durante la rueda la 1ª columna muestra el último operado; fuera de rueda, el ajuste.
   const hayOperado = granos.some((g) => g.rows.some((r) => r.refMode === "operado"));
+  const hayVivo = granos.some((g) => g.rows.some((r) => r.vivo));
 
   return (
     <div className="table-scroll">
@@ -66,14 +68,15 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
               <InfoTip
                 term={
                   <span className="ref-th">
-                    {hayOperado && <span className="ref-live" aria-hidden="true" />}
+                    {hayVivo && <span className="ref-live" aria-hidden="true" />}
                     {hayOperado ? "Últ. operado" : "Ajuste"}
                   </span>
                 }
               >
-                Fuera de rueda: el último ajuste (settlement de cierre). Al abrir la rueda se borra el
-                ajuste y pasa a mostrar el último precio operado en vivo (A3), hasta que salga el próximo
-                ajuste. En blanco (—) si la rueda abrió pero todavía no hubo operaciones.
+                Fuera de rueda: el último ajuste (settlement de cierre). En rueda: el último precio
+                operado de cada posición (A3), como la pantalla de mercado, hasta que salga el próximo
+                ajuste. El punto verde marca las que operaron hoy; queda en — solo si A3 no tiene último
+                operado.
               </InfoTip>
             </th>
             <th scope="col">
@@ -170,9 +173,7 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
                     <tr key={r.pos}>
                       <td className="l sym">{r.pos}</td>
                       <td>
-                        {r.refMode === "operado" && r.ref != null && (
-                          <span className="ref-live" aria-hidden="true" />
-                        )}
+                        {r.vivo && <span className="ref-live" aria-hidden="true" />}
                         {nfmt(r.ref, 2)}
                       </td>
                       <td>{nfmt(r.bid, 2)}</td>
