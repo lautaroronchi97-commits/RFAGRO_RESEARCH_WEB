@@ -19,24 +19,37 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 13/07/2026 — Arbitrajes: 1ª columna en vivo + fix "no actualiza")
+## Ahora (última actualización: 16/07/2026 — Login Etapa 1: base de auth construida)
+
+**🔐 LOGIN ETAPA 1 (base de auth) HECHA — PR #28 (rama `claude/pending-tasks-list-2m6y6u`).** Construida sobre
+Supabase Auth + `@supabase/ssr`: capa `src/lib/auth/` (config/env/client/server/session/dal/log), migración
+`20260716120000_create_auth_base.sql` (tablas `empresas`/`profiles`/`access_log` + `is_admin()` + trigger de alta
+que siembra a `lautaroronchi97@gmail.com` como admin + RLS), pantallas premium en el route group `(auth)`
+(`/ingresar` `/registro` `/pendiente` `/recuperar` `/completar` + callback OAuth + server actions), y el gate en
+`src/proxy.ts` (¡en Next 16 el middleware se llama **proxy**!) detrás del flag **`AUTH_ENFORCED` (apagado)**.
+**Clave: con el flag apagado la web queda igual que hoy** — verificado en el build que `/` y las 7 secciones
+siguen `Static`/ISR; con el flag prendido `/`→307 a `/ingresar` (curl). lint/tsc/build ✅.
+**Falta (manual de Lautaro):** aplicar la migración por el SQL Editor (el MCP de escritura volvió a fallar) +
+cargar env vars + Google OAuth — todo en [`GUIA_LOGIN_SETUP.md`](GUIA_LOGIN_SETUP.md). **Siguen Etapa 2 (panel
+admin + emails) y Etapa 3 (sesión única, marca de agua, landing, encendido)** — prompts en `PLAN_LOGIN.md` §5.2/§5.3.
+Detalle: [`sesiones/2026-07-16-login-etapa-1.md`](sesiones/2026-07-16-login-etapa-1.md).
+
+**📋 PLAN DE LOGIN CERRADO (ítem 7 del backlog) — [`PLAN_LOGIN.md`](PLAN_LOGIN.md).** 15 decisiones cerradas con
+Lautaro (registro autoservicio + aprobación manual · 1 sesión activa por usuario · permisos por sección a nivel
+empresa + override · todo tras login con landing mínima · historial de logins/actividad · mail a admins por
+registro · sesión 7 días · marca de agua sutil · feature flag `AUTH_ENFORCED` que entra APAGADO · Supabase Auth).
+**3 etapas = 3 PRs** (Etapa 1 ✅). Hosting (Vercel Pro vs alternativas): sesión aparte ANTES de clientes reales.
+Detalle del plan: [`sesiones/2026-07-16-plan-login.md`](sesiones/2026-07-16-plan-login.md).
+
+**✅ Feed A3 por WebSocket (adiós 429) MERGEADO a `main` (PR #27).** El REST `marketdata/get` es de a un
+símbolo y A3 lo rate-limitea (429) → dropeaba posiciones. `src/lib/a3-live.ts` ahora abre **una conexión WS**
+y suscribe todo en un `smd`; verificado en rueda abierta 15/15 símbolos sin 429, coincide con el Excel de
+Lautaro. Detalle: [`sesiones/2026-07-13-arbitrajes-en-vivo.md`](sesiones/2026-07-13-arbitrajes-en-vivo.md) (Follow-up 2).
 
 **✅ Arbitrajes en vivo — 1ª columna + fix "no actualiza" MERGEADO a `main` (PR #26).** Fuera de rueda =
 último ajuste; en rueda = último operado de A3, spread/tasa/TNA recalculados; header "Últ. operado" + punto
 en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `algunaRuedaAbierta`);
 `/granos` a `revalidate=30`. (Pizarra no se tocó — cron, va aparte.)
-
-**🟡 EN VUELO (rama `claude/arbitrage-table-updates-lt5qhm`, PR #27) — Feed A3 por WebSocket (adiós 429).**
-Mirándolo en vivo, muchas posiciones que ESTABAN operando (maíz/trigo, ej. TRI ENE27) salían vacías.
-Diagnóstico (endpoint debug temporal, ya borrado): el REST `marketdata/get` es **de a un símbolo** y A3 lo
-**rate-limitea con HTTP 429** al pedir muchos seguidos (2 OK, el resto 429) → el panel dropeaba posiciones.
-La doc oficial de A3 (PDFs de Lautaro) dice usar **WebSocket** para tiempo real. **Fix (`src/lib/a3-live.ts`):**
-`fetchPuntas` abre **una conexión WS** (`wss://<host>/`, header `X-Auth-Token`) y suscribe TODOS los
-instrumentos en un mensaje `smd`; Primary manda el snapshot de cada uno. `serverExternalPackages:["ws"]` +
-dep `ws`. **Verificado contra el mercado (rueda abierta):** probe 15/15 símbolos en ~1,2s sin un 429; `/granos`
-en Preview con 10 posiciones en vivo (🟢) + 5 en "—" (vol 0 real), maíz/trigo llenos, coincide con el Excel de
-mercado de Lautaro. El filtro de volumen ya no era el problema; el 429 sí. lint/tsc/build ✅. **Falta:** merge a
-`main`. Detalle: [`sesiones/2026-07-13-arbitrajes-en-vivo.md`](sesiones/2026-07-13-arbitrajes-en-vivo.md) (Follow-up 2).
 
 ---
 
@@ -68,6 +81,9 @@ mercado de Lautaro. El filtro de volumen ya no era el problema; el 429 sí. lint
 
 **Bloque 2**
 - [ ] 7. Login (cliente / Lautaro / Mauro) — roles distintos, hoy la web es 100% pública/anónima.
+  **Plan cerrado 16/07 → [`PLAN_LOGIN.md`](PLAN_LOGIN.md)** (15 decisiones + 3 prompts de ejecución).
+  **Etapa 1 (base de auth) HECHA** (PR #28, flag `AUTH_ENFORCED` apagado). Faltan Etapa 2 (panel admin) y
+  Etapa 3 (hardening + encendido).
 - [ ] 8. Total negociado por producto (día/semana), histograma, % sobre cosecha.
 - [ ] 9. SIOGRANOS semanal/mensual (mencionado también en `CONTEXTO.md` Pendientes punto 5).
 
