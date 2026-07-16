@@ -12,7 +12,12 @@ import { updateSession } from "@/lib/auth/session";
  * los redirects.
  */
 export async function proxy(request: NextRequest): Promise<NextResponse> {
-  if (!AUTH_ENFORCED) return NextResponse.next();
+  const path = request.nextUrl.pathname;
+  const esAdmin = path === "/admin" || path.startsWith("/admin/");
+  // El panel /admin está SIEMPRE protegido (aun con el flag global apagado); por eso
+  // se refresca su sesión aunque `AUTH_ENFORCED` esté off. El resto del sitio solo
+  // pasa por el gate cuando el flag está prendido → con el flag off queda estático/ISR.
+  if (!AUTH_ENFORCED && !esAdmin) return NextResponse.next();
   return updateSession(request);
 }
 

@@ -3,7 +3,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "./server";
 import { authConfigured } from "./env";
-import type { SeccionKey } from "./config";
+import { AUTH_ENFORCED, SECCIONES, type SeccionKey } from "./config";
 
 /**
  * Data Access Layer de auth (chequeos SEGUROS contra la base — ver guía de
@@ -48,10 +48,45 @@ export const getPerfil = cache(async (): Promise<Perfil | null> => {
 });
 
 /**
+ * "Pase" del usuario: perfil + secciones visibles ya resueltas.
+ *  - `visibles` = override individual si está seteado (aunque sea vacío = sin acceso),
+ *    si no las de la empresa; los admin ven las 7.
+ * Se lee fresco por request (no hay cookie-cache), así los cambios que hace un admin
+ * en permisos/estado impactan de inmediato — no hay caché que invalidar (§3.3 del plan).
+ */
+export type Acceso = {
+  perfil: Perfil;
+  esAdmin: boolean;
+  empresaSecciones: string[];
+  visibles: string[];
+};
+
+export const getAcceso = cache(async (): Promise<Acceso | null> => {
+  const perfil = await getPerfil();
+  if (!perfil) return null;
+  const esAdmin = perfil.rol === "admin";
+
+  let empresaSecciones: string[] = [];
+  if (perfil.empresa_id) {
+    const supabase = await createSupabaseServerClient();
+    const { data } = await supabase
+      .from("empresas")
+      .select("secciones")
+      .eq("id", perfil.empresa_id)
+      .maybeSingle();
+    empresaSecciones = (data?.secciones as string[] | undefined) ?? [];
+  }
+
+  const base = perfil.secciones_override ?? empresaSecciones;
+  const visibles = esAdmin ? [...SECCIONES] : base;
+  return { perfil, esAdmin, empresaSecciones, visibles };
+});
+
+/**
  * Exige un usuario aprobado. Redirige según el caso:
  *  - sin sesión → /ingresar
  *  - perfil sin cargar todavía (OAuth recién logueado, falta completar) → /completar
- *  - estado pendiente → /pendiente · rechazado/bloqueado → /pendiente (con motivo)
+ *  - estado pendiente/rechazado/bloqueado → /pendiente
  * Devuelve el perfil aprobado para que el layout lo use (marca de agua en Etapa 3).
  */
 export async function requireAprobado(): Promise<Perfil> {
@@ -64,13 +99,30 @@ export async function requireAprobado(): Promise<Perfil> {
 }
 
 /**
- * ¿El perfil puede ver esta sección? El enforcement real por sección es de la
- * Etapa 2; acá queda la función lista (los admins ven todo; sin permisos cargados
- * todavía = ve todo, para no romper nada en la Etapa 1).
+ * Enforcement de permisos por sección (Etapa 2). Se llama al tope de cada página de
+ * sección — las páginas SÍ re-renderizan al navegar (a diferencia de los layouts, por
+ * el partial rendering de Next), así el chequeo corre en cada visita.
+ *
+ * Con `AUTH_ENFORCED` apagado es un NO-OP inmediato: no lee cookies → la página sigue
+ * siendo estática/ISR igual que hoy (requisito duro). Con el flag prendido, exige
+ * aprobado + permiso de la sección; si no, redirige.
  */
-export function puedeVerSeccion(perfil: Perfil, seccion: SeccionKey): boolean {
-  if (perfil.rol === "admin") return true;
-  const permitidas = perfil.secciones_override; // Etapa 2 sumará el fallback a empresa.secciones
-  if (!permitidas || permitidas.length === 0) return true;
-  return permitidas.includes(seccion);
+export async function requireSeccion(seccion: SeccionKey): Promise<void> {
+  if (!AUTH_ENFORCED) return;
+  const acceso = await getAcceso();
+  if (!acceso) redirect("/ingresar");
+  if (acceso.perfil.estado !== "aprobado") redirect("/pendiente");
+  if (!acceso.esAdmin && !acceso.visibles.includes(seccion)) redirect("/sin-acceso");
+}
+
+/**
+ * Exige rol admin. A diferencia del gate del sitio, NO depende de `AUTH_ENFORCED`:
+ * el panel /admin está SIEMPRE protegido (aun con el flag apagado la web es pública,
+ * pero /admin nunca lo es). Sin sesión → /ingresar; con sesión no-admin → home.
+ */
+export async function requireAdmin(): Promise<Perfil> {
+  const perfil = await getPerfil();
+  if (!perfil) redirect("/ingresar?next=/admin");
+  if (perfil.rol !== "admin") redirect("/");
+  return perfil;
 }

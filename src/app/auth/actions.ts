@@ -5,6 +5,8 @@ import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/auth/server";
 import { authConfigured } from "@/lib/auth/env";
 import { logAcceso } from "@/lib/auth/log";
+import { notificarRegistro } from "@/lib/auth/emails";
+import { ADMIN_SEED_EMAILS } from "@/lib/auth/config";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 
@@ -52,6 +54,12 @@ export async function registrarConPassword(_state: FormState, formData: FormData
     return { error: error.message.includes("already registered")
       ? "Ese email ya está registrado. Probá ingresar o recuperar la contraseña."
       : "No se pudo completar el registro. Probá de nuevo." };
+  }
+
+  // Aviso a los admins (salvo que el que se registra sea un admin sembrado, que
+  // entra ya aprobado). Degrada solo si falta la API key de Resend.
+  if (!ADMIN_SEED_EMAILS.includes(email)) {
+    await notificarRegistro({ nombre, email, empresa, telefono });
   }
 
   redirect("/pendiente?nuevo=1");
@@ -132,6 +140,17 @@ export async function completarPerfil(_state: FormState, formData: FormData): Pr
     .update({ nombre, empresa_texto: empresa, telefono })
     .eq("id", user.id);
   if (error) return { error: "No se pudieron guardar tus datos. Probá de nuevo." };
+
+  // Completar el perfil tras Google = el momento en que el registro queda listo:
+  // avisamos a los admins (salvo admin sembrado, que ya entra aprobado).
+  if (!ADMIN_SEED_EMAILS.includes((user.email ?? "").toLowerCase())) {
+    await notificarRegistro({
+      nombre,
+      email: user.email ?? "",
+      empresa,
+      telefono,
+    });
+  }
 
   redirect("/pendiente?nuevo=1");
 }

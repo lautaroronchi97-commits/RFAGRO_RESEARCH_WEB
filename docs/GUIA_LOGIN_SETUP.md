@@ -21,7 +21,9 @@ Crea las tablas `empresas`, `profiles` y `access_log`, el trigger que arma tu pe
 registrarte y las reglas de seguridad (RLS). Ya deja a **lautaroronchi97@gmail.com** como
 admin aprobado.
 
-**Cómo aplicarla (elegí una):**
+> ✅ **Ya aplicada** (16/07/2026, en la sesión de la Etapa 2, vía el MCP de Supabase). Las
+> tablas `empresas`, `profiles`, `access_log` y las RPC del panel ya existen en la base. Si
+> alguna vez recreás el proyecto desde cero, aplicá las dos migraciones de auth con una de estas:
 - **SQL Editor de Supabase (más simple):** entrá a Supabase → tu proyecto → *SQL Editor* →
   pegá el contenido del archivo `.sql` → *Run*. (Se puede correr más de una vez sin romper nada.)
 - **Supabase CLI:** `supabase db push` desde la raíz del repo (si tenés la CLI configurada).
@@ -92,9 +94,55 @@ panel admin (Etapa 2) para poder aprobar clientes. No lo prendas antes.
 
 ---
 
-## Etapa 2 — (pendiente) panel admin + emails de aviso (Resend)
+## Etapa 2 — panel admin + emails de aviso (Resend)
 
-_Se completa cuando se construya la Etapa 2._
+La Etapa 2 agregó el **panel de administración** en `/admin` (aprobar cuentas, empresas,
+permisos por sección, actividad) y los **emails de aviso**. Nada de esto cierra la web:
+`/admin` está protegido y solo lo ve un admin logueado; el resto sigue igual que hoy hasta
+que prendas `AUTH_ENFORCED` (Etapa 3).
+
+### 1. Migración de la Etapa 2 — ✅ ya aplicada
+
+`supabase/migrations/20260716180000_auth_admin_panel.sql` (funciones de lectura del panel +
+el registro de visitas por sección). **Ya aplicada** el 16/07 junto con la de la Etapa 1. No
+hay que hacer nada; queda versionada por si recreás el proyecto.
+
+### 2. Entrar al panel
+
+Con las env vars de la Etapa 1 cargadas y tu cuenta ya registrada (admin sembrado), entrá a
+**`/admin`**. Vas a ver 4 pestañas:
+- **Pendientes:** las cuentas nuevas. Aprobás eligiendo una empresa (existente o nueva) o rechazás.
+- **Usuarios:** todos, con estado/empresa/rol/último ingreso. Bloquear, cambiar de empresa,
+  **promover a admin** (así habilitás a Mauro cuando se registre) y permisos individuales.
+- **Empresas:** crear/renombrar y tildar qué secciones ve cada empresa (sus usuarios las heredan).
+- **Actividad:** quién entró, cuándo, qué secciones visitó, desde qué dispositivo e IP.
+
+### 3. Emails de aviso (Resend) — opcional pero recomendado
+
+Sin esto el login **no se rompe**: los avisos simplemente no se envían (quedan en el log del
+servidor). Para que se manden:
+
+**a) Crear la cuenta y la API key:**
+1. Entrá a https://resend.com y creá una cuenta (el plan gratis alcanza de sobra: 3.000/mes).
+2. *API Keys* → *Create API Key* → copiala (empieza con `re_`).
+
+**b) Remitente (`RESEND_FROM`):** para mandar a cualquier casilla necesitás **verificar un
+dominio propio** en Resend (*Domains* → agregás tu dominio y cargás los registros DNS que te
+da). Después usás algo como `RF AGRO <research@tudominio.com>`. Si todavía no tenés dominio,
+Resend te deja probar con `onboarding@resend.dev`, pero **solo te llega a vos mismo** (el email
+de la cuenta de Resend) — sirve para probar, no para producción.
+
+**c) Cargar las env vars** (Vercel → *Settings* → *Environment Variables*, scope Production+Preview;
+y en `.env.local` para local):
+
+| Variable | Valor | Nota |
+|---|---|---|
+| `RESEND_API_KEY` | tu clave `re_...` | Secreta. Sin ella, no se envían emails (no rompe nada) |
+| `RESEND_FROM` | `RF AGRO <research@tudominio.com>` | Remitente. Requiere dominio verificado en Resend |
+| `ADMIN_EMAILS` | `lautaroronchi97@gmail.com` | Quién recibe el aviso de "registro nuevo". Coma-separado si son varios |
+
+**Qué manda:** cuando alguien se registra, te llega un email con sus datos y un link al panel.
+Cuando aprobás una cuenta, al cliente le llega "tu acceso está activo".
 
 ## Etapa 3 — (pendiente) sesión única, marca de agua y encendido
 

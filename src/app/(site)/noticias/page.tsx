@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { NoticiasPanel } from "@/components/noticias-panel";
+import { requireSeccion } from "@/lib/auth/dal";
 
 export const revalidate = 300;
 
@@ -8,7 +9,8 @@ export const metadata: Metadata = {
   description: "Portal de noticias del agro: granos, dólar, clima, exportaciones e informes.",
 };
 
-export default function NoticiasPage() {
+export default async function NoticiasPage() {
+  await requireSeccion("noticias");
   return (
     <>
       <h1 className="sr">RF AGRO — Noticias del agro</h1>

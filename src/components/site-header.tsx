@@ -7,7 +7,13 @@ import { NavLinks } from "./nav-links";
 import { AuthMenu } from "./auth-menu";
 import { AUTH_ENFORCED } from "@/lib/auth/config";
 
-export function SiteHeader() {
+/**
+ * Masthead del sitio. `visibles`/`esAdmin` (Etapa 2) solo llegan cuando el login
+ * está prendido: el layout los calcula y la nav filtra las secciones permitidas +
+ * muestra el link a Admin. Con el flag apagado llegan undefined → nav completa (la
+ * web queda igual que hoy, sin render dinámico).
+ */
+export function SiteHeader({ visibles, esAdmin }: { visibles?: string[]; esAdmin?: boolean }) {
   return (
     <header className="masthead">
       <div className="masthead-in">
@@ -22,7 +28,7 @@ export function SiteHeader() {
           <span className="brand-sub">Pizarra electrónica · granos</span>
         </Link>
 
-        <NavLinks />
+        <NavLinks visibles={visibles} esAdmin={esAdmin} />
 
         <div className="head-tools">
           <span className="rueda">

@@ -45,9 +45,20 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!AUTH_ENFORCED) return response;
-
   const path = request.nextUrl.pathname;
+  const esAdmin = path === "/admin" || path.startsWith("/admin/");
+
+  // /admin: exige sesión SIEMPRE (aun con el flag global apagado). El chequeo
+  // autoritativo de rol admin vive en el layout de /admin (requireAdmin); acá solo
+  // el gate optimista de "sin sesión → a ingresar".
+  if (esAdmin && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/ingresar";
+    url.search = `?next=${encodeURIComponent(path)}`;
+    return NextResponse.redirect(url);
+  }
+
+  if (!AUTH_ENFORCED) return response;
 
   // Usuario sin sesión pidiendo una ruta protegida → a la pantalla de ingreso.
   if (!user && !esRutaPublica(path)) {
