@@ -14,6 +14,7 @@ import { CalcCostos } from "@/components/calc-costos";
 import { CalcPorcentaje } from "@/components/calc-porcentaje";
 import { CalcPases } from "@/components/calc-pases";
 import { QueEsEsto } from "@/components/que-es-esto";
+import { requireSeccion } from "@/lib/auth/dal";
 
 export const revalidate = 60;
 export const dynamicParams = false;
@@ -39,6 +40,7 @@ export default async function CalculadoraPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  await requireSeccion("calculadoras");
   const calc = getCalc(slug);
   if (!calc) notFound();
 

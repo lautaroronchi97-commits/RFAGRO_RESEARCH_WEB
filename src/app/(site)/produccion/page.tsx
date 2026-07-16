@@ -6,6 +6,7 @@ import { CalendarioCliente } from "@/components/calendario-cliente";
 import { EstimacionesPanel } from "@/components/estimaciones-panel";
 import { QueEsEsto } from "@/components/que-es-esto";
 import { Panel } from "@/components/panel";
+import { requireSeccion } from "@/lib/auth/dal";
 
 export const metadata: Metadata = {
   title: "Producción · Calendario de informes — RF AGRO",
@@ -19,7 +20,8 @@ export const revalidate = 3600;
 
 const ORDEN_ORG: Organismo[] = ["USDA", "CONAB", "BCR", "BCBA", "DEA", "CFTC", "EIA", "NOPA"];
 
-export default function ProduccionPage() {
+export default async function ProduccionPage() {
+  await requireSeccion("produccion");
   const hoy = hoyCordobaISO();
   // Horizonte: resto de 2026 (el seed de fechas oficiales cubre 2026).
   const hasta = hoy > "2026-12-31" ? hoy : "2026-12-31";

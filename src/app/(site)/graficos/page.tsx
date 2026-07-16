@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getCatalogo } from "@/lib/series";
 import { GraficosClient } from "@/components/graficos-client";
 import { QueEsEsto } from "@/components/que-es-esto";
+import { requireSeccion } from "@/lib/auth/dal";
 
 /**
  * Página del panel de gráficos de spreads entre cosechas. Shell estática (no
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 export default async function GraficosPage() {
+  await requireSeccion("graficos");
   const catalogo = await getCatalogo();
 
   return (

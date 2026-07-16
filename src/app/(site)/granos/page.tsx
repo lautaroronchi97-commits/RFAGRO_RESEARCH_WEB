@@ -3,6 +3,7 @@ import { ArbitrajesTable } from "@/components/arbitrajes-table";
 import { MejorCajaPanel } from "@/components/mejor-caja-panel";
 import { PasesPanel } from "@/components/pases-panel";
 import { CapacidadPanel } from "@/components/capacidad-panel";
+import { requireSeccion } from "@/lib/auth/dal";
 
 // 30s para que la 1ª columna de Arbitrajes (último operado en vivo) y las puntas
 // se actualicen seguido durante la rueda; el poll del cliente refresca en ese ritmo.
@@ -14,7 +15,8 @@ export const metadata: Metadata = {
     "Arbitrajes, pases, capacidad de pago y la mejor salida para hacer caja en el mercado de granos.",
 };
 
-export default function GranosPage() {
+export default async function GranosPage() {
+  await requireSeccion("granos");
   return (
     <>
       <h1 className="sr">RF AGRO — Granos</h1>

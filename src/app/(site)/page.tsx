@@ -2,25 +2,38 @@ import Link from "next/link";
 import { getCintaData } from "@/lib/market";
 import { getNoticias } from "@/lib/noticias";
 import { Cinta } from "@/components/cinta";
+import { AUTH_ENFORCED } from "@/lib/auth/config";
+import { getAcceso } from "@/lib/auth/dal";
 
 // Revalida la cinta y los titulares cada 60s (caché corto).
 export const revalidate = 60;
 
-// Tarjetas del tablero: una por sección, con "para qué sirve" en una línea.
-const SECCIONES: { href: string; nombre: string; desc: string }[] = [
-  { href: "/granos", nombre: "Granos", desc: "Arbitrajes, pases, capacidad de pago y la mejor salida para hacer caja." },
-  { href: "/dolar", nombre: "Dólar y tasas", desc: "Dólar futuro, linked, tasas implícitas y el panel cambiario." },
-  { href: "/comercio", nombre: "Comercio exterior", desc: "Declaraciones de venta al exterior de granos y subproductos." },
-  { href: "/calculadoras", nombre: "Calculadoras", desc: "Cotizadores para operar: a fijar, pases, carry, costos y más." },
-  { href: "/graficos", nombre: "Gráficos", desc: "Spreads entre cosechas, con las campañas superpuestas." },
-  { href: "/produccion", nombre: "Producción", desc: "Calendario de informes y estimaciones por país y grano." },
-  { href: "/noticias", nombre: "Noticias", desc: "El portal del agro: granos, dólar, clima y exportaciones." },
+// Tarjetas del tablero: una por sección (con su clave), con "para qué sirve".
+const SECCIONES: { key: string; href: string; nombre: string; desc: string }[] = [
+  { key: "granos", href: "/granos", nombre: "Granos", desc: "Arbitrajes, pases, capacidad de pago y la mejor salida para hacer caja." },
+  { key: "dolar", href: "/dolar", nombre: "Dólar y tasas", desc: "Dólar futuro, linked, tasas implícitas y el panel cambiario." },
+  { key: "comercio", href: "/comercio", nombre: "Comercio exterior", desc: "Declaraciones de venta al exterior de granos y subproductos." },
+  { key: "calculadoras", href: "/calculadoras", nombre: "Calculadoras", desc: "Cotizadores para operar: a fijar, pases, carry, costos y más." },
+  { key: "graficos", href: "/graficos", nombre: "Gráficos", desc: "Spreads entre cosechas, con las campañas superpuestas." },
+  { key: "produccion", href: "/produccion", nombre: "Producción", desc: "Calendario de informes y estimaciones por país y grano." },
+  { key: "noticias", href: "/noticias", nombre: "Noticias", desc: "El portal del agro: granos, dólar, clima y exportaciones." },
 ];
 
 export default async function Home() {
   const cinta = await getCintaData();
   const noticias = await getNoticias();
   const titulares = noticias.destacados.slice(0, 5);
+
+  // Con el login prendido, la grilla del tablero muestra solo las secciones que el
+  // usuario tiene permitidas (los admin ven las 7). Con el flag apagado se muestran
+  // todas y la home sigue siendo estática (no se lee la sesión).
+  let secciones = SECCIONES;
+  if (AUTH_ENFORCED) {
+    const acceso = await getAcceso();
+    if (acceso && !acceso.esAdmin) {
+      secciones = SECCIONES.filter((s) => acceso.visibles.includes(s.key));
+    }
+  }
 
   return (
     <>
@@ -51,7 +64,7 @@ export default async function Home() {
 
           <h2 className="sec-title">Secciones</h2>
           <nav className="hub-grid" aria-label="Secciones del sitio">
-            {SECCIONES.map((s) => (
+            {secciones.map((s) => (
               <Link key={s.href} href={s.href} className="hub-card">
                 <span className="hub-card-name">{s.nombre}</span>
                 <span className="hub-card-desc">{s.desc}</span>

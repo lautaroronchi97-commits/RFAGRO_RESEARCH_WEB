@@ -4,6 +4,7 @@ import { DolarLinkedPanel } from "@/components/dolar-linked-panel";
 import { ImplicitasPanel } from "@/components/implicitas-panel";
 import { SinteticosPanel } from "@/components/sinteticos-panel";
 import { PanelCambiario } from "@/components/panel-cambiario";
+import { requireSeccion } from "@/lib/auth/dal";
 
 export const revalidate = 60;
 
@@ -13,7 +14,8 @@ export const metadata: Metadata = {
     "Dólar futuro, dólar linked, tasas implícitas, sintéticos y el panel cambiario del día.",
 };
 
-export default function DolarPage() {
+export default async function DolarPage() {
+  await requireSeccion("dolar");
   return (
     <>
       <h1 className="sr">RF AGRO — Dólar y tasas</h1>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CALCULADORAS } from "@/lib/calculadoras";
+import { requireSeccion } from "@/lib/auth/dal";
 
 export const metadata: Metadata = {
   title: "Calculadoras · RF AGRO",
@@ -8,7 +9,8 @@ export const metadata: Metadata = {
     "Calculadoras y cotizadores para operar granos: a fijar, por porcentaje, pases, carry, pago diferido, costos y estrategias. Cada una con su link propio.",
 };
 
-export default function CalculadorasPage() {
+export default async function CalculadorasPage() {
+  await requireSeccion("calculadoras");
   return (
     <>
       <h1 className="sr">RF AGRO — Calculadoras</h1>

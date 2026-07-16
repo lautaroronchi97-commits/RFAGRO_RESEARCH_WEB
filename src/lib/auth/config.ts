@@ -18,17 +18,42 @@ export const AUTH_ENFORCED = process.env.AUTH_ENFORCED === "true";
  */
 export const ADMIN_SEED_EMAILS = ["lautaroronchi97@gmail.com"];
 
-/** Las 7 secciones del sitio (claves canónicas de la nav). Permisos por sección = Etapa 2. */
-export const SECCIONES = [
-  "granos",
-  "dolar",
-  "comercio",
-  "calculadoras",
-  "graficos",
-  "produccion",
-  "noticias",
+/**
+ * Las 7 secciones del sitio con su clave canónica, etiqueta y ruta. Fuente única
+ * para la nav, el filtro de permisos y los checkboxes del panel admin (Etapa 2).
+ */
+export const SECCIONES_META = [
+  { key: "granos", label: "Granos", href: "/granos" },
+  { key: "dolar", label: "Dólar y tasas", href: "/dolar" },
+  { key: "comercio", label: "Comercio exterior", href: "/comercio" },
+  { key: "calculadoras", label: "Calculadoras", href: "/calculadoras" },
+  { key: "graficos", label: "Gráficos", href: "/graficos" },
+  { key: "produccion", label: "Producción", href: "/produccion" },
+  { key: "noticias", label: "Noticias", href: "/noticias" },
 ] as const;
-export type SeccionKey = (typeof SECCIONES)[number];
+
+/** Clave canónica de una sección (derivada de la metadata). */
+export type SeccionKey = (typeof SECCIONES_META)[number]["key"];
+
+/** Claves canónicas de las 7 secciones (permisos por sección). */
+export const SECCIONES: readonly SeccionKey[] = SECCIONES_META.map((s) => s.key);
+
+/** Etiqueta legible de una sección (para el panel y las pantallas de acceso). */
+export function nombreSeccion(key: string): string {
+  return SECCIONES_META.find((s) => s.key === key)?.label ?? key;
+}
+
+/**
+ * Mapea una ruta a la clave de sección que la protege (o null si no es una de las
+ * 7 secciones gateadas: home, admin, sin-acceso, pantallas de auth…). Match por
+ * prefijo para cubrir subpáginas (p. ej. `/calculadoras/a-fijar` → `calculadoras`).
+ */
+export function seccionDeRuta(pathname: string): SeccionKey | null {
+  const hit = SECCIONES_META.find(
+    (s) => pathname === s.href || pathname.startsWith(`${s.href}/`)
+  );
+  return hit ? (hit.key as SeccionKey) : null;
+}
 
 /**
  * Prefijos de ruta que NUNCA exigen login (aunque el flag esté prendido): las
