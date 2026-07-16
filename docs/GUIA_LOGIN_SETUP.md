@@ -1,0 +1,101 @@
+# GUÍA DE ENCENDIDO DEL LOGIN — pasos manuales de Lautaro
+
+> Esta guía la va completando cada etapa del login. Ahora cubre la **Etapa 1 (base de
+> autenticación)**. Las etapas 2 (panel admin + emails) y 3 (sesión única, marca de agua,
+> encendido) agregan sus propios pasos abajo cuando se construyan.
+> Plan completo y decisiones: [`PLAN_LOGIN.md`](PLAN_LOGIN.md).
+
+El proyecto Supabase es **`lineup-argentina`**, ref **`gbpfgfeksqmzmsxnxiwg`**.
+
+---
+
+## Etapa 1 — lo que hay que hacer para probar el login
+
+Nada de esto cierra la web: mientras `AUTH_ENFORCED` no esté en `true`, la web sigue
+pública igual que hoy. Estos pasos habilitan que vos y Mauro puedan registrarse y probar.
+
+### 1. Aplicar la migración de la base (crea las tablas del login)
+
+La migración está en el repo: `supabase/migrations/20260716120000_create_auth_base.sql`.
+Crea las tablas `empresas`, `profiles` y `access_log`, el trigger que arma tu perfil al
+registrarte y las reglas de seguridad (RLS). Ya deja a **lautaroronchi97@gmail.com** como
+admin aprobado.
+
+**Cómo aplicarla (elegí una):**
+- **SQL Editor de Supabase (más simple):** entrá a Supabase → tu proyecto → *SQL Editor* →
+  pegá el contenido del archivo `.sql` → *Run*. (Se puede correr más de una vez sin romper nada.)
+- **Supabase CLI:** `supabase db push` desde la raíz del repo (si tenés la CLI configurada).
+
+### 2. Cargar las variables de entorno en Vercel
+
+Vercel → tu proyecto → *Settings* → *Environment Variables*. Agregá (scope **Production**
+y **Preview**):
+
+| Variable | Valor | Nota |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://gbpfgfeksqmzmsxnxiwg.supabase.co` | Misma URL de Supabase que ya usás |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | tu clave **publishable/anon** | La misma que `SUPABASE_ANON_KEY`; es pública por diseño |
+| `NEXT_PUBLIC_SITE_URL` | `https://rfagro-research-web.vercel.app` | Para los enlaces de los emails y el callback |
+| `AUTH_ENFORCED` | `false` | **Dejalo en false por ahora.** Se prende en la Etapa 3 |
+
+> Estas son las mismas credenciales que ya tenés, solo con el nombre `NEXT_PUBLIC_`
+> (el login corre también en el navegador y necesita ese prefijo). La clave anon es
+> pública: las tablas están protegidas por RLS.
+> En local, copiá `.env.local.example` a `.env.local` y completá esos valores.
+
+### 3. Configurar el login con Google (OAuth)
+
+Para el botón "Continuar con Google". Si por ahora solo querés probar con email + contraseña,
+podés saltear esto y hacerlo después.
+
+**a) Crear las credenciales en Google Cloud Console** (https://console.cloud.google.com):
+1. Creá (o elegí) un proyecto.
+2. *APIs & Services* → *Credentials* → *Create Credentials* → *OAuth client ID*.
+3. Si te lo pide, configurá la *OAuth consent screen* (tipo External; con tu email de soporte).
+4. Tipo de aplicación: **Web application**.
+5. En **Authorized redirect URIs**, agregá exactamente esta (es el callback de Supabase):
+   ```
+   https://gbpfgfeksqmzmsxnxiwg.supabase.co/auth/v1/callback
+   ```
+6. Guardá y copiá el **Client ID** y el **Client Secret**.
+
+**b) Cargarlas en Supabase:**
+1. Supabase → tu proyecto → *Authentication* → *Providers* → **Google** → activá *Enable*.
+2. Pegá el **Client ID** y el **Client Secret** → *Save*.
+
+**c) URLs de redirección permitidas en Supabase** (*Authentication* → *URL Configuration*):
+- **Site URL:** `https://rfagro-research-web.vercel.app`
+- En **Redirect URLs**, agregá:
+  ```
+  https://rfagro-research-web.vercel.app/auth/callback
+  http://localhost:3000/auth/callback
+  ```
+  (La de localhost es para probar en tu compu.)
+
+### 4. (Recomendado) Confirmación de email
+
+Supabase → *Authentication* → *Providers* → *Email*: dejá activado *Confirm email* para que
+quien se registra con contraseña tenga que confirmar su dirección. Los mails de Supabase salen
+solos (en la Etapa 2 sumamos los avisos a los admins vía Resend).
+
+### 5. Probar
+
+1. Entrá a `/registro` en la web (o en tu Preview). Registrate con un email de prueba
+   (o con Google). Vas a caer en la pantalla **"Cuenta pendiente de aprobación"**.
+2. Registrate con **tu** Gmail (`lautaroronchi97@gmail.com`): al ser admin sembrado, tu
+   cuenta queda **aprobada** automáticamente (el panel para aprobar a los demás llega en la Etapa 2).
+3. Mientras `AUTH_ENFORCED=false`, la web sigue abierta: para ver las pantallas de login entrá
+   directo a `/ingresar` o `/registro`.
+
+**El encendido del login (`AUTH_ENFORCED=true`) se hace en la Etapa 3**, después de tener el
+panel admin (Etapa 2) para poder aprobar clientes. No lo prendas antes.
+
+---
+
+## Etapa 2 — (pendiente) panel admin + emails de aviso (Resend)
+
+_Se completa cuando se construya la Etapa 2._
+
+## Etapa 3 — (pendiente) sesión única, marca de agua y encendido
+
+_Se completa cuando se construya la Etapa 3._

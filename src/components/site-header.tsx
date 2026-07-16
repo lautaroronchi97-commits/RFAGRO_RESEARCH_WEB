@@ -4,6 +4,8 @@ import { RuedaClock } from "./rueda-clock";
 import { RuedaStatus } from "./rueda-status";
 import { ThemeToggle } from "./theme-toggle";
 import { NavLinks } from "./nav-links";
+import { AuthMenu } from "./auth-menu";
+import { AUTH_ENFORCED } from "@/lib/auth/config";
 
 export function SiteHeader() {
   return (
@@ -29,6 +31,9 @@ export function SiteHeader() {
           </span>
           <RuedaStatus />
           <ThemeToggle />
+          {/* Menú de sesión solo cuando el login está activo; con el flag apagado el
+              header queda idéntico a hoy. */}
+          {AUTH_ENFORCED && <AuthMenu />}
         </div>
       </div>
     </header>

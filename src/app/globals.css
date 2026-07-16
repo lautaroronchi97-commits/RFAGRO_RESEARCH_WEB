@@ -841,3 +841,65 @@ a.estim-inf:hover { color:var(--gold-text); }
   .cal-date { flex-basis:auto; padding-top:0; }
   .estim-cambios { grid-template-columns:1fr; }
 }
+
+/* ==========================================================================
+   Autenticación (login / registro / pendiente / recupero / completar)
+   Route group (auth): tarjeta centrada con la estética premium, sin masthead.
+   ========================================================================== */
+.auth-shell { position:relative; min-height:100dvh; display:flex; flex-direction:column;
+  background:var(--bg); }
+.auth-topbar { position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between;
+  gap:12px; max-width:1360px; width:100%; margin:0 auto; padding:14px clamp(12px,3vw,26px); }
+.auth-main { position:relative; z-index:2; flex:1; display:flex; align-items:center; justify-content:center;
+  padding:24px clamp(12px,4vw,26px) 64px; }
+
+.auth-card { width:100%; max-width:404px; background:var(--panel);
+  border:1px solid var(--line); border-radius:var(--r-panel); box-shadow:var(--shadow);
+  padding:28px clamp(20px,4vw,32px) 26px; }
+.auth-title { font-family:var(--font-ui); font-size:var(--fs-xl); font-weight:800; letter-spacing:-.01em;
+  color:var(--ink); margin:0; }
+.auth-sub { font-size:var(--fs-base); color:var(--ink-2); line-height:1.5; margin:8px 0 20px; }
+
+.auth-form { display:flex; flex-direction:column; gap:14px; }
+.auth-field { display:flex; flex-direction:column; gap:6px; }
+.auth-field > span { font-size:var(--fs-xs); font-weight:700; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--ink-3); }
+.auth-input { width:100%; font:inherit; font-size:var(--fs-md); color:var(--ink);
+  background:var(--panel-2); border:1px solid var(--line-2); border-radius:var(--r-ctl);
+  padding:10px 12px; transition:border-color var(--t-fast), box-shadow var(--t-fast); }
+.auth-input:focus { outline:none; border-color:var(--focus);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--focus) 22%, transparent); }
+.auth-hint { font-size:var(--fs-2xs); color:var(--ink-3); }
+
+.auth-btn { display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  width:100%; font:inherit; font-size:var(--fs-md); font-weight:700; cursor:pointer;
+  padding:11px 14px; border-radius:var(--r-ctl); border:1px solid transparent;
+  transition:background var(--t-fast), border-color var(--t-fast), opacity var(--t-fast); }
+.auth-btn:disabled { opacity:.6; cursor:default; }
+.auth-btn-primary { background:var(--brand-rf); color:#fff; border-color:var(--brand-rf); }
+.auth-btn-primary:hover:not(:disabled) { background:var(--brand-agro); border-color:var(--brand-agro); }
+.auth-btn-google { background:var(--panel-2); color:var(--ink); border-color:var(--line-2); }
+.auth-btn-google:hover:not(:disabled) { border-color:var(--gold-hair); }
+.auth-btn-ghost { background:transparent; color:var(--ink-2); border-color:var(--line-2); }
+.auth-btn-ghost:hover:not(:disabled) { color:var(--ink); border-color:var(--line-2); }
+
+.auth-sep { display:flex; align-items:center; gap:10px; margin:18px 0; color:var(--ink-3);
+  font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.08em; }
+.auth-sep::before, .auth-sep::after { content:""; flex:1; height:1px; background:var(--line); }
+
+.auth-links { display:flex; justify-content:flex-end; }
+.auth-links a, .auth-alt a { color:var(--gold-text); font-weight:700; }
+.auth-links a:hover, .auth-alt a:hover { text-decoration:underline; }
+.auth-alt { margin:18px 0 0; font-size:var(--fs-base); color:var(--ink-2); text-align:center; }
+.auth-note { margin:16px 0 14px; font-size:var(--fs-sm); color:var(--ink-3); line-height:1.5; }
+
+.auth-error { margin:2px 0 0; font-size:var(--fs-sm); color:var(--neg); line-height:1.4; }
+.auth-ok { margin:2px 0 0; font-size:var(--fs-base); color:var(--pos); line-height:1.5; }
+
+/* Menú de sesión en el header (solo con AUTH_ENFORCED prendido). */
+.auth-menu { display:inline-flex; align-items:center; gap:8px; }
+.auth-menu-email { max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  font-size:var(--fs-2xs); color:var(--ink-3); }
+.auth-menu-out, .auth-menu-link { font:inherit; font-size:var(--fs-2xs); font-weight:800;
+  text-transform:uppercase; letter-spacing:.06em; color:var(--gold-text); cursor:pointer; }
+.auth-menu-out:hover, .auth-menu-link:hover { text-decoration:underline; }

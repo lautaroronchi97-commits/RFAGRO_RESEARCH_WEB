@@ -19,16 +19,27 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 16/07/2026 — Plan de login: prompts listos para ejecutar)
+## Ahora (última actualización: 16/07/2026 — Login Etapa 1: base de auth construida)
 
-**📋 PLAN DE LOGIN CERRADO (ítem 7 del backlog) — [`PLAN_LOGIN.md`](PLAN_LOGIN.md).** A pedido de Lautaro:
-solo plan, sin código. 15 decisiones cerradas con él (registro autoservicio + aprobación manual · 1 sesión
-activa por usuario · permisos por sección a nivel empresa + override · todo tras login con landing mínima ·
-historial de logins/actividad · mail a admins por registro · sesión 7 días · marca de agua sutil · feature
-flag `AUTH_ENFORCED` que entra APAGADO · Supabase Auth). **Se ejecuta en 3 etapas = 3 PRs con los prompts
-autocontenidos del §5 del plan** (Etapa 1 base de auth → Etapa 2 panel admin → Etapa 3 hardening). Pasos
-manuales de Lautaro en §4 (Google OAuth, Resend, env vars, encendido). Hosting (Vercel Pro vs alternativas):
-sesión aparte ANTES de clientes reales. Detalle: [`sesiones/2026-07-16-plan-login.md`](sesiones/2026-07-16-plan-login.md).
+**🔐 LOGIN ETAPA 1 (base de auth) HECHA — PR #28 (rama `claude/pending-tasks-list-2m6y6u`).** Construida sobre
+Supabase Auth + `@supabase/ssr`: capa `src/lib/auth/` (config/env/client/server/session/dal/log), migración
+`20260716120000_create_auth_base.sql` (tablas `empresas`/`profiles`/`access_log` + `is_admin()` + trigger de alta
+que siembra a `lautaroronchi97@gmail.com` como admin + RLS), pantallas premium en el route group `(auth)`
+(`/ingresar` `/registro` `/pendiente` `/recuperar` `/completar` + callback OAuth + server actions), y el gate en
+`src/proxy.ts` (¡en Next 16 el middleware se llama **proxy**!) detrás del flag **`AUTH_ENFORCED` (apagado)**.
+**Clave: con el flag apagado la web queda igual que hoy** — verificado en el build que `/` y las 7 secciones
+siguen `Static`/ISR; con el flag prendido `/`→307 a `/ingresar` (curl). lint/tsc/build ✅.
+**Falta (manual de Lautaro):** aplicar la migración por el SQL Editor (el MCP de escritura volvió a fallar) +
+cargar env vars + Google OAuth — todo en [`GUIA_LOGIN_SETUP.md`](GUIA_LOGIN_SETUP.md). **Siguen Etapa 2 (panel
+admin + emails) y Etapa 3 (sesión única, marca de agua, landing, encendido)** — prompts en `PLAN_LOGIN.md` §5.2/§5.3.
+Detalle: [`sesiones/2026-07-16-login-etapa-1.md`](sesiones/2026-07-16-login-etapa-1.md).
+
+**📋 PLAN DE LOGIN CERRADO (ítem 7 del backlog) — [`PLAN_LOGIN.md`](PLAN_LOGIN.md).** 15 decisiones cerradas con
+Lautaro (registro autoservicio + aprobación manual · 1 sesión activa por usuario · permisos por sección a nivel
+empresa + override · todo tras login con landing mínima · historial de logins/actividad · mail a admins por
+registro · sesión 7 días · marca de agua sutil · feature flag `AUTH_ENFORCED` que entra APAGADO · Supabase Auth).
+**3 etapas = 3 PRs** (Etapa 1 ✅). Hosting (Vercel Pro vs alternativas): sesión aparte ANTES de clientes reales.
+Detalle del plan: [`sesiones/2026-07-16-plan-login.md`](sesiones/2026-07-16-plan-login.md).
 
 **✅ Feed A3 por WebSocket (adiós 429) MERGEADO a `main` (PR #27).** El REST `marketdata/get` es de a un
 símbolo y A3 lo rate-limitea (429) → dropeaba posiciones. `src/lib/a3-live.ts` ahora abre **una conexión WS**
@@ -70,8 +81,9 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
 
 **Bloque 2**
 - [ ] 7. Login (cliente / Lautaro / Mauro) — roles distintos, hoy la web es 100% pública/anónima.
-  **Plan cerrado 16/07 → [`PLAN_LOGIN.md`](PLAN_LOGIN.md)** (15 decisiones + 3 prompts de ejecución listos;
-  falta ejecutar las 3 etapas).
+  **Plan cerrado 16/07 → [`PLAN_LOGIN.md`](PLAN_LOGIN.md)** (15 decisiones + 3 prompts de ejecución).
+  **Etapa 1 (base de auth) HECHA** (PR #28, flag `AUTH_ENFORCED` apagado). Faltan Etapa 2 (panel admin) y
+  Etapa 3 (hardening + encendido).
 - [ ] 8. Total negociado por producto (día/semana), histograma, % sobre cosecha.
 - [ ] 9. SIOGRANOS semanal/mensual (mencionado también en `CONTEXTO.md` Pendientes punto 5).
 
