@@ -19,24 +19,26 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 13/07/2026 — Arbitrajes: 1ª columna en vivo + fix "no actualiza")
+## Ahora (última actualización: 16/07/2026 — Plan de login: prompts listos para ejecutar)
+
+**📋 PLAN DE LOGIN CERRADO (ítem 7 del backlog) — [`PLAN_LOGIN.md`](PLAN_LOGIN.md).** A pedido de Lautaro:
+solo plan, sin código. 15 decisiones cerradas con él (registro autoservicio + aprobación manual · 1 sesión
+activa por usuario · permisos por sección a nivel empresa + override · todo tras login con landing mínima ·
+historial de logins/actividad · mail a admins por registro · sesión 7 días · marca de agua sutil · feature
+flag `AUTH_ENFORCED` que entra APAGADO · Supabase Auth). **Se ejecuta en 3 etapas = 3 PRs con los prompts
+autocontenidos del §5 del plan** (Etapa 1 base de auth → Etapa 2 panel admin → Etapa 3 hardening). Pasos
+manuales de Lautaro en §4 (Google OAuth, Resend, env vars, encendido). Hosting (Vercel Pro vs alternativas):
+sesión aparte ANTES de clientes reales. Detalle: [`sesiones/2026-07-16-plan-login.md`](sesiones/2026-07-16-plan-login.md).
+
+**✅ Feed A3 por WebSocket (adiós 429) MERGEADO a `main` (PR #27).** El REST `marketdata/get` es de a un
+símbolo y A3 lo rate-limitea (429) → dropeaba posiciones. `src/lib/a3-live.ts` ahora abre **una conexión WS**
+y suscribe todo en un `smd`; verificado en rueda abierta 15/15 símbolos sin 429, coincide con el Excel de
+Lautaro. Detalle: [`sesiones/2026-07-13-arbitrajes-en-vivo.md`](sesiones/2026-07-13-arbitrajes-en-vivo.md) (Follow-up 2).
 
 **✅ Arbitrajes en vivo — 1ª columna + fix "no actualiza" MERGEADO a `main` (PR #26).** Fuera de rueda =
 último ajuste; en rueda = último operado de A3, spread/tasa/TNA recalculados; header "Últ. operado" + punto
 en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `algunaRuedaAbierta`);
 `/granos` a `revalidate=30`. (Pizarra no se tocó — cron, va aparte.)
-
-**🟡 EN VUELO (rama `claude/arbitrage-table-updates-lt5qhm`, PR #27) — Feed A3 por WebSocket (adiós 429).**
-Mirándolo en vivo, muchas posiciones que ESTABAN operando (maíz/trigo, ej. TRI ENE27) salían vacías.
-Diagnóstico (endpoint debug temporal, ya borrado): el REST `marketdata/get` es **de a un símbolo** y A3 lo
-**rate-limitea con HTTP 429** al pedir muchos seguidos (2 OK, el resto 429) → el panel dropeaba posiciones.
-La doc oficial de A3 (PDFs de Lautaro) dice usar **WebSocket** para tiempo real. **Fix (`src/lib/a3-live.ts`):**
-`fetchPuntas` abre **una conexión WS** (`wss://<host>/`, header `X-Auth-Token`) y suscribe TODOS los
-instrumentos en un mensaje `smd`; Primary manda el snapshot de cada uno. `serverExternalPackages:["ws"]` +
-dep `ws`. **Verificado contra el mercado (rueda abierta):** probe 15/15 símbolos en ~1,2s sin un 429; `/granos`
-en Preview con 10 posiciones en vivo (🟢) + 5 en "—" (vol 0 real), maíz/trigo llenos, coincide con el Excel de
-mercado de Lautaro. El filtro de volumen ya no era el problema; el 429 sí. lint/tsc/build ✅. **Falta:** merge a
-`main`. Detalle: [`sesiones/2026-07-13-arbitrajes-en-vivo.md`](sesiones/2026-07-13-arbitrajes-en-vivo.md) (Follow-up 2).
 
 ---
 
@@ -68,6 +70,8 @@ mercado de Lautaro. El filtro de volumen ya no era el problema; el 429 sí. lint
 
 **Bloque 2**
 - [ ] 7. Login (cliente / Lautaro / Mauro) — roles distintos, hoy la web es 100% pública/anónima.
+  **Plan cerrado 16/07 → [`PLAN_LOGIN.md`](PLAN_LOGIN.md)** (15 decisiones + 3 prompts de ejecución listos;
+  falta ejecutar las 3 etapas).
 - [ ] 8. Total negociado por producto (día/semana), histograma, % sobre cosecha.
 - [ ] 9. SIOGRANOS semanal/mensual (mencionado también en `CONTEXTO.md` Pendientes punto 5).
 
