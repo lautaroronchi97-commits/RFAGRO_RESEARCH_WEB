@@ -116,6 +116,28 @@ export async function requireSeccion(seccion: SeccionKey): Promise<void> {
 }
 
 /**
+ * Guard para route handlers de datos (Etapa 3). Con `AUTH_ENFORCED` apagado devuelve
+ * null de inmediato (NO lee cookies → la API sigue pública y cacheable como hoy).
+ * Con el flag prendido, exige sesión aprobada + permiso de la sección; si falta,
+ * devuelve un `Response` (401/403, sin cache) para cortar. Los admin pasan siempre.
+ */
+export async function guardApiSeccion(seccion: SeccionKey): Promise<Response | null> {
+  if (!AUTH_ENFORCED) return null;
+  const noCache = { "cache-control": "private, no-store" };
+  const acceso = await getAcceso();
+  if (!acceso) {
+    return Response.json({ error: "No autenticado." }, { status: 401, headers: noCache });
+  }
+  if (acceso.perfil.estado !== "aprobado") {
+    return Response.json({ error: "Cuenta no habilitada." }, { status: 403, headers: noCache });
+  }
+  if (!acceso.esAdmin && !acceso.visibles.includes(seccion)) {
+    return Response.json({ error: "Sección no incluida en tu plan." }, { status: 403, headers: noCache });
+  }
+  return null;
+}
+
+/**
  * Exige rol admin. A diferencia del gate del sitio, NO depende de `AUTH_ENFORCED`:
  * el panel /admin está SIEMPRE protegido (aun con el flag apagado la web es pública,
  * pero /admin nunca lo es). Sin sesión → /ingresar; con sesión no-admin → home.

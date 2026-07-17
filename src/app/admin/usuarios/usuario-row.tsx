@@ -5,6 +5,7 @@ import {
   alternarBloqueo,
   alternarRol,
   cambiarEmpresa,
+  cerrarSesionesUsuario,
   guardarOverride,
   type AdminState,
 } from "../actions";
@@ -56,6 +57,7 @@ export function UsuarioRow({
   const [stBloq, accBloq, pBloq] = useActionState<AdminState, FormData>(alternarBloqueo, undefined);
   const [stRol, accRol, pRol] = useActionState<AdminState, FormData>(alternarRol, undefined);
   const [stEmp, accEmp, pEmp] = useActionState<AdminState, FormData>(cambiarEmpresa, undefined);
+  const [stSes, accSes, pSes] = useActionState<AdminState, FormData>(cerrarSesionesUsuario, undefined);
   const [stOv, accOv, pOv] = useActionState<AdminState, FormData>(guardarOverride, undefined);
 
   const usaOverride = u.secciones_override != null;
@@ -129,6 +131,14 @@ export function UsuarioRow({
             Cambiar
           </button>
         </form>
+
+        {/* Sesión única: forzar re-login en todos sus dispositivos */}
+        <form action={accSes}>
+          <input type="hidden" name="userId" value={u.id} />
+          <button type="submit" className="admin-btn admin-btn-warn" disabled={pSes}>
+            Cerrar sesión
+          </button>
+        </form>
       </div>
 
       {/* Override de secciones */}
@@ -168,6 +178,7 @@ export function UsuarioRow({
       <Mensaje st={stBloq} />
       <Mensaje st={stRol} />
       <Mensaje st={stEmp} />
+      <Mensaje st={stSes} />
       <Mensaje st={stOv} />
     </article>
   );

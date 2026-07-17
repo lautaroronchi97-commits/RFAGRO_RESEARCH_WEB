@@ -1,4 +1,6 @@
 import { fetchSerie, type Unit } from "@/lib/series";
+import { guardApiSeccion } from "@/lib/auth/dal";
+import { AUTH_ENFORCED } from "@/lib/auth/config";
 
 /**
  * GET /api/series?ids=<a,b,…>&from=YYYY-MM-DD&to=YYYY-MM-DD&unit=usd|ars
@@ -6,11 +8,18 @@ import { fetchSerie, type Unit } from "@/lib/series";
  * Devuelve las series crudas (columnar) de cada serieId pedido. Un request
  * PostgREST por símbolo (data cache de Next compartida entre usuarios/combos) +
  * `s-maxage` para la CDN de Vercel. Las fórmulas se calculan en el cliente.
+ *
+ * Con `AUTH_ENFORCED` prendido exige sesión aprobada con permiso de "Gráficos" y la
+ * respuesta deja de cachearse en la CDN (es por-usuario). Con el flag apagado queda
+ * exactamente igual que hoy (pública, cacheada 1h).
  */
 
 const MAX_SERIES = 24; // cap por request (el panel típico usa ≤16)
 
 export async function GET(request: Request): Promise<Response> {
+  const bloqueo = await guardApiSeccion("graficos");
+  if (bloqueo) return bloqueo;
+
   const url = new URL(request.url);
   const ids = (url.searchParams.get("ids") ?? "")
     .split(",")
@@ -33,7 +42,13 @@ export async function GET(request: Request): Promise<Response> {
 
   return Response.json(
     { series },
-    { headers: { "cache-control": "public, s-maxage=3600, stale-while-revalidate=86400" } },
+    {
+      headers: {
+        "cache-control": AUTH_ENFORCED
+          ? "private, no-store"
+          : "public, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    },
   );
 }
 

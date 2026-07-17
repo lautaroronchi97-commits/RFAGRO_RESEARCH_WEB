@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/auth/server";
 import { authConfigured } from "@/lib/auth/env";
 import { logAcceso } from "@/lib/auth/log";
+import { registrarSesion, cerrarMiSesion } from "@/lib/auth/sesion";
 import { notificarRegistro } from "@/lib/auth/emails";
 import { ADMIN_SEED_EMAILS } from "@/lib/auth/config";
 
@@ -76,7 +77,7 @@ export async function ingresarConPassword(_state: FormState, formData: FormData)
   if (!email || !password) return { error: "Completá email y contraseña." };
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
     return { error: error.message.includes("Email not confirmed")
@@ -85,6 +86,8 @@ export async function ingresarConPassword(_state: FormState, formData: FormData)
   }
 
   await logAcceso("login");
+  // Sesión única: este dispositivo pasa a ser la sesión vigente (desplaza a otro).
+  await registrarSesion(supabase, data.session?.access_token);
   redirect(next && next.startsWith("/") ? next : "/");
 }
 
@@ -114,6 +117,9 @@ export async function actualizarPassword(_state: FormState, formData: FormData):
   const { error } = await supabase.auth.updateUser({ password });
   if (error) return { error: "No se pudo actualizar la contraseña. Pedí un nuevo enlace." };
 
+  // Tras restablecer la clave, este dispositivo queda como la sesión vigente.
+  const { data } = await supabase.auth.getSession();
+  await registrarSesion(supabase, data.session?.access_token);
   redirect("/?pwd=1");
 }
 
@@ -160,6 +166,8 @@ export async function cerrarSesion(): Promise<void> {
   if (authConfigured()) {
     await logAcceso("logout");
     const supabase = await createSupabaseServerClient();
+    // Libera la fila de sesión única antes de cerrar (deja el slot limpio).
+    await cerrarMiSesion(supabase);
     await supabase.auth.signOut();
   }
   redirect("/ingresar");

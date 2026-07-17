@@ -57,10 +57,21 @@ export function seccionDeRuta(pathname: string): SeccionKey | null {
 
 /**
  * Prefijos de ruta que NUNCA exigen login (aunque el flag esté prendido): las
- * propias pantallas de auth y el callback de OAuth. Todo lo demás queda detrás
- * del gate. La landing pública en `/` se agrega en la Etapa 3.
+ * propias pantallas de auth, el callback de OAuth, la landing pública mínima
+ * (`/bienvenida`) y la pantalla de "sesión cerrada en otro dispositivo". La raíz
+ * `/` NO va acá: con el flag prendido, un visitante sin sesión se redirige a la
+ * landing (ver `session.ts`); con sesión, `/` es el tablero.
  */
-export const RUTAS_PUBLICAS = ["/ingresar", "/registro", "/pendiente", "/recuperar", "/completar", "/auth"];
+export const RUTAS_PUBLICAS = [
+  "/ingresar",
+  "/registro",
+  "/pendiente",
+  "/recuperar",
+  "/completar",
+  "/auth",
+  "/bienvenida",
+  "/sesion-cerrada",
+];
 
 /** ¿La ruta es una de las públicas de auth? (match por prefijo de segmento). */
 export function esRutaPublica(pathname: string): boolean {
