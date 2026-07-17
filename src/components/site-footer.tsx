@@ -1,13 +1,16 @@
+import Link from "next/link";
+
 export function SiteFooter() {
   return (
     <footer className="foot">
-      <div className="foot-brand" aria-hidden="true">
+      <div className="foot-brand">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/rfagro-isotipo.svg" alt="" className="foot-iso" width={36} height={20} />
-        <span className="fb-name">
+        <img src="/rfagro-isotipo.svg" alt="" className="foot-iso" width={36} height={20} aria-hidden="true" />
+        <span className="fb-name" aria-hidden="true">
           <span className="rf">RF</span> <span className="agro">AGRO</span>
         </span>
-        <span className="fb-sub">Research de granos</span>
+        <span className="fb-sub" aria-hidden="true">Research de granos</span>
+        <Link href="/bienvenida" className="foot-inst">Conocé RF AGRO →</Link>
       </div>
       <div className="src">
         <b>RF AGRO</b>

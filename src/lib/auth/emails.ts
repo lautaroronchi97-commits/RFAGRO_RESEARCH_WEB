@@ -105,6 +105,41 @@ export async function notificarAprobacion(email: string, nombre: string): Promis
   await enviar([email], "Tu acceso a RF AGRO está activo", plantilla("Acceso habilitado", cuerpo));
 }
 
+/**
+ * Consulta desde el formulario de contacto de la landing institucional (ítem 3).
+ * Envía a los admins (ADMIN_EMAILS). DEGRADA SIN ROMPER como el resto: si falta la
+ * key, loguea el lead (backstop en los logs del server) y devuelve false. El server
+ * action muestra igual un acuse amable al visitante.
+ */
+export async function enviarConsulta(datos: {
+  nombre: string;
+  email: string;
+  telefono: string;
+  empresa: string;
+  mensaje: string;
+}): Promise<boolean> {
+  const dests = adminEmails();
+  // Backstop: dejar el lead en los logs aunque no haya email configurado.
+  console.info(
+    `[consulta] ${datos.nombre} · ${datos.email} · ${datos.telefono} · ${datos.empresa} — ${datos.mensaje}`,
+  );
+  if (dests.length === 0) {
+    console.info("[consulta] ADMIN_EMAILS vacío — no se envía el aviso de consulta");
+    return false;
+  }
+  const cuerpo = `
+    <p style="margin:0 0 14px">Nueva consulta desde la web:</p>
+    <table style="width:100%;border-collapse:collapse;font-size:14px">
+      <tr><td style="padding:6px 0;color:#7a887a;width:110px">Nombre</td><td style="padding:6px 0"><b>${escapar(datos.nombre)}</b></td></tr>
+      <tr><td style="padding:6px 0;color:#7a887a">Email</td><td style="padding:6px 0">${escapar(datos.email)}</td></tr>
+      <tr><td style="padding:6px 0;color:#7a887a">Teléfono</td><td style="padding:6px 0">${escapar(datos.telefono)}</td></tr>
+      <tr><td style="padding:6px 0;color:#7a887a">Empresa</td><td style="padding:6px 0">${escapar(datos.empresa)}</td></tr>
+    </table>
+    <p style="margin:16px 0 6px;color:#7a887a;font-size:13px">Mensaje</p>
+    <p style="margin:0;white-space:pre-wrap">${escapar(datos.mensaje)}</p>`;
+  return enviar(dests, "Nueva consulta · RF AGRO", plantilla("Consulta desde la web", cuerpo));
+}
+
 /** Escape HTML mínimo para interpolar datos del usuario en el email. */
 function escapar(s: string): string {
   return String(s ?? "")

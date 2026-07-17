@@ -19,7 +19,18 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 17/07/2026 — Logo real integrado)
+## Ahora (última actualización: 17/07/2026 — Landing institucional)
+
+**🏛️ LANDING INSTITUCIONAL (ítem 3 del backlog) HECHA — rama `claude/desarrollos-pendientes-dbq59w`, PR #32.**
+`/bienvenida` dejó de ser la landing mínima de login y pasó a ser la **página de venta** de RF AGRO (enfoque de
+venta, estilo [Praxis](https://praxis.chetech.com.ar/)). Se **movió fuera de `(auth)`** a `src/app/bienvenida/`
+con layout propio (topbar + footer); la URL sigue siendo `/bienvenida`. Secciones: hero ("Dejá de tomar decisiones
+a ciegas") → problema → cómo funciona (01·02·03) → servicios (6) → **vistazo al tablero** (mockups ilustrativos,
+sin datos reales, chip "Vista previa") → por qué RF AGRO → **para acopios** (replicá el correacopio) → equipo (sin
+nombres, "más de 10 años") → FAQ ("no reemplaza a tu corredor") → **formulario de contacto** (Resend a
+`ADMIN_EMAILS`, honeypot, degrada sin key). Link "Conocé RF AGRO →" en el footer del dashboard. **Textos = borrador
+que Lautaro edita.** Estilos `lp-*` nuevos, claro/oscuro. lint/tsc/build ✅; navegador claro+oscuro + formulario
+end-to-end ✅. Detalle: [`sesiones/2026-07-17-landing-institucional.md`](sesiones/2026-07-17-landing-institucional.md).
 
 **🎨 LOGO REAL INTEGRADO (ítem 2 del backlog) HECHO — rama `claude/desarrollos-pendientes-dbq59w`.** La marca
 dejó de ser 100% tipográfica: Lautaro pasó el logo real (isotipo de 3 símbolos — trigo amarillo · trigo verde
@@ -119,7 +130,11 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
   `public/` (`rfagro-isotipo.svg` = 3 símbolos · `rfagro-logo.svg` = logo completo). Header/landing/auth/
   admin/footer usan el isotipo real + wordmark en texto; favicon nuevo; fondo transparente; halos de borde
   del tema oscuro limpiados. Detalle: [`sesiones/2026-07-17-logo-real-integrado.md`](sesiones/2026-07-17-logo-real-integrado.md).
-- [ ] 3. Landing + presentación de servicios (página institucional, separada del dashboard de datos).
+- [x] 3. **Landing institucional — HECHO (17/07, rama `claude/desarrollos-pendientes-dbq59w`, PR #32).**
+  `/bienvenida` reconvertida en página de venta (hero → problema → cómo funciona → servicios →
+  vistazo al tablero → por qué → acopios → equipo → FAQ → formulario). Enfoque de venta, estilo Praxis,
+  mockups llamador (sin datos reales), formulario por Resend, link "Conocé RF AGRO" en el footer. Textos
+  = borrador editable. Detalle: [`sesiones/2026-07-17-landing-institucional.md`](sesiones/2026-07-17-landing-institucional.md).
 - [ ] 4. Home = novedades del día (repensar `/` para que lo primero que se vea sean las novedades/
   titulares del día, no solo la cinta + grilla de secciones del rediseño UX de PR #22).
 - [ ] 5. Extender el reporte diario: Matba (volumen) + CBOT + metales + petróleo + Merval + SPY + EWZ
