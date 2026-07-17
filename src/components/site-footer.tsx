@@ -1,10 +1,9 @@
-import { WheatMark } from "./icons";
-
 export function SiteFooter() {
   return (
     <footer className="foot">
       <div className="foot-brand" aria-hidden="true">
-        <WheatMark />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/rfagro-isotipo.svg" alt="" className="foot-iso" width={36} height={20} />
         <span className="fb-name">
           <span className="rf">RF</span> <span className="agro">AGRO</span>
         </span>

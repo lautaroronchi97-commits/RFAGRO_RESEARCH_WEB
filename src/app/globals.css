@@ -138,14 +138,8 @@ button { font:inherit; color:inherit; background:none; border:none; }
 .masthead-in { max-width:1360px; margin:0 auto; padding:10px clamp(10px,2.4vw,26px);
   display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
 .brand { display:flex; align-items:center; gap:11px; min-width:0; }
-.mark { width:32px; height:32px; flex:0 0 auto; display:grid; place-items:center;
-  color:var(--gold);
-  background:
-    linear-gradient(160deg, color-mix(in srgb, var(--brand-deep) 26%, transparent), transparent 70%),
-    var(--panel);
-  border:1px solid var(--gold-hair); border-radius:8px;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 2px 8px -3px rgba(0,0,0,.35); }
-.mark svg { width:19px; height:19px; }
+/* Isotipo real (logo de marca) — 3 símbolos coloridos que se leen en claro y oscuro. */
+.brand-iso { height:32px; width:auto; flex:0 0 auto; display:block; }
 .wordmark { font-family:var(--font-mono); font-weight:700; font-size:var(--fs-lg);
   letter-spacing:.02em; line-height:1; display:flex; align-items:baseline; gap:3px; white-space:nowrap; }
 .wordmark .rf { color:var(--brand-rf); }
@@ -305,7 +299,7 @@ table.tbl { width:100%; border-collapse:collapse; min-width:640px; }
 .foot { max-width:1360px; margin:28px auto 0; padding:18px clamp(10px,2.4vw,26px) 38px;
   display:flex; align-items:center; gap:14px 18px; flex-wrap:wrap; }
 .foot-brand { flex-basis:100%; display:flex; align-items:baseline; gap:8px; color:var(--ink-2); }
-.foot-brand svg { width:14px; height:14px; color:var(--gold); align-self:center; }
+.foot-brand .foot-iso { height:20px; width:auto; align-self:center; }
 .foot-brand .fb-name { font-family:var(--font-mono); font-weight:700; font-size:var(--fs-sm); letter-spacing:.02em; }
 .foot-brand .fb-name .rf { color:var(--brand-rf); }
 .foot-brand .fb-name .agro { color:var(--brand-agro); }
@@ -937,6 +931,9 @@ a.estim-inf:hover { color:var(--gold-text); }
    Landing pública mínima (/bienvenida) — Etapa 3. Vive en el shell de auth.
    ========================================================================== */
 .landing-hero { width:100%; max-width:620px; text-align:center; padding:8px 0; }
+.landing-logo { height:clamp(72px,15vw,96px); width:auto; display:block; margin:0 auto 20px; }
+.landing-tagline { margin:12px 0 0; font-size:var(--fs-lg); font-weight:600;
+  letter-spacing:.01em; color:var(--brand-agro); }
 .landing-badge { display:inline-block; font-size:var(--fs-2xs); font-weight:800;
   text-transform:uppercase; letter-spacing:.14em; color:var(--gold-text);
   border:1px solid var(--gold-hair); border-radius:999px; padding:6px 15px; margin-bottom:22px; }

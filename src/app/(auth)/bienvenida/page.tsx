@@ -16,10 +16,13 @@ export const metadata: Metadata = {
 export default function BienvenidaPage() {
   return (
     <section className="landing-hero">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/rfagro-isotipo.svg" alt="" className="landing-logo" width={159} height={88} />
       <span className="landing-badge">Research de mercado de granos · Argentina</span>
       <h1 className="landing-title">
         <span className="rf">RF</span>&nbsp;<span className="agro">AGRO</span>
       </h1>
+      <p className="landing-tagline">Consultora de agronegocios</p>
       <p className="landing-lead">
         Arbitrajes y pizarra, dólar y tasas, estimaciones de producción y las noticias del
         agro — en un solo tablero, actualizado varias veces por día.

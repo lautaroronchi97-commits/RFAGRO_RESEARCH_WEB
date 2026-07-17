@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { WheatMark } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 /**
@@ -12,9 +11,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="auth-shell">
       <div className="auth-topbar">
         <Link href="/" className="brand" aria-label="RF AGRO — Inicio">
-          <span className="mark">
-            <WheatMark />
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/rfagro-isotipo.svg" alt="" className="brand-iso" width={58} height={32} />
           <span className="wordmark">
             <span className="rf">RF</span>
             <span className="agro">AGRO</span>

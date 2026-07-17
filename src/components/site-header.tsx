@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { WheatMark } from "./icons";
 import { RuedaClock } from "./rueda-clock";
 import { RuedaStatus } from "./rueda-status";
 import { ThemeToggle } from "./theme-toggle";
@@ -18,9 +17,11 @@ export function SiteHeader({ visibles, esAdmin }: { visibles?: string[]; esAdmin
     <header className="masthead">
       <div className="masthead-in">
         <Link href="/" className="brand" aria-label="RF AGRO — Inicio">
-          <span className="mark">
-            <WheatMark />
-          </span>
+          {/* Isotipo real (3 símbolos: trigo, trigo y gota de soja). El wordmark va como
+              texto para que siga el color del tema (claro/oscuro). eslint-disable: es un
+              SVG estático cacheado desde /public, no una imagen de contenido para <Image>. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/rfagro-isotipo.svg" alt="" className="brand-iso" width={58} height={32} />
           <span className="wordmark">
             <span className="rf">RF</span>
             <span className="agro">AGRO</span>
