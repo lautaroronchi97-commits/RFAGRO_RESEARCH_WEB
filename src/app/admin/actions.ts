@@ -146,6 +146,22 @@ export async function cambiarEmpresa(_state: AdminState, formData: FormData): Pr
 }
 
 /**
+ * Cierra las sesiones activas de un usuario (Etapa 3, sesión única). Escribe un
+ * session_id centinela: en el próximo request del usuario, el proxy detecta que su
+ * sesión ya no es la vigente y lo obliga a ingresar de nuevo.
+ */
+export async function cerrarSesionesUsuario(_state: AdminState, formData: FormData): Promise<AdminState> {
+  await requireAdmin();
+  const supabase = await createSupabaseServerClient();
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!userId) return { error: "Falta el usuario." };
+  const { error } = await supabase.rpc("admin_cerrar_sesiones", { p_user: userId });
+  if (error) return { error: "No se pudo cerrar la sesión del usuario." };
+  refrescar();
+  return { ok: "Sesión cerrada. El usuario va a tener que ingresar de nuevo." };
+}
+
+/**
  * Guarda el override individual de secciones. Si `usar_override` no viene, se pone
  * null (el usuario hereda las secciones de su empresa). Si viene, se guardan las
  * seleccionadas (puede ser vacío = sin acceso a ninguna sección).

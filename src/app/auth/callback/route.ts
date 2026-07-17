@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/auth/server";
 import { logAcceso } from "@/lib/auth/log";
+import { registrarSesion } from "@/lib/auth/sesion";
 
 /**
  * Callback de OAuth (Google) y de confirmación de email: Supabase manda acá con un
@@ -19,12 +20,14 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { data: canje, error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
     return NextResponse.redirect(`${origin}/ingresar?error=oauth`);
   }
 
   await logAcceso("login");
+  // Sesión única: este dispositivo pasa a ser la sesión vigente.
+  await registrarSesion(supabase, canje.session?.access_token);
 
   const {
     data: { user },

@@ -3,6 +3,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { RefreshOnFocus } from "@/components/refresh-on-focus";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SeccionBeacon } from "@/components/seccion-beacon";
+import { Watermark } from "@/components/watermark";
 import { AUTH_ENFORCED } from "@/lib/auth/config";
 import { requireAprobado, getAcceso } from "@/lib/auth/dal";
 
@@ -21,9 +22,11 @@ import { requireAprobado, getAcceso } from "@/lib/auth/dal";
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   let visibles: string[] | undefined;
   let esAdmin = false;
+  let email: string | null = null;
 
   if (AUTH_ENFORCED) {
-    await requireAprobado();
+    const perfil = await requireAprobado();
+    email = perfil.email;
     const acceso = await getAcceso();
     visibles = acceso?.visibles;
     esAdmin = acceso?.esAdmin ?? false;
@@ -37,6 +40,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       {children}
       <div className="awn" aria-hidden="true" />
       <SiteFooter />
+      {/* Marca de agua sutil con el email del usuario: solo con login activo. */}
+      {AUTH_ENFORCED && email && <Watermark email={email} />}
       {/* Registro de visita por sección: solo con login activo (beacon liviano). */}
       {AUTH_ENFORCED && <SeccionBeacon />}
     </>

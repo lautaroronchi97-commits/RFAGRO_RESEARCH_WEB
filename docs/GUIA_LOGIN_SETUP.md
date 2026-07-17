@@ -1,8 +1,8 @@
 # GUÍA DE ENCENDIDO DEL LOGIN — pasos manuales de Lautaro
 
-> Esta guía la va completando cada etapa del login. Ahora cubre la **Etapa 1 (base de
-> autenticación)**. Las etapas 2 (panel admin + emails) y 3 (sesión única, marca de agua,
-> encendido) agregan sus propios pasos abajo cuando se construyan.
+> Esta guía la va completando cada etapa del login. Ya cubre las **3 etapas**: Etapa 1 (base de
+> autenticación), Etapa 2 (panel admin + emails) y Etapa 3 (sesión única, marca de agua, landing
+> y **checklist de encendido** — sección final).
 > Plan completo y decisiones: [`PLAN_LOGIN.md`](PLAN_LOGIN.md).
 
 El proyecto Supabase es **`lineup-argentina`**, ref **`gbpfgfeksqmzmsxnxiwg`**.
@@ -144,6 +144,53 @@ y en `.env.local` para local):
 **Qué manda:** cuando alguien se registra, te llega un email con sus datos y un link al panel.
 Cuando aprobás una cuenta, al cliente le llega "tu acceso está activo".
 
-## Etapa 3 — (pendiente) sesión única, marca de agua y encendido
+## Etapa 3 — sesión única, marca de agua, landing y ENCENDIDO
 
-_Se completa cuando se construya la Etapa 3._
+La Etapa 3 sumó la **sesión única** (una sola sesión activa por usuario: al entrar en otro
+dispositivo, el anterior se cierra), la **marca de agua** (tu email tenue sobre los datos), la
+**landing pública mínima** en `/bienvenida` y dejó todo listo para **prender el login**. Nada
+de esto cambia la web mientras `AUTH_ENFORCED` siga en `false`.
+
+### 1. Migración de la Etapa 3 — ✅ ya aplicada
+
+`supabase/migrations/20260717120000_auth_sesion_unica.sql` (tabla `sesiones_activas` + las
+funciones `registrar_sesion` / `tocar_sesion` / `cerrar_mi_sesion` / `admin_cerrar_sesiones`,
+todas con RLS). **Ya aplicada** el 17/07 vía el MCP de Supabase. Queda versionada por si recreás
+el proyecto.
+
+### 2. (Opcional) Reforzar con la config nativa de Supabase
+
+La sesión única y el vencimiento a 7 días ya los maneja el código (es la fuente de verdad). Si
+querés reforzarlo desde Supabase (según lo que permita el plan): *Authentication* → *Sessions*
+→ *Time-box user sessions* y/o *Inactivity timeout* (poné 7 días). No es obligatorio.
+
+### 3. Checklist de ENCENDIDO (cuando ya probaste todo)
+
+Recién acá se cierra la web. Antes de prenderlo, asegurate de:
+
+1. **Env vars cargadas** (Etapa 1 §2): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+   `NEXT_PUBLIC_SITE_URL`. (Emails opcionales: `RESEND_API_KEY`/`RESEND_FROM`/`ADMIN_EMAILS`.)
+2. **Tu cuenta funciona:** entraste con `lautaroronchi97@gmail.com`, sos admin y ves `/admin`.
+3. **Mauro:** que se registre y promovelo a admin desde *Usuarios* (decisión 10).
+4. **Aprobá a los clientes** que vayan a entrar (o creá sus empresas con las secciones que
+   correspondan), así no se topan con la pantalla de "pendiente" al prender el login.
+5. **Prendé el flag:** Vercel → *Settings* → *Environment Variables* → cambiá **`AUTH_ENFORCED`
+   a `true`** (scope Production; y Preview si querés probarlo ahí) → *Redeploy*.
+
+**Qué cambia al prender `AUTH_ENFORCED=true`:**
+- El visitante sin sesión que entra a la web ve la **landing** `/bienvenida` (marca + Ingresar/
+  Registrarse). Todos los datos quedan detrás del login.
+- Cada cliente solo ve las secciones que su empresa (o su override) tenga habilitadas.
+- Una sola sesión por usuario: si entra en otro dispositivo, el anterior se cierra con el aviso
+  "tu cuenta se abrió en otro dispositivo". A los 7 días sin usar, pide re-login.
+- La marca de agua con el email aparece tenue sobre las páginas de datos.
+- En `/admin` → *Usuarios* tenés el botón **"Cerrar sesión"** para desloguear a un usuario de
+  todos sus dispositivos.
+
+Para **apagarlo** de nuevo: poné `AUTH_ENFORCED=false` y redeploy → la web vuelve a ser pública.
+
+### 4. Antes de invitar clientes reales — hosting (pendiente aparte)
+
+Vercel Hobby es no-comercial. **Antes de poner esto frente a clientes que pagan**, resolvé el
+hosting (Vercel Pro u otra alternativa). Es una decisión aparte (decisión 11 del plan), no la
+del encendido técnico.

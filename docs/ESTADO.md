@@ -19,9 +19,27 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 16/07/2026 — Login Etapa 2: panel admin + emails)
+## Ahora (última actualización: 17/07/2026 — Login Etapa 3: hardening + encendido)
 
-**🔐 LOGIN ETAPA 2 (panel admin + permisos + emails) HECHA — PR #_ (rama `claude/login-stage-2-a8wr99`).** Sobre la
+**🔐 LOGIN ETAPA 3 (sesión única · marca de agua · landing · listo para encender) HECHA — PR #_ (rama
+`claude/login-stage-3-kqt0pg`).** Cierra el módulo de login (las 3 etapas). **Sesión única por usuario** (anti-préstamo):
+el login en un 2º dispositivo desplaza al 1º, que al navegar cae en `/sesion-cerrada` ("tu cuenta se abrió en otro
+dispositivo") — enforcement en el **proxy** (`tocar_sesion` por request, `session_id` del JWT decodificado local,
+**signOut LOCAL** para no matar la sesión buena), evento `kickeado` en `access_log`, botón "Cerrar sesión" por usuario
+en `/admin`. **Duración 7 días** renovables por `last_seen`. **Marca de agua** sutil (email en diagonal, `mask-image`
+sobre `var(--ink)` → sigue el tema, opacidad .05/.06) sobre las páginas de datos. **Landing pública mínima**
+`/bienvenida` (el proxy manda ahí al visitante sin sesión, solo con el flag prendido). **`/api/series` protegida** con
+el flag prendido (401/403), pública e igual que hoy con el flag apagado. Migración nueva
+`20260717120000_auth_sesion_unica.sql` (tabla `sesiones_activas` + 4 RPC, **aplicada** por `execute_sql`).
+lint/tsc/build ✅; **backend por SQL** (kicked/expired/adopt/guard + RLS anon=0, cliente=solo la suya); **navegador con
+el flag PRENDIDO** (anon key real + usuario de prueba aprobado, borrado al final): landing → login → tablero con marca
+de agua (claro/oscuro) → sección permitida/`/sin-acceso`/`/api/series` 403 → **sesión única kickea al 1º**; y **flag
+apagado = web idéntica a hoy** (`/` tablero, sin landing ni marca de agua, cache público intacto). **Falta solo el
+encendido manual de Lautaro** (`AUTH_ENFORCED=true` + promover a Mauro + aprobar clientes — checklist en
+[`GUIA_LOGIN_SETUP.md`](GUIA_LOGIN_SETUP.md)) y resolver **hosting** antes de clientes reales.
+Detalle: [`sesiones/2026-07-17-login-etapa-3.md`](sesiones/2026-07-17-login-etapa-3.md).
+
+**🔐 LOGIN ETAPA 2 (panel admin + permisos + emails) HECHA — PR #29 (rama `claude/login-stage-2-a8wr99`).** Sobre la
 base de la Etapa 1: **panel `/admin`** (route propio, estética premium) con 4 pestañas — **Pendientes** (aprobar
 eligiendo/creando empresa · rechazar · badge de conteo), **Usuarios** (bloquear · cambiar empresa · promover/degradar
 admin · override individual de secciones), **Empresas** (crear/renombrar + checkboxes de las 7 secciones + conteo) y
@@ -94,16 +112,18 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
   ver `CONTEXTO.md` Pendientes punto 5 — reactivar + panel).
 
 **Bloque 2**
-- [ ] 7. Login (cliente / Lautaro / Mauro) — roles distintos, hoy la web es 100% pública/anónima.
+- [~] 7. Login (cliente / Lautaro / Mauro) — roles distintos, hoy la web es 100% pública/anónima.
   **Plan cerrado 16/07 → [`PLAN_LOGIN.md`](PLAN_LOGIN.md)** (15 decisiones + 3 prompts de ejecución).
-  **Etapa 1 (base de auth) HECHA** (PR #28) y **Etapa 2 (panel admin + permisos + emails) HECHA**
-  (rama `claude/login-stage-2-a8wr99`); flag `AUTH_ENFORCED` sigue apagado. Falta **Etapa 3** (sesión única,
-  marca de agua, landing, encendido).
+  **Las 3 etapas HECHAS en código:** Etapa 1 (base de auth, PR #28), Etapa 2 (panel admin + permisos + emails,
+  PR #29) y **Etapa 3** (sesión única + marca de agua + landing + hardening, rama `claude/login-stage-3-kqt0pg`).
+  El flag `AUTH_ENFORCED` **sigue apagado**: falta solo el **encendido manual de Lautaro** (checklist en
+  `GUIA_LOGIN_SETUP.md`) y resolver hosting. Se marca `[x]` cuando prenda y valide.
 - [ ] 8. Total negociado por producto (día/semana), histograma, % sobre cosecha.
 - [ ] 9. SIOGRANOS semanal/mensual (mencionado también en `CONTEXTO.md` Pendientes punto 5).
 
 **Bloque 3**
-- [ ] 10. Terminar login (si sigue abierto del bloque 2).
+- [~] 10. Terminar login (si sigue abierto del bloque 2). **Código de las 3 etapas HECHO** (ver ítem 7);
+  queda el encendido manual (`AUTH_ENFORCED=true`) + hosting. Se marca `[x]` cuando Lautaro prenda y valide.
 - [ ] 11. Automatizar informe diario/semanal (armar la estructura del envío, formato imagen/PDF para
   WhatsApp según lo charlado — ver `CONTEXTO.md` "Reporte diario").
 - [ ] 12. Acumulado de rueda USD + compras BCRA (compras netas BCRA hoy es proxy/manual, ver módulo 7
@@ -262,6 +282,7 @@ feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→
 | Rama | Estado |
 |---|---|
 | `main` | Única rama de integración y producción. |
+| `claude/login-stage-3-kqt0pg` | Login Etapa 3 (sesión única + marca de agua + landing + hardening) — PR abierto, base `main`. |
 | `claude/website-ux-redesign-plan-irvt6k` | Rediseño UX «web en capas» (PR #22 **MERGEADO**) → borrar. |
 | `claude/timeline-spread-charts-plan-3zlt1g` | Panel de gráficos (PR #17 **MERGEADO**) → borrar. |
 | `claude/production-forecast-calendar-zdpmd6` | Módulo calendario — plan + Sesión A (PR #20). |
