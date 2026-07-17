@@ -22,6 +22,10 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-  // Corre en todo salvo estáticos, imágenes, favicon, robots, sitemap y el icono de marca.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|robots.txt|sitemap.xml).*)"],
+  // Corre en todo salvo estáticos, imágenes, favicon, robots, sitemap y los assets de
+  // marca (logo/isotipo en /public): sirven a visitantes sin sesión (landing/login), así
+  // que el gate NO debe redirigirlos cuando `AUTH_ENFORCED` esté prendido.
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|icon.svg|rfagro-logo.svg|rfagro-isotipo.svg|robots.txt|sitemap.xml).*)",
+  ],
 };

@@ -19,6 +19,12 @@
 - **Las fórmulas financieras las define él**: antes de implementar una, confirmala con un ejemplo numérico.
 - Secretos SOLO en variables de entorno, NUNCA en el repo.
 - Conciso, sin relleno. Español rioplatense.
+- **Voz de Lautaro**: para cualquier texto que se redacte en su nombre (informes, reportes de
+  mercado "Mesa de operaciones", posteos, hilos, emails, mensajes), considerar la skill
+  **`voz-lautaro`** (`.claude/skills/voz-lautaro/`) como referencia de su forma de hablar (voseo
+  siempre, rigor + calle, humildad, datos exactos, emojis funcionales). **No es excluyente**: es una
+  guía a tener en cuenta, no fuerza jerga de agro donde el tema no lo pide, y convive con registros
+  más sobrios (ej. copy institucional de la landing).
 
 ## Stack
 Next.js 16 (App Router) + TypeScript · Tailwind v4 · next-themes · gráficos SVG a mano (Recharts previsto) ·

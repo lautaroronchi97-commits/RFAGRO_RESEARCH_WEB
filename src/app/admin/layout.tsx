@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { WheatMark } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AdminTabs } from "./admin-tabs";
 import { requireAdmin } from "@/lib/auth/dal";
@@ -31,9 +30,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="admin-shell">
       <header className="admin-top">
         <Link href="/" className="brand" aria-label="RF AGRO — Inicio">
-          <span className="mark">
-            <WheatMark />
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/rfagro-isotipo.svg" alt="" className="brand-iso" width={58} height={32} />
           <span className="wordmark">
             <span className="rf">RF</span>
             <span className="agro">AGRO</span>
