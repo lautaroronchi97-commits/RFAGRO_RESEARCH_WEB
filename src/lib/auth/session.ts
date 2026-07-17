@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { SUPABASE_URL, SUPABASE_ANON_KEY, authConfigured } from "./env";
 import { AUTH_ENFORCED, esRutaPublica } from "./config";
-import { sessionIdDeToken, deviceDeUA } from "./sesion";
+import { sessionIdDeToken, deviceDeUA } from "./session-id";
 
 /**
  * Refresco de sesión + gate optimista para `proxy.ts` (corre antes del render en
