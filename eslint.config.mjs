@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Edge Functions de Supabase: código Deno (jsr:/https imports, globals de Deno),
+    // no del proyecto Next → fuera del lint/typecheck de la web.
+    "supabase/functions/**",
   ]),
 ]);
 

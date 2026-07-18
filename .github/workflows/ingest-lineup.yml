@@ -1,0 +1,42 @@
+name: Ingesta line-up buques (ISA → Supabase)
+
+# Mantiene al día la tabla `lineup` con el line-up de buques de ISA Agents.
+# El scraping lo hace la Edge Function `lineup-ingest` (corre en Supabase sa-east-1,
+# São Paulo — IP que ISA acepta; los runners de GitHub Actions están bloqueados).
+# Este workflow solo la dispara vía scripts/ingest-lineup.mjs.
+# Dos corridas: 10:00 y 22:00 ART. El script es idempotente (upsert por la clave
+# lógica de la fila), así que re-correr es inocuo. Ventana diaria = hoy + 2 días
+# previos → si un día no salió a la mañana, lo agarra la corrida de la noche o la
+# del día siguiente. Los `schedule` de GitHub Actions corren desde la rama default.
+
+on:
+  schedule:
+    - cron: "0 13 * * *" # 10:00 ART
+    - cron: "0 1 * * *" #  22:00 ART
+  workflow_dispatch:
+    inputs:
+      from:
+        description: "Fecha desde (YYYY-MM-DD) — para backfill manual"
+        required: false
+      to:
+        description: "Fecha hasta (YYYY-MM-DD) — default: hoy"
+        required: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Ingesta line-up
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ -n "${{ github.event.inputs.from }}" ]; then
+            node scripts/ingest-lineup.mjs --from "${{ github.event.inputs.from }}" --to "${{ github.event.inputs.to }}"
+          else
+            node scripts/ingest-lineup.mjs
+          fi
