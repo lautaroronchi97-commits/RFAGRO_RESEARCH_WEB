@@ -123,16 +123,28 @@ muelle · zona · producto · ton · destino · **empresa** · ETB) con export C
 - Screenshots claro + oscuro: diseño consistente con el resto de la web (mismo `Panel`/`SourceStamp`/
   `QueEsEsto`). lint + typecheck + build ✅.
 
-### Fase 2 — Panel de empresas (`/comercio/empresas`)
-El pedido central. Por empresa (normalizada, solo operativas actualmente): buques próximos y ton por
-producto · **gap de cobertura** (declarado DJVE − originado line-up, `cobertura.py`) · ritmo vs su
-propia historia (misma ventana de años previos) · share por producto/zona. Más los dos análisis nuevos:
-- **Avance exportado vs previsión de la Bolsa**: acumulado embarcado de la campaña por producto vs la
-  estimación BCR que ya tenemos en `estimaciones_produccion`. ⚠️ ABIERTO §6.1: qué número exacto de la
-  Bolsa usa Lautaro de referencia (producción vs saldo exportable).
-- **Atribución de campaña**: separar DJVE y buques de cosecha nueva vs vieja (lógica `campanas.py`
-  por producto + ventana de embarque; la tabla `djve` de esta base no trae campaña → se deriva).
-**Verificación**: gap por empresa contra SQL a mano; los casos de mapeo DJVE↔shipper de `cobertura.py`.
+### Fase 2 — Panel de empresas (`/comercio/empresas`) + semáforo físico→precio — ✅ HECHA (19/07/2026)
+El pedido central. **Panel de empresas** (`/comercio/empresas`, `requireAdmin`): por exportador
+normalizado — **gap de cobertura FOTO FORWARD 60d** (declarado DJVE vs originado line-up → señal
+alcista/bajista, `cobertura.py`) · **avance de campaña** (declarado vs originado acumulado) · **ritmo
+estacional** (line-up parado hoy vs lo normal para esta época, 5 campañas) · share por producto/zona ·
+tabla filtrable + CSV. Tablas por producto con **campaña nueva/vieja** (atribución por embarque,
+`campanas.py`) y **disponible (opción 30) / forward (opción 360)**. Más el **semáforo físico→precio**
+(`/comercio/senal`, idea de Lautaro): cruza la señal física de cobertura con la capacidad de pago (FAS
+teórico) y la pizarra por grano.
+
+**Decisiones con Lautaro (19/07):** gap = las DOS lecturas (foto + avance) · ritmo = "line-up parado vs
+lo normal" (estacional, no acumulado) · **transbordo PY/UY fuera del ratio** (no tiene DJVE argentina,
+se muestra aparte) · **avance vs Bolsa/saldo exportable DESCARTADO** (fuera BCR) · roster depurado
+2025-26 (+8 empresas, −OLAM/PROMASA, Glencore→Viterra, fix acento ACA). La DJVE es **solo registros**
+(sin "cumplido" — se verificó): el cruce con line-up es la única forma; el `opcion` da gratis el split
+disponible/forward.
+
+**Datos:** migración `20260719120000_create_comercio_empresas.sql` (fn `campana_ini_year` + vistas
+`djve_cobertura`, `lineup_originado_campana`, `lineup_estacional`). **Verificado 1:1 vs SQL** (maíz
+cobertura 0,32 / soja 0,11 / cebada 1,98; originado dedup ~27 Mt) + ports 39/39 + lint/tsc/build. Detalle:
+`sesiones/2026-07-19-comercio-empresas-fase-2.md`. **Falta:** render en navegador (MCP caído en la sesión
+→ validar en el Preview).
 
 ### Fase 3 — Mesa de embarque (`/comercio/embarques`)
 Gap (declarado − originado) por **mes de embarque × producto** (`mesa_embarque.py`), leído en el idioma

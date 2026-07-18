@@ -19,7 +19,27 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 18/07/2026 — Puertos/line-up Fase 0 + Fase 1)
+## Ahora (última actualización: 19/07/2026 — Comercio exterior Fase 2: empresas + semáforo)
+
+**🚢 COMERCIO EXTERIOR / PUERTOS — FASE 2 HECHA (empresas + semáforo físico→precio) — rama
+`claude/comercio-exterior-fase-2-id2fql`, PR #_.** Lo que quedó del PR #33. Se pensaron las lógicas con
+Lautaro antes de construir. **Panel de empresas `/comercio/empresas`** (solo mesa, `requireAdmin`): por
+exportador normalizado — **gap de cobertura foto-forward 60d** (declarado DJVE vs originado line-up →
+señal alcista/bajista, `cobertura.py`), **avance de campaña**, **ritmo estacional** (line-up parado hoy
+vs lo normal para esta época, 5 campañas), share por producto/zona, tabla filtrable + CSV; + tablas por
+producto con **campaña nueva/vieja** y **disponible (op30)/forward (op360)**. **Semáforo físico→precio
+`/comercio/senal`** (idea nueva): cruza la señal física de cobertura con la capacidad de pago (FAS
+teórico) y la pizarra por grano. **Decisiones (19/07):** gap = las dos lecturas · ritmo = "line-up parado
+vs lo normal" (estacional) · **transbordo PY/UY fuera del ratio** (no tiene DJVE argentina) · avance vs
+Bolsa **descartado** · roster depurado 2025-26 (+8 empresas, −OLAM/PROMASA, Glencore→Viterra, fix acento
+ACA). La DJVE es **solo registros** (sin "cumplido" — verificado): el cruce con line-up es la única forma.
+Migración `20260719120000` (fn `campana_ini_year` + vistas `djve_cobertura`, `lineup_originado_campana`,
+`lineup_estacional`). **Verificado 1:1 vs SQL** (maíz cobertura 0,32 · soja 0,11 · cebada 1,98) + ports
+39/39 + lint/tsc/build. **Falta:** render en navegador (el MCP estuvo caído para escritura → validar en el
+Preview del PR) y Fases 3-4 (mesa de embarque · temperatura). Detalle:
+[`sesiones/2026-07-19-comercio-empresas-fase-2.md`](sesiones/2026-07-19-comercio-empresas-fase-2.md).
+
+## Anterior (18/07/2026 — Puertos/line-up Fase 0 + Fase 1)
 
 **🚢 PUERTOS / LINE-UP (ítem 6 del backlog) — PLAN CERRADO + FASE 0 (dato vivo) + FASE 1 (foto operativa)
 HECHAS — rama `claude/desarrollos-pendientes-ypxvfd`, PR #33.** Se retoma el line-up de buques de ISA
@@ -163,13 +183,14 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
 - [ ] 5. Extender el reporte diario: Matba (volumen) + CBOT + metales + petróleo + Merval + SPY + EWZ
   (hoy `cbot_cierres` ya tiene CBOT maíz/soja/trigo; falta sumar metales/petróleo/Merval/SPY/EWZ — ver
   fuentes candidatas `barchart`/`investing`/`yahoo-finance` en `CONTEXTO.md`).
-- [~] 6. **Barcos / lineups en puerto — EN CURSO (plan + Fase 0 + Fase 1 hechas, 18/07).** Plan cerrado
+- [~] 6. **Barcos / lineups en puerto — EN CURSO (plan + Fases 0, 1 y 2 hechas).** Plan cerrado
   ([`PLAN_PUERTOS.md`](PLAN_PUERTOS.md), 11 decisiones + 5 fases, lógica portada de `LineUps_Code`).
-  **Fase 0 (dato vivo) HECHA**: scraper reactivado vía Edge Function de Supabase (ISA bloqueaba las IPs de
-  GitHub Actions), backfill 07/07→16/07, healthcheck. **Fase 1 (foto operativa) HECHA**: `/comercio/puertos`
-  (solo mesa) con KPIs, tape de cambios vs la rueda anterior, tablas por producto/zona y buques filtrables;
-  verificado 1:1 contra SQL. **Falta**: Fases 2-4 (empresas → mesa de embarque → temperatura). Detalle:
-  `sesiones/2026-07-18-puertos-fase-0.md`.
+  **Fase 0 (dato vivo) HECHA** (18/07): scraper reactivado vía Edge Function de Supabase, backfill,
+  healthcheck. **Fase 1 (foto operativa) HECHA** (18/07): `/comercio/puertos` con KPIs, tape de cambios,
+  tablas por producto/zona y buques. **Fase 2 (empresas + semáforo) HECHA** (19/07): `/comercio/empresas`
+  (gap de cobertura + señales + avance + ritmo estacional + campaña nueva/vieja + share) y
+  `/comercio/senal` (semáforo físico→precio); verificado 1:1 contra SQL. **Falta**: Fases 3-4 (mesa de
+  embarque → temperatura). Detalle: `sesiones/2026-07-19-comercio-empresas-fase-2.md`.
 
 **Bloque 2**
 - [~] 7. Login (cliente / Lautaro / Mauro) — roles distintos, hoy la web es 100% pública/anónima.
