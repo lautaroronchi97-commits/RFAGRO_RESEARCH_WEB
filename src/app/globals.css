@@ -1240,3 +1240,44 @@ a.estim-inf:hover { color:var(--gold-text); }
 .admin-pag { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; }
 .admin-pag-info { font-size:var(--fs-xs); color:var(--ink-3); }
 .admin-pag-btns { display:flex; gap:8px; }
+
+/* ===== Panel Puertos / Line-up (Fase 1) ===== */
+.lu-kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:14px 0 4px; }
+.lu-kpi { background:var(--panel-2); border:1px solid var(--line); border-radius:10px; padding:12px 14px;
+  display:flex; flex-direction:column; gap:3px; }
+.lu-kpi-v { font-family:var(--font-mono); font-size:22px; font-weight:800; color:var(--ink);
+  font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+.lu-kpi-l { font-size:var(--fs-xs); color:var(--ink-2); text-transform:uppercase; letter-spacing:.06em; }
+@media (max-width:560px){ .lu-kpis { grid-template-columns:1fr; } }
+
+.lu-h3 { font-family:var(--font-ui); font-size:var(--fs-xs); font-weight:800; letter-spacing:.07em;
+  text-transform:uppercase; color:var(--ink-2); margin:22px 0 8px; }
+
+.lu-cambios { margin:16px 0 4px; padding:12px 14px;
+  background:color-mix(in srgb, var(--gold) 6%, var(--panel-2)); border:1px solid var(--gold-hair); border-radius:10px; }
+.lu-cambios .lu-h3 { margin:0 0 8px; color:var(--gold-text); }
+.lu-nuevos { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+.lu-nuevos li { font-size:var(--fs-sm); color:var(--ink-2); line-height:1.5; }
+.lu-nuevos li b { color:var(--ink); }
+.lu-nuevo-badge { display:inline-block; font-family:var(--font-mono); font-size:9px; font-weight:800;
+  text-transform:uppercase; letter-spacing:.05em; color:var(--pos); background:var(--pos-weak);
+  border-radius:4px; padding:1px 5px; margin-right:6px; vertical-align:middle; }
+.lu-mono { font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+
+.tbl tbody td.pos { color:var(--pos); font-variant-numeric:tabular-nums; }
+.tbl tbody td.neg { color:var(--neg); font-variant-numeric:tabular-nums; }
+
+.lu-tabla { margin-top:6px; }
+.lu-filtros { display:flex; flex-wrap:wrap; align-items:flex-end; gap:10px; margin-bottom:8px; }
+.lu-field { display:flex; flex-direction:column; gap:3px; font-size:var(--fs-xs); color:var(--ink-2); }
+.lu-field > span { text-transform:uppercase; letter-spacing:.05em; }
+.lu-field select, .lu-field input { font-family:var(--font-ui); font-size:var(--fs-sm); color:var(--ink);
+  background:var(--panel-2); border:1px solid var(--line); border-radius:8px; padding:7px 10px; min-width:150px; }
+.lu-field input:focus, .lu-field select:focus { outline:none; border-color:var(--gold-hair); }
+.lu-grow { flex:1; min-width:180px; }
+.lu-grow input { width:100%; min-width:0; }
+.lu-csv { font-family:var(--font-ui); font-size:var(--fs-sm); font-weight:700; color:var(--ink);
+  background:var(--panel-2); border:1px solid var(--line); border-radius:8px; padding:7px 14px; cursor:pointer; }
+.lu-csv:hover:not(:disabled) { border-color:var(--gold-hair); color:var(--gold-text); }
+.lu-csv:disabled { opacity:.5; cursor:default; }
+.lu-cuenta { font-family:var(--font-mono); font-size:var(--fs-xs); color:var(--ink-3); margin-bottom:6px; }

@@ -19,22 +19,27 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 18/07/2026 — Puertos/line-up Fase 0)
+## Ahora (última actualización: 18/07/2026 — Puertos/line-up Fase 0 + Fase 1)
 
-**🚢 PUERTOS / LINE-UP (ítem 6 del backlog) — PLAN CERRADO + FASE 0 (dato vivo) HECHA — rama
-`claude/desarrollos-pendientes-ypxvfd`, PR #33.** Se retoma el line-up de buques de ISA Agents (tabla
-`lineup`, 6 años de historia, scraper frenado desde el 06/07). Lautaro pasó su repo `LineUps_Code`
-(Python/Streamlit sobre la MISMA base) → la lógica se **porta**, no se reinventa. **Plan** en
-[`PLAN_PUERTOS.md`](PLAN_PUERTOS.md) (11 decisiones + 5 fases): solo mesa (análisis protegidos siempre,
+**🚢 PUERTOS / LINE-UP (ítem 6 del backlog) — PLAN CERRADO + FASE 0 (dato vivo) + FASE 1 (foto operativa)
+HECHAS — rama `claude/desarrollos-pendientes-ypxvfd`, PR #33.** Se retoma el line-up de buques de ISA
+Agents (tabla `lineup`, 6 años de historia, scraper frenado desde el 06/07). Lautaro pasó su repo
+`LineUps_Code` (Python/Streamlit sobre la MISMA base) → la lógica se **porta**, no se reinventa. **Plan**
+en [`PLAN_PUERTOS.md`](PLAN_PUERTOS.md) (11 decisiones + 5 fases): solo mesa (análisis protegidos siempre,
 DJVE pública), subpáginas en `/comercio`, productos = complejos soja/girasol + maíz/trigo/cebada/sorgo,
 zonas Up River N/S + Bahía. **Diagnóstico del freeze**: ISA bloquea las IPs de GitHub Actions (falso verde),
 no se perdió la fuente. **Fase 0 (dato vivo) HECHA y verificada**: Edge Function **`lineup-ingest`** en
 Supabase (sa-east-1 São Paulo, IP que ISA sí acepta) que fetchea+parsea (puerto fiel de `scraper.py`)+
 upsertea idempotente, restringida a `service_role`; disparada por `scripts/ingest-lineup.mjs` +
 `ingest-lineup.yml` (10:00 y 22:00 ART, una fecha por request); `lineup` sumado al healthcheck. **Backfill
-07/07→16/07 aplicado** (2.853 filas; último snapshot 16/07 vs 06/07 antes). Parser validado (06/07 = 464
-filas, idéntico a la base), idempotencia y auth (anon→403) OK. **Falta**: los paneles (Fase 1+) y que
-Lautaro mergee a `main` para que el cron arranque. Detalle:
+07/07→16/07 aplicado** (2.853 filas; último snapshot 16/07 vs 06/07 antes). **Fase 1 (foto operativa) HECHA
+y verificada**: página nueva **`/comercio/puertos`** (gateada `requireAdmin()`, protegida siempre — solo
+mesa) con KPIs del último line-up, **qué cambió vs la rueda anterior** (buques nuevos con empresa
+normalizada), tablas por producto y por zona (Up River N/S + Bahía), y tabla de buques filtrable + export
+CSV. Lógica portada: `zona_carga` (por muelle), `shipper_norm` (~18 exportadores canónicos), `mesa_diff`
+(buques nuevos ≥30kt). **Verificado 1:1 contra SQL** (rueda 16/07: 187 buques, 6.497.074 t) + navegador
+claro/oscuro real. **Falta**: Fases 2-4 (empresas, mesa de embarque, temperatura) y que Lautaro mergee a
+`main` para que el cron de Fase 0 arranque. Detalle:
 [`sesiones/2026-07-18-puertos-fase-0.md`](sesiones/2026-07-18-puertos-fase-0.md).
 
 ## Anterior (17/07/2026 — Landing institucional)
@@ -158,11 +163,13 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
 - [ ] 5. Extender el reporte diario: Matba (volumen) + CBOT + metales + petróleo + Merval + SPY + EWZ
   (hoy `cbot_cierres` ya tiene CBOT maíz/soja/trigo; falta sumar metales/petróleo/Merval/SPY/EWZ — ver
   fuentes candidatas `barchart`/`investing`/`yahoo-finance` en `CONTEXTO.md`).
-- [~] 6. **Barcos / lineups en puerto — EN CURSO (plan + Fase 0 hechas, 18/07).** Plan cerrado
-  ([`PLAN_PUERTOS.md`](PLAN_PUERTOS.md), 11 decisiones + 5 fases, lógica portada de `LineUps_Code`) y
+- [~] 6. **Barcos / lineups en puerto — EN CURSO (plan + Fase 0 + Fase 1 hechas, 18/07).** Plan cerrado
+  ([`PLAN_PUERTOS.md`](PLAN_PUERTOS.md), 11 decisiones + 5 fases, lógica portada de `LineUps_Code`).
   **Fase 0 (dato vivo) HECHA**: scraper reactivado vía Edge Function de Supabase (ISA bloqueaba las IPs de
-  GitHub Actions), backfill 07/07→16/07, healthcheck. **Falta**: los paneles (Fase 1+: foto operativa →
-  empresas → mesa de embarque → temperatura). Detalle: `sesiones/2026-07-18-puertos-fase-0.md`.
+  GitHub Actions), backfill 07/07→16/07, healthcheck. **Fase 1 (foto operativa) HECHA**: `/comercio/puertos`
+  (solo mesa) con KPIs, tape de cambios vs la rueda anterior, tablas por producto/zona y buques filtrables;
+  verificado 1:1 contra SQL. **Falta**: Fases 2-4 (empresas → mesa de embarque → temperatura). Detalle:
+  `sesiones/2026-07-18-puertos-fase-0.md`.
 
 **Bloque 2**
 - [~] 7. Login (cliente / Lautaro / Mauro) — roles distintos, hoy la web es 100% pública/anónima.

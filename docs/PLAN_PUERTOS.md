@@ -99,13 +99,29 @@ itera por fecha). Guard anti falso-verde: ventana diaria entera vacía = `exit 1
 **Pendiente operativo (Lautaro):** el `schedule` corre desde la rama default → recién queda activo cuando
 esto entre a `main`. Backfill futuro / re-scrape: dispatch de `ingest-lineup.yml` con `from`/`to`.
 
-### Fase 1 — Foto operativa + tape de cambios (`/comercio/puertos`)
+### Fase 1 — Foto operativa + tape de cambios (`/comercio/puertos`) — ✅ HECHA (18/07/2026)
 La pantalla de pre-apertura: KPIs del último line-up (ton y buques por producto de los de la decisión 8,
 por zona Up River N/S y Bahía) + **qué cambió vs el snapshot anterior** (buques nuevos, tonelaje que
 apareció/desapareció por producto — lógica de `mesa_diff.py`) + tabla de buques filtrable (buque ·
 muelle · zona · producto · ton · destino · **empresa** · ETB) con export CSV.
-**Verificación**: contra los números del snapshot real (06/07: maíz 3,58 Mt/129 buques, SBM 1,30 Mt,
-etc., validados por SQL) + navegador claro/oscuro.
+
+**Construido:**
+- Vista `lineup_ultimas_ruedas` (últimas 2 fechas de consulta, `rueda_rank`) — evita traer 500k filas.
+- `src/lib/lineup/config.ts` (productos prioritarios + colapso SHULLS→SBM), `zonas.ts` (`zonaCarga` por
+  muelle, puerto de `config.py`), `shippers.ts` (`canonShipper`, puerto de `shipper_norm.py`), `foto.ts`
+  (agregación server: por producto, por zona, tabla de buques, diff de buques nuevos ≥30kt).
+- `src/components/lineup/foto-operativa.tsx` (panel: KPIs, caja "qué cambió", tablas por producto/zona)
+  + `buques-tabla.tsx` (client: filtros producto/zona/búsqueda + export CSV).
+- `/comercio/puertos` — gateada con `requireAdmin()` (protegida SIEMPRE, mismo patrón que `/admin`,
+  decisión 1: solo mesa).
+
+**Verificado con datos reales** (rueda 16/07 vs 14/07, vía dev server + Playwright headless):
+- Agregación por producto validada 1:1 contra SQL a mano: Maíz 92 buques/3.118.960 t, Harina de soja
+  70/1.885.090 t, total 187 buques/6.497.074 t — coincide exacto.
+- El diff de buques nuevos funciona (17 buques nuevos detectados, con empresa ya normalizada:
+  VITERRA-BUNGE, LDC, COFCO, MOLINOS, ACA…) y los deltas por producto colorean bien (verde/rojo/`=`).
+- Screenshots claro + oscuro: diseño consistente con el resto de la web (mismo `Panel`/`SourceStamp`/
+  `QueEsEsto`). lint + typecheck + build ✅.
 
 ### Fase 2 — Panel de empresas (`/comercio/empresas`)
 El pedido central. Por empresa (normalizada, solo operativas actualmente): buques próximos y ton por
