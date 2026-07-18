@@ -72,7 +72,10 @@ fades, tablas con hover/tick dorado, charts con grilla punteada + área en degra
 > [`docs/negocio/`](negocio/) — `01_contexto_negocio` (estructura, instrumentos, pricing, estrategias,
 > financiero, glosario) · `02_logicas_y_principios` (reglas + **REGLAS DEL DELTA** §6) ·
 > `03_modulo_comportamiento_cliente_vendedor` (scoring AHP + P&L, producto a futuro) ·
-> `04_datos_y_workarounds` (intranets de acopios, reportes, parseo de exports). Sin datos personales.
+> `04_datos_y_workarounds` (intranets de acopios, reportes, parseo de exports) ·
+> `05_djve_marco_y_circuito` (research verificado 18/07/2026: Ley 21.453, regímenes 30/360,
+> circuito del grano, cronología de retenciones 2023-2026, implicancias para los paneles).
+> Sin datos personales.
 
 ## Metodología de fórmulas (confirmada con Lautaro)
 - **Referencia oficial = oficial mayorista MAE** (ticker `UST$T` de `resumen/FOR`). NO el minorista.
