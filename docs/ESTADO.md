@@ -19,7 +19,25 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 17/07/2026 — Landing institucional)
+## Ahora (última actualización: 18/07/2026 — Puertos/line-up Fase 0)
+
+**🚢 PUERTOS / LINE-UP (ítem 6 del backlog) — PLAN CERRADO + FASE 0 (dato vivo) HECHA — rama
+`claude/desarrollos-pendientes-ypxvfd`, PR #33.** Se retoma el line-up de buques de ISA Agents (tabla
+`lineup`, 6 años de historia, scraper frenado desde el 06/07). Lautaro pasó su repo `LineUps_Code`
+(Python/Streamlit sobre la MISMA base) → la lógica se **porta**, no se reinventa. **Plan** en
+[`PLAN_PUERTOS.md`](PLAN_PUERTOS.md) (11 decisiones + 5 fases): solo mesa (análisis protegidos siempre,
+DJVE pública), subpáginas en `/comercio`, productos = complejos soja/girasol + maíz/trigo/cebada/sorgo,
+zonas Up River N/S + Bahía. **Diagnóstico del freeze**: ISA bloquea las IPs de GitHub Actions (falso verde),
+no se perdió la fuente. **Fase 0 (dato vivo) HECHA y verificada**: Edge Function **`lineup-ingest`** en
+Supabase (sa-east-1 São Paulo, IP que ISA sí acepta) que fetchea+parsea (puerto fiel de `scraper.py`)+
+upsertea idempotente, restringida a `service_role`; disparada por `scripts/ingest-lineup.mjs` +
+`ingest-lineup.yml` (10:00 y 22:00 ART, una fecha por request); `lineup` sumado al healthcheck. **Backfill
+07/07→16/07 aplicado** (2.853 filas; último snapshot 16/07 vs 06/07 antes). Parser validado (06/07 = 464
+filas, idéntico a la base), idempotencia y auth (anon→403) OK. **Falta**: los paneles (Fase 1+) y que
+Lautaro mergee a `main` para que el cron arranque. Detalle:
+[`sesiones/2026-07-18-puertos-fase-0.md`](sesiones/2026-07-18-puertos-fase-0.md).
+
+## Anterior (17/07/2026 — Landing institucional)
 
 **🏛️ LANDING INSTITUCIONAL (ítem 3 del backlog) HECHA — rama `claude/desarrollos-pendientes-dbq59w`, PR #32.**
 `/bienvenida` dejó de ser la landing mínima de login y pasó a ser la **página de venta** de RF AGRO (enfoque de
@@ -140,8 +158,11 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
 - [ ] 5. Extender el reporte diario: Matba (volumen) + CBOT + metales + petróleo + Merval + SPY + EWZ
   (hoy `cbot_cierres` ya tiene CBOT maíz/soja/trigo; falta sumar metales/petróleo/Merval/SPY/EWZ — ver
   fuentes candidatas `barchart`/`investing`/`yahoo-finance` en `CONTEXTO.md`).
-- [ ] 6. Seguir desarrollando barcos / lineups en puerto (scraper `lineup` está frenado desde ~jun,
-  ver `CONTEXTO.md` Pendientes punto 5 — reactivar + panel).
+- [~] 6. **Barcos / lineups en puerto — EN CURSO (plan + Fase 0 hechas, 18/07).** Plan cerrado
+  ([`PLAN_PUERTOS.md`](PLAN_PUERTOS.md), 11 decisiones + 5 fases, lógica portada de `LineUps_Code`) y
+  **Fase 0 (dato vivo) HECHA**: scraper reactivado vía Edge Function de Supabase (ISA bloqueaba las IPs de
+  GitHub Actions), backfill 07/07→16/07, healthcheck. **Falta**: los paneles (Fase 1+: foto operativa →
+  empresas → mesa de embarque → temperatura). Detalle: `sesiones/2026-07-18-puertos-fase-0.md`.
 
 **Bloque 2**
 - [~] 7. Login (cliente / Lautaro / Mauro) — roles distintos, hoy la web es 100% pública/anónima.

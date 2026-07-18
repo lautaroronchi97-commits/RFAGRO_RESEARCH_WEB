@@ -70,20 +70,34 @@ lo de DJVE sigue abierto.
   sa-east-1): fetch ISA → parse (puerto del parser de `scraper.py`: validación de headers
   `EXPECTED_HEADERS`, `parse_quantity`, fechas cortas con rollover, dedup intra-batch) → upsert con la
   clave única existente → **guard anti falso-verde** (día hábil con 0 filas = error, mismo criterio que
-  los 8 scripts del repo). Programada 10:00 y 22:00 ART (cron de Supabase). Backfill del hueco por
-  invocación manual con rango de fechas.
+  los 8 scripts del repo). La dispara `scripts/ingest-lineup.mjs` desde GitHub Actions
+  (`ingest-lineup.yml`, 10:00 y 22:00 ART), una fecha por request. Backfill por dispatch (`from`/`to`).
 - **Observabilidad**: sumar `lineup` al `healthcheck-frescura.mjs` (alerta si el último snapshot tiene
   más de 2 días hábiles). Así el falso verde de junio/julio no puede repetirse en silencio.
 
 ## 5. Fases (cada una = un PR, verificable por separado)
 
-### Fase 0 — Dato vivo (scraper + backfill + healthcheck)
-Edge Function `ingest-lineup` + schedule 10/22 ART + backfill 07/07→hoy + healthcheck.
-**Verificación**: correr la función real contra ISA (¿la IP de Supabase pasa?); si pasa, snapshot de
-hoy en la tabla y hueco rellenado (conteo por `fecha_consulta` sin agujeros hábiles). Si NO pasa,
-documentar y activar el fallback PC de Lautaro; las fases siguientes no dependen de esta.
-**Nota**: la tabla `compras` (farmer selling, frenada 16/06) NO se toca acá; se reactiva en la Fase 4
-que es quien la consume.
+### Fase 0 — Dato vivo (scraper + backfill + healthcheck) — ✅ HECHA (18/07/2026)
+Edge Function **`lineup-ingest`** (`supabase/functions/lineup-ingest/`, deployada en `lineup-argentina`,
+región sa-east-1): warm-up de cookie → fetch ISA → parse (puerto fiel de `scraper.py`) → **upsert
+idempotente** con la clave lógica (`on_conflict`, NULLS NOT DISTINCT). Restringida a rol `service_role`
+(la anon key pública NO puede gatillarla → 403). La dispara **`scripts/ingest-lineup.mjs`** desde
+**GitHub Actions** (`ingest-lineup.yml`, 10:00 y 22:00 ART), **una fecha por request** (parsear 490 filas
+con deno-dom no entra en el límite de CPU de la función si se piden muchas fechas juntas → el script
+itera por fecha). Guard anti falso-verde: ventana diaria entera vacía = `exit 1`. `lineup` sumado al
+**healthcheck de frescura** (umbral 7 días, holgado por los huecos de ISA).
+
+**Verificado (con datos reales):**
+- **La IP de Supabase (São Paulo) SÍ pasa el filtro de ISA** (el bloqueo era solo a los runners de
+  GitHub Actions) → el scraper automático es viable, NO hace falta el fallback PC.
+- Parser fiel: 06/07 devolvió **exactamente 464 filas**, idéntico a lo que ya había en la base.
+- Upsert **idempotente** (re-correr 16/07 dejó 490, no 980).
+- **Backfill 07/07→16/07 aplicado**: 6 días nuevos con datos (07,08,10,13,14,16 = 2.853 filas). Huecos
+  legítimos de ISA: 09/07 (feriado 9 de Julio), 15/07 y 17/07 (ISA no publicó, verificado por fetch
+  directo), 11-12 y 18 (fin de semana). Último snapshot: **16/07** (antes 06/07).
+**Nota**: la tabla `compras` (farmer selling, frenada 16/06) NO se toca acá; se reactiva en la Fase 4.
+**Pendiente operativo (Lautaro):** el `schedule` corre desde la rama default → recién queda activo cuando
+esto entre a `main`. Backfill futuro / re-scrape: dispatch de `ingest-lineup.yml` con `from`/`to`.
 
 ### Fase 1 — Foto operativa + tape de cambios (`/comercio/puertos`)
 La pantalla de pre-apertura: KPIs del último line-up (ton y buques por producto de los de la decisión 8,
