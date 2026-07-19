@@ -29,7 +29,8 @@
 ## Stack
 Next.js 16 (App Router) + TypeScript · Tailwind v4 · next-themes · gráficos SVG a mano (Recharts previsto) ·
 **Supabase CONECTADO** (proyecto `lineup-argentina`, lectura anon con RLS; tablas `futuros_cierres`,
-`vencimientos`, `djve`, `lineup`, `compras`, **`pizarra_historico`** (pizarra CAC 2020→hoy, $ y US$,
+`vencimientos`, `djve` (registro DJVE **2011→hoy**: histórico backfilleado 19/07/2026 de los XLS oficiales
+SSMA, 334k filas, col. `cosecha` para la era ROE sin ventana de embarque), `lineup`, `compras`, **`pizarra_historico`** (pizarra CAC 2020→hoy, $ y US$,
 5 granos), **`cbot_cierres`** (futuros CBOT maíz/soja/trigo, ¢/bu + USD/tn), `noticias` (portal del agro,
 `sesiones/2026-07-10-portal-noticias.md`), **`estimaciones_produccion`** (una fila por vintage: producción/área/
 rinde por organismo/país/grano/campaña — USDA, CONAB, BCR-GEA, SAGyP-DEA; poblada 12/07) y `calendario_informes`
@@ -72,7 +73,10 @@ fades, tablas con hover/tick dorado, charts con grilla punteada + área en degra
 > [`docs/negocio/`](negocio/) — `01_contexto_negocio` (estructura, instrumentos, pricing, estrategias,
 > financiero, glosario) · `02_logicas_y_principios` (reglas + **REGLAS DEL DELTA** §6) ·
 > `03_modulo_comportamiento_cliente_vendedor` (scoring AHP + P&L, producto a futuro) ·
-> `04_datos_y_workarounds` (intranets de acopios, reportes, parseo de exports). Sin datos personales.
+> `04_datos_y_workarounds` (intranets de acopios, reportes, parseo de exports) ·
+> `05_djve_marco_y_circuito` (research verificado 18/07/2026: Ley 21.453, regímenes 30/360,
+> circuito del grano, cronología de retenciones 2023-2026, implicancias para los paneles).
+> Sin datos personales.
 
 ## Metodología de fórmulas (confirmada con Lautaro)
 - **Referencia oficial = oficial mayorista MAE** (ticker `UST$T` de `resumen/FOR`). NO el minorista.

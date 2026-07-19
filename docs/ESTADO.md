@@ -19,7 +19,28 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 19/07/2026 — Comercio exterior Fase 2: empresas + semáforo)
+## Ahora (última actualización: 19/07/2026 — Comercio exterior Fase 3: mesa de embarque + research DJVE + backfill)
+
+**🚢 COMERCIO EXTERIOR — FASE 3 HECHA (mesa de embarque + research DJVE + backfill 2011-2025) — rama
+`claude/fase-3-pr-pendiente-dkwjc0`, PR #35.** Antes de construir, Lautaro pidió **research de cómo
+funcionan las DJVE** ("menos información antes que incorrecta") → 3 investigaciones con fuentes primarias
+documentadas en **[`negocio/05_djve_marco_y_circuito.md`](negocio/05_djve_marco_y_circuito.md)** (qué fija
+una DJVE · regímenes 30/360 · el granel declara VENTANA MENSUAL por norma · el forward paga el 90% de los
+derechos a 5 días hábiles · el line-up "ve" ~10 días · cronología de retenciones 2023-2026). Eso definió el
+diseño: **`/comercio/embarques`** (solo mesa, `requireAdmin`) = matriz **programa declarado por mes ×
+producto** (split disponible/forward, referencia "programa final año pasado"), **cumplimiento del mes en
+curso** (único cruce físico válido contra line-up, line-up>declarado es sano) y **tablas en idioma A3**
+(mes → posición SOJ/MAI/TRI + ajuste). **Backfill DJVE 2011-2025 APLICADO** (+326.580 filas desde los XLS
+oficiales SSMA, verificado por año; columna nueva `cosecha` para la era ROE; la cobertura de Fase 2 ya lo
+refleja). **Perf**: dedup de visitas materializado (`lineup_visitas` + RPC de refresh llamada por
+`ingest-lineup.mjs`) → las vistas de Fases 2-3 pasaron de ~6 s a ~66 ms; `lineup_originado_campana`
+recreada 1:1. Migración `20260719180000` (por `execute_sql`; el canal de aprobación del MCP volvió a
+caerse — workarounds en el doc de sesión). **Verificado 1:1 vs SQL** (maíz JUL 3.854/AGO 2.998 kt ·
+cumplimiento 146% · A3 337,9) + navegador claro/oscuro real + lint/tsc/build. **Falta:** Fase 4
+(temperatura, requiere reactivar `compras`). Detalle:
+[`sesiones/2026-07-19-comercio-embarques-fase-3.md`](sesiones/2026-07-19-comercio-embarques-fase-3.md).
+
+## Anterior (19/07/2026 — Comercio exterior Fase 2: empresas + semáforo)
 
 **🚢 COMERCIO EXTERIOR / PUERTOS — FASE 2 HECHA (empresas + semáforo físico→precio) — rama
 `claude/comercio-exterior-fase-2-id2fql`, PR #_.** Lo que quedó del PR #33. Se pensaron las lógicas con
@@ -183,14 +204,16 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
 - [ ] 5. Extender el reporte diario: Matba (volumen) + CBOT + metales + petróleo + Merval + SPY + EWZ
   (hoy `cbot_cierres` ya tiene CBOT maíz/soja/trigo; falta sumar metales/petróleo/Merval/SPY/EWZ — ver
   fuentes candidatas `barchart`/`investing`/`yahoo-finance` en `CONTEXTO.md`).
-- [~] 6. **Barcos / lineups en puerto — EN CURSO (plan + Fases 0, 1 y 2 hechas).** Plan cerrado
+- [~] 6. **Barcos / lineups en puerto — EN CURSO (plan + Fases 0, 1, 2 y 3 hechas).** Plan cerrado
   ([`PLAN_PUERTOS.md`](PLAN_PUERTOS.md), 11 decisiones + 5 fases, lógica portada de `LineUps_Code`).
   **Fase 0 (dato vivo) HECHA** (18/07): scraper reactivado vía Edge Function de Supabase, backfill,
   healthcheck. **Fase 1 (foto operativa) HECHA** (18/07): `/comercio/puertos` con KPIs, tape de cambios,
   tablas por producto/zona y buques. **Fase 2 (empresas + semáforo) HECHA** (19/07): `/comercio/empresas`
   (gap de cobertura + señales + avance + ritmo estacional + campaña nueva/vieja + share) y
-  `/comercio/senal` (semáforo físico→precio); verificado 1:1 contra SQL. **Falta**: Fases 3-4 (mesa de
-  embarque → temperatura). Detalle: `sesiones/2026-07-19-comercio-empresas-fase-2.md`.
+  `/comercio/senal` (semáforo físico→precio); verificado 1:1 contra SQL. **Fase 3 (mesa de embarque)
+  HECHA** (19/07): `/comercio/embarques` (programa DJVE por mes × producto en idioma A3), sobre el
+  research verificado de DJVE (`negocio/05`) + backfill 2011-2025 de la tabla `djve`. **Falta**: Fase 4
+  (temperatura, requiere reactivar `compras`). Detalle: `sesiones/2026-07-19-comercio-embarques-fase-3.md`.
 
 **Bloque 2**
 - [~] 7. Login (cliente / Lautaro / Mauro) — roles distintos, hoy la web es 100% pública/anónima.

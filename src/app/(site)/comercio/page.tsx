@@ -18,6 +18,7 @@ const ANALISIS = [
   { href: "/comercio/puertos", nombre: "Puertos · Line-up", desc: "Foto del line-up de buques: exportaciones por producto, zona y empresa." },
   { href: "/comercio/empresas", nombre: "Empresas exportadoras", desc: "Cobertura DJVE vs line-up por empresa: quién está corto, avance de campaña y ritmo." },
   { href: "/comercio/senal", nombre: "Señal física → precio", desc: "Semáforo que cruza la demanda física de exportación con la capacidad de pago." },
+  { href: "/comercio/embarques", nombre: "Mesa de embarque", desc: "El programa de embarques declarado (DJVE) por mes y producto, en idioma A3." },
 ];
 
 export default async function ComercioPage() {
