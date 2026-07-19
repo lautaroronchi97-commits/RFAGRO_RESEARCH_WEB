@@ -21,7 +21,8 @@
   - **archivo histórico semanal 2005→2026** (una página por año) → **backfill posible** (como se hizo con DJVE).
 - Los subdominios `sio-granos.magyp.gob.ar` y `monitorsiogranos.magyp.gob.ar` **NO responden** desde
   IPs de datacenter (connection failed / `000`). La BCBA está tras Cloudflare (403). **BCR** responde
-  pero es **republicador** (el número primario es de SAGyP). **Agrochat** es un chatbot, no un feed.
+  pero es **republicador** (el número primario es de SAGyP). **Agrochat** (chatbot de la Bolsa de Cereales)
+  **exporta series a pedido de cualquier período/dato → fuente MANUAL viable** (no automatizable, sí backfilleable).
   **Alphacast** es un agregador de pago/con cuenta.
 
 ---
@@ -36,7 +37,7 @@
 | Monitor SIO-Granos | `monitorsiogranos.magyp.gob.ar` | `000` ✗ | NO alcanzable desde datacenter |
 | Bolsa de Cereales (BCBA) | `bolsadecereales.com` | 403 (Cloudflare) | Bloqueado (igual que `ingest-pas`) |
 | Bolsa de Comercio de Rosario (BCR) | `bcr.com.ar` | 200 ✅ | Republicador (informe HTML/PDF, no serie estructurada) |
-| Agrochat | (chatbot BCBA) | — | NO — es un asistente de IA, no una API/feed |
+| Agrochat (Bolsa de Cereales) | chatbot + export | manual | **SÍ (manual)** — exporta series de cualquier período/dato a pedido; no automatizable pero backfilleable |
 | Alphacast | `alphacast.io` | 403 curl / `api.` 200 | Agregador de pago/con cuenta (no validado) |
 | granos.ar | `granos.ar` | 200 (SPA 742 KB) | Agregador nuevo, a evaluar (no validado) |
 
@@ -137,8 +138,14 @@ Son de **molienda / destino industrial** (grano que ENTRA a la industria), NO fa
   estructurada con historia → peor que ir a la primaria (MAGyP §2). Sí sirve para **noticias/contexto**.
 - **BCBA (Bolsa de Cereales de Buenos Aires)** (`bolsadecereales.com`): el **PAS** trae avance de
   comercialización, pero el sitio está **tras Cloudflare (403)** — mismo bloqueo que frena `ingest-pas`.
-- **Agrochat** (Bolsa de Cereales): **asistente de IA** (lenguaje natural sobre las bases de la BCBA),
-  presentado en "A Todo Trigo". Útil para consultas humanas, **no es una API/feed** para ingesta.
+- **Agrochat** (Bolsa de Cereales): asistente de IA sobre las bases de datos de la BCBA. **Lautaro puede
+  pedirle series de CUALQUIER período y de datos diversos, y exportarlas a CSV** (así trajo el operado
+  diario de SIO-Granos de jul-2026 — verificado, consistente). O sea: **fuente MANUAL viable**, no una API
+  automatizable, pero sirve para **backfillear a demanda** (patrón `cargar_compras.py`: Lautaro exporta →
+  script de carga → Supabase). **Candidata fuerte** para: (a) la historia de farmer selling del índice
+  MESA — si se le pide el comprado acumulado **por sector y campaña** (no el operado diario suelto que dio
+  el primer CSV); (b) el operado diario/priceado del **ítem 8** del backlog. La ingesta *automática* sigue
+  en MAGyP; Agrochat es el respaldo/backfill manual (y desbloquea C3 si Wayback no alcanza).
 - **Alphacast** (`alphacast.io`): plataforma **agregadora** de series económicas (repo "Argentina
   Markets", API en `api.alphacast.io`). Probablemente hostee series SIO/MAGyP/BCR ya limpias, lo que
   ahorraría scraping — **pero** es de **pago/con cuenta** (el sitio da 403 a bots; free tier no

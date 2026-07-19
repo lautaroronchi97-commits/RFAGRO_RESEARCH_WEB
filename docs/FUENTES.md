@@ -148,6 +148,8 @@ PAS cubre los 6 cultivos y sale jueves 15:00 gratis; ORA publica reservas de agu
   - **Alphacast** (`alphacast.io`, repo "Argentina Markets", API `api.alphacast.io`): agregador de series
     económicas, probablemente hostee SIO/MAGyP/BCR ya limpio, **pero de pago/con cuenta** (free tier no
     confirmado; requiere API key). Respaldo si la primaria se complica.
-  - **Agrochat** (Bolsa de Cereales): **asistente de IA** de consulta en lenguaje natural, **no es un
-    feed/API** para ingesta.
+  - **Agrochat** (Bolsa de Cereales): asistente de IA sobre las bases de la BCBA. **Exporta series de
+    cualquier período y datos diversos a pedido (CSV)** → **fuente MANUAL viable** (no automatizable, sí
+    backfilleable, patrón `cargar_compras.py`). Candidata fuerte para el backfill de farmer selling (por
+    sector/campaña) y el operado diario/priceado del ítem 8. Ya se usó para traer el operado SIO jul-2026.
   - **granos.ar**: "Monitor de Granos en tiempo real" (SPA); backend no evaluado, candidato a mirar.
