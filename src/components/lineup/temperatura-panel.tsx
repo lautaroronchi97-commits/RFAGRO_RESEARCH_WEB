@@ -57,6 +57,7 @@ function CalorCard({ p }: { p: ProductoCalor }) {
       <dl className="calor-card-meta">
         <div><dt>pctl gap</dt><dd>{pct(p.pctlGap)}</dd></div>
         <div><dt>pctl line-up</dt><dd>{pct(p.pctlDensidad)}</dd></div>
+        {p.pctlFarmer != null && <div><dt>pctl farmer</dt><dd>{pct(p.pctlFarmer)}</dd></div>}
         <div><dt>gap</dt><dd>{kt(p.gapHoy)} kt</dd></div>
         <div><dt>line-up 30d</dt><dd>{kt(p.densidadHoy)} kt</dd></div>
       </dl>
@@ -112,8 +113,10 @@ export async function TemperaturaPanel() {
             El índice 0-100 es un <strong>percentil estacional</strong>: compara la presión física de hoy contra
             la misma época de las últimas campañas (no un umbral fijo). Combina el <strong>gap de cobertura</strong>{" "}
             (lo declarado en DJVE que todavía no tiene barcos) y la <strong>densidad del line-up</strong> (toneladas
-            nominadas a 30 días). La flecha es el momentum del gap (abriéndose ↗ / estable → / cerrándose ↘);
-            cruzada con el nivel da la acción sugerida.
+            nominadas a 30 días). Cuando el producto tiene historia, suma la pata de <strong>oferta</strong> (el
+            avance de ventas del productor: menos vendido del normal para la época = más retención = más calor).
+            La flecha es el momentum del gap (abriéndose ↗ / estable → / cerrándose ↘); cruzada con el nivel da la
+            acción sugerida.
           </>
         }
       />

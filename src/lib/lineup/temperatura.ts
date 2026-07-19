@@ -27,9 +27,10 @@ import { parseFechaUTC } from "./campanas";
  * de line-up C2 = lineup_densidad_hist), calcula el percentil estacional de HOY por producto
  * (estacional.ts) y lo combina en el índice 0-100 + banda + momentum + acción (mesa_calor.ts).
  *
- * La pata de OFERTA (farmer selling C3) queda como null hasta que la tabla `compras` junte ≥2 campañas
- * de historia (backfill Wayble desde Actions); el índice degrada solo y renormaliza los pesos sobre las
- * patas presentes — exactamente como mesa_calor.indice_calor.
+ * La pata de OFERTA (farmer selling C3) = avance de ventas del productor (matview compras_avance_hist:
+ * comprado acumulado SUMANDO sectores / producción estimada USDA), percentil estacional. Si un producto
+ * no junta ≥2 campañas de historia, degrada solo y renormaliza los pesos sobre las patas presentes —
+ * exactamente como mesa_calor.indice_calor.
  */
 
 const SOURCE = "ISA Agents · SAGyP";
@@ -45,6 +46,7 @@ type GapRow = {
   gap_tn: number | null;
 };
 type DensRow = { fecha: string; cod: string; densidad_tn: number | null };
+type AvanceRow = { fecha: string; cod: string; avance: number | null };
 
 type Punto = { fecha: Date; valor: number };
 
@@ -102,10 +104,12 @@ function comoSerieRow(serie: Punto[], cod: string): SerieRow[] {
 }
 
 export const getTemperatura = cache(async (): Promise<TemperaturaData> => {
-  const [gapRes, densRes] = await Promise.all([
+  const [gapRes, densRes, avanceRes] = await Promise.all([
     sbSelectAll("lineup_gap_hist?select=fecha,cod,declarado_tn,originado_tn,gap_tn", REVALIDATE),
     sbSelectAll("lineup_densidad_hist?select=fecha,cod,densidad_tn", REVALIDATE),
+    sbSelectAll("compras_avance_hist?select=fecha,cod,avance", REVALIDATE),
   ]);
+  // gap y densidad son obligatorias; el avance (farmer) es opcional → si falla, el índice degrada.
   if (!gapRes.ok || !densRes.ok) {
     const unconf = gapRes.ok ? densRes : gapRes;
     return vacia(
@@ -167,6 +171,20 @@ export const getTemperatura = cache(async (): Promise<TemperaturaData> => {
   gapPorCod.set("SOJA_CRUSH", gapCrush);
   densPorCod.set("SOJA_CRUSH", densCrush);
 
+  // --- Serie de avance de ventas (pata farmer selling C3) desde compras_avance_hist ---
+  const avancePorCod = new Map<string, Punto[]>();
+  if (avanceRes.ok) {
+    for (const r of avanceRes.data as AvanceRow[]) {
+      const f = parseFechaUTC(r.fecha);
+      if (!f || r.avance == null) continue;
+      if (!avancePorCod.has(r.cod)) avancePorCod.set(r.cod, []);
+      avancePorCod.get(r.cod)!.push({ fecha: f, valor: Number(r.avance) });
+    }
+    ordenar(avancePorCod);
+  }
+  // SOJA_CRUSH comparte la oferta de poroto con SBS (mismo grano que vendió el productor).
+  if (avancePorCod.has("SBS")) avancePorCod.set("SOJA_CRUSH", avancePorCod.get("SBS")!);
+
   // Fecha global = último snapshot con datos.
   let fechaGlobal: Date | null = null;
   for (const arr of gapPorCod.values()) {
@@ -195,7 +213,13 @@ export const getTemperatura = cache(async (): Promise<TemperaturaData> => {
       const gapPast = valorAntesDe(gSerie, new Date(hoy.getTime() - K_MOMENTUM_DIAS * DIA_MS));
       if (gapHoy != null && gapPast != null) deltaGap = gapHoy - gapPast;
     }
-    const pctlFarmer: number | null = null; // C3 pendiente de historia de compras
+    // Farmer selling (C3): percentil estacional del avance de ventas, en la fecha propia de compras
+    // (semanal, puede ir unos días detrás del line-up). Menos avance del normal = más calor (se invierte
+    // dentro de indiceCalor). Degrada a null si el producto no junta ≥2 campañas de historia.
+    let pctlFarmer: number | null = null;
+    const aSerie = avancePorCod.get(cod) ?? [];
+    const aU = ultimo(aSerie);
+    if (aU) pctlFarmer = percentilEstacional(comoSerieRow(aSerie, cod), cod, aU.fecha, aU.valor);
     const calor = indiceCalor(pctlGap, pctlDens, pctlFarmer);
     const banda = clasificarBanda(calor);
     const direccion = clasificarDireccion(deltaGap);
@@ -208,7 +232,7 @@ export const getTemperatura = cache(async (): Promise<TemperaturaData> => {
       banda,
       pctlGap: pctlGap == null ? null : Math.round(pctlGap),
       pctlDensidad: pctlDens == null ? null : Math.round(pctlDens),
-      pctlFarmer,
+      pctlFarmer: pctlFarmer == null ? null : Math.round(pctlFarmer),
       gapHoy,
       densidadHoy: densHoy,
       deltaGap,
@@ -219,11 +243,14 @@ export const getTemperatura = cache(async (): Promise<TemperaturaData> => {
     };
   });
 
-  const problemas: string[] = ["Farmer selling (oferta) sin historia aún — índice sobre las 2 patas de demanda"];
+  const farmerDisponible = productos.some((p) => p.pctlFarmer != null);
+  const problemas = farmerDisponible
+    ? []
+    : ["Farmer selling (oferta) sin historia aún — índice sobre las 2 patas de demanda"];
   return {
     fecha: fechaGlobal ? fechaGlobal.toISOString().slice(0, 10) : null,
     productos,
-    farmerDisponible: false,
+    farmerDisponible,
     pesos: { gap: W_GAP, lineup: W_LINEUP, farmer: W_FARMER },
     meta: { source: SOURCE, updatedAt: null, status: "real", problemas },
   };
