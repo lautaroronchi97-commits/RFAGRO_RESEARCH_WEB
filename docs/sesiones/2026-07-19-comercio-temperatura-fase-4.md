@@ -59,8 +59,16 @@
 ## Quedó pendiente / en vuelo (para el PR nuevo o siguiente sesión)
 - **Pata farmer selling (C3)**: degradada a null (índice sobre las 2 patas de demanda, pesos
   renormalizados — como LineUps_Code). Se prende cuando `compras` junte ≥2 campañas.
-  - **Correr el backfill Wayback desde Actions** (dispatch de `ingest-compras.yml` con `backfill=true`) —
-    define si Wayback tiene cobertura suficiente. Reactivar el scraper live en `main` para acumular.
+  - **Wayback = callejón sin salida (VERIFICADO al cierre de la sesión).** Se corrió el backfill desde
+    Actions (run `29673387915`, con fix de reintentos `130f8e5`): Wayback devolvió **`0 snapshots`** de la
+    página MAGyP → 0 filas. Es una `.php` profunda de gobierno, sin links entrantes, nunca crawleada.
+    **NO reintentar por Wayback.** (El scraper live quedó robusto igual: `fetchTextRetry` con backoff.)
+  - **Camino para prender C3 = Agrochat** (Lautaro confirmó que exporta series de cualquier período/corte):
+    pedirle el **comprado por producto × sector (exportación+industria) × campaña, semanal, ~5 campañas** y
+    exportarlo → armar **`cargar-compras.mjs`** (patrón `cargar_compras.py`) que suba el CSV/XLSX a Supabase
+    → **C3 se enciende sola** (`temperatura.ts` ya renormaliza; falta solo poner `pctlFarmer` real +
+    `avance = comprado_acumulado / producción_estimada` de `estimaciones_produccion`, industria para soja
+    crush). Alternativa lenta: el scraper live acumula hacia adelante (~2 años para 2 campañas).
   - **Reemplazar las 715 filas viejas de `compras`** (flujo diario del scraper muerto, semántica
     incompatible con el acumulado semanal nuevo) — avisar a Lautaro antes de borrar.
   - Al prender: agregar el cómputo de `avance = comprado_acumulado / producción_estimada`
