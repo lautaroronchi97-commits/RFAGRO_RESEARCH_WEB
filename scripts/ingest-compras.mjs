@@ -203,10 +203,33 @@ function parseCompras(html, fechaFallback = null) {
   return out;
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 async function fetchText(url, timeout = 45000) {
   const res = await fetch(url, { headers: { "user-agent": UA }, signal: AbortSignal.timeout(timeout) });
   if (!res.ok) throw new Error(`HTTP ${res.status} — ${url}`);
   return await res.text();
+}
+
+/**
+ * fetch con reintentos para Wayback: su CDX y las capturas devuelven 429/503 transitorios seguido
+ * (fue lo que tiró el 1er intento de backfill). Reintenta ante error de red o HTTP 429/5xx con backoff
+ * 2/4/8/16s; los 4xx (salvo 429) no se reintentan.
+ */
+async function fetchTextRetry(url, { timeout = 60000, retries = 4 } = {}) {
+  let ultimo = "";
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const res = await fetch(url, { headers: { "user-agent": UA }, signal: AbortSignal.timeout(timeout) });
+      if (res.ok) return await res.text();
+      ultimo = `HTTP ${res.status}`;
+      if (res.status < 500 && res.status !== 429) throw new Error(`${ultimo} — ${url}`);
+    } catch (e) {
+      ultimo = String(e?.message ?? e);
+    }
+    if (i < retries) await sleep(2000 * 2 ** i);
+  }
+  throw new Error(`${ultimo} — ${url} (tras ${retries + 1} intentos)`);
 }
 
 /* ---- Backfill vía Wayback CDX (corre desde Actions; el sandbox lo bloquea) ---- */
@@ -214,7 +237,7 @@ async function snapshotsWayback(from, to) {
   const cdx =
     `https://web.archive.org/cdx/search/cdx?url=${encodeURIComponent(PAGE_BARE)}` +
     `&from=${from}&to=${to}&filter=statuscode:200&collapse=timestamp:6&fl=timestamp&output=text`;
-  const txt = await fetchText(cdx, 60000);
+  const txt = await fetchTextRetry(cdx, { timeout: 60000, retries: 6 });
   return txt.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 }
 
@@ -282,7 +305,7 @@ async function main() {
     console.log(`  ${stamps.length} snapshots`);
     for (const ts of stamps) {
       try {
-        const html = await fetchText(`https://web.archive.org/web/${ts}id_/${PAGE}`, 60000);
+        const html = await fetchTextRetry(`https://web.archive.org/web/${ts}id_/${PAGE}`, { timeout: 60000, retries: 3 });
         const fb = `${ts.slice(0, 4)}-${ts.slice(4, 6)}-${ts.slice(6, 8)}`;
         const rows = parseCompras(html, fb);
         console.log(`  ${ts}: ${rows.length} filas`);
