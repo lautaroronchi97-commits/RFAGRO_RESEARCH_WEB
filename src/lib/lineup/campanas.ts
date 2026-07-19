@@ -11,7 +11,7 @@
 
 /** Mes de inicio de la campaña por código de producto (día siempre 1). */
 const CAMPANA_CONFIG: Record<string, number> = {
-  SBS: 4, SBM: 4, SBO: 4, NSBO: 4, LECITHIN: 4, SHULLS: 4,
+  SBS: 4, SBM: 4, SBO: 4, NSBO: 4, LECITHIN: 4, SHULLS: 4, SOJA_CRUSH: 4,
   MAIZE: 3, "CORN GLTN": 3, SORGHUM: 3,
   WHEAT: 12, MALT: 12, BARLEY: 12, WBP: 12,
   SFSEED: 2, SFO: 2, SFMP: 2,
@@ -54,4 +54,35 @@ export function parseFechaUTC(iso: string | null): Date | null {
   if (!iso) return null;
   const d = new Date(iso.length <= 10 ? `${iso}T00:00:00Z` : iso);
   return Number.isNaN(d.getTime()) ? null : d;
+}
+
+const DIA_MS = 86_400_000;
+
+/**
+ * Inicio y fin (UTC) de una campaña "YYYY/YY" para un producto — puerto de
+ * `campanas.fechas_de_campana`. Fin = inicio del próximo período − 1 día.
+ */
+export function fechasDeCampana(producto: string | null, campana: string): { inicio: Date; fin: Date } {
+  const mesIni = mesInicio(producto); // día de inicio siempre 1 (como campanas.py)
+  const anioInicio = parseInt(campana.split("/")[0], 10);
+  const inicio = new Date(Date.UTC(anioInicio, mesIni - 1, 1));
+  const fin = new Date(Date.UTC(anioInicio + 1, mesIni - 1, 1) - DIA_MS);
+  return { inicio, fin };
+}
+
+/** Día transcurrido dentro de la campaña (1 = primer día) — puerto de `dia_de_campana`. */
+export function diaDeCampana(producto: string | null, fecha: Date): number {
+  const { inicio } = fechasDeCampana(producto, campaniaDe(producto, fecha));
+  return Math.floor((fecha.getTime() - inicio.getTime()) / DIA_MS) + 1;
+}
+
+/**
+ * Fecha-equivalente (mismo día-de-campaña) en la campaña destino "YYYY/YY" —
+ * puerto de `fecha_equivalente`. Clampa al fin si la campaña destino es más corta.
+ */
+export function fechaEquivalente(producto: string | null, fechaRef: Date, campanaDest: string): Date {
+  const dia = diaDeCampana(producto, fechaRef);
+  const { inicio, fin } = fechasDeCampana(producto, campanaDest);
+  const calc = new Date(inicio.getTime() + (dia - 1) * DIA_MS);
+  return calc > fin ? fin : calc;
 }
