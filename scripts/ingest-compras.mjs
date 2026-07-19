@@ -346,6 +346,20 @@ async function main() {
   }
   console.log("Upsert a compras...");
   await upsert(all);
+
+  // Refrescar la matview del avance (pata farmer del índice MESA). No fatal: el dato ya está en `compras`,
+  // un hipo del refresh no debe enrojecer la ingesta (se pone al día en la próxima corrida).
+  const rf = await fetch(`${SUPABASE_URL}/rest/v1/rpc/refresh_compras_avance`, {
+    method: "POST",
+    headers: {
+      apikey: SERVICE_KEY,
+      authorization: `Bearer ${SERVICE_KEY}`,
+      "content-type": "application/json",
+      prefer: "return=minimal",
+    },
+    body: "{}",
+  });
+  if (!rf.ok) console.error(`refresh compras_avance: HTTP ${rf.status} ${await rf.text()}`);
   console.log("OK");
 }
 
