@@ -146,11 +146,23 @@ cobertura 0,32 / soja 0,11 / cebada 1,98; originado dedup ~27 Mt) + ports 39/39 
 `sesiones/2026-07-19-comercio-empresas-fase-2.md`. **Falta:** render en navegador (MCP caído en la sesión
 → validar en el Preview).
 
-### Fase 3 — Mesa de embarque (`/comercio/embarques`)
-Gap (declarado − originado) por **mes de embarque × producto** (`mesa_embarque.py`), leído en el idioma
-de las posiciones A3 ("maíz JUL caliente"), con la advertencia de la decisión 4 (DJVE mayormente
-disponible). Si el dato acompaña, link/cruce con la curva A3 de la web.
-**Verificación**: matriz contra SQL a mano de un mes con datos.
+### Fase 3 — Mesa de embarque (`/comercio/embarques`) — ✅ HECHA (19/07/2026)
+**El diseño se rehízo sobre un research verificado de DJVE** (pedido de Lautaro; 3 investigaciones con
+fuentes primarias → [`negocio/05_djve_marco_y_circuito.md`](negocio/05_djve_marco_y_circuito.md)) en vez
+de portar `mesa_embarque.py`. Claves: el granel declara **ventana de embarque MENSUAL por norma** (el mes
+declarado es dato limpio; el ruido no-granel de 90 días = 0,3% del tonelaje se filtra) · la opción 30 es
+el disponible (ventana desde el registro) y la 360 el forward (90% de los derechos a 5 días hábiles →
+compromiso caro) · **el line-up solo "ve" ~10 días** → el gap contra barcos solo vale en el mes en curso
+(y line-up > declarado es cumplimiento sano, no señal). **La decisión 4 quedó desactualizada**: el forward
+hoy es el 70% del registro de maíz (ver cronología de retenciones en el research).
+
+**Construido:** página `/comercio/embarques` (`requireAdmin`) = matriz programa declarado por mes ×
+producto (split disp/forward, "programa final año pasado" como escala) + cumplimiento del mes en curso +
+tablas en idioma A3 (posición SOJ/MAI/TRI + ajuste, → siguiente si el mes no cotiza). **Datos:** backfill
+DJVE **2011-2025** (+326.580 filas de los XLS oficiales SSMA; columna `cosecha` para la era ROE) +
+migración `20260719180000` (vista `djve_embarques_mes`, **matview `lineup_visitas`** con RPC de refresh
+post-ingesta — las vistas de dedup de Fases 2-3 pasaron de ~6 s a ~66 ms). **Verificado** 1:1 contra SQL
+(maíz JUL 3.854 kt / cumplimiento 146% / A3 337,9) + navegador claro/oscuro + lint/tsc/build.
 
 ### Fase 4 — Temperatura de mercadería (`/comercio/temperatura`)
 El índice MESA (CALIENTE/FIRME/NEUTRO/PESADO/MUY PESADO): gap de cobertura + densidad de line-up +

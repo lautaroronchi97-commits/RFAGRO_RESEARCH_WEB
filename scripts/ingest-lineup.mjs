@@ -103,7 +103,20 @@ async function main() {
     console.error("ERROR: 0 filas de line-up en la ventana diaria (hoy + 2 días). No se da por bueno (probable bloqueo/estructura).");
     process.exit(1);
   }
-  console.log(`OK — ${total} filas upserteadas en total.`);
+
+  // Refrescar la vista materializada `lineup_visitas` (dedup de visitas físicas que
+  // consumen /comercio/empresas y /comercio/embarques). Si falla, el run se pone rojo:
+  // la ingesta ya quedó hecha (idempotente), pero los paneles quedarían stale en silencio.
+  const rpc = await fetch(`${SUPABASE_URL}/rest/v1/rpc/refresh_lineup_visitas`, {
+    method: "POST",
+    headers: { apikey: SERVICE_KEY, authorization: `Bearer ${SERVICE_KEY}`, "content-type": "application/json" },
+    body: "{}",
+  });
+  if (!rpc.ok) {
+    console.error(`ERROR: refresh_lineup_visitas devolvió HTTP ${rpc.status} — la matview queda vieja.`);
+    process.exit(1);
+  }
+  console.log(`OK — ${total} filas upserteadas en total + lineup_visitas refrescada.`);
 }
 
 main().catch((e) => {
