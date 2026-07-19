@@ -254,7 +254,7 @@ function dedup(rows) {
   return out;
 }
 
-/** Proyecta al esquema actual de `compras` (columnas ricas nuevas van tras la migración). */
+/** Proyecta al esquema de `compras` (columnas ricas: migración 20260719234500). */
 function aFilaDB(r) {
   return {
     fecha: r.fecha,
@@ -262,8 +262,14 @@ function aFilaDB(r) {
     codigo_interno: r.codigo_interno,
     campana: r.campana,
     sector: r.sector,
-    toneladas: r.toneladas,
-    toneladas_a_fijar: r.toneladas_a_fijar,
+    toneladas: r.toneladas, // Total Comprado acumulado
+    toneladas_a_fijar: r.toneladas_a_fijar, // Total a Fijar acumulado
+    semanal_tn: r.semanal_tn,
+    precio_hecho_tn: r.precio_hecho_tn,
+    fijado_tn: r.fijado_tn,
+    saldo_a_fijar_tn: r.saldo_a_fijar_tn,
+    djve_tn: r.djve_tn,
+    fuente: "MAGYP",
     precio_promedio_usd: null,
     porcentaje_cosecha: null,
   };
