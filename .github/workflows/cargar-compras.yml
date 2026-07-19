@@ -1,0 +1,41 @@
+name: Cargar serie histórica de compras (Agrochat → Supabase)
+
+# Carga de UNA VEZ la serie histórica semanal de comercialización de granos (farmer selling) a la
+# tabla `compras`, desde el export de Agrochat versionado en data/compras/. La historia semanal no es
+# scrapeable (MAGyP dio de baja el dataset CKAN y Wayback devolvió 0 capturas), así que se reconstruye
+# desde este CSV (misma base SIO-Granos, verificada 1:1). El dato VIVO lo mantiene ingest-compras.yml.
+# Detalle: docs/negocio/06_fuentes_comercializacion_granos.md.
+#
+# Sólo se dispara a mano. `--replace-legacy` borra las filas viejas (fuente='LEGACY', flujo diario del
+# scraper muerto, semántica incompatible) antes de subir la serie semanal buena.
+# Secrets: SUPABASE_URL / SUPABASE_SERVICE_KEY. Upsert idempotente por (campana, codigo_interno, sector, fecha).
+
+on:
+  workflow_dispatch:
+    inputs:
+      csv:
+        description: "Ruta del CSV en el repo."
+        type: string
+        default: "data/compras/serie_agrochat_comercializacion_2019_2026.csv"
+      replace_legacy:
+        description: "Borrar las filas fuente='LEGACY' antes de cargar."
+        type: boolean
+        default: true
+
+jobs:
+  cargar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Cargar serie (Agrochat)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          ARGS="--in ${{ github.event.inputs.csv }}"
+          [ "${{ github.event.inputs.replace_legacy }}" = "true" ] && ARGS="$ARGS --replace-legacy"
+          node scripts/cargar-compras.mjs $ARGS
