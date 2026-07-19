@@ -11,7 +11,7 @@
 
 /** Mes de inicio de la campaña por código de producto (día siempre 1). */
 const CAMPANA_CONFIG: Record<string, number> = {
-  SBS: 4, SBM: 4, SBO: 4, NSBO: 4, LECITHIN: 4, SHULLS: 4,
+  SBS: 4, SBM: 4, SBO: 4, NSBO: 4, LECITHIN: 4, SHULLS: 4, SOJA_CRUSH: 4,
   MAIZE: 3, "CORN GLTN": 3, SORGHUM: 3,
   WHEAT: 12, MALT: 12, BARLEY: 12, WBP: 12,
   SFSEED: 2, SFO: 2, SFMP: 2,
