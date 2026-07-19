@@ -18,7 +18,7 @@ import {
   type Banda,
   type Direccion,
 } from "./mesa_calor";
-import { percentilEstacional, type SerieRow } from "./estacional";
+import { percentilEstacional, percentilEnSerie, type SerieRow } from "./estacional";
 import { parseFechaUTC } from "./campanas";
 
 /**
@@ -28,15 +28,23 @@ import { parseFechaUTC } from "./campanas";
  * (estacional.ts) y lo combina en el índice 0-100 + banda + momentum + acción (mesa_calor.ts).
  *
  * La pata de OFERTA (farmer selling C3) = avance de ventas del productor (matview compras_avance_hist:
- * comprado acumulado SUMANDO sectores / producción estimada USDA), percentil estacional. Si un producto
- * no junta ≥2 campañas de historia, degrada solo y renormaliza los pesos sobre las patas presentes —
- * exactamente como mesa_calor.indice_calor.
+ * comprado acumulado SUMANDO sectores / producción USDA). Por fecha se toma la CAMPAÑA ACTIVA (la de mayor
+ * venta semanal — la que se está comercializando, no la vieja casi liquidada ni la que recién se planta) y
+ * se calcula un percentil CALENDARIO (avance de hoy vs la misma fecha ±15 días de los últimos 5 años; el
+ * farmer selling es estacional por calendario, no por semana-de-campaña como las patas de embarque). Menos
+ * avance del normal = más retención = más calor (mesa_calor.indice_calor lo invierte). Degrada a null si no
+ * junta ≥2 años de historia.
  */
 
 const SOURCE = "ISA Agents · SAGyP";
 const REVALIDATE = 900; // 15 min
 
 const DIA_MS = 86_400_000;
+
+// Ventana del percentil calendario del farmer selling (el avance de ventas es estacional por calendario).
+const VENTANA_FARMER_DIAS = 15;
+const CAMPANAS_FARMER = 5;
+const MIN_ANIOS_FARMER = 2;
 
 type GapRow = {
   fecha: string;
@@ -46,7 +54,13 @@ type GapRow = {
   gap_tn: number | null;
 };
 type DensRow = { fecha: string; cod: string; densidad_tn: number | null };
-type AvanceRow = { fecha: string; cod: string; avance: number | null };
+type AvanceRow = {
+  fecha: string;
+  cod: string;
+  campana: string;
+  avance: number | null;
+  semanal_tn: number | null;
+};
 
 type Punto = { fecha: Date; valor: number };
 
@@ -103,11 +117,37 @@ function comoSerieRow(serie: Punto[], cod: string): SerieRow[] {
   return serie.map((p) => ({ fecha: p.fecha, cod, valor: p.valor }));
 }
 
+/**
+ * Percentil (0-100) del avance de HOY contra la misma fecha (±`VENTANA_FARMER_DIAS` días) de los últimos
+ * `CAMPANAS_FARMER` años. Alineación por CALENDARIO (la cosecha/venta es estacional por fecha, no por
+ * semana-de-campaña). null si no hay al menos `MIN_ANIOS_FARMER` años con dato en la ventana.
+ */
+function percentilCalendario(serie: Punto[], hoy: Date, valorHoy: number): number | null {
+  const valores: number[] = [];
+  let anios = 0;
+  for (let k = 1; k <= CAMPANAS_FARMER; k++) {
+    const centro = Date.UTC(hoy.getUTCFullYear() - k, hoy.getUTCMonth(), hoy.getUTCDate());
+    const desde = centro - VENTANA_FARMER_DIAS * DIA_MS;
+    const hasta = centro + VENTANA_FARMER_DIAS * DIA_MS;
+    let hubo = false;
+    for (const p of serie) {
+      const t = p.fecha.getTime();
+      if (t >= desde && t <= hasta) {
+        valores.push(p.valor);
+        hubo = true;
+      }
+    }
+    if (hubo) anios++;
+  }
+  if (anios < MIN_ANIOS_FARMER || valores.length === 0) return null;
+  return percentilEnSerie(valores, valorHoy);
+}
+
 export const getTemperatura = cache(async (): Promise<TemperaturaData> => {
   const [gapRes, densRes, avanceRes] = await Promise.all([
     sbSelectAll("lineup_gap_hist?select=fecha,cod,declarado_tn,originado_tn,gap_tn", REVALIDATE),
     sbSelectAll("lineup_densidad_hist?select=fecha,cod,densidad_tn", REVALIDATE),
-    sbSelectAll("compras_avance_hist?select=fecha,cod,avance", REVALIDATE),
+    sbSelectAll("compras_avance_hist?select=fecha,cod,campana,avance,semanal_tn", REVALIDATE),
   ]);
   // gap y densidad son obligatorias; el avance (farmer) es opcional → si falla, el índice degrada.
   if (!gapRes.ok || !densRes.ok) {
@@ -172,13 +212,26 @@ export const getTemperatura = cache(async (): Promise<TemperaturaData> => {
   densPorCod.set("SOJA_CRUSH", densCrush);
 
   // --- Serie de avance de ventas (pata farmer selling C3) desde compras_avance_hist ---
+  // Por (cod, fecha) puede haber varias campañas vivas; se toma la ACTIVA = la de mayor venta semanal
+  // (la que el productor está comercializando; no la vieja casi liquidada ni la nueva que recién arranca).
   const avancePorCod = new Map<string, Punto[]>();
   if (avanceRes.ok) {
+    const mejorPorCodFecha = new Map<string, Map<number, { avance: number; semanal: number }>>();
     for (const r of avanceRes.data as AvanceRow[]) {
+      if (r.avance == null) continue;
       const f = parseFechaUTC(r.fecha);
-      if (!f || r.avance == null) continue;
-      if (!avancePorCod.has(r.cod)) avancePorCod.set(r.cod, []);
-      avancePorCod.get(r.cod)!.push({ fecha: f, valor: Number(r.avance) });
+      if (!f) continue;
+      const semanal = r.semanal_tn == null ? -1 : Number(r.semanal_tn);
+      if (!mejorPorCodFecha.has(r.cod)) mejorPorCodFecha.set(r.cod, new Map());
+      const m = mejorPorCodFecha.get(r.cod)!;
+      const prev = m.get(f.getTime());
+      if (!prev || semanal > prev.semanal) m.set(f.getTime(), { avance: Number(r.avance), semanal });
+    }
+    for (const [cod, m] of mejorPorCodFecha) {
+      avancePorCod.set(
+        cod,
+        [...m.entries()].map(([ms, v]) => ({ fecha: new Date(ms), valor: v.avance })),
+      );
     }
     ordenar(avancePorCod);
   }
@@ -213,13 +266,13 @@ export const getTemperatura = cache(async (): Promise<TemperaturaData> => {
       const gapPast = valorAntesDe(gSerie, new Date(hoy.getTime() - K_MOMENTUM_DIAS * DIA_MS));
       if (gapHoy != null && gapPast != null) deltaGap = gapHoy - gapPast;
     }
-    // Farmer selling (C3): percentil estacional del avance de ventas, en la fecha propia de compras
-    // (semanal, puede ir unos días detrás del line-up). Menos avance del normal = más calor (se invierte
-    // dentro de indiceCalor). Degrada a null si el producto no junta ≥2 campañas de historia.
+    // Farmer selling (C3): percentil CALENDARIO del avance de ventas (hoy vs la misma fecha de años
+    // previos). Menos avance del normal = más retención = más calor (se invierte dentro de indiceCalor).
+    // Degrada a null si no junta ≥2 años de historia en la ventana.
     let pctlFarmer: number | null = null;
     const aSerie = avancePorCod.get(cod) ?? [];
     const aU = ultimo(aSerie);
-    if (aU) pctlFarmer = percentilEstacional(comoSerieRow(aSerie, cod), cod, aU.fecha, aU.valor);
+    if (aU) pctlFarmer = percentilCalendario(aSerie, aU.fecha, aU.valor);
     const calor = indiceCalor(pctlGap, pctlDens, pctlFarmer);
     const banda = clasificarBanda(calor);
     const direccion = clasificarDireccion(deltaGap);

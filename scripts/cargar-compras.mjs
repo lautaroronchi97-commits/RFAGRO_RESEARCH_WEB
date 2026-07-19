@@ -187,10 +187,10 @@ async function main() {
   console.log("Upsert a compras...");
   await upsert(filas);
 
-  // Refrescar la matview del avance (pata farmer del índice MESA) para que el dato quede vivo ya, sin
-  // esperar al refresh diario de la ingesta de line-up. refresh_lineup_visitas refresca todas las series.
+  // Refrescar SOLO la matview del avance (RPC liviana: refrescar las 4 series juntas excede el statement
+  // timeout de PostgREST — fue lo que hizo fallar el primer run tras cargar los datos).
   console.log("Refrescando compras_avance_hist...");
-  await sbFetch("rpc/refresh_lineup_visitas", { method: "POST", headers: { prefer: "return=minimal" }, body: "{}" });
+  await sbFetch("rpc/refresh_compras_avance", { method: "POST", headers: { prefer: "return=minimal" }, body: "{}" });
   console.log("OK");
 }
 

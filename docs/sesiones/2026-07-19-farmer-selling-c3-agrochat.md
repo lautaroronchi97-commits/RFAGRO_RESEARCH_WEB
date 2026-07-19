@@ -52,8 +52,26 @@ SOJA_CRUSH como SBS usan el total de poroto vendido (misma oferta del productor)
   el **ítem 8** del backlog: negociado/priceado por producto).
 - **Extras de la spec** (no bloquean): matriz producto × mes de embarque, vista por zona, "qué cambió".
 
+## Fix post-merge (PR #40) — carga real + 2 correcciones
+Al mergear el #39 se disparó el workflow y **cargó las 9.522 filas** (verificado: 7 granos, 8 campañas,
+hasta 08/07/2026). Verificando con datos reales salieron 2 cosas:
+1. **Modelo (campaña activa + percentil calendario)**: en cada fecha conviven varias campañas (la vieja
+   casi liquidada, la actual, la nueva que recién se planta). El código las mezclaba, y `campana_ini_year`
+   marcaba como activa la que recién arranca (~1% vendido). Ahora, por `(cod,fecha)` se toma la **campaña
+   activa = la de mayor venta semanal**, y el percentil pasa a **calendario** (avance de hoy vs la misma
+   fecha ±15d de los últimos 5 años — el farmer selling es estacional por calendario, no por semana-de-
+   campaña como gap/densidad). La matview expone `semanal_tn`. Verificado por SQL: **maíz 49,7%→pctl 59 ·
+   soja 43,3%→pctl 5 (retención fuerte) · trigo 71,2%→pctl 23**.
+2. **Refresh (timeout)**: refrescar las 4 matviews juntas por PostgREST excede el statement timeout (57014)
+   → **hizo fallar el 1er run del cargador** tras subir bien los datos. Se saca compras_avance de
+   `refresh_lineup_visitas` y pasa a una RPC liviana propia `refresh_compras_avance()` que llaman el
+   cargador y el scraper vivo. Migración `20260719238000`.
+
 ## Trampas / aprendizajes
 - Un workflow nuevo NO se puede disparar por API desde una rama feature (debe estar en la default) → 404.
+- Las campañas de MAGyP/SIO se etiquetan por año de cosecha, NO por el `campana_ini_year` del repo (que es
+  para atribuir embarques). Para el farmer selling: elegir la campaña activa por venta semanal + calendario.
+- `refresh_lineup_visitas` vía RPC (PostgREST) tiene statement timeout: no meterle matviews pesadas de más.
 - El `total_comprado_acumulado` de la fuente SIO/MAGyP tiene spikes que revierten → como es acumulado
   (no decrece), se limpia con `min(...) over (... rows between current row and unbounded following)`.
 - `compras_semanales` del export no cumsuma al acumulado (semántica ruidosa) → no usarla para acumular.
