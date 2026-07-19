@@ -11,7 +11,7 @@
 
 | Fuente | Qué publica | Frecuencia | Uso |
 |---|---|---|---|
-| ⭐ **Secretaría de Agricultura (SAGyP)** — magyp.gob.ar | SIO Granos (operaciones), DJVE registradas (Res. 128/2019), entrada de camiones y vagones por zona y producto, precios FOB oficiales y FAS teórico, **Informe Diario del Mercado de Granos**, Monitor del Comercio Granario, datos abiertos | Diario + mensual (SIO) | Núcleo F2: negociado, priceado, DJVE, camiones, capacidad de pago |
+| ⭐ **Secretaría de Agricultura (SAGyP)** — magyp.gob.ar | SIO Granos (operaciones), DJVE registradas (Res. 128/2019), entrada de camiones y vagones por zona y producto, precios FOB oficiales y FAS teórico, **Informe Diario del Mercado de Granos**, **Compras y DJVE de Granos** (farmer selling exportador+industria, ver §13), Monitor del Comercio Granario, datos abiertos | Diario + mensual (SIO) | Núcleo F2: negociado, priceado, DJVE, camiones, capacidad de pago |
 | ⭐ **Dirección de Estimaciones Agrícolas (DEA-SAGyP)** | Estimaciones oficiales de superficie, producción y rindes por cultivo (sorgo, cebada, girasol); cierre de campaña | Mensual + series | Contraste oficial vs bolsas/USDA |
 | ⭐ **ORA — Oficina de Riesgo Agropecuario** (ora.gob.ar) | Reservas de agua en suelo por localidad, índice satelital de déficit hídrico (TVDI), El Niño/La Niña, alerta hidrológica | Semanal/decadial | Módulo clima (gap #1) |
 | **BCRA** | Tipo de cambio, series monetarias, operaciones de cambios (con rezago) | Diario | Panel cambiario, compras BCRA (skill bcra-macro) |
@@ -123,3 +123,31 @@ Dante Romano (@drgranos, Austral/fyo) · Nóvitas (Enrique Erize, Diego de la Pu
 ## 12. Notas de verificación (de Lautaro, 06/07/2026)
 
 PAS cubre los 6 cultivos y sale jueves 15:00 gratis; ORA publica reservas de agua por cultivo/localidad; DEA emite informe mensual; SAGyP publica Informe Diario del Mercado de Granos; BCP Bahía Blanca = referencia de cebada; DJVE de publicación diaria obligatoria (Res. 128/2019 art. 16); A3 Live e históricos abiertos verificados. Horarios USDA/CFTC/EIA/NOPA = práctica estándar; confirmar contra el calendario oficial de cada organismo al armar el módulo de alertas (Fase 3).
+
+## 13. Datasets MAGyP + fuente de comercialización (compras / farmer selling) — verificado 19/07/2026
+
+> Rastreo hecho en la Fase 4 (índice de temperatura MESA). **Detalle completo, esquema y plan de
+> ingesta/backfill en [`negocio/06_fuentes_comercializacion_granos.md`](negocio/06_fuentes_comercializacion_granos.md).**
+
+- **Farmer selling (compras del exportador+industria) — FUENTE ELEGIDA:** página institucional de MAGyP
+  **"Compras y DJVE de Granos"** (`www.magyp.gob.ar/mercadosagropecuarios/compras.php` →
+  `.../000058_Estadísticas/000020_Compras y DJVE de Granos.php`). Server-rendered, **alcanzable**, con
+  **ambos sectores**, multi-campaña, y **archivo histórico semanal 2005→2026**
+  (`.../_compras_historicos/{AAAA}/{AAAA}.php`) → backfilleable. **Reemplaza** al dataset CKAN
+  `datos.magyp.gob.ar/dataset/compras-de-granos`, que fue **dado de baja (404)** — por eso se frenó la
+  tabla `compras` el 11/06/2026 (no fue bloqueo de IP).
+- **CKAN MAGyP** (`datos.magyp.gob.ar/api/3/action/...`, sin auth): sobreviven sólo los `*-con-destino-industria`
+  (molienda: soja/maíz/trigo-pan/trigo-candeal/cebada/girasol/sorgo/mijo/avena/centeno/lino/maní/arroz/
+  algodón) + `molienda-granos`, `centros-acopio-granos`, `estimaciones-agricolas`, `datos-comercio-exterior`.
+  Son **molienda/destino industrial**, NO farmer selling.
+- **No alcanzables desde datacenter:** `sio-granos.magyp.gob.ar` y `monitorsiogranos.magyp.gob.ar` (`000`).
+  **BCBA** (`bolsadecereales.com`) tras Cloudflare (403, igual que `ingest-pas`).
+- **Agregadores (candidatos de respaldo, no primarios):**
+  - **BCR** (`bcr.com.ar`, responde) republica el dato de SAGyP en el Informativo Semanal / Panorama de
+    Mercados (HTML/PDF de análisis, no serie estructurada). Sirve para noticias/contexto.
+  - **Alphacast** (`alphacast.io`, repo "Argentina Markets", API `api.alphacast.io`): agregador de series
+    económicas, probablemente hostee SIO/MAGyP/BCR ya limpio, **pero de pago/con cuenta** (free tier no
+    confirmado; requiere API key). Respaldo si la primaria se complica.
+  - **Agrochat** (Bolsa de Cereales): **asistente de IA** de consulta en lenguaje natural, **no es un
+    feed/API** para ingesta.
+  - **granos.ar**: "Monitor de Granos en tiempo real" (SPA); backend no evaluado, candidato a mirar.

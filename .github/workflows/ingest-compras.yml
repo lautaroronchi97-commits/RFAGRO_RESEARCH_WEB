@@ -1,0 +1,51 @@
+name: Ingesta compras de granos (MAGyP farmer selling → Supabase)
+
+# Popula la tabla `compras` con las compras de granos del sector exportador e industrial (farmer
+# selling), fuente MAGyP "Compras y DJVE de Granos" (scripts/ingest-compras.mjs). Alimenta la pata
+# "farmer selling" del índice de temperatura MESA (Fase 4). Detalle de la fuente en
+# docs/negocio/06_fuentes_comercializacion_granos.md.
+#
+# Los `schedule` corren desde la rama default del repo. Secrets: SUPABASE_URL / SUPABASE_SERVICE_KEY.
+# El upsert es idempotente por (campana, codigo_interno, sector, fecha).
+
+on:
+  schedule:
+    - cron: "0 13 * * 4" # jue 10:00 AR — el informe suele actualizar a mitad de semana
+    - cron: "0 13 * * 1" # lun 10:00 AR — segunda pasada por si actualizó el finde
+  workflow_dispatch:
+    inputs:
+      backfill:
+        description: "Reconstruir la serie semanal histórica desde Wayback (2020→hoy)."
+        type: boolean
+        default: false
+      from:
+        description: "Backfill: fecha desde (YYYYMMDD). Default 20200101."
+        type: string
+        default: ""
+      to:
+        description: "Backfill: fecha hasta (YYYYMMDD). Default hoy."
+        type: string
+        default: ""
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Compras (MAGyP)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.backfill }}" = "true" ]; then
+            ARGS="--backfill"
+            [ -n "${{ github.event.inputs.from }}" ] && ARGS="$ARGS --from ${{ github.event.inputs.from }}"
+            [ -n "${{ github.event.inputs.to }}" ] && ARGS="$ARGS --to ${{ github.event.inputs.to }}"
+            node scripts/ingest-compras.mjs $ARGS
+          else
+            node scripts/ingest-compras.mjs
+          fi
