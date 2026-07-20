@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { nfmt } from "@/lib/format";
 import type { PuntoHisto } from "@/lib/compras/negociado";
+import { ChartMarca } from "@/components/chart-marca";
+import { ChartTabla } from "@/components/chart-tabla";
 
 /**
  * Histograma del volumen negociado (compras semanales SIO Granos): barras apiladas por
@@ -96,6 +98,7 @@ export function NegociadoChart({ serie, productos }: { serie: PuntoHisto[]; prod
       </div>
 
       <div className="chart-wrap">
+        <ChartMarca />
         <svg viewBox={`0 0 ${W} ${H}`} className="cv" role="img" aria-label="Histograma de volumen negociado por semana o mes, apilado por sector">
           {yTicks.map((t, k) => (
             <g key={`y${k}`}>
@@ -143,6 +146,23 @@ export function NegociadoChart({ serie, productos }: { serie: PuntoHisto[]; prod
           <span className="lk"><span className="sw ng-sw-ind" />Industria</span>
         </div>
       </div>
+
+      <ChartTabla
+        titulo={`Datos del gráfico · ${modo === "semanal" ? "semanal" : "mensual"}`}
+        columnas={[
+          { key: "periodo", label: modo === "semanal" ? "Semana" : "Mes", align: "left" },
+          { key: "exp", label: "Exportación (t)" },
+          { key: "ind", label: "Industria (t)" },
+          { key: "total", label: "Total (t)" },
+        ]}
+        filas={barras.map((bar) => ({
+          periodo: bar.label,
+          exp: bar.exp > 0 ? nfmt(bar.exp, 0) : null,
+          ind: bar.ind > 0 ? nfmt(bar.ind, 0) : null,
+          total: nfmt(bar.exp + bar.ind, 0),
+        }))}
+        nota="Mismos valores que dibuja el histograma (toneladas), por sector. «—» = sin volumen en ese período."
+      />
     </div>
   );
 }
