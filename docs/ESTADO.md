@@ -28,8 +28,11 @@ trigo, **posición continua, normalizados a USD/tn**) + bloque macro informativo
 DXY · USD/BRL · SPY). **View-only** (pedido explícito: nada se guarda — sin tabla, sin cron, como el
 feed A3). Fuente elegida del catálogo de skills de gauss y **verificada con request real**: endpoint
 batch de Yahoo Finance (`spark`) — 1 request trae los 11 instrumentos sin auth (necesita User-Agent);
-**delay medido ~12,5 min** (feed demorado del exchange → sello honesto "demorado ~15 min", regla
-"institución sí, puente no": el sello nombra CBOT·NYMEX·COMEX·ICE). **Cadencia objetivo (1 min)
+**delay medido: futuros + DXY 10 min exactos, SPY y USD/BRL en tiempo real**. Se investigó (pedido de
+Lautaro) si alguna fuente del catálogo gauss baja el delay: **NO** — 10 min es el piso de licencia
+CME/ICE para feeds gratis (Barchart medido = 10,0 min igual; Investing 403 Cloudflare; tabla en el plan
+§3.b) → sello honesto "futuros demorados 10 min" (regla "institución sí, puente no": nombra
+CBOT·NYMEX·COMEX·ICE). **Cadencia objetivo (1 min)
 alcanzada sin infra nueva**: el fetch va dentro del ISR de 30 s que `/granos` ya tiene + poll cliente
 existente. Decisiones consultadas (20/07): solo continuo (sin mini-curva) · visibilidad = sección
 "granos" · petróleo = WTI. Fixtures de conversión verificados (soja 1.223 ¢/bu → 449,4 USD/tn, etc.,

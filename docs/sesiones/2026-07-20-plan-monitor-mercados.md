@@ -28,8 +28,11 @@
 ## Verificado
 - **Request real al endpoint batch** (`/v7/finance/spark`, 20/07): HTTP 200, los 11 símbolos con
   `regularMarketPrice`/`previousClose`/`shortName`/`currency`. Necesita User-Agent de navegador.
-- **Delay medido: ~12,5 min** (`regularMarketTime` vs reloj) — feed demorado del exchange, se
-  documenta en el sello.
+- **Delay medido con mercado abierto** (pedido de Lautaro: ¿alguna fuente de gauss con menos delay?):
+  Yahoo = futuros + DXY **10 min exactos**, **SPY y USD/BRL en tiempo real (0 min)**. Barchart medido
+  con el flow de cookie del repo = **10,0–10,1 min** (igual). Investing = 403 Cloudflare. Resto del
+  catálogo barrido: nadie baja los 10 min (piso de licencia CME/ICE para feeds gratis) — tabla
+  completa en el plan §3.b.
 - Conversiones a USD/tn recalculadas con los factores que ya usa el repo (`ingest-cbot.mjs`):
   soja 1.223 ¢/bu → 449,4 · maíz 473,25 → 186,3 · trigo 678,25 → 249,2 · harina 323 USD/st → 356,0 ·
   aceite 72,06 ¢/lb → 1.588,7. Quedaron como fixtures en el plan §3.
@@ -44,6 +47,10 @@
 
 ## Trampas descubiertas (para la próxima sesión)
 - El endpoint `spark` de Yahoo **devuelve 429/403 sin User-Agent** de navegador — ponerlo siempre.
+- **Medir el delay en sesión nocturna engaña**: `regularMarketTime`/`tradeTime` es el ÚLTIMO TRADE,
+  no el atraso del feed — con rueda finita dio "12,5 min"; con mercado abierto son 10 min clavados.
+- El `/quotes/get` de Barchart (a diferencia del `/historical/get` que usa `ingest-cbot.mjs`)
+  devuelve **401 sin el header `referer`** del overview — con referer + cookie XSRF da 200.
 - `currency: "USX"` = **centavos** (¢/bu o ¢/lb según el producto); harina viene en USD/short ton.
 - El `shortName` trae la posición del contrato ("Soybean Futures,Nov-2026") → de ahí sale el "NOV26"
   visible; no parsear el símbolo.
