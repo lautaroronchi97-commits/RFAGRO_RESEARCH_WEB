@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Panel, PanelHead } from "./panel";
+import { ChartMarca } from "./chart-marca";
 import { sfmt, rfmt, nfmt } from "@/lib/format";
 import { evaluarFijar, type PosCurva, type Lado, type FilaFijar } from "@/lib/fijar";
 import { hoyCordoba, parseYmd } from "@/lib/habiles";
@@ -53,6 +54,7 @@ function DeltaChart({ filas }: { filas: FilaFijar[] }) {
 
   return (
     <div className="chart-wrap">
+      <ChartMarca />
       <svg className="cv" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Gráfico del delta por plazo">
         <line x1={0} y1={zeroY} x2={W} y2={zeroY} stroke="var(--line-2)" strokeWidth={1} />
         {filas.map((f, i) => {

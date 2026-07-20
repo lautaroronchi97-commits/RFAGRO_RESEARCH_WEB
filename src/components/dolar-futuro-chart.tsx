@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { nfmt } from "@/lib/format";
+import { ChartMarca } from "@/components/chart-marca";
 
 type Pt = { label: string; value: number };
 
@@ -51,6 +52,7 @@ export function DolarFuturoChart({ points }: { points: Pt[] }) {
 
   return (
     <div className="chart-wrap">
+      <ChartMarca />
       <svg viewBox={`0 0 ${W} ${H}`} className="cv" role="img" aria-label="Curva de precios de dólar futuro por posición">
         <defs>
           <linearGradient id="cvGrad" x1="0" y1="0" x2="0" y2="1">

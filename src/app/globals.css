@@ -1341,6 +1341,36 @@ a.estim-inf:hover { color:var(--gold-text); }
 .sf-m-v { font-family:var(--font-mono); font-size:var(--fs-sm); font-weight:800; color:var(--ink); }
 .sf-m-x { font-size:9px; color:var(--ink-3); line-height:1.3; }
 
+/* ============================================================
+   Gráficos — doble lectura: marca de agua (.cm-*) + tabla de datos (.ct-*)
+   ============================================================ */
+
+/* Marca de agua del logo RF AGRO dentro de cada chart (chart-marca.tsx).
+   El contenedor PADRE debe ser position:relative (.chart-wrap ya lo es).
+   Asset: /rfagro-logo-marca.svg (logo completo sin los halos del auto-trace).
+   Opacidad calibrada mirándolo en ambos temas: sutil, nunca compite con las
+   líneas de datos. Queda debajo de tooltips (.cv-tip z-index:5). */
+.cm-marca { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  pointer-events:none; z-index:0; overflow:hidden; }
+.cm-marca img { width:55%; max-width:440px; min-width:170px; height:auto; opacity:.2; }
+:root[data-theme="dark"] .cm-marca img { opacity:.22; } /* el panel oscuro se traga un punto más */
+
+/* Tabla de datos del gráfico (chart-tabla.tsx) — SIEMPRE visible bajo el chart.
+   Scroll vertical propio (series largas) con header sticky (ya lo trae .tbl) y
+   scroll horizontal interno si hay muchas columnas (no rompe el layout). */
+.ct { padding:6px 12px 12px; }
+.ct-hd { display:flex; align-items:baseline; gap:10px; padding:4px 2px 7px;
+  font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:.07em; font-weight:700;
+  color:var(--ink-3); }
+.ct-hd .ct-n { margin-left:auto; font-family:var(--font-mono); font-weight:600; letter-spacing:.02em; }
+.ct-scroll { overflow:auto; max-height:320px; border:1px solid var(--line); border-radius:8px;
+  background:var(--panel); -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
+.ct-scroll:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
+.ct-scroll table.tbl { min-width:100%; } /* angosta llena el ancho; ancha desborda con scroll propio */
+.ct-vacio { padding:14px 12px; font-size:var(--fs-xs); color:var(--ink-3); text-align:center;
+  font-family:var(--font-ui); }
+.ct-nota { margin:7px 2px 0; font-size:var(--fs-2xs); color:var(--ink-3); }
+
 /* Comercio exterior · Negociado por producto (SIO Granos) --------------------- */
 .ng-activa { display:inline-block; margin-left:8px; padding:1px 7px; border-radius:99px;
   font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.07em;

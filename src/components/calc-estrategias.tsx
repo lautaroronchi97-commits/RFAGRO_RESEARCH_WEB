@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Panel, PanelHead } from "./panel";
+import { ChartMarca } from "./chart-marca";
 import { nfmt, sfmt } from "@/lib/format";
 import {
   PRESETS,
@@ -52,6 +53,7 @@ function PayoffChart({ serie, B, bes }: { serie: Escenario[]; B: number; bes: nu
 
   return (
     <div className="chart-wrap">
+      <ChartMarca />
       <svg className="cv" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Gráfico de payoff de la estrategia">
         <line x1={padX} y1={zeroY} x2={W - padX} y2={zeroY} stroke="var(--line-2)" strokeWidth={1} />
         {Number.isFinite(B) && B >= loX && B <= hiX && (

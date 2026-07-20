@@ -1,7 +1,9 @@
 import { getDolarFuturo, getDolarLinked } from "@/lib/market";
+import { nfmt } from "@/lib/format";
 import { arbitrajes } from "@/lib/sample";
 import { Panel, PanelHead } from "./panel";
 import { ImplicitasChart } from "./implicitas-chart";
+import { ChartTabla, type ChartTablaFila } from "./chart-tabla";
 import { SourceStamp } from "./source-stamp";
 import { QueEsEsto } from "./que-es-esto";
 
@@ -41,6 +43,23 @@ export async function ImplicitasPanel() {
     { name: "Granos (ej.)", color: "var(--c-gran)", points: granPts, line: false },
   ];
 
+  // Tabla de datos del gráfico: una fila por plazo (días), una columna por serie.
+  // Mismos puntos y mismo formato que el tooltip del chart; "—" donde la serie
+  // no tiene punto en ese plazo.
+  const plazos = [...new Set(series.flatMap((s) => s.points.map((p) => p.x)))].sort((a, b) => a - b);
+  const tablaFilas: ChartTablaFila[] = plazos.map((x) => {
+    const fila: ChartTablaFila = { plazo: `${x}d` };
+    for (const s of series) {
+      const vals = s.points.filter((p) => p.x === x).map((p) => `${nfmt(p.y, 1)}%`);
+      fila[s.name] = vals.length > 0 ? vals.join(" · ") : null;
+    }
+    return fila;
+  });
+  const tablaColumnas = [
+    { key: "plazo", label: "Plazo", align: "left" as const },
+    ...series.map((s) => ({ key: s.name, label: s.name })),
+  ];
+
   return (
     <Panel id="implicitas">
       <PanelHead
@@ -50,6 +69,12 @@ export async function ImplicitasPanel() {
         stamp={<SourceStamp meta={meta} />}
       />
       <ImplicitasChart series={series} />
+      <ChartTabla
+        titulo="Datos del gráfico"
+        columnas={tablaColumnas}
+        filas={tablaFilas}
+        nota="TNA en % según días al vencimiento. Granos: valores de ejemplo hasta conectar A3."
+      />
       <QueEsEsto
         paraQue="Junta en un solo gráfico las tasas en dólares que se pueden sacar por distintos caminos (dólar futuro y dólar linked), para comparar cuál rinde más a cada plazo."
         comoSeCalcula="Para cada instrumento calcula la tasa anual en dólares y la ubica según los días que faltan hasta el vencimiento: el eje horizontal son los días al vencimiento y el vertical, la tasa anual."

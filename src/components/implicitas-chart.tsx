@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { nfmt } from "@/lib/format";
+import { ChartMarca } from "@/components/chart-marca";
 
 type Pt = { x: number; y: number };
 type Serie = { name: string; color: string; points: Pt[]; line?: boolean };
@@ -35,6 +36,7 @@ export function ImplicitasChart({ series }: { series: Serie[] }) {
 
   return (
     <div className="ic-wrap">
+      <ChartMarca />
       <svg viewBox={`0 0 ${W} ${H}`} className="ic" role="img" aria-label="Tasas implícitas por plazo: dólar futuro, dólar linked y granos">
         {yTicks.map((t, k) => (
           <g key={k}>
