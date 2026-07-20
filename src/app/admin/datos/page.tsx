@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/dal";
 import { Uploader } from "./uploader";
+import { PromptAgrochat } from "./prompt-agrochat";
 
 /**
  * Pestaña DATOS del panel admin: actualizar la serie semanal de comercialización de
@@ -22,6 +23,7 @@ export default async function DatosPage() {
           (no escribe nada), después confirmá la carga.
         </p>
       </div>
+      <PromptAgrochat />
       <Uploader />
     </section>
   );
