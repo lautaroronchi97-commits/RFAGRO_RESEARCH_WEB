@@ -19,7 +19,27 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 19/07/2026 — Farmer selling C3 LIVE · serie Agrochat cargada · fix modelo)
+## Ahora (última actualización: 20/07/2026 — Tabla de datos + marca de agua en todos los gráficos)
+
+**📊 TABLA DE DATOS + MARCA DE AGUA EN TODOS LOS GRÁFICOS — rama `claude/data-table-charts-2m8nvd`,
+PR #_.** Pedido de Lautaro: doble lectura curva+número en cada chart + el **logo completo** como marca de
+agua. **Fundaciones**: `ChartTabla` (`chart-tabla.tsx`, tabla genérica **SIEMPRE visible** bajo el gráfico —
+sin toggle, decisión 20/07 —, reusa `.tbl` con header sticky + scroll propio, el caller formatea es-AR) y
+`ChartMarca` (`chart-marca.tsx`, overlay server-safe del logo; opacidad .06/.07 y tamaño centralizados en
+`.cm-marca` de `globals.css`, debajo del tooltip) + asset **`public/rfagro-logo-marca.svg`** (logo completo
+limpiado de los halos del auto-trace SOLO en la zona del isotipo — los blancos del wordmark son los
+contadores de las letras, se conservan). **Integrado en todos los gráficos**: `/graficos` (los 2 modos; la
+tabla sale de las MISMAS rows que dibuja Recharts, X con el formato del tooltip, banda mín/med/máx) ·
+`/produccion` (evolución: fecha × organismo) · `/dolar` (tabla de la curva con SPOT + **pivot** de
+implícitas plazo × serie) · calcs "a fijar" y "estrategias" (**solo marca** — sus tablas de escenarios ya
+listan los mismos datos). **Cero fórmulas tocadas**; `watermark.tsx` (login) intacto. **Verificado**:
+lint/tsc/build + navegador claro/oscuro con datos reales cotejados 1:1 contra KPIs/leyendas (soja MAY/JUL
+mín 5,10/máx 9,40 · dólar SPOT 1.478,5/DIC26 1.625,0 · implícitas 10d 11,1% · producción 149,00 Mt) + cero
+errores de consola. Cierra el pendiente "tabla alternativa" de la v2 de gráficos (se hizo siempre visible).
+Ojo sandbox: se creó `.env.local` (gitignoreado) con las creds públicas de Supabase para builds con datos.
+Detalle: [`sesiones/2026-07-20-tabla-datos-y-marca-graficos.md`](sesiones/2026-07-20-tabla-datos-y-marca-graficos.md).
+
+## Anterior (19/07/2026 — Farmer selling C3 LIVE · serie Agrochat cargada · fix modelo)
 
 **🌡️ ÍNDICE MESA — 3ª PATA (FARMER SELLING / C3) LIVE — PR #39 (base) MERGEADO + carga corrida; fix del
 modelo en el PR #40 (rama `claude/desarrollos-pendientes-tqgic8`).** Al mergear el #39 se corrió el workflow
@@ -440,7 +460,9 @@ feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→
 - Persistir el estado del **modo Período en la URL** (hoy solo el modo Campañas es compartible por link).
 - **Ratio/base en %** (`pizarra/futuro − 1`) como métrica adicional.
 - **Guardar presets del usuario** / compartir persistente (requiere login — P28).
-- Export **PNG/CSV**, **media móvil**, subpanel de **volumen/OI**, tabla alternativa + guard "parcial".
+- Export **PNG/CSV**, **media móvil**, subpanel de **volumen/OI**, ~~tabla alternativa~~ **→ HECHO
+  (20/07: tabla SIEMPRE visible bajo cada gráfico, no alternativa, por decisión de Lautaro — rama
+  `claude/data-table-charts-2m8nvd`)** + queda el guard "parcial".
 - **P12** (relaciones % tipo "180% pizarra maíz" / "57% soja julio") y **P17** (serie continua
   front-month): faltan ejemplos numéricos reales de Lautaro.
 - Ajustar/agregar presets cuando Lautaro los pida (P27 quedó con la lista actual).
