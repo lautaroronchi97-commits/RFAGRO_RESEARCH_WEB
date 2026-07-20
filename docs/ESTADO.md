@@ -19,7 +19,24 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 20/07/2026 — Home = novedades del día)
+## Ahora (última actualización: 20/07/2026 — fix compras ÷1000 + prompt Agrochat en el uploader)
+
+**🔧 FIX DE DATOS (compras semana 08/07 ÷1000) + PROMPT AGROCHAT EN EL UPLOADER — rama
+`claude/pendientes-4c5ovu`.** Al probar el uploader (`/admin/datos`) apareció que **toda la semana del
+08/07/2026 estaba cargada ÷1000** (30 filas, todas las columnas): venía así desde la carga original del
+19/07 y el saneamiento del 20/07 solo había tocado los valores *gigantes* (>1e9), no estos *chicos*. Se
+reescribieron las 30 filas con los valores del CSV verificado del repo (control: trigo 25/26 Export
+16.088.400→**16.238.900**, coincide 1:1 con MAGyP) por `execute_sql` (la RPC `admin_upsert_compras` exige
+`is_admin()`, no corre por MCP) + `refresh_compras_avance()`; 0 caídas de acumulado desde 2025.
+**Causa raíz:** el export **"Última Semana" de Agrochat viene en MILES de toneladas** (trigo 16238,9), la
+base guarda toneladas enteras → subirlo tal cual mete la semana ÷1000. **Fix de proceso:** componente
+`src/app/admin/datos/prompt-agrochat.tsx` (client, botón copiar) con el **prompt canónico** que le pide a
+Agrochat el export en **toneladas enteras** con la cabecera y unidades exactas; Lautaro lo copia cada
+semana cambiando solo la fecha. lint/tsc/build ✅. **Pendiente sugerido (no hecho):** guard de unidades en
+la confirmación del uploader (rechazar/avisar si el acumulado subido cae ~1000× vs lo que ya está en la
+base) para que un export en miles no pueda corromper en silencio.
+
+## Anterior (20/07/2026 — Home = novedades del día)
 
 **🏠 HOME = NOVEDADES DEL DÍA (ítem 4 del backlog) HECHO — rama `claude/desarrollos-pendientes-unm9cg`.**
 Se dio vuelta la jerarquía del home (antes: cinta + grilla de secciones del rediseño UX #22). Ahora `/` es
