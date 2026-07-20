@@ -86,6 +86,10 @@
   sensato (campañas viejas ~100%).
 - No hay `.env.local` en este entorno → el render SSR real y el uploader logueado no se pudieron
   probar en navegador (las páginas admin redirigen sin sesión). El orquestador verifica por SQL.
+- **Code review adversarial corrido: 4 fixes menores aplicados** (tope anti zip-bomb en el inflate
+  del xlsx, `Math.floor` en el serial de fecha Excel — con hora, `round` corría el día y crearía
+  semanas fantasma en la clave de upsert —, tope de campos del form público de `/bienvenida` tras
+  subir el `bodySizeLimit` global, `requireAdmin()` en la página `/admin/datos` además del layout).
 
 ## Quedó pendiente / en vuelo
 - **Aplicar la migración `20260720120000_admin_carga_compras.sql`** (orquestador, por MCP
@@ -95,6 +99,9 @@
   paso re-suba el CSV canónico: corrige en la base las 477 filas con el artefacto de float.
 - Ítem 8 hablaba de "día/semana": el dato de SIO Granos en esta serie es semanal (no hay corte
   diario) — quedó aclarado en el QueEsEsto.
+- **Riesgo residual documentado**: cuando el cron MAGyP (`ingest-compras.mjs`) cargue su primera
+  semana, verificar la alineación de fechas AGROCHAT vs MAGYP — si fechan el mismo corte con días
+  distintos, el histograma (que suma todas las fuentes) mostraría una semana duplicada.
 
 ## Trampas descubiertas (para la próxima sesión)
 - **El export de Agrochat trae floats con punto decimal** (`64099.99999999999`) entre enteros sin

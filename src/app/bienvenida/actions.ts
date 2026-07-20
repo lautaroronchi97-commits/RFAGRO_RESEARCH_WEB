@@ -34,6 +34,11 @@ export async function enviarConsultaAction(
   if (mensaje.length > 4000) {
     return { error: "El mensaje es demasiado largo." };
   }
+  // Tope de los demás campos: la action es pública y el bodySizeLimit global subió a 16 MB
+  // (por el uploader admin) — sin cap, estos campos se interpolan enteros en el email.
+  if (nombre.length > 200 || telefono.length > 200 || empresa.length > 200) {
+    return { error: "Alguno de los campos es demasiado largo." };
+  }
 
   await enviarConsulta({ nombre, email, telefono, empresa, mensaje });
   return { ok: "¡Recibimos tu consulta! Gracias por escribirnos." };

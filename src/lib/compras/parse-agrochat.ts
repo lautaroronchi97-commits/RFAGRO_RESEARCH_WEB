@@ -229,7 +229,8 @@ function unzip(buf: Buffer): Record<string, Buffer> {
     const lExtraLen = buf.readUInt16LE(localOff + 28);
     const dataStart = localOff + 30 + lNameLen + lExtraLen;
     const comp = buf.subarray(dataStart, dataStart + compSize);
-    files[name] = method === 0 ? comp : inflateRawSync(comp);
+    // Tope anti zip-bomb: el límite de 15 MB es sobre el comprimido (deflate infla ~1000:1).
+    files[name] = method === 0 ? comp : inflateRawSync(comp, { maxOutputLength: 64 * 1024 * 1024 });
     off += 46 + nameLen + extraLen + commentLen;
   }
   return files;
@@ -263,7 +264,9 @@ function colIndex(ref: string): number {
 /** Serial de fecha de Excel (epoch 1899-12-30) → ISO "AAAA-MM-DD". */
 function serialExcelAISO(serial: number): string | null {
   if (!Number.isFinite(serial) || serial < 60 || serial > 80000) return null;
-  const ms = Date.UTC(1899, 11, 30) + Math.round(serial) * 86_400_000;
+  // floor, no round: un serial con hora (45838.958) no debe correr al día siguiente
+  // (la fecha es parte de la clave de upsert — round crearía semanas fantasma).
+  const ms = Date.UTC(1899, 11, 30) + Math.floor(serial) * 86_400_000;
   return new Date(ms).toISOString().slice(0, 10);
 }
 

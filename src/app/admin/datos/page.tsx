@@ -1,13 +1,16 @@
 import Link from "next/link";
+import { requireAdmin } from "@/lib/auth/dal";
 import { Uploader } from "./uploader";
 
 /**
  * Pestaña DATOS del panel admin: actualizar la serie semanal de comercialización de
- * granos (tabla `compras`, base SIO Granos) subiendo el export de Agrochat. La
- * protección viene del layout de /admin (requireAdmin) y cada server action vuelve a
- * exigir admin en su primera línea; la escritura va por RPC con guard is_admin().
+ * granos (tabla `compras`, base SIO Granos) subiendo el export de Agrochat. Protegida
+ * como las páginas hermanas: requireAdmin acá mismo (además del layout), y cada server
+ * action vuelve a exigir admin en su primera línea; la escritura va por RPC con guard
+ * is_admin().
  */
-export default function DatosPage() {
+export default async function DatosPage() {
+  await requireAdmin();
   return (
     <section>
       <div className="admin-hd">
