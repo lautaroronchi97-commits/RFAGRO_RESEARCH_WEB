@@ -52,11 +52,21 @@ const GRANO_A_CODIGO = {
 
 const SECTOR_A_NORM = { exportador: "EXPORTACION", industria: "INDUSTRIA" };
 
-/** "12.345" o "12345" → número; vacío → null. (El export ya viene sin separador de miles.) */
+/**
+ * "12.345" (miles) o "12345" o "1.234,5" (decimal coma) → número; vacío → null.
+ * OJO: el export real trae artefactos de float con PUNTO decimal ("64099.99999999999");
+ * un punto solo se trata como separador de miles si los grupos son de 3 dígitos exactos
+ * (la versión anterior rompía esos valores: 64099.99… → 6.4e15; mismo fix en
+ * src/lib/compras/parse-agrochat.ts, el parser del uploader admin).
+ */
 function num(s) {
   const t = String(s ?? "").trim();
   if (t === "" || t === "-") return null;
-  const n = Number(t.replace(/\./g, "").replace(",", "."));
+  let limpio;
+  if (t.includes(",")) limpio = t.replace(/\./g, "").replace(",", ".");
+  else if (/^-?\d{1,3}(\.\d{3})+$/.test(t)) limpio = t.replace(/\./g, "");
+  else limpio = t;
+  const n = Number(limpio);
   return Number.isFinite(n) ? n : null;
 }
 

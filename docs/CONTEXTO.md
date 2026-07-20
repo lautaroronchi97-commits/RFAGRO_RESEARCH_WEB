@@ -30,7 +30,9 @@
 Next.js 16 (App Router) + TypeScript · Tailwind v4 · next-themes · gráficos SVG a mano (Recharts previsto) ·
 **Supabase CONECTADO** (proyecto `lineup-argentina`, lectura anon con RLS; tablas `futuros_cierres`,
 `vencimientos`, `djve` (registro DJVE **2011→hoy**: histórico backfilleado 19/07/2026 de los XLS oficiales
-SSMA, 334k filas, col. `cosecha` para la era ROE sin ventana de embarque), `lineup`, `compras`, **`pizarra_historico`** (pizarra CAC 2020→hoy, $ y US$,
+SSMA, 334k filas, col. `cosecha` para la era ROE sin ventana de embarque), `lineup`, `compras` (serie semanal de comercialización SIO Granos 2019→hoy, 7 granos × 2 sectores ×
+campañas; se actualiza por el scraper MAGyP y por el uploader admin `/admin/datos` con el export de Agrochat;
+alimenta `/comercio/negociado` y la pata C3 del índice MESA), **`pizarra_historico`** (pizarra CAC 2020→hoy, $ y US$,
 5 granos), **`cbot_cierres`** (futuros CBOT maíz/soja/trigo, ¢/bu + USD/tn), `noticias` (portal del agro,
 `sesiones/2026-07-10-portal-noticias.md`), **`estimaciones_produccion`** (una fila por vintage: producción/área/
 rinde por organismo/país/grano/campaña — USDA, CONAB, BCR-GEA, SAGyP-DEA; poblada 12/07) y `calendario_informes`
