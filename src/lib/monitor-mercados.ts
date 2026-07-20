@@ -23,14 +23,23 @@ import type { Meta } from "./market";
  * los estándar short-ton/lb→tn), aplicados sobre el precio en unidad de origen:
  *   soja/trigo  ¢/bu × 0.3674371     maíz  ¢/bu × 0.3936826
  *   harina      USD/st × 1.1023113   aceite ¢/lb × 22.046226
+ *
+ * MANÍ: no cotiza en Chicago — el ÚNICO futuro de maní del mundo es el de la
+ * Bolsa de Zhengzhou (ZCE, China), en CNY/tn. Viene de otra fuente (Sina
+ * Finance, contrato continuo principal `nf_PK0`) y se pasa a USD/tn con el
+ * USD/CNY (que se pide en el mismo batch de Yahoo). Solo se leen campos
+ * numéricos por índice (ASCII) → no hace falta decodificar el GBK del feed.
  */
 
 const REVALIDATE = 30;
 const SPARK = "https://query1.finance.yahoo.com/v7/finance/spark";
+const SINA_PEANUT = "https://hq.sinajs.cn/list=nf_PK0"; // ZCE maní continuo (主力)
 const UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (RFAGRO research)";
+// Símbolo FX auxiliar (no se muestra): USD/CNY para pasar el maní a USD/tn.
+const FX_HELPER = "CNY=X";
 
 export type MonitorGrupo = "agro" | "macro";
-export type MonitorGlyph = "soja" | "maiz" | "trigo" | null;
+export type MonitorGlyph = "soja" | "maiz" | "trigo" | "mani" | null;
 
 type Instr = {
   yahoo: string;
@@ -125,7 +134,8 @@ type SparkMeta = {
 };
 
 const fetchSpark = cache(async (): Promise<Map<string, SparkMeta> | null> => {
-  const symbols = INSTRUMENTOS.map((i) => i.yahoo).join(",");
+  // + FX_HELPER (USD/CNY): no se muestra, se usa para pasar el maní a USD/tn.
+  const symbols = [...INSTRUMENTOS.map((i) => i.yahoo), FX_HELPER].join(",");
   const url = `${SPARK}?symbols=${encodeURIComponent(symbols)}&range=1d&interval=15m`;
   let data: unknown;
   try {
@@ -167,8 +177,50 @@ const fetchSpark = cache(async (): Promise<Map<string, SparkMeta> | null> => {
   return out.size ? out : null;
 });
 
+/* ---------------- maní ZCE (Sina, contrato continuo principal) ---------------- */
+
+type Peanut = { last: number; prevSettle: number };
+
+/**
+ * Sina devuelve una línea `var hq_str_nf_PK0="花生连续,150000,OPEN,HIGH,LOW,
+ * PREVCLOSE,BID,ASK,LAST,SETTLE,PREVSETTLE,...";` en GBK. Solo leemos campos
+ * numéricos por índice (ASCII), así que alcanza con partir por coma: [8]=último,
+ * [9]=cierre anterior (昨结算, corroborado por el campo [27] duplicado). El maní
+ * no tiene "previous close" tipo acción → como el resto de los futuros, la
+ * variación se mide contra el settlement anterior.
+ */
+const fetchPeanut = cache(async (): Promise<Peanut | null> => {
+  let text: string;
+  try {
+    const res = await fetch(SINA_PEANUT, {
+      next: { revalidate: REVALIDATE },
+      signal: AbortSignal.timeout(8000),
+      headers: { "user-agent": UA, referer: "https://finance.sina.com.cn" },
+    });
+    if (!res.ok) {
+      console.error(`[monitor] maní HTTP ${res.status}`);
+      return null;
+    }
+    text = await res.text();
+  } catch (e) {
+    const timeout = e instanceof Error && e.name === "TimeoutError";
+    console.error(`[monitor] maní ${timeout ? "timeout" : "error de red"}`);
+    return null;
+  }
+
+  const body = text.split('"')[1];
+  if (!body) return null;
+  const f = body.split(",");
+  const last = Number(f[8]);
+  const prevSettle = Number(f[9]);
+  if (!Number.isFinite(last) || last <= 0 || !Number.isFinite(prevSettle) || prevSettle <= 0) {
+    return null;
+  }
+  return { last, prevSettle };
+});
+
 export const getMonitorMercados = cache(async (): Promise<MonitorData> => {
-  const raw = await fetchSpark();
+  const [raw, peanut] = await Promise.all([fetchSpark(), fetchPeanut()]);
 
   let maxTime = 0; // hora del dato más fresco (para el sello)
   let respondidos = 0;
@@ -201,15 +253,36 @@ export const getMonitorMercados = cache(async (): Promise<MonitorData> => {
   const agro = INSTRUMENTOS.filter((i) => i.grupo === "agro").map(build);
   const macro = INSTRUMENTOS.filter((i) => i.grupo === "macro").map(build);
 
+  // Maní ZCE (China): va con los otros commodities (bloque de referencias), no
+  // con los granos de Chicago (otro mercado, otra fuente). Se muestra ya pasado
+  // a USD/tn con el USD/CNY del batch. Encabeza el bloque (es lo más agro).
+  const cnyPerUsd = raw?.get(FX_HELPER)?.price ?? null; // yuanes por 1 USD
+  const maniUsdTn = peanut && cnyPerUsd && cnyPerUsd > 0 ? peanut.last / cnyPerUsd : null;
+  macro.unshift({
+    yahoo: "PK.ZCE",
+    grupo: "macro",
+    nombre: "Maní",
+    glyph: null,
+    pos: "China", // aclaración: benchmark de Zhengzhou, no el maní argentino
+    ultimo: maniUsdTn, // ya en USD/tn (el bloque de referencias muestra "ultimo")
+    usdTn: maniUsdTn,
+    deltaPct:
+      peanut && peanut.prevSettle > 0 ? (peanut.last / peanut.prevSettle - 1) * 100 : null,
+    unidad: "USD/tn",
+    unidadDec: 0,
+    mercado: "ZCE",
+  });
+
   const problemas: string[] = [];
   if (raw === null) problemas.push("mercados de referencia no respondieron");
   else if (respondidos < INSTRUMENTOS.length) problemas.push("algún mercado sin dato");
+  if (peanut === null) problemas.push("maní (ZCE) sin dato");
 
   return {
     agro,
     macro,
     meta: {
-      source: "CBOT · NYMEX · COMEX · ICE",
+      source: "CBOT · NYMEX · COMEX · ICE · ZCE",
       updatedAt: maxTime > 0 ? maxTime * 1000 : null,
       status: raw !== null && respondidos > 0 ? "real" : "parcial",
       problemas,

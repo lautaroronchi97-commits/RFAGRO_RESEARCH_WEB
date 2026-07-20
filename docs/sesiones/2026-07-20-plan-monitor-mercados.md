@@ -24,6 +24,17 @@
     `.mon-u`, `.mon-macro`), con tokens existentes, claro/oscuro.
   - **Integración** — en `/granos`, entre `<ArbitrajesTable/>` y `<MejorCajaPanel/>`. Nada más se tocó.
   - **SIN** tabla Supabase, cron, workflow, migración ni `/api` (view-only, como el feed A3).
+- **MANÍ (agregado a pedido de Lautaro):** investigación previa → el maní **no cotiza en Chicago**;
+  el único futuro de maní del mundo es el de la **Bolsa de Zhengzhou (ZCE, China)**, contrato
+  `PK` (花生/peanut kernel), en **CNY/tn**, desde 2021 (China = mayor productor → benchmark global).
+  Se trae del **contrato continuo principal de Sina Finance** (`hq.sinajs.cn/list=nf_PK0`, sin auth,
+  header Referer; solo se leen campos numéricos por índice → no hace falta decodificar el GBK:
+  `[8]`=último, `[9]`=settlement anterior, corroborado por `[27]`). Se pasa a **USD/tn** con el
+  USD/CNY (`CNY=X`, pedido en el mismo batch de Yahoo). **Decisión de Lautaro:** el maní va
+  **separado de los granos de Chicago**, junto a los otros commodities (encabeza el bloque
+  "Referencias"), con tag "China" para dejar claro que es el benchmark internacional, **no** el
+  precio del maní argentino. El bloque de Chicago quedó intacto. Verificado 1:1: 8.174 CNY/tn ÷
+  6,7574 = 1.210 USD/tn · Δ −0,58% (último vs settlement anterior). Sello suma **ZCE**.
 - Antes, en esta misma sesión (PR #41, ya mergeado): repaso de la nota vieja de pendientes de
   Lautaro contra el backlog de `ESTADO.md` (+ ítem 21 nuevo: resumen/interpretación de informes).
 
