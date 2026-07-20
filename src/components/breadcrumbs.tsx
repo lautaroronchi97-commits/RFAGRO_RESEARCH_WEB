@@ -15,9 +15,20 @@ const LABELS: Record<string, string> = {
   noticias: "Noticias",
 };
 
+// Subpáginas de Comercio exterior (análisis de mesa).
+const COMERCIO_LABELS: Record<string, string> = {
+  puertos: "Puertos · Line-up",
+  empresas: "Empresas exportadoras",
+  senal: "Señal física → precio",
+  embarques: "Mesa de embarque",
+  temperatura: "Calor de mercadería",
+  negociado: "Negociado por producto",
+};
+
 function labelFor(segment: string, prev: string[]): string {
   // Subpágina de calculadoras → nombre de la calculadora.
   if (prev[prev.length - 1] === "calculadoras") return getCalc(segment)?.nombre ?? segment;
+  if (prev[prev.length - 1] === "comercio") return COMERCIO_LABELS[segment] ?? segment;
   return LABELS[segment] ?? segment;
 }
 

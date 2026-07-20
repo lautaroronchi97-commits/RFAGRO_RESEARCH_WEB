@@ -20,6 +20,7 @@ const ANALISIS = [
   { href: "/comercio/senal", nombre: "Señal física → precio", desc: "Semáforo que cruza la demanda física de exportación con la capacidad de pago." },
   { href: "/comercio/embarques", nombre: "Mesa de embarque", desc: "El programa de embarques declarado (DJVE) por mes y producto, en idioma A3." },
   { href: "/comercio/temperatura", nombre: "Calor de mercadería", desc: "Índice MESA: qué grano está caliente (diferir) y cuál pesado (vender ya), a percentil estacional." },
+  { href: "/comercio/negociado", nombre: "Negociado por producto", desc: "Volumen negociado semanal/mensual (SIO Granos): % sobre cosecha, % priceado e histograma." },
 ];
 
 export default async function ComercioPage() {
