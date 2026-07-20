@@ -55,7 +55,7 @@ alguna fuente del catálogo baja el delay → **NO** (10 min es el piso de licen
 ¢/bu → 450,7 USD/tn, etc.) · SSR con valores reales · navegador claro+oscuro. Decisiones (20/07): solo
 continuo · visibilidad sección "granos" · WTI. Plan: **[`PLAN_MONITOR_MERCADOS.md`](PLAN_MONITOR_MERCADOS.md)**;
 detalle: [`sesiones/2026-07-20-plan-monitor-mercados.md`](sesiones/2026-07-20-plan-monitor-mercados.md).
-**Falta solo que Lautaro mergee el PR #42.** (Antes en el día: PR #41 mergeado — repaso del backlog
+**PR #42 MERGEADO a `main`.** (Antes en el día: PR #41 mergeado — repaso del backlog
 contra la nota vieja de Lautaro, ítem 21 nuevo.)
 
 ## Anterior (20/07/2026 — Tabla de datos + marca de agua en todos los gráficos)
