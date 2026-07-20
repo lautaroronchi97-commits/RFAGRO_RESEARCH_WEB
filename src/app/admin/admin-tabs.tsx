@@ -8,6 +8,7 @@ const TABS: { href: string; label: string; badge?: boolean }[] = [
   { href: "/admin/usuarios", label: "Usuarios" },
   { href: "/admin/empresas", label: "Empresas" },
   { href: "/admin/actividad", label: "Actividad" },
+  { href: "/admin/datos", label: "Datos" },
 ];
 
 /**
