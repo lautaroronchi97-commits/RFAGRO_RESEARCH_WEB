@@ -22,7 +22,7 @@
 ## Ahora (última actualización: 20/07/2026 — Negociado por producto (SIO Granos) + uploader admin de compras)
 
 **📊 NEGOCIADO POR PRODUCTO (ítems 8 y 9 del backlog, convergen) + UPLOADER ADMIN — rama
-`claude/volumen-siogranos-analysis-iq6dnd`, PR #_.** Página nueva **`/comercio/negociado`** (solo mesa,
+`claude/volumen-siogranos-analysis-iq6dnd`, PR #44.** Página nueva **`/comercio/negociado`** (solo mesa,
 `requireAdmin`) sobre la serie semanal de `compras` (SIO Granos): KPIs de la última semana (total negociado
 todos los granos, grano líder), **tabla por producto/campaña** (campaña activa = mayor venta semanal; semanal,
 Δ vs semana anterior, acumulado, **% sobre cosecha** vía `compras_avance_hist`, **% priceado** = (precio hecho
