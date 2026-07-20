@@ -62,10 +62,12 @@ y "estrategias" (**solo marca** — sus tablas de escenarios ya listan los mismo
 tocadas**; `watermark.tsx` (login) intacto. **Verificado**: lint/tsc/build + navegador claro/oscuro con datos
 reales cotejados 1:1 contra KPIs/leyendas (soja MAY/JUL mín 5,10/máx 9,40 · dólar SPOT 1.478,5/DIC26 1.625,0 ·
 implícitas 10d 11,1% · producción 149,00 Mt) + cero errores de consola. Cierra el pendiente "tabla
-alternativa" de la v2 de gráficos (se hizo siempre visible). **Pendiente**: el gráfico nuevo
-`/comercio/negociado` (histograma de SIO Granos, llegó en el PR #44) todavía NO tiene tabla ni marca — sumarlas
-en una próxima. Ojo sandbox: se creó `.env.local` (gitignoreado) con las creds públicas de Supabase para
-builds con datos.
+alternativa" de la v2 de gráficos (se hizo siempre visible). **Seguimiento (PR #45, MERGEADO)**: el gráfico
+nuevo `/comercio/negociado` (histograma de SIO Granos, llegó en el PR #44 después de arrancar el #43) también
+recibió su tabla + marca — mismo patrón, reusa `ChartMarca`/`ChartTabla` (rama `claude/negociado-tabla-marca`;
+tabla semana/mes × Exportación/Industria/Total en t; verificado en navegador claro/oscuro con datos sintéticos
+porque la página exige admin). Con esto **TODOS los gráficos de la web** quedaron con la doble lectura + marca.
+Ojo sandbox: se creó `.env.local` (gitignoreado) con las creds públicas de Supabase para builds con datos.
 Detalle: [`sesiones/2026-07-20-tabla-datos-y-marca-graficos.md`](sesiones/2026-07-20-tabla-datos-y-marca-graficos.md).
 
 ## Anterior (20/07/2026 — Negociado por producto (SIO Granos) + uploader admin de compras)
