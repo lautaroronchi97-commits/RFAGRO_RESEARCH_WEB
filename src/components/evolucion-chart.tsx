@@ -4,6 +4,8 @@ import { useState } from "react";
 import { nfmt } from "@/lib/format";
 import { ORG_LABEL } from "@/lib/calendario";
 import type { SerieEvol } from "@/lib/estimaciones";
+import { ChartMarca } from "./chart-marca";
+import { ChartTabla, type ChartTablaColumna, type ChartTablaFila } from "./chart-tabla";
 
 const W = 660;
 const H = 260;
@@ -24,6 +26,46 @@ function fmtMes(ms: number, conAnio: boolean): string {
 }
 
 type Flat = { s: number; organismo: string; ms: number; valor: number; informe: string; fecha: string };
+
+function fmtFecha(fechaISO: string): string {
+  return new Intl.DateTimeFormat("es-AR", {
+    timeZone: "UTC",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(`${fechaISO}T00:00:00Z`));
+}
+
+/**
+ * Tabla de datos del gráfico (doble lectura): una fila por fecha de publicación,
+ * una columna por organismo. Mismos puntos y mismo formateo que el tooltip
+ * (nfmt a 2 decimales, en la unidad del gráfico); "—" cuando un organismo no
+ * publicó ese día.
+ */
+function tablaDeSeries(series: SerieEvol[], unidad: string): { columnas: ChartTablaColumna[]; filas: ChartTablaFila[] } {
+  const columnas: ChartTablaColumna[] = [
+    { key: "fecha", label: "Fecha", align: "left" },
+    ...series.map((serie) => ({
+      key: serie.organismo,
+      label: `${ORG_LABEL[serie.organismo as keyof typeof ORG_LABEL] ?? serie.organismo} (${unidad})`,
+    })),
+  ];
+  const porFecha = new Map<string, ChartTablaFila>();
+  for (const serie of series) {
+    for (const p of serie.puntos) {
+      let fila = porFecha.get(p.fecha);
+      if (!fila) {
+        fila = { fecha: fmtFecha(p.fecha) };
+        porFecha.set(p.fecha, fila);
+      }
+      fila[serie.organismo] = nfmt(p.valor, 2);
+    }
+  }
+  const filas = [...porFecha.entries()]
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([, fila]) => fila);
+  return { columnas, filas };
+}
 
 /**
  * Evolución de la estimación de una campaña, publicación a publicación. Una línea por organismo,
@@ -80,67 +122,77 @@ export function EvolucionChart({ series, unidad }: { series: SerieEvol[]; unidad
     setHi(best);
   }
 
+  const tabla = tablaDeSeries(series, unidad);
+
   return (
-    <div className="chart-wrap">
-      <svg viewBox={`0 0 ${W} ${H}`} className="cv" role="img" aria-label="Evolución de la estimación de producción por organismo">
-        {yTicks.map((t, k) => (
-          <g key={`y${k}`}>
-            <line className="cv-grid" x1={pad.l} y1={Y(t)} x2={W - pad.r} y2={Y(t)} />
-            <text className="cv-axis" x={pad.l - 7} y={Y(t) + 3} textAnchor="end">
-              {nfmt(t, t >= 100 ? 0 : 1)}
-            </text>
-          </g>
-        ))}
-        {xTicks.map((t, k) => (
-          <text key={`x${k}`} className="cv-axis" x={X(t)} y={H - 9} textAnchor="middle">
-            {fmtMes(t, spanAnios > 0.9)}
-          </text>
-        ))}
-        {series.map((serie) => {
-          const pts = serie.puntos;
-          const d = pts.map((p, i) => `${i ? "L" : "M"}${X(epoch(p.fecha)).toFixed(1)},${Y(p.valor).toFixed(1)}`).join(" ");
-          return (
-            <g key={serie.organismo} className={`evo-serie org-${serie.organismo}`}>
-              <path d={d} className="evo-line" />
-              {pts.map((p, i) => (
-                <circle key={i} cx={X(epoch(p.fecha))} cy={Y(p.valor)} r={2.6} className="evo-dot" />
-              ))}
-              <circle cx={X(epoch(pts[pts.length - 1].fecha))} cy={Y(pts[pts.length - 1].valor)} r={4} className="evo-end" />
+    <>
+      <div className="chart-wrap">
+        <ChartMarca />
+        <svg viewBox={`0 0 ${W} ${H}`} className="cv" role="img" aria-label="Evolución de la estimación de producción por organismo">
+          {yTicks.map((t, k) => (
+            <g key={`y${k}`}>
+              <line className="cv-grid" x1={pad.l} y1={Y(t)} x2={W - pad.r} y2={Y(t)} />
+              <text className="cv-axis" x={pad.l - 7} y={Y(t) + 3} textAnchor="end">
+                {nfmt(t, t >= 100 ? 0 : 1)}
+              </text>
             </g>
-          );
-        })}
+          ))}
+          {xTicks.map((t, k) => (
+            <text key={`x${k}`} className="cv-axis" x={X(t)} y={H - 9} textAnchor="middle">
+              {fmtMes(t, spanAnios > 0.9)}
+            </text>
+          ))}
+          {series.map((serie) => {
+            const pts = serie.puntos;
+            const d = pts.map((p, i) => `${i ? "L" : "M"}${X(epoch(p.fecha)).toFixed(1)},${Y(p.valor).toFixed(1)}`).join(" ");
+            return (
+              <g key={serie.organismo} className={`evo-serie org-${serie.organismo}`}>
+                <path d={d} className="evo-line" />
+                {pts.map((p, i) => (
+                  <circle key={i} cx={X(epoch(p.fecha))} cy={Y(p.valor)} r={2.6} className="evo-dot" />
+                ))}
+                <circle cx={X(epoch(pts[pts.length - 1].fecha))} cy={Y(pts[pts.length - 1].valor)} r={4} className="evo-end" />
+              </g>
+            );
+          })}
+          {hi !== null && (
+            <g className={`org-${flat[hi].organismo}`}>
+              <line className="cv-cross" x1={X(flat[hi].ms)} y1={pad.t} x2={X(flat[hi].ms)} y2={pad.t + ih} />
+              <circle className="evo-focus" cx={X(flat[hi].ms)} cy={Y(flat[hi].valor)} r={5} />
+            </g>
+          )}
+          <rect
+            x={pad.l}
+            y={pad.t}
+            width={iw}
+            height={ih}
+            fill="transparent"
+            style={{ cursor: "crosshair" }}
+            onPointerMove={onMove}
+            onPointerLeave={() => setHi(null)}
+          />
+        </svg>
         {hi !== null && (
-          <g className={`org-${flat[hi].organismo}`}>
-            <line className="cv-cross" x1={X(flat[hi].ms)} y1={pad.t} x2={X(flat[hi].ms)} y2={pad.t + ih} />
-            <circle className="evo-focus" cx={X(flat[hi].ms)} cy={Y(flat[hi].valor)} r={5} />
-          </g>
+          <div className="cv-tip" style={{ left: `${(X(flat[hi].ms) / W) * 100}%`, top: `${(Y(flat[hi].valor) / H) * 100}%` }}>
+            <span className="tt-x">{ORG_LABEL[flat[hi].organismo as keyof typeof ORG_LABEL] ?? flat[hi].organismo}</span> · {nfmt(flat[hi].valor, 2)} {unidad}
+            <span className="cv-tip-sub">{flat[hi].informe}</span>
+          </div>
         )}
-        <rect
-          x={pad.l}
-          y={pad.t}
-          width={iw}
-          height={ih}
-          fill="transparent"
-          style={{ cursor: "crosshair" }}
-          onPointerMove={onMove}
-          onPointerLeave={() => setHi(null)}
-        />
-      </svg>
-      {hi !== null && (
-        <div className="cv-tip" style={{ left: `${(X(flat[hi].ms) / W) * 100}%`, top: `${(Y(flat[hi].valor) / H) * 100}%` }}>
-          <span className="tt-x">{ORG_LABEL[flat[hi].organismo as keyof typeof ORG_LABEL] ?? flat[hi].organismo}</span> · {nfmt(flat[hi].valor, 2)} {unidad}
-          <span className="cv-tip-sub">{flat[hi].informe}</span>
+        <div className="cv-legend">
+          {series.map((serie) => (
+            <span className={`lk org-${serie.organismo}`} key={serie.organismo}>
+              <span className="sw evo-sw" />
+              {ORG_LABEL[serie.organismo as keyof typeof ORG_LABEL] ?? serie.organismo}
+              <span className="lk-val">{nfmt(serie.puntos[serie.puntos.length - 1].valor, 2)}</span>
+            </span>
+          ))}
         </div>
-      )}
-      <div className="cv-legend">
-        {series.map((serie) => (
-          <span className={`lk org-${serie.organismo}`} key={serie.organismo}>
-            <span className="sw evo-sw" />
-            {ORG_LABEL[serie.organismo as keyof typeof ORG_LABEL] ?? serie.organismo}
-            <span className="lk-val">{nfmt(serie.puntos[serie.puntos.length - 1].valor, 2)}</span>
-          </span>
-        ))}
       </div>
-    </div>
+      <ChartTabla
+        columnas={tabla.columnas}
+        filas={tabla.filas}
+        nota="Una fila por fecha de publicación; «—» = ese organismo no publicó ese día."
+      />
+    </>
   );
 }

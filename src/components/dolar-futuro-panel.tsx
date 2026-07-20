@@ -2,6 +2,7 @@ import { getDolarFuturo } from "@/lib/market";
 import { nfmt, pfmt, rfmt, dirOf, arrowOf } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
 import { DolarFuturoChart } from "./dolar-futuro-chart";
+import { ChartTabla } from "./chart-tabla";
 import { SourceStamp } from "./source-stamp";
 import { QueEsEsto } from "./que-es-esto";
 
@@ -46,6 +47,14 @@ export async function DolarFuturoPanel() {
               </span>
             )}
           </div>
+          <ChartTabla
+            titulo="Datos de la curva"
+            columnas={[
+              { key: "pos", label: "Posición", align: "left" },
+              { key: "precio", label: "Precio ($)" },
+            ]}
+            filas={points.map((p) => ({ pos: p.label, precio: nfmt(p.value, 1) }))}
+          />
         </div>
 
         <div className="df-table">

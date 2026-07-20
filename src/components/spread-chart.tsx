@@ -9,6 +9,8 @@ import {
   etiquetaCalendario, mesDeFecha, mesEnRuedasAlVto,
   type BandaPunto, type Eje, type Metric, type PuntoXY,
 } from "@/lib/derivadas";
+import { ChartMarca } from "./chart-marca";
+import { ChartTabla, type ChartTablaColumna, type ChartTablaFila } from "./chart-tabla";
 
 /**
  * Chart multi-campaña del panel de spreads. Dos vistas:
@@ -79,70 +81,122 @@ export function SpreadChart({
     return ultFecha ? mesDeFecha(ultFecha) : "";
   };
 
+  // Tabla de datos (doble lectura): EXACTAMENTE los mismos puntos que dibuja el
+  // chart (`rows` = líneas + banda mergeadas por x), con el mismo formateo que
+  // usa el tooltip (nfmt + decimals). Una fila por valor de x, ya ordenadas.
+  const columnas: ChartTablaColumna[] = [
+    { key: "x", label: eje === "vto" ? "Ruedas al vto" : "Fecha", align: "left" },
+    ...drawn.map((ln) => ({ key: `y${ln.key}`, label: ln.label })),
+    ...(usaBanda
+      ? [
+          { key: "bmin", label: "Historia mín" },
+          { key: "bmed", label: "Mediana histórica" },
+          { key: "bmax", label: "Historia máx" },
+        ]
+      : []),
+  ];
+  const filas: ChartTablaFila[] = rows.map((r) => {
+    const fila: ChartTablaFila = {};
+    if (eje === "vto") {
+      // Igual que el encabezado del tooltip: nº de ruedas + mes de referencia.
+      fila.x = `${-Math.round(r.x)} · ${mesEnX(r.x)}`;
+    } else {
+      // Eje calendario: si todas las líneas comparten la fecha a esa altura
+      // (modo Período / una sola campaña) se muestra la fecha real; con varias
+      // campañas superpuestas se rotula el mes (como el eje).
+      const fs = drawn
+        .map((ln) => r[`f${ln.key}`])
+        .filter((v): v is string => typeof v === "string");
+      fila.x = fs.length > 0 && fs.every((f) => f === fs[0]) ? fs[0] : etiquetaCalendario(r.x, anchorMes);
+    }
+    for (const ln of drawn) {
+      const y = r[`y${ln.key}`];
+      fila[`y${ln.key}`] = typeof y === "number" ? nfmt(y, decimals) : null;
+    }
+    if (usaBanda) {
+      const br = r.brange as [number, number] | undefined;
+      fila.bmin = br ? nfmt(br[0], decimals) : null;
+      fila.bmax = br ? nfmt(br[1], decimals) : null;
+      fila.bmed = typeof r.bmed === "number" ? nfmt(r.bmed, decimals) : null;
+    }
+    return fila;
+  });
+  const notaTabla =
+    eje === "vto"
+      ? "Los mismos puntos que dibuja el gráfico, por rueda hábil al vencimiento (con el mes de referencia de la campaña vigente). «—» = sin dato a esa altura."
+      : "Los mismos puntos que dibuja el gráfico, en eje calendario. Con varias campañas superpuestas la fila se rotula por mes. «—» = sin dato a esa altura.";
+
   return (
-    <ResponsiveContainer width="100%" height={param(400)}>
-      <ComposedChart data={rows} margin={{ top: 8, right: 16, bottom: 30, left: 4 }}>
-        <CartesianGrid stroke="var(--line)" strokeDasharray="2 4" />
-        <XAxis
-          dataKey="x"
-          type="number"
-          domain={["dataMin", "dataMax"]}
-          height={eje === "vto" ? 40 : 28}
-          tick={<GxXTick eje={eje} anchorMes={anchorMes} mesEnX={mesEnX} />}
-          stroke="var(--line-2)"
-        />
-        <YAxis
-          tickFormatter={(v: number) => nfmt(v, metric === "ratio" ? 3 : 0)}
-          tick={{ fill: "var(--ink-3)", fontSize: 11 }}
-          stroke="var(--line-2)"
-          width={52}
-        />
-        {metric !== "ratio" && <ReferenceLine y={0} stroke="var(--line-2)" />}
-        <Tooltip
-          content={<GxTooltip lines={drawn} eje={eje} anchorMes={anchorMes} decimals={decimals} usaBanda={usaBanda} mesEnX={mesEnX} />}
-          isAnimationActive={false}
-        />
-        {usaBanda && (
-          <Area
-            dataKey="brange"
-            stroke="none"
-            fill="var(--ink-3)"
-            fillOpacity={0.16}
-            connectNulls
-            isAnimationActive={false}
-            activeDot={false}
-            legendType="none"
-          />
-        )}
-        {usaBanda && (
-          <Line
-            dataKey="bmed"
-            name="Mediana histórica"
-            stroke="var(--ink-2)"
-            strokeWidth={1.3}
-            strokeDasharray="5 4"
-            dot={false}
-            connectNulls
-            isAnimationActive={false}
-          />
-        )}
-        {drawn.map((ln) => (
-          <Line
-            key={ln.key}
-            type="monotone"
-            dataKey={`y${ln.key}`}
-            name={ln.label}
-            stroke={ln.color}
-            strokeWidth={ln.vigente ? 2.8 : 1.4}
-            strokeDasharray={ln.dash ? "4 3" : undefined}
-            dot={false}
-            activeDot={{ r: 3 }}
-            connectNulls
-            isAnimationActive={false}
-          />
-        ))}
-      </ComposedChart>
-    </ResponsiveContainer>
+    <>
+      {/* El wrapper relativo ancla la marca de agua al área del chart. */}
+      <div style={{ position: "relative" }}>
+        <ChartMarca />
+        <ResponsiveContainer width="100%" height={param(400)}>
+          <ComposedChart data={rows} margin={{ top: 8, right: 16, bottom: 30, left: 4 }}>
+            <CartesianGrid stroke="var(--line)" strokeDasharray="2 4" />
+            <XAxis
+              dataKey="x"
+              type="number"
+              domain={["dataMin", "dataMax"]}
+              height={eje === "vto" ? 40 : 28}
+              tick={<GxXTick eje={eje} anchorMes={anchorMes} mesEnX={mesEnX} />}
+              stroke="var(--line-2)"
+            />
+            <YAxis
+              tickFormatter={(v: number) => nfmt(v, metric === "ratio" ? 3 : 0)}
+              tick={{ fill: "var(--ink-3)", fontSize: 11 }}
+              stroke="var(--line-2)"
+              width={52}
+            />
+            {metric !== "ratio" && <ReferenceLine y={0} stroke="var(--line-2)" />}
+            <Tooltip
+              content={<GxTooltip lines={drawn} eje={eje} anchorMes={anchorMes} decimals={decimals} usaBanda={usaBanda} mesEnX={mesEnX} />}
+              isAnimationActive={false}
+            />
+            {usaBanda && (
+              <Area
+                dataKey="brange"
+                stroke="none"
+                fill="var(--ink-3)"
+                fillOpacity={0.16}
+                connectNulls
+                isAnimationActive={false}
+                activeDot={false}
+                legendType="none"
+              />
+            )}
+            {usaBanda && (
+              <Line
+                dataKey="bmed"
+                name="Mediana histórica"
+                stroke="var(--ink-2)"
+                strokeWidth={1.3}
+                strokeDasharray="5 4"
+                dot={false}
+                connectNulls
+                isAnimationActive={false}
+              />
+            )}
+            {drawn.map((ln) => (
+              <Line
+                key={ln.key}
+                type="monotone"
+                dataKey={`y${ln.key}`}
+                name={ln.label}
+                stroke={ln.color}
+                strokeWidth={ln.vigente ? 2.8 : 1.4}
+                strokeDasharray={ln.dash ? "4 3" : undefined}
+                dot={false}
+                activeDot={{ r: 3 }}
+                connectNulls
+                isAnimationActive={false}
+              />
+            ))}
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+      <ChartTabla columnas={columnas} filas={filas} nota={notaTabla} />
+    </>
   );
 }
 
