@@ -32,9 +32,11 @@ reescribieron las 30 filas con los valores del CSV verificado del repo (control:
 base guarda toneladas enteras → subirlo tal cual mete la semana ÷1000. **Fix de proceso:** componente
 `src/app/admin/datos/prompt-agrochat.tsx` (client, botón copiar) con el **prompt canónico** que le pide a
 Agrochat el export en **toneladas enteras** con la cabecera y unidades exactas; Lautaro lo copia cada
-semana cambiando solo la fecha. lint/tsc/build ✅. **Pendiente sugerido (no hecho):** guard de unidades en
-la confirmación del uploader (rechazar/avisar si el acumulado subido cae ~1000× vs lo que ya está en la
-base) para que un export en miles no pueda corromper en silencio.
+semana cambiando solo la fecha. **Guard de unidades HECHO** (`actions.ts` + checkbox "forzar" en
+`uploader.tsx`): en la previsualización avisa y en la confirmación **bloquea** si el acumulado subido cae
+>50% vs el último acumulado de esa clave ya en la base (imposible en un acumulado → señal de export en
+miles), salvo que se tilde "forzar". Umbral de bloqueo: ≥3 filas sospechosas y ≥30% de las comparables.
+lint/tsc/build ✅.
 
 ## Anterior (20/07/2026 — Home = novedades del día)
 

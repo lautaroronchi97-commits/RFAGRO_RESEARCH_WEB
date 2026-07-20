@@ -83,6 +83,75 @@ async function contarExistentes(parsed: ParseOk, desde: string, hasta: string): 
   }
 }
 
+/**
+ * Guard de UNIDADES. El acumulado (`total_comprado_acumulado`) nunca decrece; si el valor
+ * subido para una clave (campaña/grano/sector) es mucho menor que el último acumulado que
+ * ya hay en la base, casi seguro el export vino en MILES de toneladas (Agrochat "Última
+ * Semana") en vez de toneladas enteras → entraría ÷1000 y corrompería la serie. Devuelve
+ * las filas sospechosas + si el patrón es sistemático (para bloquear la confirmación).
+ */
+const FACTOR_SOSPECHA = 0.5; // subido < prev*0.5 = imposible en un acumulado (÷1000 da 0.001)
+
+/** Último acumulado por clave (campaña|codigo|sector) con fecha anterior a `desde`. */
+async function referenciaPrevia(desde: string): Promise<Map<string, number> | null> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const ultima = new Map<string, { fecha: string; ton: number }>();
+    const PAGE = 1000;
+    for (let off = 0; ; off += PAGE) {
+      const { data, error } = await supabase
+        .from("compras")
+        .select("fecha,codigo_interno,campana,sector,toneladas")
+        .lt("fecha", desde)
+        .range(off, off + PAGE - 1);
+      if (error) return null;
+      for (const r of data ?? []) {
+        if (r.toneladas == null) continue;
+        const k = `${r.campana}|${r.codigo_interno}|${r.sector}`;
+        const cur = ultima.get(k);
+        if (!cur || r.fecha > cur.fecha) ultima.set(k, { fecha: r.fecha, ton: r.toneladas as number });
+      }
+      if (!data || data.length < PAGE) break;
+      if (off > 400_000) break; // backstop
+    }
+    const out = new Map<string, number>();
+    for (const [k, v] of ultima) out.set(k, v.ton);
+    return out;
+  } catch {
+    return null;
+  }
+}
+
+async function guardUnidades(
+  parsed: ParseOk,
+  desde: string,
+): Promise<{ bloquear: boolean; mensaje: string | null }> {
+  const ref = await referenciaPrevia(desde);
+  if (!ref) return { bloquear: false, mensaje: null }; // no se pudo chequear → no bloquear
+  let comparables = 0;
+  let sospechosas = 0;
+  const ejemplos: string[] = [];
+  for (const f of parsed.filas) {
+    if (f.toneladas == null) continue;
+    const prev = ref.get(`${f.campana}|${f.codigo_interno}|${f.sector}`);
+    if (prev == null || prev <= 0) continue;
+    comparables++;
+    if (f.toneladas < prev * FACTOR_SOSPECHA) {
+      sospechosas++;
+      if (ejemplos.length < 3) {
+        ejemplos.push(
+          `${f.grano_raw} ${f.sector} ${f.campana}: subís ${Math.round(f.toneladas).toLocaleString("es-AR")} t vs ${Math.round(prev).toLocaleString("es-AR")} t de la semana previa`,
+        );
+      }
+    }
+  }
+  if (sospechosas === 0) return { bloquear: false, mensaje: null };
+  const bloquear = sospechosas >= 3 && sospechosas >= comparables * 0.3;
+  const mensaje =
+    `Posible problema de UNIDADES: el acumulado de ${sospechosas} de ${comparables} filas comparables es mucho menor que la semana anterior, y el acumulado no puede bajar. ¿El export vino en MILES de toneladas? Pedí el dato en toneladas enteras con el prompt de arriba. Ejemplos → ${ejemplos.join(" · ")}.`;
+  return { bloquear, mensaje };
+}
+
 export async function procesarCarga(_state: DatosState, formData: FormData): Promise<DatosState> {
   await requireAdmin();
 
@@ -101,6 +170,7 @@ export async function procesarCarga(_state: DatosState, formData: FormData): Pro
   // ------------------------------------------------------------------
   if (paso !== "confirm") {
     const existentes = await contarExistentes(parsed, desde, hasta);
+    const guard = await guardUnidades(parsed, desde);
     const granos = [...new Set(parsed.filas.map((f) => f.grano_raw))].sort();
     const campanas = [...new Set(parsed.filas.map((f) => f.campana))].sort();
     return {
@@ -127,6 +197,7 @@ export async function procesarCarga(_state: DatosState, formData: FormData): Pro
         advertencias: [
           ...parsed.advertencias,
           ...(existentes == null ? ["No pude consultar la base para contar claves existentes."] : []),
+          ...(guard.mensaje ? [guard.bloquear ? `🚫 ${guard.mensaje} La carga quedará BLOQUEADA salvo que marques "forzar".` : guard.mensaje] : []),
         ],
       },
     };
@@ -135,6 +206,15 @@ export async function procesarCarga(_state: DatosState, formData: FormData): Pro
   // ------------------------------------------------------------------
   // Paso 2 — CONFIRMAR: upsert por lotes vía RPC + refresh de la matview.
   // ------------------------------------------------------------------
+  // Guard de unidades: bloquea un export en miles de toneladas (÷1000) salvo "forzar".
+  const forzar = String(formData.get("forzar") ?? "") === "1";
+  if (!forzar) {
+    const guard = await guardUnidades(parsed, desde);
+    if (guard.bloquear) {
+      return { error: `${guard.mensaje} No se cargó nada. Si estás seguro de que el dato es correcto, marcá "forzar" y confirmá de nuevo.` };
+    }
+  }
+
   const supabase = await createSupabaseServerClient();
   const advertencias = [...parsed.advertencias];
   const BATCH = 1000;

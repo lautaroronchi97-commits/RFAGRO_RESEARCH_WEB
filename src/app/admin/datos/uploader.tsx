@@ -23,6 +23,7 @@ function ddmmaaaa(iso: string): string {
 export function Uploader() {
   const [st, dispatch, pend] = useActionState<DatosState, FormData>(procesarCarga, undefined);
   const [archivo, setArchivo] = useState<File | null>(null);
+  const [forzar, setForzar] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const enviar = (paso: "preview" | "confirm") => {
@@ -30,6 +31,7 @@ export function Uploader() {
     const fd = new FormData();
     fd.append("archivo", archivo);
     fd.append("paso", paso);
+    if (forzar) fd.append("forzar", "1");
     startTransition(() => dispatch(fd));
   };
 
@@ -62,6 +64,11 @@ export function Uploader() {
           {pend ? "Procesando…" : "2 · Confirmar y cargar"}
         </button>
       </div>
+
+      <label className="admin-sub" style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, cursor: "pointer" }}>
+        <input type="checkbox" checked={forzar} onChange={(e) => setForzar(e.target.checked)} />
+        Forzar carga (ignorar el chequeo de unidades — solo si estás seguro de que el dato es correcto)
+      </label>
 
       {st?.error && <p className="admin-msg admin-msg-err" role="alert">{st.error}</p>}
 
