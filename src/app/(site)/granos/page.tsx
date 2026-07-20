@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ArbitrajesTable } from "@/components/arbitrajes-table";
+import { MonitorMercados } from "@/components/monitor-mercados";
 import { MejorCajaPanel } from "@/components/mejor-caja-panel";
 import { PasesPanel } from "@/components/pases-panel";
 import { CapacidadPanel } from "@/components/capacidad-panel";
@@ -24,6 +25,7 @@ export default async function GranosPage() {
         <div className="col">
           <h2 className="sec-title">Granos</h2>
           <ArbitrajesTable />
+          <MonitorMercados />
           <MejorCajaPanel />
           <PasesPanel />
           <CapacidadPanel />
