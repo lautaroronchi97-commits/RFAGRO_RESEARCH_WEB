@@ -19,7 +19,26 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 19/07/2026 — Farmer selling C3 LIVE · serie Agrochat cargada · fix modelo)
+## Ahora (última actualización: 20/07/2026 — Plan Monitor de Mercados (Chicago + macro) cerrado)
+
+**📈 MONITOR DE MERCADOS (Chicago + macro) — PLAN CERRADO (solo orquestación; el build va en sesión
+aparte) — rama `claude/todo-implementation-7nockf`, PR #_.** Pedido de Lautaro (20/07): panel nuevo en
+`/granos` **debajo de la tabla de Arbitrajes** con Chicago destacado (soja · aceite · harina · maíz ·
+trigo, **posición continua, normalizados a USD/tn**) + bloque macro informativo (WTI · oro · plata ·
+DXY · USD/BRL · SPY). **View-only** (pedido explícito: nada se guarda — sin tabla, sin cron, como el
+feed A3). Fuente elegida del catálogo de skills de gauss y **verificada con request real**: endpoint
+batch de Yahoo Finance (`spark`) — 1 request trae los 11 instrumentos sin auth (necesita User-Agent);
+**delay medido ~12,5 min** (feed demorado del exchange → sello honesto "demorado ~15 min", regla
+"institución sí, puente no": el sello nombra CBOT·NYMEX·COMEX·ICE). **Cadencia objetivo (1 min)
+alcanzada sin infra nueva**: el fetch va dentro del ISR de 30 s que `/granos` ya tiene + poll cliente
+existente. Decisiones consultadas (20/07): solo continuo (sin mini-curva) · visibilidad = sección
+"granos" · petróleo = WTI. Fixtures de conversión verificados (soja 1.223 ¢/bu → 449,4 USD/tn, etc.,
+con los factores de `ingest-cbot.mjs`). Todo en **[`PLAN_MONITOR_MERCADOS.md`](PLAN_MONITOR_MERCADOS.md)**;
+detalle: [`sesiones/2026-07-20-plan-monitor-mercados.md`](sesiones/2026-07-20-plan-monitor-mercados.md).
+**Sigue: sesión de build** (lib + componente + integración + verificación navegador — spec en el plan §5-§6).
+(Antes en el día: PR #41 mergeado — repaso del backlog contra la nota vieja de Lautaro, ítem 21 nuevo.)
+
+## Anterior (19/07/2026 — Farmer selling C3 LIVE · serie Agrochat cargada · fix modelo)
 
 **🌡️ ÍNDICE MESA — 3ª PATA (FARMER SELLING / C3) LIVE — PR #39 (base) MERGEADO + carga corrida; fix del
 modelo en el PR #40 (rama `claude/desarrollos-pendientes-tqgic8`).** Al mergear el #39 se corrió el workflow
@@ -270,7 +289,8 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
   (hoy `cbot_cierres` ya tiene CBOT maíz/soja/trigo; falta sumar metales/petróleo/Merval/SPY/EWZ — ver
   fuentes candidatas `barchart`/`investing`/`yahoo-finance` en `CONTEXTO.md`). **Precios Chicago**: el
   dato ya está (`cbot_cierres`) y se usa en `/graficos` (preset "Chicago", A3 vs CBOT); falta sumarlo acá,
-  al reporte diario/semanal.
+  al reporte diario/semanal. La **vista web en vivo** de Chicago + macro quedó planificada aparte:
+  [`PLAN_MONITOR_MERCADOS.md`](PLAN_MONITOR_MERCADOS.md) (plan cerrado 20/07, build pendiente).
 - [~] 6. **Barcos / lineups en puerto — EN CURSO (plan + Fases 0, 1, 2 y 3 hechas).** Plan cerrado
   ([`PLAN_PUERTOS.md`](PLAN_PUERTOS.md), 11 decisiones + 5 fases, lógica portada de `LineUps_Code`).
   **Fase 0 (dato vivo) HECHA** (18/07): scraper reactivado vía Edge Function de Supabase, backfill,
