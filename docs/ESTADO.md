@@ -241,6 +241,11 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
 > deadlines duros** — no hay que forzar nada por calendario. Cada sesión que arranque revisa esta lista,
 > marca lo que se hizo (`[x]`) y anota en «Ahora» el detalle. Si una tarea ya tiene algo hecho o
 > relacionado en el repo, se anota el link para no duplicar research.
+>
+> **Repaso 20/07/2026**: Lautaro trajo una nota vieja con pendientes sueltos. Cruzada contra esta lista:
+> ya estaban cubiertos por los ítems 4, 5, 6 (con el fix de la pata C3 en el PR #40), 7/10, 8, 9, 16, 18,
+> 19 y la sección "Pendiente del panel de gráficos (v2)" más abajo (tabla de datos en gráficos). Lo único
+> nuevo fue el ítem 21 (resumen/interpretación de informes), agregado abajo.
 
 **Bloque 1**
 - [x] 1. **Verificación de bases de datos + resiliencia de ingestas — HECHO (13/07, PR #25).** Auditoría
@@ -263,7 +268,9 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
   titulares del día, no solo la cinta + grilla de secciones del rediseño UX de PR #22).
 - [ ] 5. Extender el reporte diario: Matba (volumen) + CBOT + metales + petróleo + Merval + SPY + EWZ
   (hoy `cbot_cierres` ya tiene CBOT maíz/soja/trigo; falta sumar metales/petróleo/Merval/SPY/EWZ — ver
-  fuentes candidatas `barchart`/`investing`/`yahoo-finance` en `CONTEXTO.md`).
+  fuentes candidatas `barchart`/`investing`/`yahoo-finance` en `CONTEXTO.md`). **Precios Chicago**: el
+  dato ya está (`cbot_cierres`) y se usa en `/graficos` (preset "Chicago", A3 vs CBOT); falta sumarlo acá,
+  al reporte diario/semanal.
 - [~] 6. **Barcos / lineups en puerto — EN CURSO (plan + Fases 0, 1, 2 y 3 hechas).** Plan cerrado
   ([`PLAN_PUERTOS.md`](PLAN_PUERTOS.md), 11 decisiones + 5 fases, lógica portada de `LineUps_Code`).
   **Fase 0 (dato vivo) HECHA** (18/07): scraper reactivado vía Edge Function de Supabase, backfill,
@@ -286,7 +293,8 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
   PR #29) y **Etapa 3** (sesión única + marca de agua + landing + hardening, rama `claude/login-stage-3-kqt0pg`).
   El flag `AUTH_ENFORCED` **sigue apagado**: falta solo el **encendido manual de Lautaro** (checklist en
   `GUIA_LOGIN_SETUP.md`) y resolver hosting. Se marca `[x]` cuando prenda y valide.
-- [ ] 8. Total negociado por producto (día/semana), histograma, % sobre cosecha.
+- [ ] 8. Total negociado por producto (día/semana), histograma, % sobre cosecha — incluye **volumen
+  operado en la semana**.
 - [ ] 9. SIOGRANOS semanal/mensual (mencionado también en `CONTEXTO.md` Pendientes punto 5).
 
 **Bloque 3**
@@ -310,6 +318,12 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
 - [ ] 19. Mejora front-end general · revisión de calculadoras · pegar `ESTADO.md`/`CONTEXTO.md` (mantener
   la documentación de sesiones al día).
 - [ ] 20. Skill de escritura · skill de informes (herramientas internas de generación de contenido).
+- [ ] 21. **Resumen/interpretación de informes** (nuevo, anotado 20/07): lectura automática de los
+  informes que ya se ingestan (WASDE/PSD, CONAB, BCR-GEA, DEA-SAGyP, DJVE) para armar un resumen en
+  lenguaje llano de "qué cambió y qué implica" — hoy `/produccion` y `/comercio` muestran los datos crudos
+  + tarjetas de cambios numéricas, pero no una interpretación redactada. Podría apoyarse en la skill
+  `voz-lautaro` para el tono. [LAUTARO] definir alcance: ¿por informe individual, resumen diario
+  agregado, o ambos?
 
 ---
 
