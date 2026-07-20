@@ -470,6 +470,44 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
   transition:opacity var(--t-fast) ease, transform var(--t-fast) ease; }
 .hub-card:hover .hub-card-go { opacity:1; transform:translateX(2px); }
 
+/* Titular destacado del día (protagonista) */
+.ht-feature { display:block; margin:8px 0 0; padding:16px 18px; border:1px solid var(--edge);
+  border-radius:var(--r-panel); background:var(--panel); box-shadow:var(--shadow);
+  border-left:3px solid var(--gold); transition:border-color var(--t-fast) ease, transform var(--t-fast) ease; }
+.ht-feature:hover { border-color:color-mix(in srgb, var(--gold) 55%, var(--edge)); transform:translateY(-1px); }
+.ht-feature-titulo { display:block; font-size:var(--fs-lg); font-weight:700; color:var(--ink); line-height:1.3; }
+.ht-feature-meta { display:flex; align-items:center; gap:10px; margin-top:8px; }
+.ht-medios { font-size:var(--fs-2xs); font-weight:800; text-transform:uppercase; letter-spacing:.05em;
+  color:var(--gold-text); border:1px solid color-mix(in srgb, var(--gold) 40%, var(--edge));
+  border-radius:var(--r-chip); padding:1px 6px; white-space:nowrap; }
+
+/* Grid de paneles de la home (mercado hoy · informes · estimación) */
+.home-panels { display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:12px;
+  align-items:start; margin-top:6px; }
+
+/* "El mercado hoy" — grilla compacta de Chicago en USD/tn */
+.mh-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(96px, 1fr)); gap:8px; }
+.mh-cell { display:flex; flex-direction:column; gap:2px; padding:10px 11px; border:1px solid var(--edge);
+  border-radius:var(--r-ctl); background:var(--panel-2); }
+.mh-hd { display:flex; align-items:center; gap:5px; }
+.mh-glyph { display:inline-flex; width:14px; height:14px; }
+.mh-glyph svg { width:100%; height:100%; }
+.mh-name { font-family:var(--font-ui); font-size:var(--fs-2xs); font-weight:800; color:var(--ink-2);
+  text-transform:uppercase; letter-spacing:.03em; }
+.mh-pos { font-size:9px; font-weight:700; color:var(--ink-3); margin-left:auto; white-space:nowrap; }
+.mh-val { font-family:var(--font-mono); font-size:var(--fs-lg); font-weight:700; color:var(--ink);
+  font-variant-numeric:tabular-nums; line-height:1.1; display:flex; align-items:baseline; gap:4px; }
+.mh-unit { font-family:var(--font-ui); font-size:9px; font-weight:700; color:var(--ink-3);
+  text-transform:uppercase; letter-spacing:.03em; }
+.mh-delta { font-family:var(--font-mono); font-size:var(--fs-sm); font-weight:700; font-variant-numeric:tabular-nums; }
+
+/* Grilla de secciones en variante compacta (accesos rápidos, al pie) */
+.hub-grid--compact { grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:10px; }
+.hub-grid--compact .hub-card { padding:12px 13px 11px; gap:3px; }
+.hub-grid--compact .hub-card-name { font-size:var(--fs-sm); }
+.hub-grid--compact .hub-card-desc { font-size:var(--fs-2xs); line-height:1.35; }
+.hub-grid--compact .hub-card-go { top:11px; right:12px; }
+
 /* Semáforo de calor de mercadería (índice MESA) */
 .calor-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px; margin-top:6px; }
 .calor-card { display:flex; flex-direction:column; gap:3px; padding:13px 15px 14px;
