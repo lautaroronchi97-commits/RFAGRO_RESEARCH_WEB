@@ -23,7 +23,7 @@
 | E1 | Datos y base de datos | **cerrada** (fase 2 aplicada; #2 diferido a E5) | `auditoria/E1-datos.md` | #50 |
 | E2 | Fórmulas y lógica de negocio | **cerrada** (fase 2 aplicada; calibraciones de umbrales/params MESA y comisiones → E7; tests → E4) | `auditoria/E2-formulas.md` (+ anexo `E2-formulas-fichas.md`, 45 fichas) | #51 |
 | E3 | UX / navegación página por página | pendiente | `auditoria/E3-ux.md` | — |
-| E4 | Código y arquitectura | pendiente | `auditoria/E4-codigo.md` | — |
+| E4 | Código y arquitectura | **informe listo, espera OK de Lautaro** | `auditoria/E4-codigo.md` | #_ |
 | E5 | Infraestructura, ingestas y seguridad | pendiente | `auditoria/E5-infra.md` | — |
 | E6 | Historia del repo (PRs + sesiones) | pendiente | `auditoria/E6-historia.md` | — |
 | E7 | Síntesis y backlog maestro | pendiente | `auditoria/E7-sintesis.md` | — |

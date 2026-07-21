@@ -19,7 +19,28 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 21/07/2026 — MP3 view de mercado MERGEADO · research P3/P4 HECHO · auditoría E2 CERRADA)
+## Ahora (última actualización: 21/07/2026 — auditoría E4 código: informe listo · MP3 view de mercado MERGEADO · research P3/P4 HECHO · auditoría E2 CERRADA)
+
+**🧑‍💻 AUDITORÍA E4 (código y arquitectura) — FASE 1 (el informe) HECHA, espera OK de Lautaro — rama
+`claude/auditoria-e4-codigo-p28mxd`, PR #_.** Cuarta etapa de la auditoría integral. 4 sub-auditorías en
+paralelo (duplicación · estructura/código muerto · tests/fixtures · calidad/perf) con evidencia
+archivo:línea. **Veredicto: código en buen estado general** (0 deps sin uso, `server-only` bien
+aplicado, degradación uniforme con solo 2 `throw` sueltos en todo `src/lib/`, 0 casos de N+1 contra
+PostgREST, `globals.css` bien organizado pese al tamaño — 20 secciones, solo 3/500 clases muertas). Lo
+que sí apareció: **23 hallazgos**, el más grave el espejo `compras/parse-agrochat.ts` ↔
+`scripts/cargar-compras.mjs` que **ya causó un bug real en producción** (fix ÷1000 del 20/07 aplicado a
+mano en los dos lados, commit `6528079`) y tiene una divergencia nueva activa (`fechaISO` con fallback
+ISO en un lado); `lineup/campanas.ts` ↔ SQL `campana_ini_year` **ya divergen** (SOJA_CRUSH solo en TS,
+sin efecto hoy); un hallazgo de **performance real y accionable**: todas las páginas públicas mandan el
+SDK completo de Supabase (~235 KB) al bundle del cliente por un import estático de `AuthMenu` en
+`site-header.tsx`, aunque el login esté apagado; `market.ts` monolítico (546 líneas, 8
+responsabilidades) con plan de partición propuesto; 9 archivos con variantes del parser de mes/posición
+A3; `noUncheckedIndexedAccess` costaría 152 errores en 32 archivos (55 concentrados en solo 3); y
+**propuesta completa de Vitest** sobre 12 libs puras (11 del encargo + `porcentaje.ts`), 10/11 con
+ficha directa lista en `E2-formulas-fichas.md` como fixture. Informe:
+[`auditoria/E4-codigo.md`](auditoria/E4-codigo.md). **Próximo paso: Lautaro decide hallazgo por
+hallazgo (columna Decisión) → fase 2 implementa solo lo aprobado.** Detalle:
+[`sesiones/2026-07-21-auditoria-e4-codigo.md`](sesiones/2026-07-21-auditoria-e4-codigo.md).
 
 **🔮 MP3 — VIEW DE MERCADO POR GRANO (PLAN_INFORMES) — CÓDIGO EN `main`, PENDIENTE 1 PASO MANUAL DE
 LAUTARO: crear la Routine semanal.** Lautaro validó el primer view en `/granos/view` y se mergeó el
