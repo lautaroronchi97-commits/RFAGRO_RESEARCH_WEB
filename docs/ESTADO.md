@@ -19,7 +19,29 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 21/07/2026 — auditoría E6 CERRADA · MP3 view de mercado MERGEADO · research P3/P4 HECHO · auditoría E2 CERRADA)
+## Ahora (última actualización: 21/07/2026 — auditoría E3 FASE 1 (informe) HECHA · E6 CERRADA · MP3 MERGEADO · research P3/P4 HECHO · E2 CERRADA)
+
+**🖥️ AUDITORÍA E3 (UX / navegación) — FASE 1 (el informe) HECHA — rama `claude/auditoria-e3-ux-auikht`,
+PR #57.** Se recorrieron las ~38 rutas × 4 lentes (mesa · cliente · mobile 390px · tema claro/oscuro)
+con build local + datos reales + Playwright (152 capturas comprimidas en `auditoria/screenshots-e3/`).
+Para las páginas gateadas (`/admin`, `/comercio/*`) se usó un **bypass local temporal** (`E3_AUDIT_BYPASS`)
+**revertido y verificado con git diff limpio** antes de commitear. **Veredicto: el sitio está muy bien en
+lo grueso** (hub coherente, breadcrumbs, sellos con institución en granos/dólar/noticias, tema parejo,
+marca de agua + tabla en todos los charts, flujo de decisión de mesa legible). **2 hallazgos ALTOS:**
+(H1) **`/comercio/embarques` renderiza VACÍA** — la vista `djve_embarques_mes` NO está materializada y
+tira **HTTP 500 bajo concurrencia** (12/12 en la prueba; en el build prerenderiza vacío), misma clase que
+el timeout de `djve_cobertura` que E1 arregló → materializar (**fix de datos, E5/E1**); (H2) **mobile con
+scroll horizontal en TODAS las `(site)`** (~95px) porque `.head-tools` del header (475px) no colapsa.
+**Medios:** sellos "ISA Agents" (puente) en las 4 páginas de line-up (viola "institución sí, puente no";
+negociado sí cumple con "SIO Granos") · **pizarra de la cinta + implícitas de granos en EJEMPLO**
+(`sample.ts`/`market.ts:261-263` → causa del `noindex` global) · `/comercio` con ~70 filas DJVE vacías ·
+`/produccion` sin las pestañas del plan (scroll de 20.000px) · **404 default de Next en inglés** ·
+columna RITMO de empresas vacía (`lineup_estacional`, misma causa que H1). **6 dudas para Lautaro** (top:
+implementar/sacar implícitas granos + conectar pizarra CAC a la cinta → habilita quitar el `noindex`;
+qué institución mostrar en el sello del line-up; pestañas de producción; números "VIEJA" enormes en
+empresas → E1/E2). Informe: **[`auditoria/E3-ux.md`](auditoria/E3-ux.md)**. **Próximo paso: Lautaro
+decide hallazgo por hallazgo → FASE 2 (implementar solo lo aprobado en la misma rama; rediseños grandes
+= diferido a E7).** Detalle: [`sesiones/2026-07-21-auditoria-e3-ux.md`](sesiones/2026-07-21-auditoria-e3-ux.md).
 
 **🕰️ AUDITORÍA E6 (historia del repo) — CERRADA — rama `claude/auditoria-e6-historia-yk24fj`, PR
 #56.** Recorridos los 54 PRs y las 29 bitácoras de `docs/sesiones/` en orden cronológico.
