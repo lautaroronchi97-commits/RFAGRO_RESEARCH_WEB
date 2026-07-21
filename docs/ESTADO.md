@@ -19,7 +19,46 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 20/07/2026 — fix compras ÷1000 + prompt Agrochat en el uploader)
+## Ahora (última actualización: 21/07/2026 — plan de auditoría integral)
+
+**🔍 PLAN DE AUDITORÍA INTEGRAL (solo docs, cero código) — rama `claude/trading-project-audit-37aiqr`.**
+Lautaro pidió auditar TODO el proyecto (módulos, fórmulas, páginas navegadas, base de datos, infra,
+historia) planificando primero, sin tocar una línea. Resultado: **[`PLAN_AUDITORIA.md`](PLAN_AUDITORIA.md)**
+— 7 etapas con **un prompt autocontenido por etapa** para ejecutar en sesiones nuevas (E1 datos/base →
+E2 fórmulas → E3 UX 4 lentes → E4 código → E5 infra/seguridad → E6 historia por PR → E7 síntesis +
+backlog maestro), con flujo *informe → OK de Lautaro hallazgo por hallazgo → recién corregir* y plantilla
+en `auditoria/_TEMPLATE.md`. Se relevó base para no re-descubrir: `src/` completo (fórmulas localizadas
+archivo:línea), 14 ingestas/13 workflows/21 migraciones, y la base viva por MCP (advisors ya marcaron:
+matviews de mesa legibles por anon vía API, ~17 RPC SECURITY DEFINER ejecutables por anon/authenticated,
+5 tablas heredadas sin DDL en el repo, healthcheck sin cubrir compras/djve/matviews) — todo precargado
+como "semilla" en los prompts. **Próximo paso: ejecutar el PROMPT E1** de `PLAN_AUDITORIA.md` en una
+sesión nueva. Detalle: [`sesiones/2026-07-21-plan-auditoria.md`](sesiones/2026-07-21-plan-auditoria.md).
+
+**📰 PLAN DE INFORMES AUTOMATIZADOS (ítems 11 y 21) — misma sesión y PR #49.** Segundo plan del día:
+**[`PLAN_INFORMES.md`](PLAN_INFORMES.md)** — 4 mini-proyectos con un prompt autocontenido c/u:
+**MP1 informe diario** (placa PNG para WhatsApp: datos de la web + "color de la rueda" que Lautaro
+carga en /admin + prosa `voz-lautaro` molde "Mesa de operaciones") → **MP2 informe semanal** (PDF
+research 3-5 páginas; cierra de paso el ítem 13) → **MP3 view de mercado por grano** (alcista/bajista/
+neutral con research citando datos de la web; interno mesa primero) → **MP4 interpretación de informes
+de organismos** (ítem 21; borrador → OK en /admin → publica en /produccion). **Worker = Routines de
+Claude Code** (sesiones programadas, corren con la suscripción de Lautaro — decisión: no gastar en
+API; OpenRouter evaluado y descartado, plan B = GH Actions + API Anthropic documentado). Render =
+página Next oculta que reusa libs + CSS reales; entrega = Resend + página `/informes`. **Próximo paso
+de este plan: ejecutar el PROMPT MP1** (antes, Lautaro configura las env vars del entorno de Claude
+Code — listadas en el plan).
+
+**🗂️ PLAN DEL BACKLOG COMPLETO — misma sesión y PR #49.** Tercer plan del día:
+**[`PLAN_BACKLOG.md`](PLAN_BACKLOG.md)** — tabla de mapeo de TODOS los pendientes a su plan (los ya
+cubiertos apuntan a auditoría E3/E4/E5 o a informes MP1-4, sin duplicar) + **12 prompts autocontenidos
+P1→P12** para los que no tenían: P1 Merval/EWZ/vol. Matba · P2 variación semanal USD · P3 compras
+netas BCRA · P4 camiones en puerto · P5 vista por grano · P6 gráficos v2 · P7 vista productor + PWA ·
+P8 feed A3 intradiario · P9 sintéticos TIR · P10 estrategias avanzadas · P11 capacidad de pago propia ·
+P12 scoring de clientes. Los que esperan insumos de Lautaro (P9-P12, parte de P6) llevan el insumo
+como paso 1 del prompt. Con esto **TODO pendiente del proyecto tiene dueño**: se ejecuta pegando el
+prompt correspondiente de los 3 planes en una sesión nueva; el backlog maestro único lo consolida la
+etapa E7 de la auditoría.
+
+## Anterior (20/07/2026 — fix compras ÷1000 + prompt Agrochat en el uploader)
 
 **🔧 FIX DE DATOS (compras semana 08/07 ÷1000) + PROMPT AGROCHAT EN EL UPLOADER — rama
 `claude/pendientes-4c5ovu`.** Al probar el uploader (`/admin/datos`) apareció que **toda la semana del
@@ -357,6 +396,10 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
 > ya estaban cubiertos por los ítems 4, 5, 6 (con el fix de la pata C3 en el PR #40), 7/10, 8, 9, 16, 18,
 > 19 y la sección "Pendiente del panel de gráficos (v2)" más abajo (tabla de datos en gráficos). Lo único
 > nuevo fue el ítem 21 (resumen/interpretación de informes), agregado abajo.
+>
+> **Mapeo 21/07/2026**: TODOS los pendientes de esta lista (y los de CONTEXTO + gráficos v2) quedaron
+> mapeados a un plan ejecutable en [`PLAN_BACKLOG.md`](PLAN_BACKLOG.md) (tabla de mapeo + prompts
+> P1→P12; lo ya cubierto apunta a `PLAN_AUDITORIA.md` o `PLAN_INFORMES.md`).
 
 **Bloque 1**
 - [x] 1. **Verificación de bases de datos + resiliencia de ingestas — HECHO (13/07, PR #25).** Auditoría
@@ -420,8 +463,10 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
 **Bloque 3**
 - [~] 10. Terminar login (si sigue abierto del bloque 2). **Código de las 3 etapas HECHO** (ver ítem 7);
   queda el encendido manual (`AUTH_ENFORCED=true`) + hosting. Se marca `[x]` cuando Lautaro prenda y valide.
-- [ ] 11. Automatizar informe diario/semanal (armar la estructura del envío, formato imagen/PDF para
-  WhatsApp según lo charlado — ver `CONTEXTO.md` "Reporte diario").
+- [~] 11. Automatizar informe diario/semanal — **PLAN CERRADO (21/07)** en
+  [`PLAN_INFORMES.md`](PLAN_INFORMES.md) (MP1 placa PNG diaria + MP2 PDF semanal, con prompts listos;
+  decisiones: Routines de Claude como worker, prosa `voz-lautaro`, color de la rueda por /admin,
+  entrega mail + `/informes`). Falta ejecutar MP1 y MP2.
 - [ ] 12. Acumulado de rueda USD + compras BCRA (compras netas BCRA hoy es proxy/manual, ver módulo 7
   "Panel cambiario" en `CONTEXTO.md`).
 - [ ] 13. Variación semanal del USD (gráfico).
@@ -442,8 +487,9 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
   informes que ya se ingestan (WASDE/PSD, CONAB, BCR-GEA, DEA-SAGyP, DJVE) para armar un resumen en
   lenguaje llano de "qué cambió y qué implica" — hoy `/produccion` y `/comercio` muestran los datos crudos
   + tarjetas de cambios numéricas, pero no una interpretación redactada. Podría apoyarse en la skill
-  `voz-lautaro` para el tono. [LAUTARO] definir alcance: ¿por informe individual, resumen diario
-  agregado, o ambos?
+  `voz-lautaro` para el tono. **PLAN CERRADO (21/07): es el MP4 de
+  [`PLAN_INFORMES.md`](PLAN_INFORMES.md)** (alcance decidido: por informe individual, borrador → OK
+  de Lautaro en /admin → publica en /produccion). Falta ejecutarlo (requiere MP1 antes).
 
 ---
 
