@@ -40,20 +40,24 @@
 
 ## Tablero de los prompts de este plan
 
-| P | Tema | Bloqueado por | Estado |
-|---|---|---|---|
-| P1 | Merval + EWZ + volumen Matba en el monitor | — | pendiente |
-| P2 | Variación semanal del USD (gráfico en /dolar) | — | pendiente |
-| P3 | Compras netas BCRA + acumulado de rueda USD | — | pendiente |
-| P4 | Camiones en puerto (research → ingesta → panel) | — | pendiente |
-| P5 | Vista por grano | — | pendiente |
-| P6 | Gráficos v2 (paquete) | P12/P17 esperan ejemplos de Lautaro (paso 1) | pendiente |
-| P7 | Vista productor + PWA | robots→index depende de E3 | pendiente |
-| P8 | Feed A3 Fase 2 — histórico intradiario | — | pendiente |
-| P9 | Sintéticos TIR | tabla IAMC de Lautaro (paso 1) | pendiente |
-| P10 | Estrategias avanzadas | primas/decisiones de Lautaro (paso 1) | pendiente |
-| P11 | Modelo propio de capacidad de pago | fórmula de Lautaro (paso 1) | pendiente |
-| P12 | Scoring de clientes | datos de fijaciones (paso 1) | pendiente |
+| P | Tema | Bloqueado por | Modelo sugerido | Estado |
+|---|---|---|---|---|
+| P1 | Merval + EWZ + volumen Matba en el monitor | — | Sonnet | pendiente |
+| P2 | Variación semanal del USD (gráfico en /dolar) | — | Sonnet | pendiente |
+| P3 | Compras netas BCRA + acumulado de rueda USD | — | Fable/Opus (la fase research decide fuente y arquitectura) | pendiente |
+| P4 | Camiones en puerto (research → ingesta → panel) | — | Fable/Opus (ídem P3) | pendiente |
+| P5 | Vista por grano | — | Sonnet | pendiente |
+| P6 | Gráficos v2 (paquete) | los ítems «relaciones %» y «serie continua» del plan de GRÁFICOS (llamados P12/P17 en `PLAN_GRAFICOS_SPREADS.md` — no confundir con los P de ESTE tablero) esperan tus ejemplos (paso 1) | Sonnet | pendiente |
+| P7 | Vista productor + PWA | robots→index depende de E3 | Sonnet | pendiente |
+| P8 | Feed A3 Fase 2 — histórico intradiario | — | Sonnet | pendiente |
+| P9 | Sintéticos TIR | tabla IAMC de Lautaro (paso 1) | Fable/Opus (validación de fórmulas financieras) | pendiente |
+| P10 | Estrategias avanzadas | primas/decisiones de Lautaro (paso 1) | Fable/Opus (ídem P9) | pendiente |
+| P11 | Modelo propio de capacidad de pago | fórmula de Lautaro (paso 1) | Fable/Opus (ídem P9) | pendiente |
+| P12 | Scoring de clientes | datos de fijaciones (paso 1) | Fable/Opus (diseño de producto + modelo AHP + privacidad) | pendiente |
+
+> Regla de modelos (igual que en los otros planes): **juicio → Fable mientras dure, después Opus;
+> build con patrón claro → Sonnet**. Dentro de la sesión, subagentes de solo lectura para paralelizar
+> verificaciones (cotejos contra fuentes, navegación); las decisiones y el código, la sesión principal.
 
 **Orden sugerido** (Lautaro elige libremente; son independientes salvo lo anotado): P1→P2 (chicos,
 valor inmediato) → P8 (habilita intradía) → P5 → P3/P4 (research) → P6 → P7 → P9/P10/P11 cuando estén
@@ -178,7 +182,9 @@ OBJETIVO (ítem 18): hoy todos los paneles son transversales a los granos; falta
 pizarra + pizarra histórica + Chicago del grano + spreads clave (percentil vs historia, de
 derivadas.ts) + su fila del índice MESA/temperatura + negociado/farmer selling + estimaciones de
 producción del grano + noticias filtradas + view de mercado (si MP3 de PLAN_INFORMES ya existe).
-DISEÑO primero: proponele a Lautaro (AskUserQuestion) estructura de ruta (/granos/soja o /grano/[slug])
+DISEÑO primero: proponele a Lautaro (AskUserQuestion) estructura de ruta (/granos/soja o /grano/[slug];
+OJO: /granos/view está RESERVADA para el view de mercado del MP3 de PLAN_INFORMES.md — si usás un
+segmento dinámico bajo /granos, excluí "view" o preferí rutas estáticas por grano)
 y un wireframe de bloques ANTES de codificar — qué va arriba, qué es solo mesa (los bloques de
 /comercio son requireAdmin: en la vista por grano deben respetar el MISMO gate, no filtrarse).
 REGLA CENTRAL: cero lógica nueva de datos — la página COMPONE lo que las libs ya devuelven
@@ -197,7 +203,8 @@ flag on/off, claro/oscuro + mobile, lint/tsc/build. PR draft base main; doc de s
 Ejecutá el pendiente P6 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md,
 docs/CONTEXTO.md y docs/PLAN_GRAFICOS_SPREADS.md — el panel /graficos ya está en producción, PR #17).
 Rama claude/backlog-p6-graficos-v2 desde main.
-PASO 1 — INSUMOS DE LAUTARO (AskUserQuestion, antes de tocar código): (a) P12 "relaciones %" — pedile
+PASO 1 — INSUMOS DE LAUTARO (AskUserQuestion, antes de tocar código; "P12" y "P17" acá son los ítems
+así numerados en PLAN_GRAFICOS_SPREADS.md, NO los prompts de PLAN_BACKLOG.md): (a) P12 "relaciones %" — pedile
 1-2 ejemplos numéricos reales de qué quiere ver ("180% pizarra maíz", "57% soja julio": qué numerador,
 qué denominador, qué serie resultante); (b) P17 "serie continua front-month" — pedile un ejemplo de
 cómo empalma él las posiciones (¿salto seco al vencer? ¿ajuste por spread?); (c) ¿quiere el import de
@@ -274,7 +281,8 @@ los gráficos intradía que la consumen quedan como ítem nuevo del backlog).
 
 ```text
 Ejecutá el pendiente P9 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md,
-docs/CONTEXTO.md §módulo 6 y docs/FORMULAS_EXCEL.md). Rama claude/backlog-p9-sinteticos desde main.
+docs/CONTEXTO.md — fila 6 "Sintéticos/LECAPs" de la TABLA DE MÓDULOS (ojo: no el punto 6 de la lista
+"Pendientes", que es otra cosa) y docs/FORMULAS_EXCEL.md). Rama claude/backlog-p9-sinteticos desde main.
 PASO 1 — INSUMO DE LAUTARO (sin esto no se avanza): pedile la tabla de "pago final por letra"
 (valor al vencimiento de cada LECAP/letra; fuente que él usa: IAMC iamc.com.ar/informeslecap/ o
 Min. Economía) Y la fórmula del sintético COMO ÉL LA CALCULA, con UN ejemplo numérico completo
@@ -298,7 +306,8 @@ sesión + ESTADO (C3 hecho).
 
 ```text
 Ejecutá el pendiente P10 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md,
-docs/CONTEXTO.md §6, docs/ESTRATEGIAS_CATALOGO.md y docs/ESTRATEGIAS_COMBINADAS.md; código:
+docs/CONTEXTO.md — punto 6 "Estrategias" de la lista "Pendientes" (ojo: no la fila 6 de la tabla de
+módulos, que es Sintéticos), docs/ESTRATEGIAS_CATALOGO.md y docs/ESTRATEGIAS_COMBINADAS.md; código:
 src/lib/estrategias.ts + calc-estrategias.tsx + costos.ts). Rama claude/backlog-p10-estrategias
 desde main.
 PASO 1 — DECISIONES DE LAUTARO (AskUserQuestion, con ejemplos concretos por cada una): (a) costos/IVA
@@ -325,7 +334,9 @@ PR draft base main; doc de sesión + ESTADO.
 
 ```text
 Ejecutá el pendiente P11 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md,
-docs/CONTEXTO.md §7 y src/lib/capacidad.ts — hoy: FAS teórico BCR scrapeado + override por env
+docs/CONTEXTO.md — punto 7 "Modelo propio de Lautaro" de la lista "Pendientes" (ojo: no la fila 7 de
+la tabla de módulos, que es el panel cambiario) y src/lib/capacidad.ts — hoy: FAS teórico BCR
+scrapeado + override por env
 CAPACIDAD_OVERRIDE). Rama claude/backlog-p11-capacidad desde main.
 PASO 1 — INSUMO DE LAUTARO (sin esto no se avanza): su MODELO propio de capacidad de pago: la fórmula
 completa (FOB, retenciones, gastos fobbing, embolsado/comercialización, margen industria si aplica —

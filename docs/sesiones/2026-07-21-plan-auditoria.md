@@ -66,6 +66,21 @@
   PNG / semanal PDF; view semanal 3 granos interno primero; interpretaciones SIEMPRE con aprobación
   previa — todas de Lautaro.
 
+### Refinamiento final (con Fable, 21/07)
+- **Auditoría adversarial de los 23 prompts**: un agente verificador contrastó cada afirmación de los
+  3 planes contra el repo real → 12 problemas encontrados y corregidos. Los graves: la verificación
+  end-to-end de MP1/MP2 apuntaba a producción cuando las rutas nuevas no existen ahí durante el PR
+  (fix: `INFORME_BASE_URL` + prueba local documentada con sus creds); MP1/MP3/MP4 pedían probar
+  pantallas `requireAdmin` sin traer el bypass local que sí tenía E3 (fix: agregado); colisión de
+  numeración "P12/P17" (ítems del plan de gráficos vs prompts del backlog — desambiguado); posible
+  colisión de rutas `/granos/view` entre MP3 y P5 (reservada en ambos lados); referencias `§6/§7` de
+  CONTEXTO ambiguas (tabla de módulos vs lista de pendientes — explicitado); E5 asumía un workflow
+  por ingesta (GEA/DEA/PAS comparten uno — aclarado); conteos menores (27 presets, no 30, etc.).
+- **Matriz de modelo y agentes por prompt** agregada a los 3 planes: juicio (E1/E2/E5/E7, MP3,
+  P3/P4/P9-P12) → Fable mientras dure, después Opus; build con patrón claro (E3/E4/E6, MP1/MP2/MP4,
+  P1/P2/P5-P8) → Sonnet; Routines de informes → mínimo Sonnet (la prosa es el producto); subagentes
+  de solo lectura para paralelizar cotejos/navegación, decisiones siempre en la sesión principal.
+
 ## Verificado
 - Sesión SOLO de documentación (no se tocó `src/`, `scripts/`, `supabase/` ni configs) → lint/tsc/build
   no aplican; links internos de los docs nuevos revisados.

@@ -31,6 +31,24 @@
 E1–E6 se ejecutan en ese orden (pueden intercalarse con los ciclos de corrección de etapas ya
 aprobadas). **E7 es la única que exige que las 6 anteriores estén cerradas.**
 
+## Modelo y estrategia de agentes por etapa (elegir el modelo AL ABRIR la sesión)
+
+> Regla general: donde la etapa exige **juicio** (re-derivar fórmulas, evaluar seguridad, priorizar),
+> usar el mejor modelo disponible (**Fable mientras dure; después Opus**); donde el trabajo es
+> **mecánico con patrón claro** (recorrer, capturar, listar), **Sonnet** alcanza y rinde más por
+> token. Los subagentes sugeridos son de solo lectura, para paralelizar — el ejecutor los lanza desde
+> su sesión; nunca reemplazan la verificación propia.
+
+| Etapa | Modelo | Estrategia de agentes sugerida |
+|---|---|---|
+| E1 | **Fable / Opus** (razonamiento sobre esquemas + SQL adversarial) | Subagentes en paralelo, uno por familia de cotejo contra fuente (CEM · Barchart · CAC · MAGyP · USDA/CONAB); el análisis de diseño y advisors lo hace la sesión principal |
+| E2 | **Fable / Opus** (la etapa más exigente) | Verificación adversarial: para cada familia de fórmulas, un subagente RE-DERIVA el cálculo desde los docs SIN mirar la implementación; la sesión compara resultado vs código. Las fichas las escribe la sesión principal |
+| E3 | **Sonnet** para recorrer/capturar; el juicio de las 4 lentes con **Opus** si está disponible | Paralelizar por grupo de páginas (públicas · comercio/mesa · admin+auth) con subagentes que navegan y capturan; el veredicto por página lo da la sesión principal |
+| E4 | **Sonnet** | Subagentes por dimensión (duplicación · tests · perf/bundles); apoyarse en /code-review para el barrido |
+| E5 | **Fable / Opus** (decisiones de seguridad y arquitectura) | Subagentes para leer runs de Actions en paralelo (uno por grupo de workflows); el análisis de riesgo lo hace la sesión principal |
+| E6 | **Sonnet** (lectura mecánica de PRs/bitácoras) | Subagentes por lotes de ~10 PRs; la consolidación de contradicciones la hace la sesión principal |
+| E7 | **Fable / Opus** (síntesis y priorización) | SIN paralelizar: necesita todo el cuadro junto |
+
 ## Reglas transversales (valen para TODAS las etapas; cada prompt las repite)
 
 - **Protocolo del repo** (`docs/ESTADO.md`): rama `claude/auditoria-eN-<tema>` creada desde `main`
@@ -158,13 +176,16 @@ Preparación para los datos: npm install; .env.local con SUPABASE_URL/SUPABASE_A
 el MCP de Supabase (get_project_url + get_publishable_keys, ref gbpfgfeksqmzmsxnxiwg).
 
 INVENTARIO COMPLETO A CUBRIR (ubicaciones ya relevadas el 21/07; si aparece lógica nueva, sumala):
-1. Calculadoras (9): src/lib/arbitraje.ts (tasaDirecta, tnaUSD act/365, teaUSD), pases.ts, fijar.ts
-   (delta, TNA implícita, precioTasa), diferido.ts (interés simple base 365 + inversas), porcentaje.ts,
-   costos.ts (¿el tarifario Cocos ARANCELES sigue vigente? cotejalo contra la web de Cocos),
-   estrategias.ts (payoff por patas, 30 PRESETS, primas por defecto pr() que decaen con la distancia
-   al ATM — ¿criterio validado por Lautaro?, breakevens por interpolación, serieEscenarios ±3S) y
-   src/components/calc-planta.tsx (ÚNICA calculadora con la fórmula inline en el componente:
-   auditá los 6 rubros de descuento y proponé extraerla a lib).
+1. Calculadoras — las 9 de src/lib/calculadoras.ts (a-fijar · por-porcentaje · negocios-con-pagos ·
+   pago-diferido · pases · carry · costos · estrategias · negocios-de-planta; que NINGUNA quede sin
+   ficha). Sus libs: fijar.ts (delta, TNA implícita, precioTasa), porcentaje.ts, diferido.ts (interés
+   simple base 365 + inversas — cubre negocios-con-pagos Y pago-diferido: verificá los dos usos),
+   pases.ts, arbitraje.ts (carry: tasaDirecta, tnaUSD act/365, teaUSD), costos.ts (¿el tarifario
+   Cocos ARANCELES sigue vigente? cotejalo contra la web de Cocos), estrategias.ts (payoff por patas,
+   27 PRESETS, primas por defecto pr() que decaen con la distancia al ATM — ¿criterio validado por
+   Lautaro?, breakevens por interpolación, serieEscenarios ±3S) y src/components/calc-planta.tsx
+   (ÚNICA calculadora con la fórmula inline en el componente: auditá los 6 rubros de descuento y
+   proponé extraerla a lib).
 2. Paneles granos: arbitrajes-cierres.ts (columna dinámica ajuste/último operado según rueda,
    recálculo de spread/directa/TNA sobre esa referencia), pases-cierres.ts (pase entre posiciones
    consecutivas, spreadSymbol A3), capacidad.ts (FAS teórico BCR: ¿la 2ª columna del HTML sigue
@@ -184,7 +205,7 @@ INVENTARIO COMPLETO A CUBRIR (ubicaciones ya relevadas el 21/07; si aparece lóg
    la función SQL campana_ini_year: ¿idénticas?).
 5. Otros: compras/negociado.ts (campaña activa = mayor venta semanal, % sobre cosecha, % priceado,
    saldo a fijar), estimaciones.ts (Δ entre vintages, campaniaVigente prefiere campaña con producción),
-   calendario.ts (533 líneas: seeds 2026, reglas por día de semana, conversión wall-clock→UTC→AR con
+   calendario.ts (~530 líneas: seeds 2026, reglas por día de semana, conversión wall-clock→UTC→AR con
    DST de EEUU/Brasil, feriados), derivadas.ts (joinFfill ≤3 ruedas, spread/ratio, alineación
    días-al-vto, percentil/mediana/bandas), noticias.ts (clustering jaccard≥0.5, score de relevancia,
    briefing), monitor-mercados.ts (¢/bu→USD/tn con los factores de ingest-cbot, maní ZCE en CNY→USD,
@@ -286,7 +307,7 @@ QUÉ AUDITAR:
    derivadas.ts, lineup/embarque.ts, market.ts, monitor-mercados.ts → proponer 1 util única.
    (c) fmtFecha duplicado (auth/admin.ts vs habiles.ts) y parser de user-agent duplicado
    (auth/admin.ts vs auth/session-id.ts).
-2. ESTRUCTURA: market.ts monolítico (536 líneas, con TODOs "Fase B/C" adentro: extraer tickers.ts,
+2. ESTRUCTURA: market.ts monolítico (~535 líneas, con TODOs "Fase B/C" adentro: extraer tickers.ts,
    LECAPs sin TIR) → propuesta de partición; sample.ts (plan de retiro coordinado con lo que Lautaro
    decida en E3 sobre implicitas-panel — retirarlo habilita evaluar quitar el noindex global);
    globals.css con 1.452 líneas / ~763 clases custom y Tailwind v4 instalado pero casi sin uso en
@@ -329,7 +350,9 @@ actions_list/actions_get/get_job_logs) y MCP de Supabase (get_logs, list_edge_fu
 
 QUÉ AUDITAR:
 1. LAS 14 INGESTAS (scripts/*.mjs + supabase/functions/lineup-ingest) — por cada una: (a) revisar los
-   últimos ~10 runs reales del workflow en Actions (¿verdes de verdad? ¿cuánto tardan? ¿flaps?);
+   últimos ~10 runs reales del workflow en Actions (¿verdes de verdad? ¿cuánto tardan? ¿flaps?). OJO:
+   no hay un .yml por ingesta — GEA + DEA + PAS comparten ingest-estimaciones-ar.yml (y PAS corre SOLO
+   por workflow_dispatch en modo probe, sin schedule); mapeá script→workflow antes de buscar runs;
    (b) ¿qué pasa si la fuente cambia el HTML/JSON: falla ruidosamente o miente en verde? (el guard
    anti falso-verde existe en casi todos — verificar que cubre TODOS los caminos, no solo el modo
    diario); (c) fragilidad del parser. Ranking de riesgo ya relevado el 21/07 para arrancar:
@@ -354,7 +377,8 @@ QUÉ AUDITAR:
    no deberían? — conectar con la decisión de visibilidad de datos que Lautaro tome en E1), sesión
    única, y el riesgo de mantenimiento de los hardcodeos con fecha de vencimiento: seed de
    vencimientos hasta 2027, FERIADOS_AR 2025-2027 en habiles.ts, SEED_ACTUAL=2026 en
-   refresh-calendario.mjs y calendario.ts — ¿quién y cuándo los renueva? Proponer recordatorio
+   refresh-calendario.mjs y los seeds 2026 hardcodeados como arrays en src/lib/calendario.ts
+   (WASDE_2026, CROP_PROGRESS_2026, etc.) — ¿quién y cuándo los renueva? Proponer recordatorio
    automatizado o generación.
 6. HOSTING — decisión pendiente declarada: Vercel Hobby es no-comercial y hay que resolver ANTES de
    clientes reales. Armar la comparación (Vercel Pro vs alternativas razonables para Next 16 + ISR +

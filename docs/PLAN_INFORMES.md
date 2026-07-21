@@ -16,6 +16,19 @@
 | MP3 | View de mercado por grano (research direccional) | MP1 | pendiente | — |
 | MP4 | Interpretación de informes de organismos (ítem 21) | MP1 | pendiente | — |
 
+## Modelo recomendado por mini-proyecto (elegir AL ABRIR la sesión / crear la Routine)
+
+| MP | Sesión de build | Routine en producción |
+|---|---|---|
+| MP1 | **Sonnet** (build con patrón claro); la calibración de la PRIMERA prosa y placa, con el mejor modelo disponible (**Fable/Opus**) — fija la vara | Routine diaria: **mínimo Sonnet** — la prosa con tu voz ES el producto; Haiku la dejaría genérica |
+| MP2 | **Sonnet** | Routine semanal: **mínimo Sonnet** (prosa larga) |
+| MP3 | **Fable / Opus** (el view es juicio puro: research direccional) | Routine semanal: **Opus** — acá el modelo importa más que en ningún otro lado |
+| MP4 | **Sonnet** para el build; la generación de interpretaciones corre en la Routine diaria | Hereda la Routine de MP1 (mínimo Sonnet) |
+
+> El modelo de una Routine queda fijado al crearla; cambiar el de una existente es con
+> `update_trigger` y SOLO a pedido explícito de Lautaro. Si Fable sigue disponible al ejecutar,
+> usarlo para MP3 y para la calibración inicial de MP1.
+
 ## Decisiones de Lautaro (21/07/2026)
 
 1. **Contenido del diario**: los 4 bloques de datos de la web (granos A3+pizarra · dólar/tasas ·
@@ -90,8 +103,10 @@
 Sos el ejecutor del mini-proyecto MP1 (informe diario) de RF AGRO. Leé primero docs/PLAN_INFORMES.md
 COMPLETO (decisiones de Lautaro y arquitectura común — este encargo las asume), docs/ESTADO.md,
 docs/CONTEXTO.md, la skill .claude/skills/voz-lautaro/SKILL.md Y sus references/ejemplos.md (los
-posteos reales "Mesa de operaciones" son EL modelo del informe). Rama claude/informes-mp1-diario
-desde main. Preparación: npm install; .env.local con SUPABASE_URL/SUPABASE_ANON_KEY vía MCP de
+posteos reales "Mesa de operaciones" son EL modelo del informe); y si ya existe
+docs/auditoria/E1-datos.md, leelo también: la visibilidad de las tablas nuevas que vas a crear debe
+respetar lo que Lautaro haya decidido ahí sobre datos públicos/privados. Rama
+claude/informes-mp1-diario desde main. Preparación: npm install; .env.local con SUPABASE_URL/SUPABASE_ANON_KEY vía MCP de
 Supabase (get_project_url + get_publishable_keys, ref gbpfgfeksqmzmsxnxiwg); datos reales locales con
 NODE_USE_ENV_PROXY=1; Playwright con executablePath '/opt/pw-browsers/chromium'.
 
@@ -128,12 +143,13 @@ CONSTRUIR (en este orden):
    definitivo: generá 2 bocetos (tema claro y tema pizarra oscura) con datos reales y preguntale a
    Lautaro cuál va (AskUserQuestion con screenshots).
 5. SKILL .claude/skills/informe-diario/SKILL.md: el procedimiento que la sesión programada ejecuta:
-   (a) fetch del JSON de /api/informes/datos del deploy de producción (URL en el skill; token de env);
+   (a) fetch del JSON de /api/informes/datos — la URL BASE viene de la env INFORME_BASE_URL
+   (producción para la Routine; http://localhost:3000 para pruebas locales; token de env);
    (b) redactar la prosa con voz-lautaro — molde "Mesa de operaciones", registro placa (emojis
    funcionales sí, hashtags no), integrando el color de Lautaro si existe; NUNCA inventar un número:
    todos los datos salen del JSON; si un bloque vino degradado, se omite con gracia; (c) guardar
    {titulo, comentario, lineas_por_grano} en informes_generados (service key de env, estado borrador);
-   (d) screenshotear la plantilla de producción con Playwright a PNG; (e) subir el PNG al bucket
+   (d) screenshotear la plantilla (misma URL base) con Playwright a PNG; (e) subir el PNG al bucket
    informes; (f) mandar el mail por Resend a ADMIN_EMAILS con el PNG adjunto y asunto "Informe diario
    RF AGRO — [fecha]"; (g) marcar estado='enviado'. Incluir modo de prueba (--fecha) y qué hacer si
    una fuente falla (generar igual, anotar la degradación en el mail).
@@ -149,12 +165,21 @@ CONSTRUIR (en este orden):
    Antes: configurar en el entorno de Claude Code las env vars SUPABASE_URL, SUPABASE_SERVICE_KEY,
    RESEND_API_KEY, RESEND_FROM, ADMIN_EMAILS, INFORME_TOKEN.
 
-VERIFICAR (antes del OK final): lint/tsc/build ✅ · generar UN informe real de punta a punta en la
-sesión (simulando ser la Routine): JSON real → prosa (mostrásela a Lautaro: ¿suena a él?) → placa
-renderizada (mostrale el PNG) → mail recibido → /informes lo lista · el form de color funciona y el
-informe degrada bien sin color cargado · la plantilla con token inválido da 401 · claro/oscuro de
-/informes en navegador. El PR queda draft hasta que Lautaro valide el PNG de muestra. Cerrá con doc
-de sesión + ESTADO.md («Ahora» + marcar avance del ítem 11).
+VERIFICAR (antes del OK final) — TODO EN LOCAL: las rutas nuevas NO existen en producción hasta que
+este PR se mergee y deploye, así que la prueba de punta a punta corre contra tu build local
+(NODE_USE_ENV_PROXY=1 npm run build && npm run start + INFORME_BASE_URL=http://localhost:3000).
+Para escribir el borrador y mandar el mail de prueba necesitás SUPABASE_SERVICE_KEY y RESEND_API_KEY
+en .env.local: pedíselas a Lautaro (que las cargue él en el entorno o te las pase por canal seguro —
+JAMÁS al repo); si no las consigue en el momento, verificá hasta donde se pueda (JSON real → prosa →
+placa renderizada) y dejá el guardado+mail como "probar en el primer disparo real de la Routine
+post-merge", documentado en el PR. Para probar el form de color de /admin/datos en local usá un
+bypass TEMPORAL de requireAdmin que JAMÁS se commitea (git diff limpio antes de cada commit — mismo
+patrón que la etapa E3 de PLAN_AUDITORIA.md). Checklist: lint/tsc/build ✅ · JSON real → prosa
+(mostrásela a Lautaro: ¿suena a él?) → placa renderizada (mostrale el PNG) → si hay creds, mail
+recibido y /informes lo lista · el informe degrada bien sin color cargado · la plantilla con token
+inválido da 401 · claro/oscuro de /informes en navegador. El PR queda draft hasta que Lautaro valide
+el PNG de muestra. Post-merge: primer disparo real de la Routine supervisado (revisá su resultado y
+el mail). Cerrá con doc de sesión + ESTADO.md («Ahora» + marcar avance del ítem 11).
 ```
 
 ---
@@ -191,7 +216,9 @@ CONSTRUIR:
 4. ROUTINE (manual de Lautaro, documentado): cron "0 22 * * 5" (19:00 ART viernes — él ajusta),
    sesión nueva, prompt análogo al de la diaria apuntando a la skill informe-semanal.
 
-VERIFICAR: lint/tsc/build ✅ · UN PDF real de punta a punta con la semana en curso, mostrado a Lautaro
+VERIFICAR: lint/tsc/build ✅ · UN PDF real de punta a punta con la semana en curso, generado EN LOCAL
+(las rutas nuevas no están en producción hasta el merge: build propio +
+INFORME_BASE_URL=http://localhost:3000, mismas notas de creds que MP1), mostrado a Lautaro
 página por página antes del OK · los números del PDF cotejados 1:1 contra las páginas de la web que
 los originan (mismo valor en /granos, /comercio/negociado, etc.) · print CSS sin cortes feos. PR
 draft hasta el OK. Cerrá con doc de sesión + ESTADO.md (ítem 11 completo si Lautaro valida; anotar
@@ -231,7 +258,9 @@ CONSTRUIR:
    qué). Voz: voz-lautaro registro informe (humildad marca registrada: "a mi óptica", "esto es
    simplemente mi visión"). REGLA DURA: ni un número inventado; cada argumento cita su dato.
 3. PÁGINA interna /granos/view (requireAdmin — ojo: requireAdmin protege SIEMPRE, aun con el flag
-   apagado, como /comercio/*): el view vigente por grano (dirección grande con color, tesis, historial
+   apagado, como /comercio/*; y la ruta /granos/view queda RESERVADA para esto: el pendiente P5 de
+   PLAN_BACKLOG.md crea vistas por grano bajo /granos y está avisado de no pisarla — si él ya corrió,
+   coordiná el namespace): el view vigente por grano (dirección grande con color, tesis, historial
    de views anteriores con su feedback) + campo de feedback de Lautaro por view (server action →
    update de feedback_lautaro). Link desde /granos y /comercio/temperatura.
 4. INTEGRACIÓN MP2: dejar lista la sección "view por grano" del semanal (si MP2 ya existe, activarla).
@@ -243,7 +272,9 @@ CONSTRUIR:
 
 VERIFICAR: lint/tsc/build ✅ · generar UN view real de los 3 granos en la sesión y mostrárselo a
 Lautaro (¿los argumentos citan datos reales? ¿la dirección se sostiene? ¿suena a él?) · cotejo de
-cada número citado contra la página de la web que lo origina · página /granos/view en claro/oscuro.
+cada número citado contra la página de la web que lo origina · página /granos/view en claro/oscuro
+(para verla en local sin sesión admin: bypass TEMPORAL de requireAdmin que JAMÁS se commitea —
+git diff limpio antes de cada commit, patrón de la etapa E3 de PLAN_AUDITORIA.md).
 PR draft hasta el OK del primer view. Cerrá con doc de sesión + ESTADO.md.
 ```
 
@@ -291,7 +322,8 @@ CONSTRUIR:
 VERIFICAR: lint/tsc/build ✅ · flujo completo con un informe REAL ya ingestado (simular la detección
 con el último WASDE o GEA de la base): borrador generado (mostrárselo a Lautaro: ¿suena a él? ¿los
 números son exactos?) → mail → editar en /admin → publicar → aparece en /produccion (claro/oscuro,
-mobile) · un vintage repetido NO genera duplicado (probar la clave UNIQUE) · anon no ve borradores
+mobile; para las pantallas /admin en local sin sesión admin: bypass TEMPORAL de requireAdmin que
+JAMÁS se commitea — git diff limpio, patrón E3 de PLAN_AUDITORIA.md) · un vintage repetido NO genera duplicado (probar la clave UNIQUE) · anon no ve borradores
 (probar con la anon key). PR draft hasta que Lautaro apruebe el primer borrador publicado. Cerrá con
 doc de sesión + ESTADO.md (marcar avance del ítem 21).
 ```
