@@ -50,11 +50,21 @@ const CHECKS = [
   { nombre: "cbot_cierres (CBOT)", tabla: "cbot_cierres", col: "fecha", maxDias: 7, cadencia: "diario hábil (T-1)" },
   { nombre: "pizarra_historico (CAC)", tabla: "pizarra_historico", col: "fecha", maxDias: 7, cadencia: "diario hábil" },
   { nombre: "lineup (buques ISA)", tabla: "lineup", col: "fecha_consulta", maxDias: 7, cadencia: "diario hábil (ISA tiene huecos)" },
+  { nombre: "djve (MAGyP)", tabla: "djve", col: "fecha_registro", maxDias: 5, cadencia: "diario" },
+  { nombre: "compras (SIO Granos)", tabla: "compras", col: "fecha", maxDias: 14, cadencia: "semanal (upload manual Agrochat)" },
   { nombre: "noticias", tabla: "noticias", col: "fecha_pub", maxDias: 2, cadencia: "horario" },
   { nombre: "estimaciones USDA", tabla: "estimaciones_produccion", col: "fecha_publicacion", filtro: "&organismo=eq.USDA", maxDias: 45, cadencia: "mensual (WASDE)" },
   { nombre: "estimaciones CONAB", tabla: "estimaciones_produccion", col: "fecha_publicacion", filtro: "&organismo=eq.CONAB", maxDias: 45, cadencia: "mensual" },
   { nombre: "estimaciones BCR-GEA", tabla: "estimaciones_produccion", col: "fecha_publicacion", filtro: "&organismo=eq.BCR", maxDias: 45, cadencia: "mensual" },
   { nombre: "estimaciones DEA-SAGyP", tabla: "estimaciones_produccion", col: "fecha_publicacion", filtro: "&organismo=eq.DEA", maxDias: 16, cadencia: "semanal" },
+];
+
+// Matviews de mesa: no tienen fecha de "hoy" propia; se controla que su última fila coincida con la de
+// su tabla base (si la base avanzó y la matview no, quedó sin refrescar y muestra datos viejos callada).
+const MATVIEWS = [
+  { nombre: "compras_avance_hist", mv: "compras_avance_hist", mvCol: "fecha", base: "compras", baseCol: "fecha" },
+  { nombre: "lineup_gap_hist", mv: "lineup_gap_hist", mvCol: "fecha", base: "lineup", baseCol: "fecha_consulta" },
+  { nombre: "lineup_densidad_hist", mv: "lineup_densidad_hist", mvCol: "fecha", base: "lineup", baseCol: "fecha_consulta" },
 ];
 
 async function main() {
@@ -82,6 +92,33 @@ async function main() {
             : `último ${String(fecha).slice(0, 10)} (${dias}d · ${c.cadencia} · umbral ${c.maxDias}d)`),
     );
     detalle.push({ ...c, fecha, dias, atrasado, error });
+  }
+
+  // Matviews de mesa: su última fila debe coincidir con la de su tabla base.
+  for (const m of MATVIEWS) {
+    let mvF = null;
+    let baseF = null;
+    let error = null;
+    try {
+      mvF = await ultimaFecha(m.mv, m.mvCol);
+      baseF = await ultimaFecha(m.base, m.baseCol);
+    } catch (e) {
+      error = e.message;
+    }
+    // Rezagada si la base tiene fecha más nueva que la matview (más de 1 día de diferencia tolerado).
+    const rezago = error == null && mvF && baseF ? diasDesde(mvF) - diasDesde(baseF) : null;
+    const atrasado = error != null || mvF == null || (rezago != null && rezago > 1);
+    if (atrasado) fallas++;
+    const marca = error ? "✗ ERROR" : mvF == null ? "✗ SIN DATOS" : atrasado ? "✗ SIN REFRESCAR" : "✓";
+    console.log(
+      `${marca}  matview ${m.nombre}: ` +
+        (error
+          ? error
+          : mvF == null
+            ? "sin filas"
+            : `matview ${String(mvF).slice(0, 10)} vs base ${String(baseF).slice(0, 10)} (rezago ${rezago}d)`),
+    );
+    detalle.push({ nombre: `matview ${m.nombre}`, mvF, baseF, rezago, atrasado, error });
   }
 
   if (JSON_OUT) console.log("\n" + JSON.stringify(detalle, null, 2));

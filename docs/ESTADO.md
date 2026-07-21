@@ -19,7 +19,23 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 21/07/2026 — plan de auditoría integral)
+## Ahora (última actualización: 21/07/2026 — auditoría E1 datos CERRADA)
+
+**🗃️ AUDITORÍA E1 (datos y base de datos) — CERRADA — rama `claude/auditoria-e1-datos-vjmwzd`, PR #50.**
+Primera etapa de la auditoría integral ejecutada. **Veredicto: los datos guardados son correctos y fieles a
+la fuente** — cotejo 1:1 exacto con requests reales (futuros ↔ CEM 11/11 filas, pizarra ↔ CAC $495.000 soja
+17/07, CBOT ↔ Barchart 1203 ¢/bu → 442,03 USD/tn, compras ↔ trigo 25/26 Export 16.238.900 t); matviews
+frescas; la limpieza monótona de compras clampea los defectos viejos. Lo que fallaba era de **modelo,
+gobierno y monitoreo**. Informe: **[`auditoria/E1-datos.md`](auditoria/E1-datos.md)** (9 hallazgos + Anexo A
+DDL vivo de las 5 tablas heredadas + Anexo B frescura). **Fase 2 aplicada** (por MCP + versionada): revoke
+`ingest_cierres_cem` a anon (era ejecutable sin guard + INSERT/HTTP → anon ahora 404); borradas 7 filas
+huérfanas `fuente=MAGYP`; `campana_ini_year` con search_path; índice en `profiles.approved_by` + drop
+`idx_lineup_port` muerto; clamp del único saldo negativo; **healthcheck** ahora cubre `djve`+`compras`+3
+checks de matview-refrescada (15 verdes); **migración-baseline** del DDL heredado. **DIFERIDO a E5:** el
+cierre RLS de `lineup`+matviews de mesa — las páginas `/comercio/*` las leen con la **anon key server-side**
+(no con el JWT), así que revocar las rompería; se cierra al prender el login. **Para E4:** `compras` en
+`double precision` vs `numeric`, `campana_ini_year` duplicada en `campanas.ts`. Detalle:
+[`sesiones/2026-07-21-auditoria-e1-datos.md`](sesiones/2026-07-21-auditoria-e1-datos.md).
 
 **🔍 PLAN DE AUDITORÍA INTEGRAL (solo docs, cero código) — rama `claude/trading-project-audit-37aiqr`.**
 Lautaro pidió auditar TODO el proyecto (módulos, fórmulas, páginas navegadas, base de datos, infra,
