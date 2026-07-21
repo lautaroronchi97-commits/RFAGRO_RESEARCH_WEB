@@ -24,7 +24,7 @@
 | E2 | Fórmulas y lógica de negocio | **cerrada** (fase 2 aplicada; calibraciones de umbrales/params MESA y comisiones → E7; tests → E4) | `auditoria/E2-formulas.md` (+ anexo `E2-formulas-fichas.md`, 45 fichas) | #51 |
 | E3 | UX / navegación página por página | **fase 1 + fase 2 hechas** (migración H1/H6 aplicada; `sample.ts` sin importadores) | `auditoria/E3-ux.md` | #57 |
 | E4 | Código y arquitectura | **cerrada** (fase 2 aplicada; refactors grandes → E7; `sample.ts` desbloqueado por E3, borrado) | `auditoria/E4-codigo.md` | #55 |
-| E5 | Infraestructura, ingestas y seguridad | pendiente | `auditoria/E5-infra.md` | — |
+| E5 | Infraestructura, ingestas y seguridad | **fase 1 hecha** (informe; espera decisión de Lautaro) | `auditoria/E5-infra.md` | #_ |
 | E6 | Historia del repo (PRs + sesiones) | **cerrada** (fase 2 aplicada; mitigación DEA-SAGyP → E5) | `auditoria/E6-historia.md` | #56 |
 | E7 | Síntesis y backlog maestro | pendiente | `auditoria/E7-sintesis.md` | — |
 
