@@ -5,10 +5,9 @@ import { inflateRawSync } from "node:zlib";
  * Granos) para el uploader admin (/admin/datos). Acepta CSV (formato canónico, el mismo de
  * `data/compras/serie_agrochat_comercializacion_2019_2026.csv`) o Excel .xlsx.
  *
- * Es el puerto TS fiel de `scripts/cargar-compras.mjs` (mapeos GRANO_A_CODIGO / SECTOR_A_NORM,
- * num(), fechaISO(), campaniaLarga(), aFilaDB(), dedup por clave y guard anti falso-verde). El
- * cargador mjs sigue existiendo para cargas por Actions; cualquier cambio de formato del export
- * hay que replicarlo en los dos.
+ * `scripts/cargar-compras.mjs` (el cargador manual por Actions) importa `parseAgrochat` de ESTE
+ * archivo directamente (Node 22 puede importar `.ts` sin flags) — es la única fuente de verdad del
+ * formato del export; antes estaba duplicado a mano en los dos lados (auditoría E4, hallazgo #2).
  *
  * El .xlsx se lee SIN dependencias nuevas: un .xlsx es un ZIP (central directory + deflate raw,
  * mismo truco que `scripts/ingest-usda.mjs` con el bulk del PSD) del que se extraen
