@@ -13,7 +13,7 @@
 |---|---|---|---|---|
 | MP1 | Informe diario (placa PNG para WhatsApp) | — | pendiente | — |
 | MP2 | Informe semanal (PDF research) | MP1 | pendiente | — |
-| MP3 | View de mercado por grano (research direccional) | MP1 (patrón; se ejecutó antes — dependencia blanda, ver nota) | **HECHO en código** — espera OK de Lautaro al 1er view | #53 |
+| MP3 | View de mercado por grano (research direccional) | MP1 (patrón; se ejecutó antes — dependencia blanda, ver nota) | **HECHO y MERGEADO** — falta que Lautaro cree la Routine semanal (paso manual, prompt listo en el doc de sesión) | #53 |
 | MP4 | Interpretación de informes de organismos (ítem 21) | MP1 | pendiente | — |
 
 ## Modelo recomendado por mini-proyecto (elegir AL ABRIR la sesión / crear la Routine)
