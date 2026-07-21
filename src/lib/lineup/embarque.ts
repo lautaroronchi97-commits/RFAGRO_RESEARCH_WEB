@@ -25,7 +25,7 @@ import { getCurvaGranos } from "../curva";
  *    cumplimiento, no como señal bajista.
  */
 
-const SOURCE = "SAGyP · ISA Agents · Matba Rofex";
+const SOURCE = "SAGyP · Matba Rofex";
 const MESES_ADELANTE = 6; // mes corriente + 6 = 7 columnas
 
 const MES_ABREV = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];

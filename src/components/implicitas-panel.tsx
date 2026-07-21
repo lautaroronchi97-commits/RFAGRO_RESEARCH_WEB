@@ -1,6 +1,5 @@
 import { getDolarFuturo, getDolarLinked } from "@/lib/market";
 import { nfmt } from "@/lib/format";
-import { arbitrajes } from "@/lib/sample";
 import { Panel, PanelHead } from "./panel";
 import { ImplicitasChart } from "./implicitas-chart";
 import { ChartTabla, type ChartTablaFila } from "./chart-tabla";
@@ -20,11 +19,12 @@ function IconLayers() {
 export async function ImplicitasPanel() {
   const [fut, link] = await Promise.all([getDolarFuturo(), getDolarLinked()]);
 
+  const problemas = [...fut.meta.problemas, ...link.meta.problemas];
   const meta = {
     source: "MAE · Mercado de deuda local",
     updatedAt: Math.max(fut.meta.updatedAt ?? 0, link.meta.updatedAt ?? 0) || null,
-    status: "parcial" as const, // granos siguen siendo ejemplo
-    problemas: [...fut.meta.problemas, ...link.meta.problemas, "granos: ejemplo hasta conectar A3"],
+    status: problemas.length === 0 ? ("real" as const) : ("parcial" as const),
+    problemas,
   };
 
   const futPts = fut.posiciones
@@ -35,12 +35,9 @@ export async function ImplicitasPanel() {
     .filter((b) => b.tnaPct != null && b.dias != null)
     .map((b) => ({ x: b.dias as number, y: b.tnaPct as number }));
 
-  const granPts = arbitrajes.flatMap((g) => g.rows.map((r) => ({ x: r.dias, y: r.tna })));
-
   const series = [
     { name: "Dólar futuro", color: "var(--brand-deep)", points: futPts },
     { name: "Dólar linked", color: "var(--gold-text)", points: linkPts },
-    { name: "Granos (ej.)", color: "var(--c-gran)", points: granPts, line: false },
   ];
 
   // Tabla de datos del gráfico: una fila por plazo (días), una columna por serie.
@@ -65,7 +62,7 @@ export async function ImplicitasPanel() {
       <PanelHead
         glyph={<IconLayers />}
         title="Implícitas combinadas"
-        sub="TNA USD por plazo — dólar futuro · linked · granos"
+        sub="TNA USD por plazo — dólar futuro · linked"
         stamp={<SourceStamp meta={meta} />}
       />
       <ImplicitasChart series={series} />
@@ -73,7 +70,7 @@ export async function ImplicitasPanel() {
         titulo="Datos del gráfico"
         columnas={tablaColumnas}
         filas={tablaFilas}
-        nota="TNA en % según días al vencimiento. Granos: valores de ejemplo hasta conectar A3."
+        nota="TNA en % según días al vencimiento."
       />
       <QueEsEsto
         paraQue="Junta en un solo gráfico las tasas en dólares que se pueden sacar por distintos caminos (dólar futuro y dólar linked), para comparar cuál rinde más a cada plazo."

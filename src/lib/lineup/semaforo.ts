@@ -17,7 +17,7 @@ import { RINDE_HARINA, RINDE_ACEITE } from "./mesa_calor";
  * hecho de mercado). Cubre los 3 granos con FAS+pizarra (soja/maíz/trigo).
  */
 
-const SOURCE = "ISA Agents · SAGyP · BCR";
+const SOURCE = "SAGyP · BCR";
 
 type GranoDef = { key: string; nombre: string; cods: string[]; precio: string };
 const GRANOS: GranoDef[] = [

@@ -13,7 +13,7 @@ import { canonShipper } from "./shippers";
  * vista `lineup_ultimas_ruedas` (2 snapshots) y agrega todo en el server.
  */
 
-const SOURCE = "ISA Agents";
+const SOURCE = "Elaboración propia RF AGRO";
 const UMBRAL_BUQUE_NUEVO_TN = 30_000; // materialidad de "buque nuevo" (mesa_diff.py)
 
 export type ProductoAgg = {
