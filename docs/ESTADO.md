@@ -19,7 +19,27 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 21/07/2026 — auditoría E1 datos CERRADA)
+## Ahora (última actualización: 21/07/2026 — auditoría E2 fórmulas: informe listo, espera OK)
+
+**🧮 AUDITORÍA E2 (fórmulas y lógica de negocio) — FASE 1 HECHA, ESPERANDO OK DE LAUTARO — rama
+`claude/e2-formulas-go9i9y`.** Se auditó TODO el inventario del PROMPT E2 con verificación adversarial
+(derivar desde docs → comparar código → ejemplo numérico con datos reales → bordes). **Veredicto: cero
+bugs de fórmula en 45 fichas** — INTRATE act/365 1:1 en todas las libs, base 365 consistente, guards
+completos, paridad server/cliente exacta, controles históricos reproducidos (Excel 125,6 y 0,5796 ·
+trigo 16.238.900 t · pctl 59/23 · cumplimiento 146% · `campanas.ts` 612/612 vs SQL · factores CBOT
+idénticos). Lo que apareció: **1 bug de RUNTIME** (`djve_cobertura` timeout 57014 por anon desde el
+backfill 2011-2025 → **`/comercio/empresas` y `/comercio/senal` degradan HOY**; fix = materializar
+patrón `lineup_visitas`), matviews gap/densidad al 16/07 vs line-up 20/07 (refresh no corrió → E5),
+2 desfasajes doc↔código (el corrimiento por feriado del calendario está BIEN en el código —
+verificado contra el GEA real del 08/07 — y mal en el plan; FORMULAS_EXCEL r27-36 documenta la
+fórmula vieja de negocios-con-pagos), y **11 PREGUNTAS de criterio** para Lautaro (las top: dos filas
+`UST$T` T+0/T+1 en MAE que mueven la TNA corta ~3,7 pp · picker de curva fin-de-mes vs vto real
+(−0,8 pp TNA) · umbrales/pesos/rindes heredados del Python sin validar · primas default de
+estrategias). Informe: **[`auditoria/E2-formulas.md`](auditoria/E2-formulas.md)** + anexo
+[`auditoria/E2-formulas-fichas.md`](auditoria/E2-formulas-fichas.md) (45 fichas con números exactos =
+fixtures para los tests de E4). **Próximo paso: Lautaro completa la columna «Decisión» hallazgo por
+hallazgo + responde las 11 preguntas → FASE 2 implementa solo lo aprobado.** Detalle:
+[`sesiones/2026-07-21-auditoria-e2-formulas.md`](sesiones/2026-07-21-auditoria-e2-formulas.md).
 
 **🗃️ AUDITORÍA E1 (datos y base de datos) — CERRADA — rama `claude/auditoria-e1-datos-vjmwzd`, PR #50.**
 Primera etapa de la auditoría integral ejecutada. **Veredicto: los datos guardados son correctos y fieles a
