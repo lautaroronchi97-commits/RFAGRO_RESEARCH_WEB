@@ -19,10 +19,18 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 21/07/2026 — MP3 view de mercado HECHO · research P3/P4 HECHO · auditoría E2 CERRADA)
+## Ahora (última actualización: 21/07/2026 — MP3 view de mercado MERGEADO · research P3/P4 HECHO · auditoría E2 CERRADA)
 
-**🔮 MP3 — VIEW DE MERCADO POR GRANO (PLAN_INFORMES) — HECHO EN CÓDIGO, espera OK de Lautaro al
-1er view — rama `claude/mp3-lee-prompt-th37ix`, PR #53 (draft).** Se ejecutó el PROMPT MP3 **antes
+**🔮 MP3 — VIEW DE MERCADO POR GRANO (PLAN_INFORMES) — CÓDIGO EN `main`, PENDIENTE 1 PASO MANUAL DE
+LAUTARO: crear la Routine semanal.** Lautaro validó el primer view en `/granos/view` y se mergeó el
+PR #53 (rama `claude/mp3-lee-prompt-th37ix`). **Único pendiente que queda: crear la Routine semanal**
+(cron `0 12 * * 5` = 9:00 ART viernes, modelo Opus/Fable) desde su sesión de Claude, con las env vars
+`INFORME_BASE_URL`/`INFORME_TOKEN` (mismo valor en Vercel)/`SUPABASE_URL`/`SUPABASE_SERVICE_KEY`
+configuradas en el entorno — **prompt exacto listo** en
+[`sesiones/2026-07-21-informes-mp3-view-mercado.md`](sesiones/2026-07-21-informes-mp3-view-mercado.md#quedó-pendiente--en-vuelo).
+Sin la Routine, el view no se regenera solo — hay que dispararla a mano o esperar a que Lautaro la cree.
+
+Se ejecutó el PROMPT MP3 **antes
 que MP1** (pedido explícito; la dependencia era blanda — MP3 solo reusa el patrón). **Base**: tabla
 `views_mercado` (migración `20260721150000`, APLICADA por `execute_sql` — el canal de aprobación del
 MCP sigue caído) con RLS interno-mesa DE VERDAD (SELECT solo admin por `is_admin()`, anon revocado;
