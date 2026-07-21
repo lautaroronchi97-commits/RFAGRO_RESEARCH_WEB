@@ -16,7 +16,9 @@
  */
 
 // ---------------------------------------------------------------------------
-// Parametría (editable — la mesa recalibra desde acá; la UI la muestra)
+// Parametría (editable — la mesa recalibra desde acá; la UI la muestra).
+// Heredada del Python y marcada PROVISORIA por Lautaro (auditoría E2 21/07/2026):
+// pesos, bandas, umbral de dirección y rindes se recalibran en E7.
 // ---------------------------------------------------------------------------
 
 export const W_GAP = 0.35;

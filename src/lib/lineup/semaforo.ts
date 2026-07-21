@@ -4,6 +4,7 @@ import type { Meta } from "../market";
 import { getCapacidad } from "../capacidad";
 import { getEmpresas } from "./empresas";
 import { ratioCobertura, senalDe, type SenalTag } from "./cobertura";
+import { RINDE_HARINA, RINDE_ACEITE } from "./mesa_calor";
 
 /**
  * Semáforo físico → precio (idea #1). Cruza la señal FÍSICA de cobertura (¿la
@@ -24,6 +25,11 @@ const GRANOS: GranoDef[] = [
   { key: "maiz", nombre: "Maíz", cods: ["MAIZE"], precio: "MAI" },
   { key: "trigo", nombre: "Trigo", cods: ["WHEAT"], precio: "TRI" },
 ];
+
+// La soja se agrega en EQUIVALENTE POROTO (harina ÷ rinde, aceite ÷ rinde), la misma
+// vara que /comercio/temperatura (decisión de Lautaro, auditoría E2 21/07/2026).
+const FACTOR_POROTO: Record<string, number> = { SBM: 1 / RINDE_HARINA, SBO: 1 / RINDE_ACEITE };
+const aPoroto = (cod: string, tn: number) => tn * (FACTOR_POROTO[cod] ?? 1);
 
 export type Nivel = "firme" | "mixto" | "neutro" | "flojo";
 export type SemaforoGrano = {
@@ -60,8 +66,8 @@ export const getSemaforo = cache(async (): Promise<SemaforoData> => {
   const fasDe = new Map(cap.granos.map((g) => [g.underlying, g] as const));
 
   const granos: SemaforoGrano[] = GRANOS.map((g) => {
-    const declarado = g.cods.reduce((s, c) => s + (porCod.get(c)?.declarado60d ?? 0), 0);
-    const originado = g.cods.reduce((s, c) => s + (porCod.get(c)?.originado60d ?? 0), 0);
+    const declarado = g.cods.reduce((s, c) => s + aPoroto(c, porCod.get(c)?.declarado60d ?? 0), 0);
+    const originado = g.cods.reduce((s, c) => s + aPoroto(c, porCod.get(c)?.originado60d ?? 0), 0);
     const ratio = ratioCobertura(declarado, originado);
     const fisico = senalDe(declarado, originado).tag;
     const price = fasDe.get(g.precio);

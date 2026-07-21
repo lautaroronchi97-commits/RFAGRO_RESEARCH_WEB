@@ -34,12 +34,15 @@ Confirma la calculadora ya implementada (`src/lib/diferido.ts`):
   - interés simple, base 365, días = **solo el excedente** sobre los 5 hábiles.
   - En el Excel la tasa es `(caución 1 día − aforo TNA)`; en la web es configurable.
 
-## Negocios con pago / a fijar (misma hoja, r27-36) — PRÓXIMA CALCULADORA
-- `meses_al_vto = (fecha_fin_entrega − hoy) / 30`
-- `precio_USD   = precio_base × (1 − tasa_descuento × meses_al_vto)`  (descuento simple)
+## Negocios con pago / a fijar (misma hoja, r27-36) — IMPLEMENTADA (fórmula vigente 08/07/2026)
+La calculadora implementada (`calc-negocios-pago.tsx`) usa la fórmula **confirmada por Lautaro el
+08/07/2026**, que es la inversa exacta del INTRATE act/365 (no la versión vieja de la hoja):
+- `dias         = (fecha_pago = hoy + 5 hábiles, editable) → vencimiento`
+- `precio_USD   = precio_futuro ÷ (1 + tasa × dias/365)`  (descuento simple act/365)
 - `precio_con_pago (ARS) = ROUNDDOWN(precio_USD × TC_del_día, 0)`
-- `tasa directa = precio_base / precio_USD − 1`
-- `TNA USD      = INTRATE(hoy, fecha_fin, precio_USD, precio_base)`
+- `tasa directa = precio_futuro / precio_USD − 1`
+> Nota histórica: la hoja Excel original (r27-36) descontaba multiplicativo por meses
+> (`base × (1 − tasa × días/30)`); quedó reemplazada por la fórmula de arriba (auditoría E2 21/07/2026).
 
 ## Sintético de dólar (hojas DOLAR SINTETICO / SINTETICO DE SOJA)
 - `TC en base a TEM LECAPS` por posición; `sintético = LECAP + dólar futuro`.

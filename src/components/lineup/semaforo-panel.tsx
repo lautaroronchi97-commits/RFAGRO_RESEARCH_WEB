@@ -64,7 +64,7 @@ export async function SemaforoPanel() {
 
       <QueEsEsto
         paraQue="Junta en una sola lectura las dos caras del mercado que la web ya mira por separado: la demanda FÍSICA de exportación (¿las fábricas están cortas y saliendo a comprar?) y el PRECIO que pueden pagar (FAS teórico = capacidad de pago, vs la pizarra). Sirve para leer si la demanda física le pone piso al disponible."
-        comoSeCalcula="El eje físico sale del gap de cobertura por grano (DJVE declarada vs line-up originado a 60 días, con los umbrales de LineUps_Code). El eje precio es el spread entre el FAS teórico de la BCR y la pizarra CAC. La lectura combina ambos ejes: corta + FAS sobre la pizarra = piso firme; corta + FAS ajustado = sostiene sin margen; sobre-originada = demanda de corto floja. Es una lectura orientativa, no un número cerrado."
+        comoSeCalcula="El eje físico sale del gap de cobertura por grano (DJVE declarada vs line-up originado a 60 días, con los umbrales de LineUps_Code); la soja suma poroto + harina + aceite convertidos a equivalente poroto. El eje precio es el spread entre el FAS teórico de la BCR y la pizarra CAC. La lectura combina ambos ejes: corta + FAS sobre la pizarra = piso firme; corta + FAS ajustado = sostiene sin margen; sobre-originada = demanda de corto floja. Es una lectura orientativa, no un número cerrado."
       />
     </Panel>
   );

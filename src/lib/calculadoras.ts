@@ -30,7 +30,7 @@ export const CALCULADORAS: CalcMeta[] = [
     paraQue:
       "Cuando cerrás solo una parte del negocio a fijar, te muestra el porcentaje que efectivamente le queda al cliente después del aforo.",
     comoSeCalcula:
-      "Sobre el porcentaje lleno del negocio descuenta el aforo que cargás; el resultado es el porcentaje que se le reconoce al cliente.",
+      "Sobre el porcentaje lleno del negocio descuenta el aforo (% relativo) que cargás; el resultado es el porcentaje que se le reconoce al cliente.",
   },
   {
     slug: "negocios-con-pagos",

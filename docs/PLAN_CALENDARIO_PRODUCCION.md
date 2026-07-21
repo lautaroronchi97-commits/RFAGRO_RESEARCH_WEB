@@ -113,7 +113,8 @@ Dos clases de eventos en la misma tabla:
    - **CONAB grãos**: 13 fechas/año en PDF oficial. Restantes 2026: **14/07, 13/08, 15/09** (cierran
      2025/26) · **15/10, 13/11, 15/12** (abren 2026/27) · 14/01/2027 — siempre 09:00 AR.
 2. **Regla** (`tipo=regla`, flag "estimada" en la UI): el organismo no publica fechas →
-   - **PAS (BCBA)**: jueves 15:00 AR. · **GEA semanal**: jueves ~17:30 (viernes si feriado).
+   - **PAS (BCBA)**: jueves 15:00 AR. · **GEA semanal**: jueves ~17:30 (si es feriado se ADELANTA al
+     hábil anterior — verificado con el GEA real del mié 08/07/2026, feriado jue 09/07; auditoría E2).
    - **GEA mensual**: 2° miércoles ~17-19h AR → 12/08, 09/09, 14/10, 11/11, 09/12 (estimadas).
    - **DEA semanal**: jueves ~17:00 (corre por feriados). **DEA mensual**: un jueves entre el 18 y el 23 →
      16-23/07, 20/08, 17/09, 22/10, 19/11, 17/12 (estimados).

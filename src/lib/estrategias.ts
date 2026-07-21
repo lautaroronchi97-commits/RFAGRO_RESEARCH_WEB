@@ -124,6 +124,12 @@ export const PRESETS: Preset[] = [
   { id: "mariposa", nombre: "Mariposa comprada (call)", grupo: "Mariposas / cóndores", view: "Clava en el centro",
     explicacion: "+1 call abajo, −2 call en el centro, +1 call arriba. Ganancia máxima si el precio termina en el strike central. Costo bajo.",
     patas: (B, S) => [opt("call", "compra", B - S, B, S), opt("call", "venta", B, B, S, 2), opt("call", "compra", B + S, B, S)] },
+  { id: "mariposa-v", nombre: "Mariposa vendida (call)", grupo: "Mariposas / cóndores", view: "Sale del rango",
+    explicacion: "−1 call abajo, +2 call en el centro, −1 call arriba (inversa de la mariposa comprada). Cobrás prima; ganás si el precio se va del strike central.",
+    patas: (B, S) => [opt("call", "venta", B - S, B, S), opt("call", "compra", B, B, S, 2), opt("call", "venta", B + S, B, S)] },
+  { id: "condor-call", nombre: "Cóndor de calls", grupo: "Mariposas / cóndores", view: "Rango amplio",
+    explicacion: "+1 call bien abajo, −1 call abajo, −1 call arriba, +1 call bien arriba. Ganás si el precio queda en el rango central; riesgo acotado en las alas.",
+    patas: (B, S) => [opt("call", "compra", B - 2 * S, B, S), opt("call", "venta", B - S, B, S), opt("call", "venta", B + S, B, S), opt("call", "compra", B + 2 * S, B, S)] },
   { id: "iron-condor", nombre: "Iron condor", grupo: "Mariposas / cóndores", view: "Rango (crédito)",
     explicacion: "Vendés un strangle y comprás otro más lejos como seguro. Cobrás prima; ganás si el precio queda en el rango central.",
     patas: (B, S) => [opt("put", "compra", B - 2 * S, B, S), opt("put", "venta", B - S, B, S), opt("call", "venta", B + S, B, S), opt("call", "compra", B + 2 * S, B, S)] },
@@ -138,6 +144,12 @@ export const PRESETS: Preset[] = [
   { id: "ratio-put", nombre: "Ratio put spread", grupo: "Ratios", view: "Bajista suave",
     explicacion: "Comprás 1 put y vendés 2 más abajo. Barato si baja poco; riesgo si baja demasiado.",
     patas: (B, S) => [opt("put", "compra", B, B, S), opt("put", "venta", B - S, B, S, 2)] },
+  { id: "call-backspread", nombre: "Call backspread", grupo: "Ratios", view: "Alcista fuerte",
+    explicacion: "Vendés 1 call y comprás 2 más arriba. Ganancia ilimitada si sube fuerte; lo peor es que clave en el strike comprado.",
+    patas: (B, S) => [opt("call", "venta", B, B, S), opt("call", "compra", B + S, B, S, 2)] },
+  { id: "put-backspread", nombre: "Put backspread", grupo: "Ratios", view: "Bajista fuerte",
+    explicacion: "Vendés 1 put y comprás 2 más abajo. Ganás fuerte si se derrumba; lo peor es que clave en el strike comprado.",
+    patas: (B, S) => [opt("put", "venta", B, B, S), opt("put", "compra", B - S, B, S, 2)] },
 ];
 
 export type Escenario = { P: number; resultado: number };

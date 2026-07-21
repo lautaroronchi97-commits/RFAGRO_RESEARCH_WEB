@@ -38,8 +38,10 @@ export function CalcPorcentaje({ granos = [] }: { granos?: GranoCurva[] }) {
     if (Number.isFinite(lleno)) {
       resultado = rfmt(lleno, 1);
       resSub = `${nfmt(num(precioNeg), 2)} ÷ ${nfmt(num(precioRef), 2)}`;
+      // Aforo en % RELATIVO del lleno (decisión de Lautaro, auditoría E2 21/07/2026):
+      // 183,8% con aforo 2 → 183,8 × 0,98 = 180,2 (antes restaba puntos: 181,8).
       const af = num(aforo);
-      if (Number.isFinite(af)) clienteTxt = rfmt(lleno - af, 1);
+      if (Number.isFinite(af)) clienteTxt = rfmt(lleno * (1 - af / 100), 1);
     }
   } else {
     const v = precioDesdePct(num(pct), num(precioRef));
@@ -94,8 +96,8 @@ export function CalcPorcentaje({ granos = [] }: { granos?: GranoCurva[] }) {
       <div className="panel-note">
         <span>
           <span className="k">Por relación</span> Porcentaje lleno = precio de la posición vendida ÷ precio de la
-          posición de fijación (ej. 114% maíz julio). El <b>aforo</b> se resta al lleno para cotizar a clientes
-          (lleno − aforo). El plazo se estima del vencimiento de la fijación. Precios a mano; con la curva A3 se
+          posición de fijación (ej. 114% maíz julio). El <b>aforo</b> es un % relativo que descuenta al lleno para
+          cotizar a clientes (lleno × (1 − aforo/100)). El plazo se estima del vencimiento de la fijación. Precios a mano; con la curva A3 se
           eligen producto/posición y se completan solos.
         </span>
       </div>
