@@ -98,8 +98,17 @@ export function CalcEstrategias() {
   const serie = okRange && patasNum.length ? serieEscenarios(patasNum, B, S) : [];
   const bes = breakevens(serie);
   const ys = serie.map((s) => s.resultado);
-  const maxG = ys.length ? Math.max(...ys) : NaN;
-  const maxP = ys.length ? Math.min(...ys) : NaN;
+  // Extremos REALES, no los del borde del rango graficado (auditoría E2, 21/07/2026):
+  // hacia abajo el extremo exacto es el payoff en P=0; hacia arriba, si la pendiente del
+  // último tramo no es nula, la ganancia/pérdida sigue creciendo → "ilimitada".
+  const EPS = 1e-9;
+  const pendienteSup =
+    ys.length >= 2 ? (ys[ys.length - 1] ?? 0) - (ys[ys.length - 2] ?? 0) : 0;
+  const candidatos = ys.length ? [...ys, payoffTotal(0, patasNum)] : [];
+  const gananciaIlimitada = pendienteSup > EPS;
+  const perdidaIlimitada = pendienteSup < -EPS;
+  const maxG = candidatos.length ? Math.max(...candidatos) : NaN;
+  const maxP = candidatos.length ? Math.min(...candidatos) : NaN;
   const neta = patasNum.reduce((a, p) => (p.tipo === "futuro" ? a : a + (p.lado === "compra" ? p.prima * p.cttos : -p.prima * p.cttos)), 0);
   const claves = Array.from(new Set([...patasNum.map((p) => p.strike), Number.isFinite(B) ? B : NaN]))
     .filter((v) => Number.isFinite(v))
@@ -132,13 +141,17 @@ export function CalcEstrategias() {
             <span className="k">{preset.view}</span> {preset.explicacion}
           </div>
         )}
+        <div className="strat-exp">
+          <span className="k">Primas estimativas</span> Las patas se precargan con primas estimadas (decaen con
+          la distancia al ATM) para poder jugar rápido — cargá las primas reales de la cadena antes de cotizar.
+        </div>
 
         <PayoffChart serie={serie} B={B} bes={bes} />
 
         <div className="calc-out">
           <div className="calc-meta">
-            <span>Máx. ganancia: <b className="pos">{Number.isFinite(maxG) ? sfmt(maxG, 1) : "—"}</b></span>
-            <span>Máx. pérdida: <b className="neg">{Number.isFinite(maxP) ? sfmt(maxP, 1) : "—"}</b></span>
+            <span>Máx. ganancia: <b className="pos">{gananciaIlimitada ? "ilimitada" : Number.isFinite(maxG) ? sfmt(maxG, 1) : "—"}</b></span>
+            <span>Máx. pérdida: <b className="neg">{perdidaIlimitada ? "ilimitada" : Number.isFinite(maxP) ? sfmt(maxP, 1) : "—"}</b></span>
             <span>Prima neta: <b>{sfmt(neta, 1)} USD</b> {neta > 0 ? "(costo)" : neta < 0 ? "(ingreso)" : ""}</span>
             <span>Breakeven(s): <b>{bes.length ? bes.map((b) => nfmt(b, 1)).join(" · ") : "—"}</b></span>
           </div>

@@ -10,8 +10,10 @@ import type { Meta } from "./market";
  * reales de Supabase (`futuros_cierres`, fuente CEM · Matba ROFEX).
  *
  * Un "pase" es la diferencia de precio entre dos posiciones del mismo grano
- * (vender la cercana / comprar la lejana). Se arma la posición cercana (la
- * primera viva) contra cada posición más lejana. Se calcula sobre el
+ * (vender la corta / comprar la larga). Se arman DOS familias (decisión de
+ * Lautaro, auditoría E2 21/07/2026): la posición cercana (la primera viva)
+ * contra cada posición más lejana, y además los pases CONSECUTIVOS entre
+ * posiciones intermedias (SEP/NOV, NOV/MAY…). Se calcula sobre el
  * ajuste (settlement), el precio de liquidación oficial del día: siempre existe
  * aunque la posición no opere, así que es el más robusto.
  *
@@ -48,41 +50,50 @@ export type PasesData = { granos: PaseGrano[]; meta: Meta };
 export const getPases = cache(async (): Promise<PasesData> => {
   const [{ granos, meta }, vtos] = await Promise.all([getCierresGranos(), getVencimientos()]);
 
+  type Pos = { symbol: string; posicion: string; settlement: number | null; close: number | null };
+  const armarPase = (corta: Pos, larga: Pos): PaseSpread => {
+    const pc = corta.settlement;
+    const pl = larga.settlement;
+    const ajuste = pc != null && pl != null ? round2(pl - pc) : null;
+    const directa = pc != null && pc > 0 && pl != null ? round2((pl / pc - 1) * 100) : null;
+    const ultimo =
+      corta.close && larga.close && corta.close > 0 && larga.close > 0
+        ? round2(larga.close - corta.close)
+        : null;
+    const vc = vtos.get(corta.symbol);
+    const vl = vtos.get(larga.symbol);
+    const dias = vc && vl ? diasEntre(vc, vl) : null;
+    const tna = directa != null && dias != null && dias > 0 ? round2((directa * 365) / dias) : null;
+    return {
+      label: `${corta.posicion} / ${larga.posicion}`,
+      // Símbolo del pase real en A3: root de la corta + posición de la larga.
+      spreadSymbol: `${corta.symbol}/${larga.posicion}`,
+      ajuste,
+      directa,
+      tna,
+      dias,
+      ultimo,
+    };
+  };
+
   const out: PaseGrano[] = [];
   for (const g of granos) {
     // Solo futuros con vencimiento (excluye disponible, venc = 0), ya en orden de vto.
     const fut = g.posiciones.filter((p) => p.venc > 0);
     const spreads: PaseSpread[] = [];
-    // Posición cercana (la primera viva) contra cada posición más lejana.
+    // 1) Posición cercana (la primera viva) contra cada posición más lejana.
     const cercana = fut[0];
     if (cercana) {
       for (let j = 1; j < fut.length; j++) {
         const larga = fut[j];
-        if (!larga) continue;
-        const pc = cercana.settlement;
-        const pl = larga.settlement;
-        const ajuste = pc != null && pl != null ? round2(pl - pc) : null;
-        const directa = pc != null && pc > 0 && pl != null ? round2((pl / pc - 1) * 100) : null;
-        const ultimo =
-          cercana.close && larga.close && cercana.close > 0 && larga.close > 0
-            ? round2(larga.close - cercana.close)
-            : null;
-        const vc = vtos.get(cercana.symbol);
-        const vl = vtos.get(larga.symbol);
-        const dias = vc && vl ? diasEntre(vc, vl) : null;
-        const tna =
-          directa != null && dias != null && dias > 0 ? round2((directa * 365) / dias) : null;
-        spreads.push({
-          label: `${cercana.posicion} / ${larga.posicion}`,
-          // Símbolo del pase real en A3: root de la cercana + posición de la larga.
-          spreadSymbol: `${cercana.symbol}/${larga.posicion}`,
-          ajuste,
-          directa,
-          tna,
-          dias,
-          ultimo,
-        });
+        if (larga) spreads.push(armarPase(cercana, larga));
       }
+    }
+    // 2) Pases consecutivos entre intermedias (el par 0/1 ya salió arriba).
+    for (let i = 1; i + 1 < fut.length; i++) {
+      const corta = fut[i];
+      const larga = fut[i + 1];
+      if (corta && larga) spreads.push(armarPase(corta, larga));
     }
     if (spreads.length > 0) {
       out.push({ underlying: g.underlying, nombre: g.nombre, fecha: g.fecha, spreads });

@@ -277,7 +277,8 @@ export function getEventos(desdeISO: string, hastaISO: string): EventoCalendario
         TZ.AR,
       ),
     );
-    // GEA semanal zona núcleo (BCR) — jueves ~17:30 (se corre a viernes por feriado).
+    // GEA semanal zona núcleo (BCR) — jueves ~17:30 (si es feriado se ADELANTA al hábil anterior:
+    // verificado con el GEA real del mié 08/07/2026, feriado jue 09/07 — auditoría E2).
     const gea = corrigeFeriadoAR(d);
     out.push(
       ev(
@@ -296,7 +297,7 @@ export function getEventos(desdeISO: string, hastaISO: string): EventoCalendario
         TZ.AR,
       ),
     );
-    // DEA semanal (SAGyP) — jueves ~17:00 (se corre por feriado).
+    // DEA semanal (SAGyP) — jueves ~17:00 (si es feriado se adelanta al hábil anterior, como el GEA).
     const dea = corrigeFeriadoAR(d);
     out.push(
       ev(

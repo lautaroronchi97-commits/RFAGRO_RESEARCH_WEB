@@ -47,7 +47,7 @@ function overrides(): Record<string, number> {
   }
 }
 
-/** Extrae el FAS teórico Spot (primer valor) por grano y la fecha de la planilla. */
+/** Extrae el FAS teórico Up River (2º valor de la fila; el 1º es SAGyP) por grano + fecha de la planilla. */
 function parseFas(html: string): { fas: Record<string, number>; fecha: string | null } {
   const i = html.indexOf("sheet-wrapper");
   if (i < 0) return { fas: {}, fecha: null };
@@ -79,7 +79,8 @@ function parseFas(html: string): { fas: Record<string, number>; fecha: string | 
       const nums: number[] = [];
       for (const c of cells.slice(1)) {
         const v = arNum(c);
-        if (v) nums.push(v);
+        // null solo si la celda no parsea; el 0 se conserva para no correr el índice de columnas.
+        if (v != null && Number.isFinite(v)) nums.push(v);
       }
       // El orden de columnas es SAGyP, Up River, …: el 2º = Up River (Rosario).
       const val = nums.length >= 2 ? nums[1] : nums[0];

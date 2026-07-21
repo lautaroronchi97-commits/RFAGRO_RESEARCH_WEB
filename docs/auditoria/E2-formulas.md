@@ -36,12 +36,12 @@ el plan), y **una decena de PREGUNTAS de criterio** para Lautaro — la más imp
 
 | # | Hallazgo | Evidencia | Impacto | Esfuerzo | Propuesta de fix | Decisión Lautaro |
 |---|---|---|---|---|---|---|
-| 1 | **`djve_cobertura` da statement timeout vía PostgREST anon** — es la query exacta de `getEmpresas` (`empresas.ts:90-97`, fatal) → **`/comercio/empresas` y `/comercio/senal` degradan a "fuente no disponible"**. La vista agrega los 334k de `djve` en cada request desde el backfill 2011-2025 (Fase 3). Filtrada por `cod` responde ~1 s. | `curl` anon `djve_cobertura?select=*` → HTTP 500 `57014` en ~4-5 s, reproducido 2/2 (21/07 11:50 UTC) + 3/3 por subagente. `lineup_estacional` falla intermitente (1/3). | **alto** (mesa: 2 páginas caídas) | S-M | Materializar la vista + RPC de refresh llamada por la ingesta (patrón `lineup_visitas`, que resolvió esto mismo en Fase 3), o filtrar campañas viejas en la vista. Migración chica. | |
-| 2 | **`lineup_gap_hist`/`lineup_densidad_hist` quedaron al 16/07 con `lineup` al 20/07** — el refresh post-ingesta no corrió (o falló en silencio) tras la ingesta del 20/07. `/comercio/temperatura` muestra la foto del 16/07 sin aviso. (Las fórmulas degradan consistentemente: "hoy" = máx fecha de sus series.) | REST: `lineup_ultimas_ruedas` rueda_rank=1 → 2026-07-20; `lineup_gap_hist` máx fecha → 2026-07-16. | **medio** (mesa) | S | Investigar el run de `ingest-lineup` del 20/07 (¿llamó la RPC de refresh? → E5) y afinar el check de matview del healthcheck para que compare contra la última rueda, no contra "días de atraso". | |
-| 3 | **El corrimiento por feriado del calendario está bien en el CÓDIGO y mal en los DOCS.** `corrigeFeriadoAR` (`calendario.ts:161-168`) corre al hábil ANTERIOR ("los informes AR se adelantan"); el plan (`PLAN_CALENDARIO_PRODUCCION.md` §2: "viernes si feriado") y el comentario del call-site (`:280`) dicen lo contrario. Dirimido contra la realidad: el GEA de la semana del feriado del jueves 09/07 está fechado **2026-07-08 (miércoles)** en la base → BCR efectivamente ADELANTA. | SQL: `estimaciones_produccion` BCR → única fila de julio = `fecha_publicacion 2026-07-08`, "GEA mensual #196". | bajo (doc engañoso) | S | Corregir el comentario de `:280` y el plan §2. Confirmar con Lautaro la regla del DEA (SAGyP), que comparte la función (pregunta 11). | |
-| 4 | **`FORMULAS_EXCEL.md` r27-36 documenta la fórmula VIEJA de negocios-con-pagos** (`base × (1 − tasa × meses/30)`); el código implementa la confirmada por Lautaro el 08/07 (`futuro ÷ (1 + tasa×días/365)`), que además es la inversa exacta del INTRATE. Con los datos de hoy: doc ≈339,83 vs código 340,71. Dos verdades conviviendo. | Ficha 1.5 del anexo; `calc-negocios-pago.tsx:30-41` vs `FORMULAS_EXCEL.md:37-42`. | bajo (doc) | S | Actualizar FORMULAS_EXCEL §r27-36 a la fórmula vigente (dejando nota de que la vieja era de la hoja Excel). | |
-| 5 | **3 comentarios que mienten sobre su propio código** (latentes, sin efecto hoy): (a) `futuros.ts:53` "DIS24 → 0" pero DIS24 matchea la regex → 202400 → se descartaría como vencida, no mostrada como disponible (0 filas así hoy, verificado por SQL); (b) `capacidad.ts:50` "primer valor" pero toma el 2º (Up River — el docstring del archivo sí está bien); (c) `capacidad.ts:82` `if (v)` descarta valores 0 CORRIENDO el índice → si la columna SAGyP viniera vacía, `nums[1]` dejaría de ser Up River. | Fichas 4.4, 4.6 y test de paridad ejecutado. | bajo (robustez) | S | Corregir los 2 comentarios; en (c) empujar también los 0 (o parsear por posición de columna). Puede ir acá o a E4. | |
-| 6 | **Los tests del port de LineUps_Code (39/39 y 41/41 citados en ESTADO) no están commiteados** — fueron scripts efímeros de sesión. La suite propia del auditor (47 aserciones + harness con datos reales) quedó en scratchpad, fuera del repo. | `Glob`: cero `*.test.*` en el repo; ESTADO cita los conteos. | bajo (robustez) | M | → **E4** (Vitest + CI): las 45 fichas del anexo traen los fixtures exactos. | |
+| 1 | **`djve_cobertura` da statement timeout vía PostgREST anon** — es la query exacta de `getEmpresas` (`empresas.ts:90-97`, fatal) → **`/comercio/empresas` y `/comercio/senal` degradan a "fuente no disponible"**. La vista agrega los 334k de `djve` en cada request desde el backfill 2011-2025 (Fase 3). Filtrada por `cod` responde ~1 s. | `curl` anon `djve_cobertura?select=*` → HTTP 500 `57014` en ~4-5 s, reproducido 2/2 (21/07 11:50 UTC) + 3/3 por subagente. `lineup_estacional` falla intermitente (1/3). | **alto** (mesa: 2 páginas caídas) | S-M | Materializar la vista + RPC de refresh llamada por la ingesta (patrón `lineup_visitas`, que resolvió esto mismo en Fase 3), o filtrar campañas viejas en la vista. Migración chica. | **corregir — HECHO** (matview aplicada por MCP 21/07; anon HTTP 200 en 2,5 s) |
+| 2 | **`lineup_gap_hist`/`lineup_densidad_hist` quedaron al 16/07 con `lineup` al 20/07** — el refresh post-ingesta no corrió (o falló en silencio) tras la ingesta del 20/07. `/comercio/temperatura` muestra la foto del 16/07 sin aviso. (Las fórmulas degradan consistentemente: "hoy" = máx fecha de sus series.) | REST: `lineup_ultimas_ruedas` rueda_rank=1 → 2026-07-20; `lineup_gap_hist` máx fecha → 2026-07-16. | **medio** (mesa) | S | Investigar el run de `ingest-lineup` del 20/07 (¿llamó la RPC de refresh? → E5) y afinar el check de matview del healthcheck para que compare contra la última rueda, no contra "días de atraso". | **corregir — refresh HECHO** (matviews al 20/07); causa raíz → E5 |
+| 3 | **El corrimiento por feriado del calendario está bien en el CÓDIGO y mal en los DOCS.** `corrigeFeriadoAR` (`calendario.ts:161-168`) corre al hábil ANTERIOR ("los informes AR se adelantan"); el plan (`PLAN_CALENDARIO_PRODUCCION.md` §2: "viernes si feriado") y el comentario del call-site (`:280`) dicen lo contrario. Dirimido contra la realidad: el GEA de la semana del feriado del jueves 09/07 está fechado **2026-07-08 (miércoles)** en la base → BCR efectivamente ADELANTA. | SQL: `estimaciones_produccion` BCR → única fila de julio = `fecha_publicacion 2026-07-08`, "GEA mensual #196". | bajo (doc engañoso) | S | Corregir el comentario de `:280` y el plan §2. Confirmar con Lautaro la regla del DEA (SAGyP), que comparte la función (pregunta 11). | **corregir docs — HECHO** (y DEA también adelanta, resp. 11) |
+| 4 | **`FORMULAS_EXCEL.md` r27-36 documenta la fórmula VIEJA de negocios-con-pagos** (`base × (1 − tasa × meses/30)`); el código implementa la confirmada por Lautaro el 08/07 (`futuro ÷ (1 + tasa×días/365)`), que además es la inversa exacta del INTRATE. Con los datos de hoy: doc ≈339,83 vs código 340,71. Dos verdades conviviendo. | Ficha 1.5 del anexo; `calc-negocios-pago.tsx:30-41` vs `FORMULAS_EXCEL.md:37-42`. | bajo (doc) | S | Actualizar FORMULAS_EXCEL §r27-36 a la fórmula vigente (dejando nota de que la vieja era de la hoja Excel). | **corregir — HECHO** |
+| 5 | **3 comentarios que mienten sobre su propio código** (latentes, sin efecto hoy): (a) `futuros.ts:53` "DIS24 → 0" pero DIS24 matchea la regex → 202400 → se descartaría como vencida, no mostrada como disponible (0 filas así hoy, verificado por SQL); (b) `capacidad.ts:50` "primer valor" pero toma el 2º (Up River — el docstring del archivo sí está bien); (c) `capacidad.ts:82` `if (v)` descarta valores 0 CORRIENDO el índice → si la columna SAGyP viniera vacía, `nums[1]` dejaría de ser Up River. | Fichas 4.4, 4.6 y test de paridad ejecutado. | bajo (robustez) | S | Corregir los 2 comentarios; en (c) empujar también los 0 (o parsear por posición de columna). Puede ir acá o a E4. | **corregir — HECHO** (2 comentarios + filtro de ceros) |
+| 6 | **Los tests del port de LineUps_Code (39/39 y 41/41 citados en ESTADO) no están commiteados** — fueron scripts efímeros de sesión. La suite propia del auditor (47 aserciones + harness con datos reales) quedó en scratchpad, fuera del repo. | `Glob`: cero `*.test.*` en el repo; ESTADO cita los conteos. | bajo (robustez) | M | → **E4** (Vitest + CI): las 45 fichas del anexo traen los fixtures exactos. | **diferir a E4** |
 
 ## Dudas / decisiones para Lautaro
 
@@ -90,6 +90,22 @@ el plan), y **una decena de PREGUNTAS de criterio** para Lautaro — la más imp
     intencional distinta o unificar?
 11. **Regla de feriado del DEA (SAGyP):** confirmado que BCR-GEA ADELANTA (hallazgo #3). ¿SAGyP
     también publica el hábil anterior, o el viernes? (comparten la función de corrimiento).
+
+### Respuestas de Lautaro (21/07/2026) — todas implementadas en fase 2 salvo lo diferido
+
+1. **UST$T = T+0 (plazo `000`)** → fijado explícito en `market.ts` (fallback: cualquier UST$T).
+2. **Picker → vencimiento REAL** de `vencimientos` (fallback fin de mes si falta) → `curva.ts`.
+3. **Umbrales de cobertura: PROVISORIOS → calibración en E7** (quedan como están, marcados en el código).
+4. **Parámetros del índice MESA: quedan → revisar en E7** (marcados provisorios en `mesa_calor.ts`).
+5. **Primas default: se dejan** + nota visible "primas estimativas" en la calculadora.
+6. **"Máx. pérdida/ganancia": extremos REALES** — "ilimitada" si la pendiente sigue en el borde; hacia
+   abajo se usa el payoff exacto en P=0 (venta de put K320 p9 → −311, no −36).
+7. **Pases: se AGREGAN los consecutivos** (además de cercana vs cada lejana) → `pases-cierres.ts`.
+8. **Aforo: pasa a % RELATIVO** (lleno × (1 − aforo/100)): 183,8% con aforo 2 → **180,17%** → `calc-porcentaje.tsx`.
+9. **Estrategias/costos:** se agregaron los 4 presets faltantes (mariposa vendida · cóndor de calls ·
+   call/put backspread → 31 presets) · comisiones del catálogo → **E7** · planes Cocos Gold/Pro → **no**.
+10. **Semáforo: soja unificada a EQUIVALENTE POROTO** (harina ÷0,745 · aceite ÷0,19) → `semaforo.ts`.
+11. **Feriado DEA: también adelanta** (igual que GEA) → comentarios y plan corregidos.
 
 ## Lo que está BIEN (no tocar)
 
@@ -140,7 +156,19 @@ el plan), y **una decena de PREGUNTAS de criterio** para Lautaro — la más imp
 - **Para E7:** si Lautaro aprueba cambios grandes de criterio (preguntas 3-5), son recalibraciones →
   backlog maestro.
 
-## Fase 2 — correcciones implementadas (completar tras el OK)
+## Fase 2 — correcciones implementadas (tras el OK de Lautaro, 21/07/2026)
 
-| # hallazgo | Qué se hizo | Commit | Verificación |
+| # hallazgo / respuesta | Qué se hizo | Migración / archivo | Verificación |
 |---|---|---|---|
+| 1 | `djve_cobertura` vista → **MATVIEW** + índice por `cod` + refresh sumado a `refresh_lineup_visitas()` (la RPC que ya llama la ingesta) | `supabase/migrations/20260721120000_e2_djve_cobertura_matview.sql` (aplicada por MCP) | `curl` anon `?select=*` → **HTTP 200 en 2,5 s** (9.508 filas; antes 500/57014) |
+| 2 | Refresh corrido: matviews al día | `select refresh_lineup_visitas()` por MCP | `lineup_gap_hist`/`densidad` máx fecha = **2026-07-20** (= última rueda) |
+| 3 | Comentarios de `calendario.ts` (:280/:299) + plan §2 corregidos: GEA/DEA se ADELANTAN | `src/lib/calendario.ts` · `docs/PLAN_CALENDARIO_PRODUCCION.md` | Evidencia SQL del GEA 08/07 en el hallazgo |
+| 4 | FORMULAS_EXCEL r27-36 reescrito con la fórmula vigente (nota histórica de la vieja) | `docs/FORMULAS_EXCEL.md` | Ficha 1.5 |
+| 5 | Comentarios `futuros.ts:53` y `capacidad.ts:50` corregidos; filtro de `parseFas` conserva los 0 (no corre el índice) | `src/lib/futuros.ts` · `src/lib/capacidad.ts` | lint/tsc/build |
+| r1 | UST$T fijado a `plazo === "000"` (T+0) con fallbacks | `src/lib/market.ts` | Campo `plazo` verificado contra la respuesta viva de MAE |
+| r2 | Picker de curva usa el vto real de `vencimientos` (fallback fin de mes) | `src/lib/curva.ts` | Soja NOV26 → 2026-11-20 (= panel Arbitrajes) |
+| r7 | Pases consecutivos agregados (sin duplicar el par 0/1) | `src/lib/pases-cierres.ts` | Sanity: JUL/SEP · JUL/NOV · JUL/MAY7 · JUL/JUL7 + SEP/NOV · NOV/MAY7 · MAY7/JUL7 |
+| r8 | Aforo a % relativo | `src/components/calc-porcentaje.tsx` (+ texto en `calculadoras.ts`) | 183,84…% × 0,98 = **180,1653%** |
+| r9 | 4 presets nuevos (31 total) + nota "primas estimativas" + extremos reales ("ilimitada" / payoff en P=0) | `src/lib/estrategias.ts` · `src/components/calc-estrategias.tsx` | Sanity: backspread @380 = +31 · venta put maxP = −311 · venta call = "ilimitada" · collar ±15 intacto |
+| r10 | Semáforo: soja en equivalente poroto (rindes de `mesa_calor.ts`) | `src/lib/lineup/semaforo.ts` (+ texto del panel) | 745.000 SBM → 1.000.000 eq · 190.000 SBO → 1.000.000 eq |
+| r3/r4 | Umbrales de cobertura y parámetros MESA marcados PROVISORIOS en el código → calibración E7 | `src/lib/lineup/cobertura.ts` · `mesa_calor.ts` | — |

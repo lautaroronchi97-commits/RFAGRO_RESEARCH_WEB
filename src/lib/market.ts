@@ -108,6 +108,7 @@ type MaeResumenRow = {
   ultimo: number;
   variacion: number | null;
   cantidad: number | null;
+  plazo: string | null;
 };
 
 const getMaeResumen = cache(async (seg: "DDF" | "FOR"): Promise<MaeResumenRow[] | null> => {
@@ -122,7 +123,13 @@ const getMaeResumen = cache(async (seg: "DDF" | "FOR"): Promise<MaeResumenRow[] 
     const ticker = asStr(o.ticker);
     const ultimo = asNum(o.ultimo);
     if (ticker && ultimo !== null && ultimo > 0) {
-      rows.push({ ticker, ultimo, variacion: asNum(o.variacion), cantidad: asNum(o.cantidad) });
+      rows.push({
+        ticker,
+        ultimo,
+        variacion: asNum(o.variacion),
+        cantidad: asNum(o.cantidad),
+        plazo: asStr(o.plazo),
+      });
     }
   }
   return rows.length ? rows : null;
@@ -159,14 +166,18 @@ const getNotes = cache(async (): Promise<NoteRow[] | null> => {
 });
 
 /**
- * Dólar oficial mayorista MAE (A3500 del día) = ticker "UST$T" en resumen/FOR.
+ * Dólar oficial mayorista MAE = ticker "UST$T" en resumen/FOR, plazo "000" (T+0).
+ * El resumen trae DOS filas UST$T (000 = contado inmediato, 001 = T+1); la referencia
+ * es el T+0 (decisión de Lautaro, auditoría E2 21/07/2026).
  * Referencia para dólar futuro (spot) y dólar linked (ajuste).
  */
 export const getMaeOficial = cache(
   async (): Promise<{ valor: number | null; varPct: number | null }> => {
     const rows = await getMaeResumen("FOR");
     const ust =
-      rows?.find((r) => r.ticker === "UST$T") ?? rows?.find((r) => r.ticker.startsWith("UST$"));
+      rows?.find((r) => r.ticker === "UST$T" && r.plazo === "000") ??
+      rows?.find((r) => r.ticker === "UST$T") ??
+      rows?.find((r) => r.ticker.startsWith("UST$"));
     return { valor: ust?.ultimo ?? null, varPct: ust?.variacion ?? null };
   },
 );

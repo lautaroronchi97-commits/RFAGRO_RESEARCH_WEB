@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { sbSelect } from "./supabase";
+import { getVencimientos } from "./vencimientos";
 import type { Meta } from "./market";
 import type { GranoCurva } from "./curva-types";
 
@@ -9,6 +10,9 @@ import type { GranoCurva } from "./curva-types";
  * las calculadoras con precios reales de A3. Lee la vista `futuros_cierres_ultimo`.
  * Mantiene la misma lógica que `futuros.ts`: descarta posiciones ya vencidas
  * (la vista trae el último cierre de CADA símbolo histórico, incluidas las muertas).
+ * El vto autocompletado es el REAL de la tabla `vencimientos` (mismo dato que el
+ * panel Arbitrajes — decisión de Lautaro, auditoría E2 21/07/2026); si falta,
+ * degrada al último día del mes de la posición.
  */
 
 export type { PosCurva, GranoCurva } from "./curva-types";
@@ -53,10 +57,13 @@ function hoyVencKey(): number {
 type RawRow = { symbol: string; underlying: string | null; posicion: string | null; settlement: number | null };
 
 export const getCurvaGranos = cache(async (): Promise<CurvaData> => {
-  const res = await sbSelect(
-    "futuros_cierres_ultimo?select=symbol,underlying,posicion,settlement&order=underlying.asc",
-    900,
-  );
+  const [res, vencs] = await Promise.all([
+    sbSelect(
+      "futuros_cierres_ultimo?select=symbol,underlying,posicion,settlement&order=underlying.asc",
+      900,
+    ),
+    getVencimientos(),
+  ]);
   if (!res.ok) {
     return { granos: [], meta: { source: "Matba Rofex", updatedAt: null, status: "parcial", problemas: ["Sin curva A3 cargada"] } };
   }
@@ -68,7 +75,7 @@ export const getCurvaGranos = cache(async (): Promise<CurvaData> => {
     if (!u || !NOMBRES[u] || r.settlement == null || !r.posicion) continue;
     const vk = vencKey(r.posicion);
     if (vk === 0 || vk < hoyYM) continue; // solo posiciones vivas (mes actual o futuro)
-    const vto = vtoDePosicion(r.posicion);
+    const vto = vencs.get(r.symbol) ?? vtoDePosicion(r.posicion);
     if (!vto) continue;
     let g = byGrano.get(u);
     if (!g) { g = { underlying: u, nombre: NOMBRES[u], posiciones: [] }; byGrano.set(u, g); }

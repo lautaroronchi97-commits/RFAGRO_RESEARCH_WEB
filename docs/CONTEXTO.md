@@ -81,7 +81,9 @@ fades, tablas con hover/tick dorado, charts con grilla punteada + área en degra
 > Sin datos personales.
 
 ## Metodología de fórmulas (confirmada con Lautaro)
-- **Referencia oficial = oficial mayorista MAE** (ticker `UST$T` de `resumen/FOR`). NO el minorista.
+- **Referencia oficial = oficial mayorista MAE** (ticker `UST$T` de `resumen/FOR`, **plazo `000` = T+0**;
+  el resumen trae también la fila plazo `001` = T+1 — decisión de Lautaro, auditoría E2 21/07/2026).
+  NO el minorista.
 - **Dólar futuro** (spot = mayorista MAE, base 365): directa = Fut/Spot − 1 · TNA = directa × 365/días ·
   TEA = (Fut/Spot)^(365/días) − 1 · TEM = (1+TEA)^(1/12) − 1.
 - **Dólar linked** (vs oficial MAE, base 365, misma lógica): TC implícito = Px/100 · spread of. = Oficial − TCimpl ·

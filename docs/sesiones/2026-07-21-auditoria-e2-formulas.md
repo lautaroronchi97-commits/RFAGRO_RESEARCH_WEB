@@ -34,12 +34,22 @@
   cumplimiento 146% · `campanas.ts` 612/612 vs SQL · percentiles 8/8 vs recomputación independiente
   · factores CBOT idénticos carácter a carácter · UST$T y FAS Up River vigentes en las fuentes vivas.
 
+## Fase 2 (mismo día — Lautaro contestó los 6 hallazgos y las 11 preguntas en bloque)
+- **Base:** `djve_cobertura` vista → MATVIEW + refresh en `refresh_lineup_visitas()` (migración
+  `20260721120000`, aplicada por MCP): anon pasó de timeout 57014 a **HTTP 200 en 2,5 s** →
+  `/comercio/empresas` y `/comercio/senal` vuelven. Refresh corrido: matviews gap/densidad al 20/07.
+- **Código:** UST$T → `plazo === "000"` (T+0) · picker de curva → vto REAL de `vencimientos` · pases
+  + consecutivos · aforo → % relativo · semáforo soja → equivalente poroto · estrategias → 4 presets
+  nuevos (31), extremos reales ("ilimitada"/payoff en P=0), nota "primas estimativas".
+- **Docs:** plan calendario + FORMULAS_EXCEL + comentarios obsoletos + CONTEXTO (UST$T) + umbrales/
+  params MESA marcados PROVISORIOS en el código.
+- **Decisiones registradas** en el informe (§Respuestas + tabla Fase 2 + columna «Decisión»).
+
 ## Quedó pendiente / en vuelo
-- **Fase 2**: esperar la decisión de Lautaro hallazgo por hallazgo (columna «Decisión» del informe) y
-  las 11 preguntas de criterio; implementar SOLO lo aprobado (el fix del timeout #1 es una migración
-  chica: materializar `djve_cobertura` patrón `lineup_visitas`).
-- Los tests del port de LineUps_Code no existen en el repo (los 39/39 y 41/41 de ESTADO fueron
-  efímeros) → E4 los commitea usando las fichas como fixtures.
+- **E7:** calibración de umbrales de cobertura + parámetros MESA (provisorios) · comisiones de
+  estrategias del catálogo. **E4:** tests con los fixtures de las fichas (incl. los actualizados de
+  fase 2) + commitear los tests del port. **E5:** causa raíz del refresh que no corrió el 20/07 ·
+  `lineup_estacional` con timeouts intermitentes. Planes Cocos Gold/Pro: NO (decisión).
 
 ## Trampas descubiertas (para la próxima sesión)
 - **`djve_cobertura?select=*` timeoutea por anon** (~4-5 s → 57014) desde el backfill 2011-2025;

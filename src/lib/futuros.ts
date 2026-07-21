@@ -50,7 +50,7 @@ const MESES: Record<string, number> = {
   JUL: 7, AGO: 8, SEP: 9, OCT: 10, NOV: 11, DIC: 12,
 };
 
-/** JUL26 → 202607 ; DISPO/DIS24 → 0 (disponible primero). */
+/** JUL26 → 202607 ; DISPO (no matchea la regex) → 0, disponible primero. Ojo: un "DIS24" SÍ matchea → 202400. */
 function vencKey(posicion: string | null): number {
   if (!posicion) return 0;
   const m = posicion.toUpperCase().match(/^([A-Z]{3})(\d{2})$/);

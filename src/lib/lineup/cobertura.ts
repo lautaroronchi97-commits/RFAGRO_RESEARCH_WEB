@@ -2,7 +2,8 @@
  * Cobertura exportadora — puerto de la lógica de señales de `cobertura.py` de
  * LineUps_Code. Compara lo DECLARADO (DJVE) contra lo ORIGINADO (line-up) para
  * detectar quién está corto (presión compradora / alcista FAS) o sobre-originado
- * (bajista). Las constantes se copian LITERALES del módulo Python.
+ * (bajista). Las constantes se copian LITERALES del módulo Python — Lautaro las marcó
+ * PROVISORIAS (auditoría E2 21/07/2026): la calibración con datos queda para E7.
  */
 
 export const RATIO_CORTO = 0.7; // ratio < 0.7 → corto → ALCISTA FAS

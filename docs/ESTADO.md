@@ -19,9 +19,25 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 21/07/2026 — auditoría E2 fórmulas: informe listo, espera OK)
+## Ahora (última actualización: 21/07/2026 — auditoría E2 CERRADA: fase 2 aplicada)
 
-**🧮 AUDITORÍA E2 (fórmulas y lógica de negocio) — FASE 1 HECHA, ESPERANDO OK DE LAUTARO — rama
+**🧮 AUDITORÍA E2 — CERRADA (fase 1 + fase 2) — rama `claude/e2-formulas-go9i9y`, PR #51.**
+Lautaro contestó los 6 hallazgos y las 11 preguntas en bloque (21/07) y la FASE 2 quedó implementada:
+**base** — `djve_cobertura` materializada (migración `20260721120000`, aplicada por MCP: anon pasó de
+timeout 57014 a HTTP 200 en 2,5 s → `/comercio/empresas` y `/comercio/senal` vuelven) + refresh de las
+matviews gap/densidad (al 20/07). **Código** — UST$T fijado a plazo `000` (T+0, su referencia) ·
+picker de calculadoras con vencimiento REAL de `vencimientos` (TNA alineada con el panel) · pases:
+se AGREGARON los consecutivos (SEP/NOV etc.) · aforo pasó a % RELATIVO (183,8% aforo 2 → 180,17%) ·
+semáforo: soja en equivalente poroto (unificado con temperatura) · estrategias: 4 presets nuevos (31),
+"Máx. pérdida/ganancia" con extremos REALES ("ilimitada" / payoff en P=0) + nota "primas estimativas".
+**Docs** — plan calendario y FORMULAS_EXCEL corregidos (BCR ADELANTA por feriado — verificado con el
+GEA real del 08/07; fórmula vigente de negocios-con-pagos), comentarios obsoletos limpiados.
+**Diferido:** calibración de umbrales de cobertura y parámetros MESA (provisorios, marcados en código)
++ comisiones de estrategias → **E7** · tests con los fixtures de las 45 fichas → **E4** · causa raíz del
+refresh que no corrió el 20/07 + `lineup_estacional` intermitente → **E5**. Planes Cocos Gold/Pro → no.
+Detalle FASE 1 abajo; informe con decisiones: [`auditoria/E2-formulas.md`](auditoria/E2-formulas.md).
+
+**🧮 AUDITORÍA E2 (fórmulas y lógica de negocio) — FASE 1 (el informe) — rama
 `claude/e2-formulas-go9i9y`.** Se auditó TODO el inventario del PROMPT E2 con verificación adversarial
 (derivar desde docs → comparar código → ejemplo numérico con datos reales → bordes). **Veredicto: cero
 bugs de fórmula en 45 fichas** — INTRATE act/365 1:1 en todas las libs, base 365 consistente, guards
@@ -37,8 +53,8 @@ fórmula vieja de negocios-con-pagos), y **11 PREGUNTAS de criterio** para Lauta
 (−0,8 pp TNA) · umbrales/pesos/rindes heredados del Python sin validar · primas default de
 estrategias). Informe: **[`auditoria/E2-formulas.md`](auditoria/E2-formulas.md)** + anexo
 [`auditoria/E2-formulas-fichas.md`](auditoria/E2-formulas-fichas.md) (45 fichas con números exactos =
-fixtures para los tests de E4). **Próximo paso: Lautaro completa la columna «Decisión» hallazgo por
-hallazgo + responde las 11 preguntas → FASE 2 implementa solo lo aprobado.** Detalle:
+fixtures para los tests de E4). **Las decisiones ya están tomadas y aplicadas — ver el bloque de
+cierre arriba.** Detalle:
 [`sesiones/2026-07-21-auditoria-e2-formulas.md`](sesiones/2026-07-21-auditoria-e2-formulas.md).
 
 **🗃️ AUDITORÍA E1 (datos y base de datos) — CERRADA — rama `claude/auditoria-e1-datos-vjmwzd`, PR #50.**

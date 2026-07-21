@@ -572,3 +572,32 @@
   SQL: **0 filas** con posición no estándar en `futuros_cierres` hoy → latente.
 - **Veredicto:** **OK** — sin bug de paridad. Para E4: unificar `vencKey`/`hoyVencKey`/tabla de
   meses en un util único (6 copias es deuda, no defecto).
+
+## Actualizaciones de FASE 2 (21/07/2026 — tras las decisiones de Lautaro)
+
+Cambios de comportamiento que INVALIDAN parcialmente los fixtures de arriba (para los tests de E4
+usar ESTOS valores en las fórmulas tocadas; el resto de las fichas sigue vigente):
+
+- **UST$T (ficha 3.1):** ahora `plazo === "000"` explícito (T+0) — el fixture 1.481,00 sigue válido,
+  pero blindado contra el orden del array.
+- **Picker de curva (fichas 1.2/1.7/1.9):** el vto autocompletado es el REAL de `vencimientos` →
+  para soja NOV26 los fixtures pasan a los valores "con vto real": **122 días · TNA
+  10,956449566422286 % · TEA 11,360884999291576 %** (fallback fin de mes solo si falta el símbolo).
+- **Aforo (ficha 1.3):** % RELATIVO — nuevo fixture: lleno 183,8421052631579 % con aforo 2 →
+  **180,16526315789474 %** (antes 181,84…, puntos).
+- **Pases (ficha 4.3):** además de cercana-vs-cada-lejana se agregan los CONSECUTIVOS: para soja
+  {JUL26, SEP26, NOV26, MAY27, JUL27} las filas son JUL/SEP · JUL/NOV · JUL/MAY7 · JUL/JUL7 +
+  SEP26/NOV26 · NOV26/MAY27 · MAY27/JUL27 (el par 0/1 no se duplica). Fixture nuevo: SOJ SEP26/NOV26
+  = 349,3 − 343,5 = **+5,80** (58 días → TNA 10,63 %, cierres 20/07).
+- **Estrategias (fichas 2.2/2.6):** 31 presets (se sumaron mariposa vendida, cóndor de calls, call
+  backspread, put backspread — sanity: backspread B320/S15 @380 = **+31**, @335 = **−14**; cóndor
+  @320 = **+19** con primas default). Resumen con extremos REALES: venta de call → pérdida
+  **"ilimitada"**; venta de put K320 p9 → máx. pérdida **−311** (payoff en P=0, antes −36); compra
+  de put → máx. ganancia **+311**; collar sigue ±15. Nota visible "primas estimativas".
+- **Semáforo (ficha 5.6):** la soja agrega en EQUIVALENTE POROTO (SBM ÷0,745 · SBO ÷0,19) — mismos
+  rindes de `mesa_calor.ts`; los fixtures físicos de declarado/originado de esa ficha quedan
+  convertidos.
+- **djve_cobertura (ficha 5.7):** ya no es vista: MATVIEW refrescada por `refresh_lineup_visitas()`
+  — anon `?select=*` HTTP 200 en ~2,5 s (9.508 filas).
+- **Umbrales/parámetros de mesa (fichas 5.2/5.4):** sin cambio de valores — marcados PROVISORIOS en
+  el código; calibración diferida a E7.
