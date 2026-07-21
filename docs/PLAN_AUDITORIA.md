@@ -20,7 +20,7 @@
 
 | Etapa | Tema | Estado | Informe | PR |
 |---|---|---|---|---|
-| E1 | Datos y base de datos | pendiente | `auditoria/E1-datos.md` | — |
+| E1 | Datos y base de datos | informe (fase 1) — esperando decisión de Lautaro | `auditoria/E1-datos.md` | draft |
 | E2 | Fórmulas y lógica de negocio | pendiente | `auditoria/E2-formulas.md` | — |
 | E3 | UX / navegación página por página | pendiente | `auditoria/E3-ux.md` | — |
 | E4 | Código y arquitectura | pendiente | `auditoria/E4-codigo.md` | — |
