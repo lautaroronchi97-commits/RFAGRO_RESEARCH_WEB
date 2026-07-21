@@ -360,3 +360,97 @@
 - **Bordes de plazo entre módulos:** arbitrajes/pases usan vto REAL (`vencimientos`); la curva de
   calculadoras usa fin de mes — mismo símbolo, hasta 7-10 días de diferencia (ver ficha 1.9).
 - **Veredicto:** **OK** (sugerencia E4: unificar `vencKey`/`hoyVencKey` en un módulo único).
+
+## Familia 6 — Otros módulos (negociado, estimaciones, calendario, derivadas, noticias, monitor, hábiles)
+
+### Ficha 6.1: compras/negociado.ts — campaña activa / Δ / % cosecha / % priceado / saldo
+- **Esperado (docs):** sesión 2026-07-20: campaña activa = la de MAYOR venta semanal; Δ vs semana
+  anterior; acumulado; % cosecha vía `compras_avance_hist`; % priceado = (hecho+fijado)/acumulado;
+  saldo a fijar; lee `compras` sin filtrar fuente; % cosecha solo con filtro "Todos".
+- **Implementación:** `src/lib/compras/negociado.ts:94-246` + `negociado-tabla.tsx:51-66`.
+- **Ejemplos verificados (REST, semana 08/07/2026):** trigo 25/26 Export acumulado **16.238.900 t**
+  (= control MAGyP) ✓ · activa trigo 25/26 (234.100 > 48.700 de 26/27) ✓ · total semanal global
+  **2.568.000 t**, líder MAIZE **1.380.600 t** (= ESTADO) ✓ · Δ trigo 25/26 Export = 150.500 −
+  136.300 = **+14.200 t** · % priceado trigo 25/26 = (14.759.100+3.237.800)/19.883.200 = **90,5 %**
+  (identidad priceado+saldo ≈ acumulado, dif 100 t de origen) ✓ · % cosecha 0,712149 → **71,2 %**
+  (= 19.883.200/27.920.000 USDA, el valor de ESTADO) ✓.
+- **Bordes:** producto atrasado usa SU última fecha; sin fila previa → Δ "—" (no 0); campañas sin
+  movimiento se ocultan; histograma recorta 130 semanas por orden ISO.
+- **Veredicto:** **OK.**
+
+### Ficha 6.2: estimaciones.ts — Δ entre vintages + campaniaVigente
+- **Esperado (docs):** pizarra con Δ vs vintage anterior de la MISMA campaña; `campaniaVigente`
+  prefiere la última campaña CON producción (fix 12/07: BCR-trigo 29,5 de 2025/26, no "—" de 2026/27).
+- **Implementación:** `src/lib/estimaciones.ts:169-179, 206-250, 271-302`.
+- **Ejemplo verificado (datos reales):** BCR/argentina/trigo — 2026/27 solo `area` (6,95, GEA #196
+  08/07), 2025/26 con producción → pizarra **29,5 Mt** (caso exacto del fix) ✓. Δ último vintage 0,00
+  (29,5→29,5); salto 11/02→13/05 daría **+1,80** ✓.
+- **Bordes:** campañas "YYYY/YY" ordenan bien como string; dos vintages con la misma
+  fecha_publicacion → orden inestable (hoy imposible, PK incluye fecha).
+- **Veredicto:** **OK.**
+
+### Ficha 6.3: calendario.ts — conversiones TZ + corrimiento por feriado
+- **Esperado (docs):** PLAN_CALENDARIO: WASDE 12:00 ET → 13:00 AR (EDT) / 14:00 AR (EST); CONAB
+  09:00 Brasília = 09:00 AR (Brasil sin DST desde 2019); PAS jueves 15:00 AR; "GEA semanal: jueves
+  ~17:30 (**viernes** si feriado)".
+- **Verificado a mano:** (i) WASDE 12/08 12:00 EDT → **13:00 AR** ✓ y 10/12 12:00 EST → **14:00 AR**
+  ✓; (ii) CONAB **09:00 AR** en jul y nov ✓ (Intl `America/Sao_Paulo` sin DST — asunción correcta);
+  (iii) PAS 23/07 **15:00 AR** ✓. `nEsimoDiaDeSemana`: 2º mié ago = 12/08 = plan ✓.
+- **Hallazgo (contradicción documental, NO bug de código):** `corrigeFeriadoAR`
+  (`calendario.ts:161-168`) corre al hábil **ANTERIOR** y su docstring lo declara ("los informes AR
+  se adelantan"); el call-site (`:280` "se corre a viernes por feriado") y el plan dicen corrimiento a
+  **viernes**. Dirimido contra la realidad por SQL: el GEA real de la semana del feriado
+  (jueves 09/07/2026) está fechado **2026-07-08 (miércoles)** en `estimaciones_produccion` ("GEA
+  mensual #196") → **BCR efectivamente ADELANTA** → el código está bien y el plan + comentario del
+  call-site están mal. Fix propuesto: corregir el comentario de `:280` y el plan; confirmar con
+  Lautaro la regla para DEA (SAGyP) que comparte la función.
+- **Veredicto:** **OK el código** + hallazgo documental (evidencia SQL) + confirmación DEA a Lautaro.
+
+### Ficha 6.4: derivadas.ts — joinFfill / spread / ratio / percentil / bandas
+- **Esperado (docs):** join por fecha con ffill ≤3 ruedas (P18); spread = lejana − cercana; banda
+  min-máx + mediana; validaciones del Excel: spread 2021-04-05 = 125,6 · ratio U7 = 0,5796.
+- **Implementación:** `src/lib/derivadas.ts:47-66, 75-88, 97-121, 194-210`.
+- **Ejemplos verificados (futuros_cierres reales):** SOJ MAY22 304,1 − MAI ABR22 178,5 al 2021-04-05
+  = **125,6** = Excel ✓ · ratio 238,8/412 al 2022-02-14 = **0,5796** = celda U7 ✓ ·
+  `percentil(3,[1,2,3,4]) = 75` ✓ · `mediana([3,1,2,4]) = 2,5` ✓ · hueco de 4 ruedas → ffill emite
+  hasta la 4ª y corta (maxGap 3) ✓.
+- **Bordes:** serie vacía → []/NaN manejado por el caller; ratio con vb=0 → punto omitido;
+  `ruedasHasta` proxy L-V sin feriados (aproximación documentada); `difDias` a mediodía −03:00.
+- **Veredicto:** **OK.**
+
+### Ficha 6.5: noticias.ts + noticias-clasificar.ts — clustering / score / clasificación
+- **Esperado (docs):** dedup semántica: se unen si (≥4 tokens comunes Y jaccard ≥0,5) O (cifra
+  distintiva compartida Y ≥3 tokens); score = 0,32·recencia + 0,3·cobertura + 0,2·tier +
+  0,18·categoría (suma 1); clasificación = primera categoría del JSON que matchea.
+- **Ejemplos verificados (títulos reales del 20/07):** par "soja US$450" La Nación vs Clarín →
+  jaccard **0,231** (no une) pero cifra "450" compartida + ≥3 tokens → **clusterizan por la rama de
+  cifra** ✓ (la regla completa es jaccard O cifra — el resumen "jaccard ≥0,5" de los docs es la
+  mitad). Clasificación 3 reales: "…US$450…" → mercados ✓ · "Súper Niño" → clima ✓ · "USDA Crop
+  Progress" → informes ✓. Gate: "La Yoli… Criollos" → null → filtrada ✓.
+- **Bordes:** clustering greedy contra semilla (documentado); sin fecha → rec 0,15; `corteHabilesMs`
+  sin feriados AR (documentado inline).
+- **Veredicto:** **OK.**
+
+### Ficha 6.6: monitor-mercados.ts — conversiones y parser de posición
+- **Cotejo de factores vs `scripts/ingest-cbot.mjs` (carácter a carácter):** soja/trigo `0.3674371`,
+  maíz `0.3936826` — **idénticos** en los tres granos (monitor-mercados.ts:58/61/62 vs
+  ingest-cbot.mjs:34-36). Harina `1.1023113` y aceite `22.046226` re-derivados de la definición CME
+  (1000/907,18474 y 1000/0,45359237/100) — exactos dígito a dígito.
+- **Ejemplos verificados (los 4 del plan):** soja 1.226,5 ¢/bu → **450,66 ≈ 450,7** ✓ · maíz 473,25
+  → 186,3 ✓ · harina 323 → 356,0 ✓ · aceite 72,06 → 1.588,7 ✓. Maní: CNY/tn ÷ (CNY/USD) = USD/tn
+  (dimensionalmente correcto; Δ vs prevSettle de Sina, convención estándar de futuros documentada).
+- **Parser `parsePos`:** "Soybean Futures,Nov-2026" → NOV26 · "…Sep-2" (año truncado) → SEP26
+  (front-month) · "Crude Oil Sep 26" → SEP26 ✓. Borde: en la semana post-vencimiento un nombre
+  truncado del mes corriente podría rotular el año viejo (cosmético).
+- **Veredicto:** **OK.**
+
+### Ficha 6.7: habiles.ts + dates.ts — feriados y días a mediodía
+- **Implementación:** `habiles.ts:9-22` (feriados 2025-2027; 2027 "estimado — revisar");
+  `dates.ts:7-28` (fechas a `T12:00:00-03:00`, round).
+- **Ejemplos verificados:** `diasEntre` cruzando el arranque (08/03/2026) y el fin (01/11/2026) del
+  DST de EEUU → **4 y 4 exactos** (el −03:00 fijo + mediodía absorben cualquier resto sub-día — ese
+  es el porqué del mediodía) · `sumarHabiles(mié 08/07/2026, 1)` = **10/07** (saltea el feriado del
+  09/07) ✓ · `sumarHabiles(vie 03/07, 5)` = **13/07** ✓.
+- **Bordes:** fuera de 2025-2027 todo L-V cuenta hábil (sin lista); en 2027 conviven `2027-06-20`
+  (domingo, redundante/typo inocuo) y `2027-06-21` — limpiar cuando Lautaro valide la lista 2027.
+- **Veredicto:** **OK.**
