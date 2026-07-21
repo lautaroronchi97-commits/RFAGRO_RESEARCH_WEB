@@ -274,3 +274,89 @@
   días conviven Fut AGO26 19,24% y D31G6 8,01% (mismos valores de las fichas). **OK.**
 - **Observación menor (cinta):** `market.ts:222` admite como "posición más cercana" contratos vencidos
   hace hasta 40 días (hoy inocuo, MAE no lista vencidos) — anotar para Fase B.
+
+## Familia 4 — Paneles de granos (arbitrajes, pases, capacidad, mejor caja, vivas)
+
+> Datos de los ejemplos (REST anon, 21/07/2026): ajustes `futuros_cierres_ultimo` del 20/07 (16
+> posiciones vivas), pizarra CAC viva del 17/07 (soja 336,96 US$ / 495.000 $ · maíz 185 · trigo 200 —
+> 1:1 con `pizarra_historico`), `vencimientos` completa para las 16 vivas (cero huecos).
+
+### Ficha 4.1: Arbitrajes — spread / tasa directa / TNA USD (arbitrajes-cierres.ts)
+- **Esperado (docs):** FORMULAS_EXCEL §Arbitrajes: `dir = fut/pizarra − 1` · `TNA = dir×365/días`
+  (INTRATE act/365, días = vto real − hoy) · `spread = fut − pizarra`.
+- **Implementación:** `src/lib/arbitrajes-cierres.ts:58-69` (round2; `dias = diasHasta(vencimientos)`
+  anclado a T12:00-03:00; guards `pizarra > 0`, `dias > 0`). Término a término igual al doc.
+- **Ejemplos verificados (21/07):** SOJ NOV26 — 349,3 vs 336,96, vto 20/11 → 122 días: `spread 12,34`
+  · `directa 3,66%` · `TNA 10,95%`. MAI DIC26 (194 vs 185, 153 d) → +9,00 / 4,86% / **11,59%**.
+  TRI ENE27 (226,9 vs 200, 185 d) → +26,90 / 13,45% / **26,54%**.
+- **Bordes (testeados):** pizarra=0 → directa/TNA null pero el spread se muestra igual (cosmético);
+  sin vto → TNA null; vto pasado dentro del mes (24-31/07) → posición listada con TNA "—" (filtro de
+  vivas es por mes); días=3 → TNA 912,5% (fiel a la fórmula). Precisión: la TNA se anualiza sobre la
+  directa YA redondeada a 2 dec (±0,01 vs sin doble redondeo; idéntico server/client → consistente).
+- **Veredicto:** **OK** (2 observaciones menores, no bugs).
+
+### Ficha 4.2: 1ª columna dinámica + recálculo en vivo (arbitrajes-table/editable + rueda.ts)
+- **Esperado (ESTADO, PR #26):** fuera de rueda = ajuste; en rueda y post-cierre = último operado A3;
+  spread/directa/TNA recalculados sobre esa referencia con la MISMA fórmula.
+- **Implementación:** `arbitrajes-table.tsx:25-62` (`modoOperado = ruedaAgroCorrioHoy() && fecha !==
+  hoy && live responde`; cae al ajuste si A3 no responde); `rueda.ts:56-64` (L-V ≥10:30, sin tope →
+  cubre post-cierre y se apaga cuando entra el ajuste del día); recálculo client
+  `arbitrajes-editable.tsx:162-170` — **idéntico carácter por carácter** al server (mismo round2,
+  base 365, guards) y usa los mismos días calculados en server (regeneración cada 30 s).
+- **Ejemplo:** pizarra editada a 340 en SOJ NOV26 (ref 349,3, 122 d) → spread 9,30 · directa 2,74% ·
+  TNA 8,20% — misma aritmética que el server.
+- **Bordes:** input vacío/no numérico → "—"; feriado entre semana → modoOperado con last arrastrado
+  (mitigado: el punto "vivo" queda apagado con vol 0); entre 17:00 y el cron CEM (23:00 UTC) sigue
+  "Últ. operado" — comportamiento pedido.
+- **Veredicto:** **OK** — paridad server/cliente exacta.
+
+### Ficha 4.3: Pases (pases-cierres.ts)
+- **Esperado (docs):** pase = ajuste larga − ajuste corta · directa = larga/corta − 1 · TNA =
+  directa×365/(vto_larga − vto_cercana) · `spreadSymbol` formato A3 `SOJ.ROS/POS1/POS2`.
+- **Implementación:** `pases-cierres.ts:57-84` (guards pc>0, dias>0; `ultimo` solo si ambas patas
+  operaron — close>0; spreadSymbol ✓).
+- **Ejemplos verificados (20/07):** SOJ JUL26 (339) / NOV26 (349,3), vtos 24/07→20/11 = 119 días:
+  `+10,30 / 3,04% / TNA 9,32%`. MAI JUL26 (190,3) / AGO26 (188), 31 d: `−2,30 / −1,21% / −14,25%`
+  (backwardation sensata).
+- **Bordes:** falta vto → TNA null; días≤0 → null; cercana vencida dentro del mes → días entre vtos
+  siguen bien (no dependen de hoy).
+- **Veredicto:** **OK** en fórmulas + **PREGUNTA menor**: CONTEXTO habla de posiciones
+  "consecutivas" pero el código arma la cercana contra CADA lejana (JUL26/SEP26, JUL26/NOV26, …) y no
+  muestra p.ej. SOJ SEP26/NOV26 (= +5,80, 58 d, TNA 10,63%). ¿Es el esquema deseado? (Si sí, alinear
+  CONTEXTO.)
+
+### Ficha 4.4: Capacidad de pago — FAS teórico BCR (capacidad.ts)
+- **Esperado (docs):** fila "FAS Teórico en u$s", 2º valor = Up River (Rosario) — elegido por
+  Lautaro; override `CAPACIDad_OVERRIDE`.
+- **Cotejo fuente VIVA (21/07, HTTP 200):** estructura intacta; fila Puerto = `SAGyP, Up River …` →
+  **el 2º valor sigue siendo Up River**. Parser transcripto sobre el HTML vivo: TRI **211,09** ·
+  MAI **194,96** · SOJ **341,81** (planilla 17/07), vs SAGyP 203,50/177,77/326,10.
+- **Bordes:** BCR caída → degrada a pizarra sola; guard anti-pisadas evita que el sorgo contamine.
+  2 menores para E4: comentario de `parseFas` (línea 50) dice "primer valor" y el código toma el 2º
+  (comentario obsoleto); `if (v)` descarta valores 0 corriendo el índice (si SAGyP viniera vacía,
+  `nums[1]` dejaría de ser Up River — hoy no ocurre).
+- **Veredicto:** **OK** (verificado contra la fuente viva).
+
+### Ficha 4.5: Mejor para hacer caja (mejor-caja-panel.tsx)
+- **Esperado (docs):** negocio/01 §5 — "se vende el de MENOR tasa implícita".
+- **Implementación:** `mejor-caja-panel.tsx:31-46` — reusa `getArbitrajes()` (cero fórmulas propias),
+  min(TNA) por grano, orden ascendente.
+- **Ejemplo verificado (21/07):** mínimos: SOJ = MAY27 **0,30%** · MAI = JUL27 **0,54%** · TRI =
+  MAR27 **21,97%** → ranking 1º Soja, 2º Maíz, 3º Trigo — 1:1 con la semántica del negocio.
+- **Bordes:** min con signo → una TNA negativa ganaría, y es coherente (esperar con tasa negativa es
+  peor que vender hoy); TNA null se saltea.
+- **Veredicto:** **OK.**
+
+### Ficha 4.6: Filtro de posiciones vivas duplicado (curva.ts vs futuros.ts) + paridad transversal
+- **Test de paridad ejecutado (22 casos + batería propia de 17):** `vencKey` de curva/futuros
+  **matemáticamente idénticas** en todos los símbolos (misma regex, misma tabla, misma clave);
+  `hoyVencKey` copia idéntica. Única divergencia: los casos `vencKey=0` (DISPO, vacío, malformados) —
+  **futuros los CONSERVA** (disponible primero) y **curva los DESCARTA** — intencional y documentada.
+  Verificado por REST: hoy la vista no tiene NINGUNA fila SOJ/MAI/TRI con posición no estándar → 
+  impacto nulo. `FEB28 → 2028-02-29` (bisiesto OK).
+- **Borde documental (hallazgo menor):** el comentario `futuros.ts:53` dice "DIS24 → 0" pero `DIS24`
+  matchea la regex → vencKey 202400 → se descartaría como vencida, no se mostraría como disponible.
+  Latente (no hay filas así). Corregir comentario o contemplar el prefijo DIS.
+- **Bordes de plazo entre módulos:** arbitrajes/pases usan vto REAL (`vencimientos`); la curva de
+  calculadoras usa fin de mes — mismo símbolo, hasta 7-10 días de diferencia (ver ficha 1.9).
+- **Veredicto:** **OK** (sugerencia E4: unificar `vencKey`/`hoyVencKey` en un módulo único).
