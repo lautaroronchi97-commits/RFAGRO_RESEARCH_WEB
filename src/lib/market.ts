@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { getPizarra } from "./pizarra";
 
 /**
  * Capa de datos de mercado (fuentes públicas, todo REST server-side).
@@ -210,11 +211,12 @@ export type CintaItem = {
 export type CintaData = { items: CintaItem[]; meta: Meta };
 
 export const getCintaData = cache(async (): Promise<CintaData> => {
-  const [dolar, cripto, ddf, mae] = await Promise.all([
+  const [dolar, cripto, ddf, mae, pizarra] = await Promise.all([
     getDolarApi(),
     getCriptoya(),
     getMaeResumen("DDF"),
     getMaeOficial(),
+    getPizarra(),
   ]);
 
   const problemas: string[] = [];
@@ -222,6 +224,7 @@ export const getCintaData = cache(async (): Promise<CintaData> => {
   if (!dolar) problemas.push("dolarapi caído (MEP/CCL)");
   if (mae.valor === null) problemas.push("MAE caído (mayorista)");
   if (!ddf) problemas.push("MAE caído (dólar futuro)");
+  if (Object.keys(pizarra.granos).length < 3) problemas.push("CAC caído (pizarra)");
 
   const byCasa = (casa: string) => dolar?.find((d) => d.casa === casa) ?? null;
 
@@ -257,10 +260,11 @@ export const getCintaData = cache(async (): Promise<CintaData> => {
       change: fut?.row.variacion ?? null,
       source: "MAE",
     },
-    // Pizarra: ejemplo hasta enganchar CAC-BCR (Fase C).
-    { label: "Soja pizarra USD", value: 312.9, decimals: 1, change: 1.2, source: "Bolsa de Comercio de Rosario", sample: true },
-    { label: "Maíz pizarra USD", value: 182.0, decimals: 1, change: 0.0, source: "Bolsa de Comercio de Rosario", sample: true },
-    { label: "Trigo pizarra USD", value: 207.0, decimals: 1, change: -0.5, source: "Bolsa de Comercio de Rosario", sample: true },
+    // Pizarra (disponible) USD de CAC-BCR, ya real (`pizarra.ts`). Sin variación diaria
+    // disponible en la fuente → change null (E3 H4). Degrada a "—" si CAC no responde.
+    { label: "Soja pizarra USD", value: pizarra.granos.SOJ?.usd ?? null, decimals: 1, change: null, source: "Bolsa de Comercio de Rosario" },
+    { label: "Maíz pizarra USD", value: pizarra.granos.MAI?.usd ?? null, decimals: 1, change: null, source: "Bolsa de Comercio de Rosario" },
+    { label: "Trigo pizarra USD", value: pizarra.granos.TRI?.usd ?? null, decimals: 1, change: null, source: "Bolsa de Comercio de Rosario" },
   ];
 
   return {
@@ -268,7 +272,7 @@ export const getCintaData = cache(async (): Promise<CintaData> => {
     meta: {
       source: "Mercado de cambios",
       updatedAt: Date.now(),
-      status: "parcial", // mezcla dato real + pizarra de ejemplo
+      status: problemas.length === 0 ? "real" : "parcial",
       problemas,
     },
   };

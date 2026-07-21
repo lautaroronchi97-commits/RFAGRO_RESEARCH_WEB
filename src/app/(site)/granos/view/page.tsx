@@ -161,7 +161,11 @@ export default async function ViewMesaPage() {
               }
             />
 
-            {error && <p className="vw-err">No se pudo leer el view: {error}</p>}
+            {error && (
+              <p className="dim vw-vacio">
+                No se pudieron cargar los views en este momento. Probá recargar en un rato.
+              </p>
+            )}
             {!error && !hayAlguno && (
               <p className="dim vw-vacio">
                 Todavía no hay views generados. El primero aparece cuando corre la sesión semanal de

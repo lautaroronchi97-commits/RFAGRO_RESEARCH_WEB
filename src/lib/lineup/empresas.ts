@@ -20,7 +20,7 @@ import { senalDe, ratioCobertura, type Senal } from "./cobertura";
  * Todo se agrega en el server. Lógica portada de LineUps_Code (cobertura.py/campanas.py).
  */
 
-const SOURCE = "ISA Agents · SAGyP";
+const SOURCE = "SAGyP";
 const HORIZONTE_DIAS = 60;
 
 type SnapRow = {

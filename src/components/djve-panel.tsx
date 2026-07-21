@@ -16,6 +16,9 @@ function IconExport() {
 
 export async function DjvePanel() {
   const data = await getDjveResumen();
+  // E3 H7: ocultar los productos sin actividad en el año (todo "—") — eran ~70 filas de ruido.
+  const productos = data.productos.filter((p) => (Number(p.tonAnio) || 0) > 0);
+  const ocultos = data.productos.length - productos.length;
 
   return (
     <Panel id="djve">
@@ -37,7 +40,7 @@ export async function DjvePanel() {
             </tr>
           </thead>
           <tbody>
-            {data.productos.map((p) => (
+            {productos.map((p) => (
               <tr key={p.producto}>
                 <td className="l sym">{p.producto}</td>
                 <td>{nfmt(p.tonAnio, 0)}</td>
@@ -46,7 +49,7 @@ export async function DjvePanel() {
                 <td className="dim">{p.n7d || "—"}</td>
               </tr>
             ))}
-            {data.productos.length > 0 && (
+            {productos.length > 0 && (
               <tr className="tot">
                 <td className="l">TOTAL</td>
                 <td>{nfmt(data.totalAnio, 0)}</td>
@@ -55,7 +58,7 @@ export async function DjvePanel() {
                 <td className="dim" />
               </tr>
             )}
-            {data.productos.length === 0 && (
+            {productos.length === 0 && (
               <tr>
                 <td className="l dim" colSpan={5}>
                   Sin datos de DJVE disponibles.
@@ -65,6 +68,11 @@ export async function DjvePanel() {
           </tbody>
         </table>
       </div>
+      {ocultos > 0 && (
+        <p className="dim" style={{ fontSize: 12, marginTop: 6 }}>
+          {ocultos} producto{ocultos === 1 ? "" : "s"} sin declaraciones en {data.anio ?? "el año"} (ocultos).
+        </p>
+      )}
       <QueEsEsto
         paraQue="Muestra las declaraciones de venta al exterior (DJVE) de granos y subproductos: cuánto se anotó para exportar, un termómetro de la demanda externa."
         comoSeCalcula="Suma las toneladas registradas en el año en curso, con ventanas de los últimos 7 y 30 días por fecha de registro."

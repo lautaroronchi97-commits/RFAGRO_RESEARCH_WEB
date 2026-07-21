@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurvaGranos } from "@/lib/curva";
 import { getPizarra } from "@/lib/pizarra";
@@ -84,9 +83,7 @@ export default async function CalculadoraPage({
       <h1 className="sr">RF AGRO — {calc.nombre}</h1>
       <main className="wrap">
         <div className="col">
-          <Link href="/calculadoras" className="cal-inline-link">
-            ← Calculadoras
-          </Link>
+          {/* Sin back-link acá: el breadcrumb del layout (Inicio › Calculadoras › …) ya cumple (E3 H11). */}
           <h2 className="sec-title">{calc.nombre}</h2>
           <QueEsEsto paraQue={calc.paraQue} comoSeCalcula={calc.comoSeCalcula} />
           {renderCalc()}

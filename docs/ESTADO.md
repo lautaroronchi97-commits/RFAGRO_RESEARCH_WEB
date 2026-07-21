@@ -19,7 +19,7 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 21/07/2026 — auditoría E4 código CERRADA (fase 1+2) · auditoría E6 historia CERRADA · MP3 view de mercado MERGEADO · research P3/P4 HECHO · auditoría E2 CERRADA)
+## Ahora (última actualización: 21/07/2026 — auditoría E4 código CERRADA (fase 1+2) · auditoría E3 UX FASE 1+2 HECHAS · auditoría E6 historia CERRADA · MP3 view de mercado MERGEADO · research P3/P4 HECHO · auditoría E2 CERRADA)
 
 **🧑‍💻 AUDITORÍA E4 (código y arquitectura) — CERRADA (fase 1 + fase 2) — rama
 `claude/auditoria-e4-codigo-p28mxd`, PR #55.** Cuarta etapa de la auditoría integral. **Fase 1**: 4
@@ -43,9 +43,31 @@ extraído a lib, fallback de empresa unificado, código muerto borrado); y **Vit
 archivos, **91 tests verdes**, sobre las 12 libs puras aprobadas + `campanas.ts` + `dates.ts`, con los
 fixtures exactos de `E2-formulas-fichas.md`, corriendo en CI. **Diferido a E7** (aprobado): partir
 `market.ts` · unificar los 9 parsers de mes/posición A3 · motor de gráfico SVG compartido ·
-`noUncheckedIndexedAccess`. **Bloqueado por E3**: `sample.ts` (depende de la decisión sobre
-`implicitas-panel.tsx`). Informe: [`auditoria/E4-codigo.md`](auditoria/E4-codigo.md). Detalle:
+`noUncheckedIndexedAccess`. **`sample.ts` (hallazgo #15) desbloqueado por la fase 2 de E3** (sacó la
+serie de ejemplo de `implicitas-panel.tsx`, sample.ts quedó sin importadores) **→ borrado en esta misma
+sesión**, al mergear ambas ramas. Informe: [`auditoria/E4-codigo.md`](auditoria/E4-codigo.md). Detalle:
 [`sesiones/2026-07-21-auditoria-e4-codigo.md`](sesiones/2026-07-21-auditoria-e4-codigo.md).
+
+**🖥️ AUDITORÍA E3 (UX / navegación) — FASE 1 (informe) + FASE 2 (fixes aprobados) HECHAS — rama
+`claude/auditoria-e3-ux-auikht`, PR #57.** Recorrido de las ~38 rutas × 4 lentes (mesa · cliente · mobile
+390px · tema claro/oscuro) con build local + datos reales + Playwright (152 capturas en
+`auditoria/screenshots-e3/`; bypass local `E3_AUDIT_BYPASS` para las gateadas, revertido y git diff limpio).
+**Veredicto: el sitio muy bien en lo grueso.** Informe con 11 hallazgos + 6 dudas:
+**[`auditoria/E3-ux.md`](auditoria/E3-ux.md)**. **Lautaro aprobó y se implementó la FASE 2 en la misma rama:**
+**H2** header mobile colapsa (fin del scroll horizontal ~95px en todas las `(site)`) · **H3** sacado "ISA
+Agents" de los sellos de line-up (puertos → "Elaboración propia RF AGRO") · **H4** cinta con **pizarra real
+de CAC** (soja 339,7, fin del ejemplo hardcodeado) · **H5** sacada la serie "Granos (ej.)" de Implícitas ·
+**noindex global QUITADO** (ya no hay dato de ejemplo a la vista; las páginas de mesa mantienen el suyo) ·
+**H7** DJVE oculta los ~70 productos sin actividad · **H8** `/produccion` en **pestañas Calendario/
+Estimaciones** (fin del scroll de 20.000px) · **H9** **404 branded** (adiós al default de Next en inglés) ·
+**H10** `granos/view` sin error crudo de Postgres · **H11** back-links redundantes fuera. Verificado en
+navegador + lint/tsc/build ✅. **H1/H6** (`/comercio/embarques` vacía + RITMO de empresas en "—", por las
+vistas `djve_embarques_mes`/`lineup_estacional` no materializadas que tiran **HTTP 500 bajo concurrencia**):
+**migración `20260721180000` APLICADA por MCP (a pedido de Lautaro) y verificada** — las dos pasaron a
+matview y ahora aguantan la concurrencia (0/12 fails, antes 12/12 y 10/10 en 500). Las páginas se pueblan
+en la próxima regeneración ISR / al mergear a `main`. **Pendiente menor:** **H12** (`/graficos` overflow
+mobile por su chart, no aprobado) · **D6** montos "VIEJA" de empresas → E1/E2. Detalle:
+[`sesiones/2026-07-21-auditoria-e3-ux.md`](sesiones/2026-07-21-auditoria-e3-ux.md).
 
 **🕰️ AUDITORÍA E6 (historia del repo) — CERRADA — rama `claude/auditoria-e6-historia-yk24fj`, PR
 #56.** Recorridos los 54 PRs y las 29 bitácoras de `docs/sesiones/` en orden cronológico.
