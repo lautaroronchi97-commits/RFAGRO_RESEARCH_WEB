@@ -2,27 +2,11 @@
 
 import * as React from "react";
 import { Panel, PanelHead } from "./panel";
-import { nfmt } from "@/lib/format";
-
-/**
- * Calculadora "Negocios de planta". Arranca de un precio (pizarra del grano
- * elegido, editable) y le va restando rubros de descuento hasta el precio final.
- * Todo en USD, todo editable, aritmética local (no toca datos de mercado).
- *
- * Rubros: contra flete · secada (puntos × valor/punto, fijo 5 o "no fijo") ·
- * merma volátil (% sobre el precio de arranque) · paritaria · embolsado · otros.
- */
+import { nfmt, numDeInput as num } from "@/lib/format";
+import { VALOR_PUNTO_FIJO, calcularPlanta } from "@/lib/planta";
 
 export type PizarraProducto = { underlying: string; nombre: string; usd: number | null };
 
-/** 5 USD por punto de humedad (valor fijo por defecto de la secada). */
-const VALOR_PUNTO_FIJO = 5;
-
-/** NaN si no es un número válido. */
-function num(v: string): number {
-  const n = Number(v.replace(",", "."));
-  return Number.isFinite(n) ? n : NaN;
-}
 /** 0 si está vacío o no es válido (para los rubros que se restan). */
 function n0(v: string): number {
   const n = num(v);
@@ -62,23 +46,22 @@ export function CalcPlanta({ pizarra = [] }: { pizarra?: PizarraProducto[] }) {
   };
 
   const arranque = num(precio);
-  const arranqueOk = Number.isFinite(arranque) && arranque > 0;
   const editada = pizarraUsd != null && Number.isFinite(arranque) && arranque !== pizarraUsd;
 
   const nPuntos = n0(puntos);
   const vPunto = secadaModo === "fijo" ? VALOR_PUNTO_FIJO : n0(valorPunto);
-  const dSecada = nPuntos * vPunto;
-
   const pctMerma = n0(merma);
-  const dMerma = arranqueOk ? (arranque * pctMerma) / 100 : 0;
 
-  const dFlete = n0(flete);
-  const dParitaria = n0(paritaria);
-  const dEmbolsado = n0(embolsado);
-  const dOtros = n0(otros);
-
-  const totalGastos = dFlete + dSecada + dMerma + dParitaria + dEmbolsado + dOtros;
-  const final = arranqueOk ? arranque - totalGastos : NaN;
+  const { dFlete, dSecada, dMerma, dParitaria, dEmbolsado, dOtros, totalGastos, final } = calcularPlanta({
+    arranque,
+    flete: n0(flete),
+    puntos: nPuntos,
+    valorPunto: vPunto,
+    pctMerma,
+    paritaria: n0(paritaria),
+    embolsado: n0(embolsado),
+    otros: n0(otros),
+  });
 
   return (
     <Panel id="calc-planta">

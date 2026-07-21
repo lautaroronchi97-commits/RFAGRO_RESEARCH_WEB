@@ -22,12 +22,6 @@ const MESES3: Record<string, number> = {
   JUL: 7, AGO: 8, SEP: 9, OCT: 10, NOV: 11, DIC: 12,
 };
 
-/** Días calendario entre dos fechas ISO (b − a). Usa mediodía ART (sin DST en AR). */
-export function difDias(aISO: string, bISO: string): number {
-  const a = Date.parse(`${aISO}T12:00:00-03:00`);
-  const b = Date.parse(`${bISO}T12:00:00-03:00`);
-  return Math.round((b - a) / 86_400_000);
-}
 
 /** Mes de una posición A3/CBOT ("ABR27" → 4). 0 si no matchea. */
 export function mesDePosicion(pos: string | null | undefined): number {

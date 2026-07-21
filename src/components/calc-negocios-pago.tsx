@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { Panel, PanelHead } from "./panel";
-import { nfmt, pfmt } from "@/lib/format";
+import { nfmt, pfmt, numDeInput as num, fmtInputDate as fmtInput } from "@/lib/format";
 import { hoyCordoba, parseYmd, sumarHabiles, sumarCorridos, diasCorridos, fmtFecha } from "@/lib/habiles";
+import { precioConPago } from "@/lib/diferido";
 import { CurvaPicker } from "./curva-picker";
 import type { GranoCurva } from "@/lib/curva-types";
 
@@ -16,9 +17,6 @@ function IconPago() {
     </svg>
   );
 }
-
-function fmtInput(d: Date): string { return d.toISOString().slice(0, 10); }
-function num(v: string): number { const n = Number(v.replace(",", ".")); return Number.isFinite(n) ? n : NaN; }
 
 export function CalcNegociosPago({ granos = [] }: { granos?: GranoCurva[] }) {
   const [futuro, setFuturo] = React.useState("340");
@@ -34,7 +32,7 @@ export function CalcNegociosPago({ granos = [] }: { granos?: GranoCurva[] }) {
   const ft = num(futuro);
   const ta = num(tasa);
   const disponible =
-    ft > 0 && Number.isFinite(ta) && Number.isFinite(dias) ? ft / (1 + (ta / 100) * (dias / 365)) : NaN;
+    ft > 0 && Number.isFinite(ta) && Number.isFinite(dias) ? precioConPago(ft, ta, dias) : NaN;
   const descuento = Number.isFinite(disponible) ? ft - disponible : NaN;
   const directa = Number.isFinite(disponible) && disponible > 0 ? (ft / disponible - 1) * 100 : NaN;
   const tcv = tc.trim() ? num(tc) : NaN;

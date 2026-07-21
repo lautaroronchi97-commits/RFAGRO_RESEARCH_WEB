@@ -48,9 +48,15 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
 
   // IMPORTANTE: no meter lógica entre createServerClient y getUser (recomendación de
   // @supabase/ssr para no desincronizar el refresco de tokens).
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>["data"]["user"] = null;
+  try {
+    ({
+      data: { user },
+    } = await supabase.auth.getUser());
+  } catch {
+    // Falla de red/Supabase: degradar a "sin sesión" en vez de tumbar el proxy.
+    return response;
+  }
 
   const path = request.nextUrl.pathname;
   const esAdmin = path === "/admin" || path.startsWith("/admin/");
@@ -119,20 +125,31 @@ async function chequearSesionUnica(
   supabase: ReturnType<typeof createServerClient>,
   userId: string,
 ): Promise<"kicked" | "expired" | null> {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const sid = sessionIdDeToken(session?.access_token);
+  let sid: string | null = null;
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    sid = sessionIdDeToken(session?.access_token);
+  } catch {
+    return null; // Falla de red/Supabase: no kickear por un problema transitorio.
+  }
   if (!sid) return null;
 
   const ip = (request.headers.get("x-forwarded-for") ?? "").split(",")[0]?.trim() || null;
   const ua = request.headers.get("user-agent");
 
-  const { data: estado } = await supabase.rpc("tocar_sesion", {
-    p_session_id: sid,
-    p_device: deviceDeUA(ua),
-    p_ip: ip,
-  });
+  let estado: string | null = null;
+  try {
+    const { data } = await supabase.rpc("tocar_sesion", {
+      p_session_id: sid,
+      p_device: deviceDeUA(ua),
+      p_ip: ip,
+    });
+    estado = data;
+  } catch {
+    return null; // Falla de red/Supabase: no kickear por un problema transitorio.
+  }
 
   if (estado !== "kicked" && estado !== "expired") return null;
 

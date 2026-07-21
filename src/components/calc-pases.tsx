@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Panel, PanelHead } from "./panel";
-import { sfmt, rfmt, pfmt } from "@/lib/format";
+import { sfmt, rfmt, pfmt, numDeInput as num, fmtInputDate as fmtInput } from "@/lib/format";
 import { pase, tasaDirectaPase, tnaPase } from "@/lib/pases";
 import { parseYmd, diasCorridos, sumarCorridos, hoyCordoba, fmtFecha } from "@/lib/habiles";
 import { CurvaPicker } from "./curva-picker";
@@ -15,8 +15,6 @@ function IconPase() {
     </svg>
   );
 }
-function fmtInput(d: Date): string { return d.toISOString().slice(0, 10); }
-function num(v: string): number { const n = Number(v.replace(",", ".")); return Number.isFinite(n) ? n : NaN; }
 
 export function CalcPases({ granos = [] }: { granos?: GranoCurva[] }) {
   const [precioCorta, setPrecioCorta] = React.useState("323");

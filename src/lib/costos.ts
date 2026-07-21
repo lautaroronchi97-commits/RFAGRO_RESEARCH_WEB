@@ -41,9 +41,9 @@ export const ARANCELES: Arancel[] = [
 
 export type Persona = "humana" | "juridica";
 
-/** Comisión % efectiva: si es TNA, se prorratea por el plazo en días. */
+/** Comisión % efectiva: si es TNA, se prorratea por el plazo en días (días<0 → 0 días). */
 export function comEfectivaPct(com: Com, dias: number): number {
-  return com.tna ? com.pct * (dias / 365) : com.pct;
+  return com.tna ? com.pct * (Math.max(0, dias) / 365) : com.pct;
 }
 
 export type CostoFila = {

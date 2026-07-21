@@ -3,7 +3,7 @@ import { RuedaClock } from "./rueda-clock";
 import { RuedaStatus } from "./rueda-status";
 import { ThemeToggle } from "./theme-toggle";
 import { NavLinks } from "./nav-links";
-import { AuthMenu } from "./auth-menu";
+import { AuthMenuLazy } from "./auth-menu-lazy";
 import { AUTH_ENFORCED } from "@/lib/auth/config";
 
 /**
@@ -39,8 +39,9 @@ export function SiteHeader({ visibles, esAdmin }: { visibles?: string[]; esAdmin
           <RuedaStatus />
           <ThemeToggle />
           {/* Menú de sesión solo cuando el login está activo; con el flag apagado el
-              header queda idéntico a hoy. */}
-          {AUTH_ENFORCED && <AuthMenu />}
+              header queda idéntico a hoy. Carga diferida client-only (ver auth-menu-lazy.tsx)
+              para no mandar el SDK de Supabase al bundle de páginas públicas sin login. */}
+          {AUTH_ENFORCED && <AuthMenuLazy />}
         </div>
       </div>
     </header>

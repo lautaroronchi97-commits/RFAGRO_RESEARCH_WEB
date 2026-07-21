@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { getPizarra } from "./pizarra";
+import { arNum, leerOverrideEnv } from "./env-utils";
 import type { Meta } from "./market";
 
 /**
@@ -32,20 +33,6 @@ export type CapGrano = {
   pizarra: number | null; // disponible USD (CAC), como contexto
 };
 export type CapData = { granos: CapGrano[]; fecha: string | null; meta: Meta };
-
-function arNum(s: string): number | null {
-  const n = Number(s.replace(/\./g, "").replace(",", "."));
-  return Number.isFinite(n) ? n : null;
-}
-
-function overrides(): Record<string, number> {
-  try {
-    const o = JSON.parse(process.env.CAPACIDAD_OVERRIDE ?? "{}");
-    return o && typeof o === "object" ? (o as Record<string, number>) : {};
-  } catch {
-    return {};
-  }
-}
 
 /** Extrae el FAS teórico Up River (2º valor de la fila; el 1º es SAGyP) por grano + fecha de la planilla. */
 function parseFas(html: string): { fas: Record<string, number>; fecha: string | null } {
@@ -93,7 +80,7 @@ function parseFas(html: string): { fas: Record<string, number>; fecha: string | 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export const getCapacidad = cache(async (): Promise<CapData> => {
-  const ov = overrides();
+  const ov = leerOverrideEnv("CAPACIDAD_OVERRIDE");
   let html = "";
   let caida = false;
   try {

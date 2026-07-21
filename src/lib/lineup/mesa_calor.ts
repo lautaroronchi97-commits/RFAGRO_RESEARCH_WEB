@@ -25,7 +25,6 @@ export const W_GAP = 0.35;
 export const W_LINEUP = 0.3;
 export const W_FARMER = 0.35;
 
-export const HORIZONTE_CALOR_DIAS = 30;
 export const K_MOMENTUM_DIAS = 10;
 export const UMBRAL_DIRECCION_TN = 32_500; // media Panamax
 

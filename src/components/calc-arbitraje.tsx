@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Panel, PanelHead } from "./panel";
-import { nfmt, pfmt, rfmt } from "@/lib/format";
+import { nfmt, pfmt, rfmt, numDeInput as num, fmtInputDate as fmtInput } from "@/lib/format";
 import { tasaDirecta, tnaUSD, spread, teaUSD } from "@/lib/arbitraje";
 import { hoyCordoba, parseYmd, diasCorridos, sumarCorridos, fmtFecha } from "@/lib/habiles";
 import { CurvaPicker } from "./curva-picker";
@@ -15,14 +15,6 @@ function IconArb() {
       <path d="M11 3h3v3" />
     </svg>
   );
-}
-
-function fmtInput(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-function num(v: string): number {
-  const n = Number(v.replace(",", "."));
-  return Number.isFinite(n) ? n : NaN;
 }
 
 export function CalcArbitraje({ granos = [] }: { granos?: GranoCurva[] }) {

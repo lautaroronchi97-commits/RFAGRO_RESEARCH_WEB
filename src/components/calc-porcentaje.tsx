@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Panel, PanelHead } from "./panel";
-import { nfmt, rfmt } from "@/lib/format";
+import { nfmt, rfmt, numDeInput as num, fmtInputDate as fmtInput } from "@/lib/format";
 import { porcentaje, precioDesdePct } from "@/lib/porcentaje";
 import { hoyCordoba, parseYmd, diasCorridos, sumarCorridos, fmtFecha } from "@/lib/habiles";
 import { CurvaPicker } from "./curva-picker";
@@ -15,8 +15,6 @@ function IconPct() {
     </svg>
   );
 }
-function fmtInput(d: Date): string { return d.toISOString().slice(0, 10); }
-function num(v: string): number { const n = Number(v.replace(",", ".")); return Number.isFinite(n) ? n : NaN; }
 
 type Modo = "pct" | "precio";
 

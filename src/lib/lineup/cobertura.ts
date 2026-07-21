@@ -9,7 +9,6 @@
 export const RATIO_CORTO = 0.7; // ratio < 0.7 → corto → ALCISTA FAS
 export const RATIO_SOBRE_ORIGEN = 1.3; // ratio > 1.3 → sobre-originado → BAJISTA
 export const DECLARADO_MIN_SIGNIFICATIVO = 5_000; // tn mínimas para emitir señal alcista
-export const CONGESTION_TN_SEMANA = 360_000; // pico semanal de ETB → congestión
 
 export type SenalTag = "ALCISTA FAS" | "BAJISTA" | "NEUTRO";
 export type Senal = { tag: SenalTag; intensidad: number; racional: string };

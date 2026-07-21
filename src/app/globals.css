@@ -405,11 +405,8 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
 
 /* ---- SourceStamp (frescura honesta) ---- */
 .st-badge { font-weight:800; font-size:9px; letter-spacing:.1em; padding:1.5px 6px; border-radius:3px; }
-.st-real { color:var(--pos); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--pos) 40%, transparent);
-  background:color-mix(in srgb, var(--pos) 7%, transparent); }
 .st-parcial { color:var(--gold-text); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--gold) 55%, transparent);
   background:color-mix(in srgb, var(--gold) 8%, transparent); }
-.st-ejemplo { color:var(--ink-3); box-shadow:inset 0 0 0 1px var(--line-2); }
 .st-warn { color:var(--gold-text); cursor:help; }
 /* Marca discreta "provisorio" para paneles que aún no son 100% firmes (reemplaza al badge REAL/PARCIAL/EJEMPLO de cara al cliente). */
 .st-prov { font-weight:700; font-size:9px; letter-spacing:.06em; padding:1px 6px; border-radius:3px;
@@ -666,7 +663,6 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
 
 /* ---------------- Panel de gráficos de spreads (/graficos) ---------------- */
 .gx-wrap { max-width:1120px; margin:0 auto; padding:18px 16px 40px; }
-.gx-presets { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
 .gx-preset { font-family:var(--font-ui); font-size:var(--fs-xs); font-weight:700; cursor:pointer;
   padding:6px 12px; border-radius:999px; border:1px solid var(--line-2); background:var(--panel-2);
   color:var(--ink-2); transition:color .15s, border-color .15s, background .15s; }

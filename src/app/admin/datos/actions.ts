@@ -51,7 +51,12 @@ async function parsearArchivo(formData: FormData): Promise<{ error: string } | {
     return { error: "Elegí el archivo del export (CSV o Excel .xlsx)." };
   }
   const datos = new Uint8Array(await archivo.arrayBuffer());
-  const r = parseAgrochat(datos, archivo.name);
+  let r: ReturnType<typeof parseAgrochat>;
+  try {
+    r = parseAgrochat(datos, archivo.name);
+  } catch (e) {
+    return { error: `No pude leer el archivo: ${e instanceof Error ? e.message : "formato inválido"}.` };
+  }
   if (!r.ok) return { error: r.error };
   return { parsed: r, nombre: archivo.name };
 }

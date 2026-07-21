@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { arNum, leerOverrideEnv } from "./env-utils";
 import type { Meta } from "./market";
 
 /**
@@ -28,11 +29,6 @@ export type PizarraData = {
   meta: Meta;
 };
 
-/** "480.500,00" → 480500 ; "325,21" → 325.21 */
-function arNum(s: string): number {
-  return Number(s.replace(/\./g, "").replace(",", "."));
-}
-
 function parseGrano(html: string, cls: string): { usd: number; ars: number; estimativo: boolean } | null {
   // CAC marca la pizarra estimativa (días sin fijación, Dto. 1058/99) con la
   // clase `estimative` en el div del board: `<div class="board board-soja estimative">`.
@@ -41,20 +37,16 @@ function parseGrano(html: string, cls: string): { usd: number; ars: number; esti
     `board-${cls}\\b([^"]*)"[\\s\\S]*?<div class="price">\\s*\\$([\\d.]+,\\d{2})[\\s\\S]*?US\\$<\\/strong>\\s*([\\d.]+,\\d{2})`,
   );
   const m = html.match(re);
-  return m ? { estimativo: /\bestimative\b/.test(m[1]), ars: arNum(m[2]), usd: arNum(m[3]) } : null;
-}
-
-function overrides(): Record<string, number> {
-  try {
-    const o = JSON.parse(process.env.PIZARRA_OVERRIDE ?? "{}");
-    return o && typeof o === "object" ? (o as Record<string, number>) : {};
-  } catch {
-    return {};
-  }
+  if (!m) return null;
+  const ars = arNum(m[2]);
+  const usd = arNum(m[3]);
+  // Si el formato de la fuente cambia y algún número no parsea, no mostramos el grano en vez de un NaN.
+  if (ars == null || usd == null) return null;
+  return { estimativo: /\bestimative\b/.test(m[1]), ars, usd };
 }
 
 export const getPizarra = cache(async (): Promise<PizarraData> => {
-  const ov = overrides();
+  const ov = leerOverrideEnv("PIZARRA_OVERRIDE");
   let html = "";
   let caida = false;
   try {

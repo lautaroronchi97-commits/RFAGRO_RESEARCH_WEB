@@ -60,29 +60,6 @@ async function authFetch<T>(path: string, revalidate: number): Promise<T | null>
   }
 }
 
-export type A3Level = { price: number; size: number };
-export type A3Entry = { price: number | null; size?: number | null; date?: number };
-export type A3MarketData = {
-  BI?: A3Level[];
-  OF?: A3Level[];
-  LA?: A3Entry;
-  SE?: A3Entry;
-  CL?: A3Entry;
-  OP?: number;
-  TV?: A3Entry;
-  OI?: A3Entry;
-};
-
-/** MarketData snapshot (REST). entries: BI,OF,LA,OP,CL,SE,OI,HI,LO,TV,NV */
-export async function getA3MarketData(
-  symbol: string,
-  entries = "BI,OF,LA,SE,CL,TV,OI",
-): Promise<A3MarketData | null> {
-  const path = `/rest/marketdata/get?marketId=ROFX&symbol=${encodeURIComponent(symbol)}&entries=${entries}&depth=1`;
-  const json = await authFetch<{ marketData?: A3MarketData }>(path, 30);
-  return json?.marketData ?? null;
-}
-
 /** Lista de símbolos de un segmento: DDA (granos), DDF (dólar). */
 export async function getA3InstrumentsBySegment(segment: "DDA" | "DDF"): Promise<string[]> {
   const json = await authFetch<{ instruments?: { symbol: string }[] }>(
