@@ -1,6 +1,6 @@
 # Sesión 2026-07-21 — Auditoría E2: fórmulas y lógica de negocio (fase 1)
 
-- **Rama:** `claude/e2-formulas-go9i9y` · **PR:** #_ (base `main`, draft hasta el OK)
+- **Rama:** `claude/e2-formulas-go9i9y` · **PR:** #51 (base `main`, draft hasta el OK)
 - **Objetivo pedido por Lautaro:** ejecutar el PROMPT E2 de `PLAN_AUDITORIA.md` (auditar TODAS las
   fórmulas del proyecto; fase 1 = solo informe, cero código tocado).
 

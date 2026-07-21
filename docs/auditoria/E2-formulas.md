@@ -1,6 +1,6 @@
 # Auditoría E2 — Fórmulas y lógica de negocio (2026-07-21)
 
-- **Rama:** `claude/e2-formulas-go9i9y` · **PR:** #_ (base `main`, draft hasta el OK)
+- **Rama:** `claude/e2-formulas-go9i9y` · **PR:** #51 (base `main`, draft hasta el OK)
 - **Alcance:** TODO el inventario del PROMPT E2 de [`PLAN_AUDITORIA.md`](../PLAN_AUDITORIA.md): las 9
   calculadoras y sus libs, paneles de granos (arbitrajes/pases/capacidad/mejor caja/curva-futuros),
   dólar y tasas (`market.ts` completo), mesa/comercio (`src/lib/lineup/*`, port de LineUps_Code),
