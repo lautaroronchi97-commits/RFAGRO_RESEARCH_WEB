@@ -62,7 +62,7 @@ fades, tablas con hover/tick dorado, charts con grilla punteada + área en degra
 | Pizarra soja/maíz/trigo (día) | **CAC-BCR** | `www.cac.bcr.com.ar/es/precios-de-pizarra` (scrape HTML; trae `$` y `US$` + TC BNA) |
 | Pizarra histórica 2020→hoy (5 granos, $ y US$) | **CAC-BCR (consulta)** | `www.cac.bcr.com.ar/es/precios-de-pizarra/consultas?product={13\|3\|8\|9\|6}&type=any&period=day&date_start=&date_end=` → JSON en `drupalSettings.app_prices.plot.data` (`y`=$/tn, `y_usd`=US$/tn). US$ = BNA divisa comprador. Trocear en ventanas ≤3 años. → `pizarra_historico` |
 | Estimaciones de producción — USDA (WASDE+PSD), CONAB | **USDA / CONAB** | `ingest-usda.mjs` (CSV tidy del WASDE por edición = vintages soja/maíz/trigo por país + mundo; PSD bulk ZIP = área/rinde 6 granos + producción girasol/sorgo/cebada) · `ingest-conab.mjs` (`LevantamentoGraos.txt`, 27 UF → nacional Brasil, vintages 2017/18→hoy). → `estimaciones_produccion`. Detalle: `sesiones/2026-07-12-estimaciones-usda-conab.md` |
-| Estimaciones de producción — Argentina (BCR-GEA, SAGyP-DEA, BCBA-PAS) | **BCR / SAGyP / BCBA** | `ingest-gea.mjs` (scrape tablas `bcr-estimaciones` de soja/maíz/trigo + backfill Wayback) · `ingest-dea.mjs` (POST del CSV oficial `datosestimaciones.magyp.gob.ar` → nacional por cultivo/campaña, 6 granos, snapshot=vintage) · `ingest-pas.mjs` (BCBA probe-first, **pendiente**: dominio tras Cloudflare). → `estimaciones_produccion`. Detalle: `sesiones/2026-07-12-estimaciones-argentina.md` |
+| Estimaciones de producción — Argentina (BCR-GEA, SAGyP-DEA, BCBA-PAS) | **BCR / SAGyP / BCBA** | `ingest-gea.mjs` (scrape tablas `bcr-estimaciones` de soja/maíz/trigo + backfill Wayback) · `ingest-dea.mjs` (POST del CSV oficial `datosestimaciones.magyp.gob.ar` → nacional por cultivo/campaña, 6 granos, snapshot=vintage) · `ingest-pas.mjs` (BCBA: **descartado automatizar**, Cloudflare confirmado también desde IPs de GitHub Actions — `pas_probe` 12/07, HTTP 403; respaldo = suscripción por mail de Lautaro). → `estimaciones_produccion`. Detalle: `sesiones/2026-07-12-estimaciones-argentina.md` y `auditoria/E6-historia.md` |
 | Futuros CBOT maíz/soja/trigo (por posición, vencidos incl.) | **Barchart (API interno)** | `barchart.com/proxies/core-api/v1/historical/get` (auth por cookie `XSRF-TOKEN` del `/overview` + header `x-xsrf-token`). ¢/bu fraccionario (`"565-2"`=565,25). USD/tn: maíz ×0.3936826, soja/trigo ×0.3674371. → `cbot_cierres` |
 | **Noticias del agro** (portal) | **medios + Google News** (RSS + scrape) | Cron horario `ingest-noticias.mjs` → tabla Supabase `noticias`. Medios directos: BCR resumen + InfoCampo, Bichos de Campo, Ámbito, La Nación Campo, Clarín Rural, Agrositio (granos/economía/clima), dataPORTUARIA, TodoAgro, Cebada Cervecera, Agrofy News (scrape), G1 Brasil, World-Grain. **+ vía Google News RSS** (link-out, para fuentes sin feed propio/bloqueadas): bolsas (Rosario/BsAs/Córdoba), internacional (Reuters/Bloomberg/AgWeb/CME…), informes (USDA/CONAB/CFTC) e instituciones (CIARA/CREA/Aapresid/Coninagro). Categorización PROPIA por reglas (`noticias-reglas.json`); dedup por link + por título (colapsa la misma nota directa vs. Google). Detalle: `sesiones/2026-07-10-portal-noticias.md` |
 
@@ -104,7 +104,7 @@ fades, tablas con hover/tick dorado, charts con grilla punteada + área en degra
 | 6 | Sintéticos/LECAPs | PARCIAL: precios LECAP reales; TIR/sintético pendiente ("pago final por letra"). |
 | 7 | Panel cambiario | REAL (volumen MAE). Compras netas BCRA = pendiente (sin API; proxy / vía X). |
 | 8 | Noticias (portal) | **REAL** (`noticias.ts` lee Supabase `noticias` + fallback en vivo; `noticias-panel.tsx` + `noticias-client.tsx`). 15 medios vía cron horario, **categorización propia** por reglas (`noticias-reglas.json` + `noticias-clasificar.ts`), filtro de ruido, chips de filtro, link-out. Detalle: `sesiones/2026-07-10-portal-noticias.md`. |
-| 9 | Producción — calendario + estimaciones (página `/produccion`) | **REAL** (poblado 12/07). Calendario de informes generado en código (`calendario.ts`); pizarra de estimaciones + gráfico de evolución + tarjetas de cambios desde `estimaciones_produccion` (`estimaciones.ts` + `estimaciones-panel/cliente.tsx` + `evolucion-chart.tsx`). Fuentes: USDA (WASDE+PSD), CONAB, BCR-GEA, SAGyP-DEA (comparador AR lado a lado). BCBA-PAS pendiente (Cloudflare). Home: mini-tabla USDA (`estimaciones-mini.tsx`). Crons: `ingest-usda/conab.yml` + `ingest-estimaciones-ar.yml`. Detalle: `sesiones/2026-07-12-estimaciones-argentina.md`. |
+| 9 | Producción — calendario + estimaciones (página `/produccion`) | **REAL** (poblado 12/07). Calendario de informes generado en código (`calendario.ts`); pizarra de estimaciones + gráfico de evolución + tarjetas de cambios desde `estimaciones_produccion` (`estimaciones.ts` + `estimaciones-panel/cliente.tsx` + `evolucion-chart.tsx`). Fuentes: USDA (WASDE+PSD), CONAB, BCR-GEA, SAGyP-DEA (comparador AR lado a lado). BCBA-PAS descartado de automatizar (Cloudflare confirmado 2/2, ver `auditoria/E6-historia.md`) — respaldo por mail. Home: mini-tabla USDA (`estimaciones-mini.tsx`). Crons: `ingest-usda/conab.yml` + `ingest-estimaciones-ar.yml`. Detalle: `sesiones/2026-07-12-estimaciones-argentina.md`. |
 
 ## Secretos / entorno
 - **A3** en variables de entorno (Vercel → Settings → Environment Variables): `A3_API_BASE=https://api.cocos.xoms.com.ar`,
@@ -145,28 +145,16 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
 - Env vars sensibles con scope **Production only**.
 - Vercel Hobby es no-comercial → decidir upgrade a Pro ANTES de poner datos reales frente a clientes (C2).
 
-## Pendientes (lista canónica — actualizada 09/07/2026; lo urgente/vivo está en `ESTADO.md`)
-**Ya hecho de los planes viejos** (no re-trabajar): C1 Supabase + cron de cierres (vía CEM diario +
-GitHub Actions, corre solo) · C2 Arbitrajes + Pases reales (08/07) · estética premium (09/07) ·
-`dates.ts`/`vencimientos.ts` extraídos · auto-curva en calculadoras (PR #4).
-1. ~~**Feed A3 en vivo**~~ — **HECHO (display)** el 09/07: puntas/volumen/último de pases + comprador/vendedor
-   de arbitrajes vía `a3-live.ts`, **web-directa** (frescura ~60s por la regeneración ISR, NO un cron: un
-   cron de 60s no existe gratis). Falta validar datos reales en Preview. **Queda la Fase 2 — histórico
-   intradiario**: cron GH Actions `*/15 13-20 * * 1-5` UTC + `scripts/ingest-rueda.mjs` + tabla `snapshots`
-   + `ingest_log` (INFRAESTRUCTURA.md) para gráficos intradía. El CEM diario no tiene nada de esto.
-2. **C3 Sintéticos TIR**: [LAUTARO] tabla "pago final por letra" (IAMC `informeslecap`).
-3. **Fase B (estructura)**: B1 Resiliencia (tarjetas de degradación por panel desde el Result; OJO: bajo
-   ISR estático Suspense NO streamea) · B2 extraer `tickers.ts`/`rates.ts` + [LAUTARO] 1 ejemplo numérico
-   por fórmula como fixture · B3 Tests (Vitest) a CI · B4 mobile tablas / ChartFrame /
-   `noUncheckedIndexedAccess` / InfoTip accesible.
-4. **C4**: vista productor, PWA, charts históricos (re-evaluar Recharts), robots→index, compras BCRA manual.
-5. **Fase 3 / backlog de datos** (lista completa en `docs/INFRAESTRUCTURA.md`): reactivar scrapers
-   `lineup`/`compras` (frenados), panel de lineups, calendario de informes (`FUENTES.md`), reporte diario
-   WhatsApp, ratio maíz/soja, arbitraje Matba↔CBOT, SIO Granos, camiones en puerto, volumen por producto,
-   % sobre cosecha, variación semanal USD.
-6. **Estrategias**: costos/IVA por pata, primas/strikes reales, calendarios de dos vtos, acumulador.
-7. **Modelo propio de Lautaro** para capacidad de pago (vía `CAPACIDAD_OVERRIDE`).
-8. **Módulo scoring de clientes** (`docs/negocio/03`): producto a futuro, requiere datos externos.
+## Pendientes
+
+> **Retirada la lista propia (21/07/2026, auditoría E6 — `auditoria/E6-historia.md`):** este archivo
+> tenía su propia lista de pendientes desde el 09/07, que divergió de la de `ESTADO.md` y de
+> `PLAN_BACKLOG.md`. El backlog vivo (con checkboxes, actualizado sesión a sesión) está en
+> [`ESTADO.md`](ESTADO.md) § «Plan RF AGRO»; el mapeo completo de TODO pendiente del proyecto — el de
+> acá, el de gráficos v2 y el de `ESTADO.md` — con el prompt autocontenido para ejecutar cada uno, está
+> en [`PLAN_BACKLOG.md`](PLAN_BACKLOG.md). **Regla en adelante: `CONTEXTO.md` no vuelve a mantener su
+> propia lista de pendientes** — todo pendiente nuevo se agrega directo al backlog de `ESTADO.md` y,
+> si hace falta un prompt propio, a `PLAN_BACKLOG.md`.
 
 ## Comandos
 - `npm run dev` (real en sandbox: `NODE_USE_ENV_PROXY=1 npm run dev`) · `npm run build` · push a la rama → deploy.

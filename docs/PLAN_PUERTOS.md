@@ -1,8 +1,11 @@
 # PLAN PUERTOS — Line-up de buques y análisis de embarques (decisiones cerradas + fases)
 
-> **Estado: PLAN APROBADO, LISTO PARA EJECUTAR.** Cerrado con Lautaro el 18/07/2026 (11 decisiones,
-> abajo). Cubre el **ítem 6 del backlog** de `ESTADO.md` ("seguir desarrollando barcos / lineups en
-> puerto"). Se ejecuta en **5 fases** (§5), cada una un PR verificable.
+> **Estado: PLAN COMPLETO — las 5 fases están HECHAS** (Fase 0-1 el 18/07, Fases 2-4 el 19/07; este
+> banner y la §5 no se habían actualizado desde el 18/07 hasta que la auditoría E6 lo notó el 21/07,
+> ver `auditoria/E6-historia.md`). Cerrado con Lautaro el 18/07/2026 (11 decisiones, abajo). Cubre el
+> **ítem 6 del backlog** de `ESTADO.md` ("seguir desarrollando barcos / lineups en puerto") — ya
+> marcado HECHO ahí. Lo que queda (extras de spec, calibraciones) vive en el backlog maestro de la
+> auditoría (E7).
 >
 > ⚠️ Para el modelo que ejecute: leé además `CLAUDE.md` (carga `AGENTS.md` + `docs/ESTADO.md` +
 > `docs/CONTEXTO.md`). **Este repo usa Next.js 16 con breaking changes: leé `node_modules/next/dist/docs/`
@@ -164,12 +167,14 @@ migración `20260719180000` (vista `djve_embarques_mes`, **matview `lineup_visit
 post-ingesta — las vistas de dedup de Fases 2-3 pasaron de ~6 s a ~66 ms). **Verificado** 1:1 contra SQL
 (maíz JUL 3.854 kt / cumplimiento 146% / A3 337,9) + navegador claro/oscuro + lint/tsc/build.
 
-### Fase 4 — Temperatura de mercadería (`/comercio/temperatura`)
+### Fase 4 — Temperatura de mercadería (`/comercio/temperatura`) — ✅ HECHA (19/07/2026)
 El índice MESA (CALIENTE/FIRME/NEUTRO/PESADO/MUY PESADO): gap de cobertura + densidad de line-up +
-farmer selling, cada uno a percentil estacional de 5 campañas (`mesa_calor.py` + `estacional.py`).
-Requiere **reactivar `update_compras`** (MAGyP, frenado; mismo problema de IP → misma Edge Function o
-fallback PC). El índice degrada solo si falta farmer selling (así lo hace LineUps_Code).
-**Verificación**: recomputar 2-3 índices contra el cálculo Python con los mismos datos.
+farmer selling, cada uno a percentil estacional de 5 campañas (portado 1:1 de `mesa_calor.py` +
+`estacional.py`, 41/41 tests). `compras` (MAGyP) se reactivó con fuente nueva (el dataset CKAN viejo
+se dio de baja) y la pata de farmer selling se encendió el 19/07 vía export de Agrochat
+(`cargar-compras.mjs`, 9.522 filas); el índice degrada solo a las 2 patas de demanda si esa pata
+faltara. Verificado 1:1 contra el cálculo Python. Detalle:
+`sesiones/2026-07-19-comercio-temperatura-fase-4.md` y `2026-07-19-farmer-selling-c3-agrochat.md`.
 
 ### Transversal (cierra el ítem 6 del backlog)
 Actualizar `ESTADO.md` + `docs/sesiones/` por sesión, `CONTEXTO.md` al final (fuente ISA + módulos).
@@ -177,10 +182,9 @@ El informe semanal (ítem 11) consumirá estos mismos módulos — no duplicar l
 
 ## 6. Abiertos / riesgos
 
-1. **Referencia de la Bolsa para "avance exportado"** (Fase 2): tenemos producción BCR-GEA en
-   `estimaciones_produccion`; falta confirmar con Lautaro si compara contra producción o contra un
-   saldo exportable/embarques proyectados de BCR (posible fuente nueva chica). Preguntar con un
-   ejemplo numérico antes de codear esa tarjeta (regla del proyecto).
+1. ~~**Referencia de la Bolsa para "avance exportado"** (Fase 2)~~ — **resuelto**: Lautaro descartó
+   la comparación contra la Bolsa en la Fase 2 (PR #34, 19/07: "Avance vs Bolsa/saldo exportable:
+   descartado en esta entrega"). No entra en `/comercio/empresas`.
 2. **IP de Supabase vs ISA**: no verificable hasta deployar la Edge Function. Mitigado por el
    fallback PC (decisión 10) y porque los paneles funcionan igual con el dato que haya.
 3. **DJVE forward finas** (decisión 4): el gap por mes puede ser corto-céntrico; se muestra con esa

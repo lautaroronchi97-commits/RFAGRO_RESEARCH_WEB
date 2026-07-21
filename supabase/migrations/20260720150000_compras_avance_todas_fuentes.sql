@@ -1,5 +1,8 @@
 -- Farmer selling (C3) v3: la matview de avance incluye TODAS las fuentes SIO Granos.
 --
+-- Nota (auditoría E6, 21/07/2026): se aplicó por `execute_sql` (workaround del canal de aprobación
+-- del MCP caído) con version real `20260720192357` — distinto al timestamp de este nombre de archivo.
+--
 -- Bug de diseño encontrado el 20/07/2026 al sanear la base: el cron vivo de MAGyP
 -- (ingest-compras.mjs) upserteó la última semana (27/05 y 08/07, 30 filas) por la MISMA clave
 -- UNIQUE (campana, codigo_interno, sector, fecha) que las filas cargadas del export de Agrochat,

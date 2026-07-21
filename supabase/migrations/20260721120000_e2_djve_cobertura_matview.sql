@@ -1,5 +1,8 @@
 -- E2 fase 2 (hallazgo #1, decisión de Lautaro 21/07/2026): djve_cobertura pasa de VISTA a MATVIEW.
 --
+-- Nota (auditoría E6, 21/07/2026): se aplicó por `execute_sql` (workaround del canal de aprobación
+-- del MCP caído) con version real `20260721122520` — distinto al timestamp de este nombre de archivo.
+--
 -- La vista agregaba los ~334k de `djve` (backfill 2011-2025 de la Fase 3) en CADA request → statement
 -- timeout 57014 vía PostgREST anon → /comercio/empresas y /comercio/senal degradaban a "fuente no
 -- disponible" (auditoría E2, hallazgo #1). Mismo remedio que ya usó la Fase 3 para lineup_visitas.

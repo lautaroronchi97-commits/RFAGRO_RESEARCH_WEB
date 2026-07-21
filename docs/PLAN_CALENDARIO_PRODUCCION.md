@@ -265,7 +265,9 @@ Cada sesión: lint + typecheck + build + verificación contra datos reales antes
 1. **Nada bloqueante para v1** (el bulk PSD y todo CONAB/BCR/DEA van sin auth).
 2. *(Opcional, 2 min)* API key de **NASS QuickStats** (form en quickstats.nass.usda.gov/api) — solo para
    detalle por estado EEUU (fase 2). *(Opcional)* key de **FAS OpenData** — consultas puntuales PSD.
-3. **Suscribirse gratis al PAS por mail** (respaldo manual si Cloudflare bloquea Actions).
+3. **Suscribirse gratis al PAS por mail** — CONFIRMADO como el único camino: el `pas_probe` corrió desde
+   GitHub Actions el 12/07 y confirmó el mismo bloqueo Cloudflare del sandbox (HTTP 403). No tiene sentido
+   seguir intentando automatizarlo.
 4. **Descargar 1 vez los XLSX de `bolsadecereales.com/datasets`** desde el browser (20 campañas × 6 cultivos
    por zona) y pasarlos — histórico BCBA resuelto sin OCR.
 
@@ -297,9 +299,11 @@ Cada sesión: lint + typecheck + build + verificación contra datos reales antes
 - **BCR**: el calendario oficial existe (ICS + JSON) pero está vacío para 2025/26 → generar por regla y
   monitorear si lo reactivan · el semanal GEA es JUEVES (no miércoles) · el nombre de los PDFs no es
   predecible → tomar siempre el href del botón Descargar.
-- **BCBA**: Cloudflare challenge en TODO el dominio para IPs de datacenter (sandbox bloqueado; GH Actions
-  a probar) · tablas zonales del PDF son imágenes → vintage por zona requiere OCR (no recomendado) ·
-  id del PDF +1 por semana · `perspectivasagricolas.com.ar` NO tiene Cloudflare (wp-json OK).
+- **BCBA**: Cloudflare challenge en TODO el dominio, **confirmado también desde IPs de GitHub Actions**
+  (`pas_probe` del 12/07: HTTP 403 · 5842 bytes — mismo bloqueo que el sandbox, verificado en
+  `auditoria/E6-historia.md` el 21/07) → **descartado automatizarlo**, queda el respaldo por mail (punto
+  6.3) · tablas zonales del PDF son imágenes → vintage por zona requeriría OCR (no recomendado) · id del
+  PDF +1 por semana · `perspectivasagricolas.com.ar` NO tiene Cloudflare (wp-json OK).
 - **DEA**: CSV por POST `Dataset=Dataset`, Latin-1, `;`, 11,5 MB (161.807 filas) · la copia CKAN rezaga
   meses (no primaria) · horarios inferidos de Last-Modified (mensual ~11:30, semanal ~17:00 AR), no hay
   hora oficial · los nombres de los PDFs NO siguen un patrón uniforme entre años → scrapear hrefs, no
