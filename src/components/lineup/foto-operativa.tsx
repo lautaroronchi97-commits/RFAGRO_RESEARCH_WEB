@@ -138,7 +138,7 @@ export async function FotoOperativaPanel() {
 
       <QueEsEsto
         paraQue="Es la foto del último line-up de buques en puertos argentinos: qué barcos vienen a cargar granos y subproductos para exportar, cuánto, de qué empresa y a qué destino. Sirve para leer la demanda física de exportación antes de la rueda."
-        comoSeCalcula="Toma la última rueda publicada por ISA Agents (exportaciones = carga), agrupa por producto y por zona portuaria (Up River Norte/Sur y Bahía Blanca, clasificadas por el muelle), normaliza los nombres de los exportadores y compara contra la rueda anterior para marcar los buques nuevos."
+        comoSeCalcula="Toma la última rueda del line-up de buques (exportaciones = carga), agrupa por producto y por zona portuaria (Up River Norte/Sur y Bahía Blanca, clasificadas por el muelle), normaliza los nombres de los exportadores y compara contra la rueda anterior para marcar los buques nuevos."
       />
     </Panel>
   );

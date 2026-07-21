@@ -131,7 +131,7 @@ export async function EmpresasPanel() {
 
       <QueEsEsto
         paraQue="Muestra, por empresa exportadora, si está corta o cubierta: cuánto declaró vender al exterior (DJVE) contra cuántos barcos ya puso a cargar (line-up). Una empresa corta tiene que salir a comprar grano → presión sobre el FAS. Suma el avance de la campaña, el ritmo vs su propia historia y la mercadería de cosecha nueva vs vieja."
-        comoSeCalcula="Cruza las DJVE de SAGyP (declarado) con el line-up de ISA Agents (originado), normalizando los nombres de los exportadores. La foto forward compara la ventana de los próximos 60 días; el avance de campaña acumula lo embarcado desde el arranque (estimado sobre line-up). El ritmo compara el line-up parado hoy contra el promedio de las mismas semanas de las últimas 5 campañas. El tránsito de origen Paraguay/Uruguay se excluye del ratio porque no tiene DJVE argentina."
+        comoSeCalcula="Cruza las DJVE de SAGyP (declarado) con el line-up de buques (originado), normalizando los nombres de los exportadores. La foto forward compara la ventana de los próximos 60 días; el avance de campaña acumula lo embarcado desde el arranque (estimado sobre line-up). El ritmo compara el line-up parado hoy contra el promedio de las mismas semanas de las últimas 5 campañas. El tránsito de origen Paraguay/Uruguay se excluye del ratio porque no tiene DJVE argentina."
       />
     </Panel>
   );

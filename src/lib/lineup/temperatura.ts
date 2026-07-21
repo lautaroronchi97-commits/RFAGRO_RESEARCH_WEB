@@ -36,7 +36,7 @@ import { parseFechaUTC } from "./campanas";
  * junta ≥2 años de historia.
  */
 
-const SOURCE = "ISA Agents · SAGyP";
+const SOURCE = "SAGyP";
 const REVALIDATE = 900; // 15 min
 
 const DIA_MS = 86_400_000;

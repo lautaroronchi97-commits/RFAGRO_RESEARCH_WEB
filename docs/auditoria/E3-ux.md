@@ -128,8 +128,29 @@ global), `/comercio` con ~70 filas DJVE vacías, `/produccion` sin las pestañas
 - **→ E4:** `sample.ts` (retiro coordinado con la decisión de D1) habilita evaluar quitar el `noindex`
   global; back-links redundantes (H11) son limpieza de layout.
 
-## Fase 2 — correcciones implementadas (completar tras el OK de Lautaro)
+## Fase 2 — correcciones implementadas (aprobadas por Lautaro 21/07)
 
-| # hallazgo | Qué se hizo | Commit | Verificación |
+Lautaro aprobó: materializar H1/H6, conectar la pizarra real + sacar las implícitas de granos (y quitar
+el `noindex`), pestañas en producción, y los 6 fixes chicos (para H3 eligió **"solo quitar 'ISA Agents'"**).
+
+| # | Qué se hizo | Archivos | Verificación |
 |---|---|---|---|
-| _(pendiente de decisión hallazgo por hallazgo)_ | | | |
+| H1/H6 | `djve_embarques_mes` y `lineup_estacional` → matview; refresh agregado a `refresh_lineup_visitas()`. **Migración SOLO versionada** (la aplica el orquestador por MCP). Código sin cambios (mismo nombre). | `supabase/migrations/20260721180000_e3_matview_embarques_estacional.sql` | pendiente de aplicar la migración; el fix rinde recién ahí |
+| H2 | `.head-tools` con `flex-wrap`; en ≤560px se ocultan los horarios de rueda (`.ruedas`). | `globals.css` | ✅ mobile 390px: body=390 (antes 485) en todas las `(site)` |
+| H3 | Sacado "ISA Agents" de los 5 sellos (`SOURCE`) y de 3 textos "¿Qué es esto?". Puertos pasó a "Elaboración propia RF AGRO". | `lineup/{embarque,temperatura,foto,semaforo,empresas}.ts` + 3 `components/lineup/*` | ✅ `grep` de "ISA Agents" en cero + build |
+| H4 | Cinta: pizarra real de CAC (`getPizarra`), sin literales de ejemplo, `change` null, degrada a "—". | `market.ts` | ✅ cinta muestra soja 339,7 (= arbitrajes), sin badge "PROV" |
+| H5 | Sacada la serie "Granos (ej.)" de Implícitas combinadas; status pasa a real. | `implicitas-panel.tsx` | ✅ chart de 2 curvas limpias, sin "provisorio" |
+| noindex | Quitado el `robots:{index:false}` global (ya no hay dato de ejemplo a la vista). Las páginas de mesa mantienen el suyo. | `app/layout.tsx` | ✅ home sin `<meta robots>`; produccion sigue noindex |
+| H7 | DJVE oculta los productos con acumulado 0; nota "N productos sin declaraciones (ocultos)". | `djve-panel.tsx` | ✅ /comercio: 19 filas + "70 ocultos" (antes ~90) |
+| H8 | `/produccion` en pestañas **Calendario / Estimaciones** (control segmentado). | `produccion-tabs.tsx` (nuevo) + `produccion/page.tsx` + `globals.css` | ✅ pestañas funcionan; estimaciones ya no al fondo de 20.000px |
+| H9 | `app/not-found.tsx` branded (isotipo + "Página no encontrada" + volver, tema-aware). | `app/not-found.tsx` (nuevo) | ✅ 404 en español y con marca |
+| H10 | `granos/view` deja de filtrar el error crudo de Postgres; mensaje amable, crudo al log. | `views-mercado.ts` + `granos/view/page.tsx` | ✅ build (contenido requiere admin real) |
+| H11 | Sacados los back-links "← sección" redundantes con el breadcrumb. | `calculadoras/[slug]/page.tsx`, `produccion/page.tsx` | ✅ solo queda el breadcrumb |
+
+**Verificado global:** `lint` + `tsc` + `build` en verde; navegación con datos reales (claro).
+
+### Pendiente / no incluido en esta fase 2
+- **Aplicar la migración H1/H6** (orquestador). Hasta entonces embarques sigue vacía y RITMO en "—".
+- **H12 (bajo, no aprobado en el lote):** `/graficos` mantiene overflow horizontal en mobile (body=741px)
+  por su constructor/chart propio — el fix de `.head-tools` (H2) no lo cubre. Queda para una próxima vuelta.
+- **D6:** validar los montos "VIEJA" de `/comercio/empresas` (→ E1/E2).

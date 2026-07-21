@@ -32,10 +32,31 @@
 - Overflow horizontal mobile medido (`document.scrollWidth`): 485px vs 390px en 10/11 rutas `(site)`,
   culpable `.head-tools` (w=475).
 
+## FASE 2 — implementada (Lautaro aprobó por AskUserQuestion)
+Aprobó materializar H1/H6, conectar pizarra real + sacar implícitas granos (+ quitar noindex), pestañas
+en producción, y los 6 fixes chicos (para el sello eligió "solo quitar ISA Agents"). Hecho, todo en esta
+misma rama:
+- **H1/H6** — migración `20260721180000` (djve_embarques_mes + lineup_estacional → matview, refresh en
+  `refresh_lineup_visitas`). **Solo versionada, NO aplicada** (Lautaro rechazó el apply por MCP → la aplica
+  el orquestador). Sin cambio de código (mismo nombre de relación).
+- **H2** — `.head-tools` colapsa en mobile (oculta horarios ≤560px) → body 390px (antes 485) en todas las `(site)`.
+- **H3** — "ISA Agents" fuera de los 5 sellos + 3 textos; puertos = "Elaboración propia RF AGRO".
+- **H4** — cinta con pizarra real de CAC (`getPizarra`), sin literales de ejemplo.
+- **H5** — sacada la serie "Granos (ej.)" de Implícitas.
+- **noindex** — quitado el global de `layout.tsx` (ya no hay dato de ejemplo); mesa mantiene el suyo.
+- **H7** — DJVE oculta productos sin acumulado (+ nota "N ocultos").
+- **H8** — `/produccion` en pestañas Calendario/Estimaciones (`produccion-tabs.tsx`).
+- **H9** — `app/not-found.tsx` branded.
+- **H10** — `granos/view` sin error crudo de Postgres.
+- **H11** — back-links redundantes fuera.
+Verificado en navegador (claro, datos reales): cinta 339,7 · implícitas 2 curvas · produccion tabs ·
+404 branded · /comercio 19 filas + 70 ocultas · overflow mobile resuelto. lint/tsc/build ✅.
+
 ## Quedó pendiente / en vuelo
-- **Decisión de Lautaro hallazgo por hallazgo** (columna «Decisión» del informe + las 6 dudas). Recién
-  después → FASE 2 (implementar solo lo aprobado en esta rama).
-- H1/H6 (materializar las 2 vistas) son fix de **datos → E5/E1**: se anotan en «Para otras etapas».
+- **Aplicar la migración H1/H6** (orquestador por MCP). Hasta entonces embarques sigue vacía y RITMO en "—".
+- **H12** (bajo, no aprobado): `/graficos` sigue con overflow horizontal en mobile (741px) por su
+  constructor/chart propio — el fix de `.head-tools` no lo cubre.
+- **D6**: validar los montos "VIEJA" de `/comercio/empresas` (→ E1/E2).
 
 ## Trampas descubiertas (para la próxima sesión)
 - Las **vistas no-materializadas sobre `djve` (334k filas) tiran 500 bajo la concurrencia del build**

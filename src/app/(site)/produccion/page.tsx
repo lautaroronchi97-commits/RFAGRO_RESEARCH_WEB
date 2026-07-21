@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getEventos, type Organismo } from "@/lib/calendario";
 import { hoyCordobaISO } from "@/lib/dates";
 import { CalendarioCliente } from "@/components/calendario-cliente";
 import { EstimacionesPanel } from "@/components/estimaciones-panel";
 import { QueEsEsto } from "@/components/que-es-esto";
 import { Panel } from "@/components/panel";
+import { ProduccionTabs } from "@/components/produccion-tabs";
 import { requireSeccion } from "@/lib/auth/dal";
 
 export const metadata: Metadata = {
@@ -34,9 +34,6 @@ export default async function ProduccionPage() {
       <main className="wrap">
         <div className="col">
           <div className="prod-intro">
-            <Link href="/" className="cal-inline-link">
-              ← Volver al tablero
-            </Link>
             <h2 className="prod-h1">Calendario de informes + estimaciones de producción</h2>
             <p className="prod-lede">
               Cuándo publica cada organismo y qué proyecta para la producción de cada país y grano.
@@ -45,19 +42,28 @@ export default async function ProduccionPage() {
             </p>
           </div>
 
-          <h2 className="sec-title">Calendario cronológico</h2>
-          <Panel id="calendario">
-            <div className="cal-full-wrap">
-              <CalendarioCliente eventos={eventos} organismos={presentes} />
-            </div>
-          </Panel>
-
-          <h2 className="sec-title">Última estimación por organismo</h2>
-          <QueEsEsto
-            paraQue="Muestra cuánto proyecta cada organismo que se va a producir de cada grano en cada país, y cómo cambió respecto de su informe anterior."
-            comoSeCalcula="Toma la última estimación publicada por cada organismo y la compara con la anterior de la misma campaña; el gráfico sigue la evolución de cada campaña a lo largo del tiempo."
+          <ProduccionTabs
+            calendario={
+              <>
+                <h2 className="sec-title">Calendario cronológico</h2>
+                <Panel id="calendario">
+                  <div className="cal-full-wrap">
+                    <CalendarioCliente eventos={eventos} organismos={presentes} />
+                  </div>
+                </Panel>
+              </>
+            }
+            estimaciones={
+              <>
+                <h2 className="sec-title">Última estimación por organismo</h2>
+                <QueEsEsto
+                  paraQue="Muestra cuánto proyecta cada organismo que se va a producir de cada grano en cada país, y cómo cambió respecto de su informe anterior."
+                  comoSeCalcula="Toma la última estimación publicada por cada organismo y la compara con la anterior de la misma campaña; el gráfico sigue la evolución de cada campaña a lo largo del tiempo."
+                />
+                <EstimacionesPanel />
+              </>
+            }
           />
-          <EstimacionesPanel />
         </div>
       </main>
     </>

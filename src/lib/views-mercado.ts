@@ -85,7 +85,11 @@ export const getViewsMercado = cache(async (): Promise<ViewsMercadoData> => {
       .order("fecha", { ascending: false })
       .order("grano", { ascending: true })
       .limit(120);
-    if (error) return { vigentes: vacio, historial: [], error: error.message };
+    if (error) {
+      // No filtrar el mensaje crudo de Postgres a la UI (E3 H10): queda en el log del server.
+      console.error("[views-mercado] lectura falló:", error.message);
+      return { vigentes: vacio, historial: [], error: "todavía-no-hay" };
+    }
 
     const rows: ViewMercado[] = (data ?? []).map((r) => ({
       ...r,
@@ -101,6 +105,6 @@ export const getViewsMercado = cache(async (): Promise<ViewsMercadoData> => {
     }
     return { vigentes, historial, error: null };
   } catch {
-    return { vigentes: vacio, historial: [], error: "No se pudo leer views_mercado." };
+    return { vigentes: vacio, historial: [], error: "todavía-no-hay" };
   }
 });
