@@ -31,21 +31,32 @@ export function sessionIdDeToken(accessToken: string | null | undefined): string
   }
 }
 
-/** Etiqueta corta de dispositivo (navegador · SO) para `sesiones_activas`. */
-export function deviceDeUA(ua: string | null | undefined): string | null {
-  if (!ua) return null;
+/**
+ * Navegador + SO a partir del user-agent, PURO (sin `next/headers`) — así lo puede
+ * reusar tanto el proxy (vía `deviceDeUA`) como el panel admin (`auth/admin.ts`),
+ * que antes reimplementaba el mismo regex a mano.
+ */
+export function navegadorYSO(ua: string | null | undefined): { navegador: string; so: string } {
+  if (!ua) return { navegador: "Otro", so: "" };
   const s = ua.toLowerCase();
-  let nav = "Navegador";
-  if (/edg\//.test(s)) nav = "Edge";
-  else if (/opr\/|opera/.test(s)) nav = "Opera";
-  else if (/chrome\//.test(s)) nav = "Chrome";
-  else if (/firefox\//.test(s)) nav = "Firefox";
-  else if (/safari\//.test(s)) nav = "Safari";
+  let navegador = "Otro";
+  if (/edg\//.test(s)) navegador = "Edge";
+  else if (/opr\/|opera/.test(s)) navegador = "Opera";
+  else if (/chrome\//.test(s)) navegador = "Chrome";
+  else if (/firefox\//.test(s)) navegador = "Firefox";
+  else if (/safari\//.test(s)) navegador = "Safari";
   let so = "";
   if (/windows/.test(s)) so = "Windows";
   else if (/mac os|macintosh/.test(s)) so = "macOS";
   else if (/android/.test(s)) so = "Android";
   else if (/iphone|ipad|ios/.test(s)) so = "iOS";
   else if (/linux/.test(s)) so = "Linux";
-  return so ? `${nav} · ${so}` : nav;
+  return { navegador, so };
+}
+
+/** Etiqueta corta de dispositivo (navegador · SO) para `sesiones_activas`. */
+export function deviceDeUA(ua: string | null | undefined): string | null {
+  if (!ua) return null;
+  const { navegador, so } = navegadorYSO(ua);
+  return so ? `${navegador} · ${so}` : navegador;
 }

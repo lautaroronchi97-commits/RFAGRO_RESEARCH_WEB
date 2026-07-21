@@ -25,7 +25,7 @@
  *   Valor Soja (su feed redirige a Bichos de Campo: se fusionaron).
  */
 
-import REGLAS from "../src/lib/noticias-reglas.json" with { type: "json" };
+import { clasificar, esRuido, esExcluido, esRelevante, claveTitulo } from "../src/lib/noticias-clasificar.ts";
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -91,54 +91,6 @@ const FUENTES = [
   { id: "gn-aapresid", nombre: "Aapresid", tipo: "gnews", def: "mercados", estricto: true, url: gnES('Aapresid') },
   { id: "gn-coninagro", nombre: "Coninagro", tipo: "gnews", def: "economia", estricto: true, url: gnES('Coninagro') },
 ];
-
-/* ---------------- clasificador (espejo de src/lib/noticias-clasificar.ts) ---------------- */
-
-function normalizar(s) {
-  let plano = ` ${s
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim()} `;
-  for (const [buscar, reemplazo] of REGLAS.siglas) plano = plano.split(buscar).join(reemplazo);
-  return plano;
-}
-
-const COMPILADAS = REGLAS.categorias.map((c) => ({ id: c.id, palabras: c.palabras.map(normalizar) }));
-const EXCLUSION = REGLAS.exclusion.map(normalizar);
-const GRANOS = REGLAS.granos.map(normalizar);
-const RUIDO = REGLAS.ruido.map((r) => new RegExp(r, "i"));
-
-/** Categoría por primera coincidencia, o null si ninguna palabra matchea. */
-function clasificarStrict(titulo) {
-  const t = normalizar(titulo);
-  for (const cat of COMPILADAS) {
-    if (cat.palabras.some((p) => t.includes(p))) return cat.id;
-  }
-  return null;
-}
-
-function clasificar(titulo, categoriaDefault) {
-  return clasificarStrict(titulo) ?? categoriaDefault ?? REGLAS.fallback;
-}
-
-/** Descarta páginas de servicio/widget/interés-humano. */
-function esRuido(titulo) {
-  return RUIDO.some((re) => re.test(titulo));
-}
-
-/** Ganadería / economía regional: se excluye salvo co-ocurrencia con granos. */
-function esExcluido(titulo) {
-  const t = normalizar(titulo);
-  return EXCLUSION.some((e) => t.includes(e)) && !GRANOS.some((g) => t.includes(g));
-}
-
-/** ¿Relevante para decidir? matchea alguna categoría y no es ruido ni excluida. */
-function esRelevante(titulo) {
-  if (esRuido(titulo) || esExcluido(titulo)) return false;
-  return clasificarStrict(titulo) !== null;
-}
 
 /* ---------------- parsers (espejo de la lectura en vivo de src/lib/noticias.ts) ---------------- */
 
@@ -335,7 +287,7 @@ async function main() {
   const score = (r) => (esGoogle(r.link) ? 0 : 2) + (r.fecha_pub ? 1 : 0);
   const byTitulo = new Map();
   for (const r of byLink.values()) {
-    const k = normalizar(r.titulo);
+    const k = claveTitulo(r.titulo);
     const prev = byTitulo.get(k);
     if (!prev || score(r) > score(prev)) byTitulo.set(k, r);
   }

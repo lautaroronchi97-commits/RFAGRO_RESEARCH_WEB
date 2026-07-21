@@ -13,8 +13,6 @@
  * a Supabase lo hace el componente server con `sbSelectAll`. Ver docs/PLAN_CALENDARIO_PRODUCCION.md.
  */
 
-import type { Meta } from "./market";
-
 export type Variable = "produccion" | "area" | "rinde";
 
 export type EstimRow = {
@@ -333,20 +331,3 @@ function round2(n: number): number {
 /* Vista completa (lo que consume el componente)                      */
 /* ------------------------------------------------------------------ */
 
-export type VistaEstimaciones = {
-  rows: EstimRow[];
-  pizarra: CeldaEstim[];
-  granos: string[];
-  organismos: string[];
-  meta: Meta;
-};
-
-export function construirVista(rows: EstimRow[], meta: Meta): VistaEstimaciones {
-  return {
-    rows,
-    pizarra: construirPizarra(rows),
-    granos: granosPresentes(rows),
-    organismos: organismosPresentes(rows),
-    meta,
-  };
-}

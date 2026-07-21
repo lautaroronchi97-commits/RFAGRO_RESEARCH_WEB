@@ -15,9 +15,10 @@ export const FERIADOS_AR = new Set<string>([
   "2026-01-01", "2026-02-16", "2026-02-17", "2026-03-24", "2026-04-02", "2026-04-03",
   "2026-05-01", "2026-05-25", "2026-06-15", "2026-06-20", "2026-07-09", "2026-08-17",
   "2026-10-12", "2026-11-20", "2026-12-08", "2026-12-25",
-  // 2027 (estimado — revisar)
+  // 2027 (estimado — revisar). Nota (auditoría E4): se sacó "2027-06-20" del array original,
+  // era domingo (redundante — esFinde ya lo cubre); "2027-06-21" (Día de la Bandera) queda.
   "2027-01-01", "2027-02-08", "2027-02-09", "2027-03-24", "2027-03-26", "2027-04-02",
-  "2027-05-01", "2027-05-25", "2027-06-21", "2027-06-20", "2027-07-09", "2027-08-16",
+  "2027-05-01", "2027-05-25", "2027-06-21", "2027-07-09", "2027-08-16",
   "2027-10-11", "2027-11-22", "2027-12-08", "2027-12-25",
 ]);
 
@@ -50,11 +51,15 @@ export function esHabil(d: Date): boolean {
   return !esFinde(d) && !FERIADOS_AR.has(ymd(d));
 }
 
-/** Suma n días hábiles a una fecha (n≥0). */
+/** Tope de `n` en sumarHabiles/sumarCorridos: ~10 años hábiles, protege contra un input gigante. */
+const MAX_DIAS_A_SUMAR = 3650;
+
+/** Suma n días hábiles a una fecha (n≥0, clampeado a MAX_DIAS_A_SUMAR). */
 export function sumarHabiles(desde: Date, n: number): Date {
   const d = new Date(desde);
   let contados = 0;
-  while (contados < n) {
+  const tope = Math.min(Math.max(0, n), MAX_DIAS_A_SUMAR);
+  while (contados < tope) {
     d.setUTCDate(d.getUTCDate() + 1);
     if (esHabil(d)) contados++;
   }

@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { FACTOR_BU_SOJA_TRIGO, FACTOR_BU_MAIZ, FACTOR_ST_HARINA, FACTOR_LB_ACEITE } from "./factores-commodities";
 import type { Meta } from "./market";
 
 /**
@@ -55,11 +56,11 @@ type Instr = {
 
 /** Orden fijo: agro primero (destacado), macro después (informativo). */
 const INSTRUMENTOS: Instr[] = [
-  { yahoo: "ZS=F", grupo: "agro", nombre: "Soja", glyph: "soja", factorTn: 0.3674371, unidad: "¢/bu", unidadDec: 2, mercado: "CBOT", esFuturo: true },
-  { yahoo: "ZL=F", grupo: "agro", nombre: "Aceite de soja", glyph: "soja", factorTn: 22.046226, unidad: "¢/lb", unidadDec: 2, mercado: "CBOT", esFuturo: true },
-  { yahoo: "ZM=F", grupo: "agro", nombre: "Harina de soja", glyph: "soja", factorTn: 1.1023113, unidad: "USD/st", unidadDec: 1, mercado: "CBOT", esFuturo: true },
-  { yahoo: "ZC=F", grupo: "agro", nombre: "Maíz", glyph: "maiz", factorTn: 0.3936826, unidad: "¢/bu", unidadDec: 2, mercado: "CBOT", esFuturo: true },
-  { yahoo: "ZW=F", grupo: "agro", nombre: "Trigo", glyph: "trigo", factorTn: 0.3674371, unidad: "¢/bu", unidadDec: 2, mercado: "CBOT", esFuturo: true },
+  { yahoo: "ZS=F", grupo: "agro", nombre: "Soja", glyph: "soja", factorTn: FACTOR_BU_SOJA_TRIGO, unidad: "¢/bu", unidadDec: 2, mercado: "CBOT", esFuturo: true },
+  { yahoo: "ZL=F", grupo: "agro", nombre: "Aceite de soja", glyph: "soja", factorTn: FACTOR_LB_ACEITE, unidad: "¢/lb", unidadDec: 2, mercado: "CBOT", esFuturo: true },
+  { yahoo: "ZM=F", grupo: "agro", nombre: "Harina de soja", glyph: "soja", factorTn: FACTOR_ST_HARINA, unidad: "USD/st", unidadDec: 1, mercado: "CBOT", esFuturo: true },
+  { yahoo: "ZC=F", grupo: "agro", nombre: "Maíz", glyph: "maiz", factorTn: FACTOR_BU_MAIZ, unidad: "¢/bu", unidadDec: 2, mercado: "CBOT", esFuturo: true },
+  { yahoo: "ZW=F", grupo: "agro", nombre: "Trigo", glyph: "trigo", factorTn: FACTOR_BU_SOJA_TRIGO, unidad: "¢/bu", unidadDec: 2, mercado: "CBOT", esFuturo: true },
   { yahoo: "CL=F", grupo: "macro", nombre: "Petróleo WTI", glyph: null, factorTn: null, unidad: "USD/bbl", unidadDec: 2, mercado: "NYMEX", esFuturo: true },
   { yahoo: "GC=F", grupo: "macro", nombre: "Oro", glyph: null, factorTn: null, unidad: "USD/oz", unidadDec: 1, mercado: "COMEX", esFuturo: true },
   { yahoo: "SI=F", grupo: "macro", nombre: "Plata", glyph: null, factorTn: null, unidad: "USD/oz", unidadDec: 3, mercado: "COMEX", esFuturo: true },

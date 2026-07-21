@@ -73,7 +73,7 @@ type Raw = {
 
 function empresaDisplay(shipper: string | null): string {
   const { canon } = canonShipper(shipper);
-  return canon !== "OTROS" ? canon : (shipper?.trim() || "—");
+  return canon !== "OTROS" ? canon : (shipper?.trim() || "OTROS");
 }
 
 const vacia = (problema: string): FotoOperativa => ({

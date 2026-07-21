@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Panel, PanelHead } from "./panel";
 import { ChartMarca } from "./chart-marca";
-import { sfmt, rfmt, nfmt } from "@/lib/format";
+import { sfmt, rfmt, nfmt, numDeInput as num } from "@/lib/format";
 import { evaluarFijar, type PosCurva, type Lado, type FilaFijar } from "@/lib/fijar";
 import { hoyCordoba, parseYmd } from "@/lib/habiles";
 import type { GranoCurva } from "@/lib/curva-types";
@@ -15,11 +15,6 @@ function IconFijar() {
       <path d="M4 13V8M7 13V5M10 13V9M13 13V6" />
     </svg>
   );
-}
-
-function num(v: string): number {
-  const n = Number(v.replace(",", "."));
-  return Number.isFinite(n) ? n : NaN;
 }
 
 const MESES = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];

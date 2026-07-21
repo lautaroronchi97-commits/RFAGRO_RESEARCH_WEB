@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Panel, PanelHead } from "./panel";
-import { nfmt, rfmt } from "@/lib/format";
+import { nfmt, rfmt, numDeInput as num, fmtInputDate as fmtInput } from "@/lib/format";
 import {
   precioDiferido,
   precioConPago,
@@ -10,6 +10,7 @@ import {
   diasDesdeTasa,
 } from "@/lib/diferido";
 import {
+  hoyCordoba,
   parseYmd,
   sumarHabiles,
   sumarCorridos,
@@ -35,25 +36,6 @@ const LABELS: Record<Calc, string> = {
   tasa: "Tasa implícita",
   dia: "Fecha de pago",
 };
-
-function hoyCordoba(): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Argentina/Cordoba",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-}
-
-function num(v: string): number {
-  const n = Number(v.replace(",", "."));
-  return Number.isFinite(n) ? n : NaN;
-}
-
-/** Date → "YYYY-MM-DD" para inputs type=date. */
-function fmtInput(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
 
 export function CalcDiferido() {
   const [calc, setCalc] = React.useState<Calc>("diferido");

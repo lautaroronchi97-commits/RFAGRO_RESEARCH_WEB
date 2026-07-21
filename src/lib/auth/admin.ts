@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { createSupabaseServerClient } from "./server";
 import { requireAdmin } from "./dal";
+import { navegadorYSO } from "./session-id";
 
 /**
  * Lecturas del panel de administración (Etapa 2). Cada función exige rol admin
@@ -136,21 +137,6 @@ export function fmtFechaHora(iso: string | null): string {
   }
 }
 
-/** Formatea un timestamp ISO a fecha (sin hora) en zona Córdoba. */
-export function fmtFecha(iso: string | null): string {
-  if (!iso) return "—";
-  try {
-    return new Intl.DateTimeFormat("es-AR", {
-      timeZone: "America/Argentina/Cordoba",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }).format(new Date(iso));
-  } catch {
-    return "—";
-  }
-}
-
 /** Parseo simple del user-agent → dispositivo + navegador legibles para el panel. */
 export function parseUserAgent(ua: string | null): { dispositivo: string; navegador: string } {
   if (!ua) return { dispositivo: "—", navegador: "—" };
@@ -159,19 +145,6 @@ export function parseUserAgent(ua: string | null): { dispositivo: string; navega
   if (/ipad|tablet/.test(s)) dispositivo = "Tablet";
   else if (/mobi|iphone|android/.test(s)) dispositivo = "Celular";
 
-  let navegador = "Otro";
-  if (/edg\//.test(s)) navegador = "Edge";
-  else if (/opr\/|opera/.test(s)) navegador = "Opera";
-  else if (/chrome\//.test(s) && !/edg\//.test(s)) navegador = "Chrome";
-  else if (/firefox\//.test(s)) navegador = "Firefox";
-  else if (/safari\//.test(s) && !/chrome\//.test(s)) navegador = "Safari";
-
-  let so = "";
-  if (/windows/.test(s)) so = "Windows";
-  else if (/mac os|macintosh/.test(s)) so = "macOS";
-  else if (/android/.test(s)) so = "Android";
-  else if (/iphone|ipad|ios/.test(s)) so = "iOS";
-  else if (/linux/.test(s)) so = "Linux";
-
+  const { navegador, so } = navegadorYSO(ua);
   return { dispositivo: so ? `${dispositivo} · ${so}` : dispositivo, navegador };
 }

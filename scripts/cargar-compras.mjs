@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Carga MANUAL de la serie histórica semanal de comercialización de granos (farmer selling) a
- * Supabase (tabla `compras`), a partir de un export de Agrochat (Bolsa de Cereales) en CSV.
+ * Supabase (tabla `compras`), a partir de un export de Agrochat (Bolsa de Cereales) en CSV o .xlsx.
  *
  * Por qué carga manual y no scraping
  * ----------------------------------
@@ -13,11 +13,11 @@
  * `cargar_compras.py` de LineUps_Code. El scraper `ingest-compras.mjs` sigue manteniendo el dato
  * VIVO hacia adelante; esto carga la HISTORIA de una vez.
  *
- * Formato del CSV (export de Agrochat, "En Toneladas"):
- *   fecha(DD/MM/AAAA),grano,sector,campaña,compras_semanales,total_comprado_acumulado,
- *   precio_hecho,a_fijar,fijado,saldo_a_fijar
- * Valores YA en toneladas (no en miles). El dato se guarda CRUDO (fiel a la fuente); la limpieza
- * monótona del acumulado y el cálculo de avance viven en la matview `compras_avance_hist`.
+ * El parseo (formato del export, mapeos grano/sector, CSV+xlsx, guard anti falso-verde) vive en
+ * `src/lib/compras/parse-agrochat.ts` — el mismo módulo que usa el uploader admin (/admin/datos).
+ * Antes este script reimplementaba toda esa lógica a mano (dos copias que ya divergieron una vez en
+ * producción: el fix de floats con punto decimal del 20/07 hubo que aplicarlo en los dos lados por
+ * separado — auditoría E4, hallazgo #2). Ahora importa el parser real: una sola fuente de verdad.
  *
  * Uso:
  *   node scripts/cargar-compras.mjs --in serie.csv --out filas.json   # dry-run: no sube nada
@@ -28,6 +28,7 @@
  */
 
 import { readFileSync, writeFileSync } from "node:fs";
+import { parseAgrochat } from "../src/lib/compras/parse-agrochat.ts";
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -37,103 +38,6 @@ function arg(name, def = null) {
   return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith("--") ? process.argv[i + 1] : def;
 }
 const hasFlag = (name) => process.argv.includes(`--${name}`);
-
-// grano (es, minúsculas) → codigo_interno del resto de la web.
-const GRANO_A_CODIGO = {
-  trigo: "WHEAT",
-  "maíz": "MAIZE",
-  maiz: "MAIZE",
-  sorgo: "SORGHUM",
-  "cebada cervecera": "MALT",
-  "cebada forrajera": "BARLEY",
-  soja: "SBS",
-  girasol: "SFSEED",
-};
-
-const SECTOR_A_NORM = { exportador: "EXPORTACION", industria: "INDUSTRIA" };
-
-/**
- * "12.345" (miles) o "12345" o "1.234,5" (decimal coma) → número; vacío → null.
- * OJO: el export real trae artefactos de float con PUNTO decimal ("64099.99999999999");
- * un punto solo se trata como separador de miles si los grupos son de 3 dígitos exactos
- * (la versión anterior rompía esos valores: 64099.99… → 6.4e15; mismo fix en
- * src/lib/compras/parse-agrochat.ts, el parser del uploader admin).
- */
-function num(s) {
-  const t = String(s ?? "").trim();
-  if (t === "" || t === "-") return null;
-  let limpio;
-  if (t.includes(",")) limpio = t.replace(/\./g, "").replace(",", ".");
-  else if (/^-?\d{1,3}(\.\d{3})+$/.test(t)) limpio = t.replace(/\./g, "");
-  else limpio = t;
-  const n = Number(limpio);
-  return Number.isFinite(n) ? n : null;
-}
-
-/** "DD/MM/AAAA" → ISO "AAAA-MM-DD". */
-function fechaISO(s) {
-  const m = String(s).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  return m ? `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : null;
-}
-
-/** "19/20" → "2019/20". */
-function campaniaLarga(cos) {
-  const m = String(cos).trim().match(/^(\d{2})\/(\d{2})$/);
-  return m ? `20${m[1]}/${m[2]}` : null;
-}
-
-/** Parser CSV mínimo (sin comillas en este export; una fila por línea). */
-function parseCSV(text) {
-  const lines = text.split(/\r?\n/).filter((l) => l.trim() !== "");
-  const header = lines[0].split(",").map((h) => h.trim());
-  return lines.slice(1).map((line) => {
-    const cells = line.split(",");
-    const row = {};
-    header.forEach((h, i) => (row[h] = (cells[i] ?? "").trim()));
-    return row;
-  });
-}
-
-function aFilaDB(r) {
-  const codigo = GRANO_A_CODIGO[(r["grano"] || "").toLowerCase().trim()];
-  const sector = SECTOR_A_NORM[(r["sector"] || "").toLowerCase().trim()];
-  const fecha = fechaISO(r["fecha"]);
-  const campana = campaniaLarga(r["campaña"] ?? r["campana"]);
-  if (!codigo || !sector || !fecha || !campana) return null;
-  const total = num(r["total_comprado_acumulado"]);
-  const semanal = num(r["compras_semanales"]);
-  if (total == null && semanal == null) return null; // fila sin dato útil
-  return {
-    fecha,
-    grano_raw: (r["grano"] || "").toLowerCase().trim(),
-    codigo_interno: codigo,
-    campana,
-    sector,
-    toneladas: total, // Total Comprado acumulado (fuente de verdad)
-    toneladas_a_fijar: num(r["a_fijar"]),
-    semanal_tn: semanal,
-    precio_hecho_tn: num(r["precio_hecho"]),
-    fijado_tn: num(r["fijado"]),
-    saldo_a_fijar_tn: num(r["saldo_a_fijar"]),
-    djve_tn: null, // este export no trae DJVE
-    fuente: "AGROCHAT",
-    precio_promedio_usd: null,
-    porcentaje_cosecha: null,
-  };
-}
-
-/** Dedup por la clave lógica de la tabla (campana, codigo_interno, sector, fecha). */
-function dedup(rows) {
-  const seen = new Set();
-  const out = [];
-  for (const r of rows) {
-    const k = `${r.campana}|${r.codigo_interno}|${r.sector}|${r.fecha}`;
-    if (seen.has(k)) continue;
-    seen.add(k);
-    out.push(r);
-  }
-  return out;
-}
 
 async function sbFetch(path, init) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
@@ -166,7 +70,7 @@ async function main() {
   const inFile = arg("in");
   const outFile = arg("out");
   if (!inFile) {
-    console.error("Falta --in <csv>.");
+    console.error("Falta --in <csv o xlsx>.");
     process.exit(1);
   }
   if (!outFile && (!SUPABASE_URL || !SERVICE_KEY)) {
@@ -174,15 +78,19 @@ async function main() {
     process.exit(1);
   }
 
-  const raw = parseCSV(readFileSync(inFile, "utf-8"));
-  let filas = dedup(raw.map(aFilaDB).filter(Boolean));
-  console.log(`CSV: ${raw.length} filas → ${filas.length} filas válidas (dedup).`);
-
-  // Guard anti falso-verde: si el CSV trae contenido pero nada parseó, algo cambió → fallar ruidoso.
-  if (raw.length > 10 && filas.length === 0) {
-    console.error("ERROR: el CSV tiene filas pero ninguna parseó — ¿cambió el formato del export?");
+  const datos = readFileSync(inFile);
+  const r = parseAgrochat(datos, inFile);
+  if (!r.ok) {
+    console.error(`ERROR: ${r.error}`);
     process.exit(1);
   }
+  console.log(
+    `Archivo: ${r.totalCrudas} filas crudas → ${r.filas.length} válidas ` +
+      `(${r.descartadas} descartadas, ${r.duplicadas} duplicadas).`,
+  );
+  for (const a of r.advertencias) console.log(`  ⚠ ${a}`);
+
+  const filas = r.filas;
 
   if (outFile) {
     writeFileSync(outFile, JSON.stringify(filas, null, 0));

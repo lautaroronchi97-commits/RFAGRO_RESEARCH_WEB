@@ -1,10 +1,10 @@
-import REGLAS from "./noticias-reglas.json";
+import REGLAS from "./noticias-reglas.json" with { type: "json" };
 
 /**
- * Clasificador + relevancia de titulares. Reglas y palabras en `noticias-reglas.json`,
- * compartido con el cron (`scripts/ingest-noticias.mjs`, que tiene un espejo de esta
- * LÓGICA — si se cambia la lógica acá, actualizar allá; si solo cambian PALABRAS,
- * alcanza con editar el JSON).
+ * Clasificador + relevancia de titulares. Reglas y palabras en `noticias-reglas.json`.
+ * El cron (`scripts/ingest-noticias.mjs`) importa las funciones de ESTE archivo
+ * directamente (Node 22 puede importar `.ts` sin flags) — no las reimplementa, así
+ * que web y cron siempre clasifican igual.
  */
 
 export const CATEGORIAS: { id: string; nombre: string }[] = REGLAS.categorias.map((c) => ({
@@ -42,12 +42,6 @@ const TIERS: [number, string[]][] = Object.entries(REGLAS.fuenteTier).map(([t, a
 /** true si el titular es una página de servicio/widget/interés-humano → se descarta. */
 export function esRuido(titulo: string): boolean {
   return RUIDO.some((re) => re.test(titulo));
-}
-
-/** true si el título trae alguna señal de grano (para co-ocurrencia y relevancia). */
-export function tieneSenalGranos(titulo: string): boolean {
-  const t = normalizar(titulo);
-  return GRANOS.some((g) => t.includes(g));
 }
 
 /** true si es ganadería / economía regional (se excluye salvo que también hable de granos). */

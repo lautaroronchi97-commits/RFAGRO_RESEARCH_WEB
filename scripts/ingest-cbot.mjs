@@ -23,6 +23,8 @@
  *   SUPABASE_URL, SUPABASE_SERVICE_KEY (service_role; solo en el cron, nunca en la web)
  */
 
+import { FACTOR_BU_SOJA_TRIGO, FACTOR_BU_MAIZ } from "../src/lib/factores-commodities.ts";
+
 const OVERVIEW = (s) => `https://www.barchart.com/futures/quotes/${s}/overview`;
 const CORE = "https://www.barchart.com/proxies/core-api/v1/historical/get";
 const UA =
@@ -30,10 +32,11 @@ const UA =
 const FIELDS = "tradeTime.format(Y-m-d),openPrice,highPrice,lowPrice,lastPrice,volume,openInterest";
 
 // Factor ¢/bushel → USD/tonelada por grano (peso legal del bushel: maíz 56 lb, soja/trigo 60 lb).
+// Compartido con src/lib/monitor-mercados.ts vía factores-commodities.ts (auditoría E4, hallazgo #20).
 const ROOTS = [
-  { root: "ZC", grano: "maiz", factor: 0.3936826, months: ["H", "K", "N", "U", "Z"] },
-  { root: "ZW", grano: "trigo", factor: 0.3674371, months: ["H", "K", "N", "U", "Z"] },
-  { root: "ZS", grano: "soja", factor: 0.3674371, months: ["F", "H", "K", "N", "Q", "U", "X"] },
+  { root: "ZC", grano: "maiz", factor: FACTOR_BU_MAIZ, months: ["H", "K", "N", "U", "Z"] },
+  { root: "ZW", grano: "trigo", factor: FACTOR_BU_SOJA_TRIGO, months: ["H", "K", "N", "U", "Z"] },
+  { root: "ZS", grano: "soja", factor: FACTOR_BU_SOJA_TRIGO, months: ["F", "H", "K", "N", "Q", "U", "X"] },
 ];
 const MONTH_CODE = { F: 1, G: 2, H: 3, J: 4, K: 5, M: 6, N: 7, Q: 8, U: 9, V: 10, X: 11, Z: 12 };
 const MES_ES = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];

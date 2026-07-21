@@ -50,6 +50,17 @@ export function arrowOf(dir: Dir): string {
   return dir === "up" ? "▲" : dir === "down" ? "▼" : "–";
 }
 
+/** Parsea un input numérico con coma decimal ("1,5" → 1.5); NaN si no es válido. */
+export function numDeInput(v: string): number {
+  const n = Number(v.replace(",", "."));
+  return Number.isFinite(n) ? n : NaN;
+}
+
+/** Date → "YYYY-MM-DD" para inputs type="date". */
+export function fmtInputDate(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
 /** Hora de la rueda en zona horaria de Córdoba. */
 export function horaCordoba(d: Date = new Date(), withSeconds = true): string {
   return new Intl.DateTimeFormat("es-AR", {
