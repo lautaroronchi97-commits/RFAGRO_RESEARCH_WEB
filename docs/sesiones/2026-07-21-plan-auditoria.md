@@ -38,6 +38,17 @@
   directa. Plantilla de render = página Next oculta que reusa las libs y el CSS reales (cero
   duplicación, branding 1:1); entrega = Resend + página `/informes`.
 
+### Tercer plan de la misma sesión — Backlog completo (todo pendiente con dueño)
+- **[`docs/PLAN_BACKLOG.md`](../PLAN_BACKLOG.md)**: tabla de mapeo de TODOS los pendientes del
+  proyecto (backlog de ESTADO + «Pendientes» de CONTEXTO + gráficos v2) a dónde vive su plan — los ya
+  cubiertos apuntan a la auditoría (E3/E4/E5) o a informes (MP1-4), sin duplicar — y **12 prompts
+  autocontenidos (P1→P12)** para los que no tenían plan: P1 Merval/EWZ/vol. Matba · P2 variación
+  semanal USD · P3 compras netas BCRA (research de automatización primero) · P4 camiones en puerto
+  (research de fuente primero) · P5 vista por grano · P6 gráficos v2 · P7 vista productor + PWA ·
+  P8 feed A3 intradiario · P9 sintéticos TIR · P10 estrategias avanzadas · P11 modelo capacidad de
+  pago · P12 scoring de clientes. Los bloqueados por insumos de Lautaro (P9-P12, P6 parcial) llevan
+  **su insumo como paso 1 del prompt** (se pueden pegar hoy igual).
+
 ## Decisiones tomadas (y por qué)
 - **Historia por PR/sesión**, no commit por commit — Lautaro (mejor costo/valor; el diff individual
   solo ante sospecha).
@@ -60,6 +71,11 @@
   no aplican; links internos de los docs nuevos revisados.
 - Los datos citados en los prompts salen del relevamiento real de esta sesión (agentes + MCP), no de
   memoria: conteos de tablas, advisors, archivos:línea de cada fórmula, duplicaciones.
+
+- **Backlog (21/07, tercera parte)**: solo los ítems sin plan reciben prompt (cero duplicación, con
+  tabla de mapeo) · los bloqueados por insumos van con prompt igual y el insumo como paso 1 · compras
+  netas BCRA arranca investigando automatización · camiones en puerto arranca con research de fuente
+  validada con requests reales — todas de Lautaro.
 
 ## Quedó pendiente / en vuelo
 - **Ejecutar E1** (primer prompt de `PLAN_AUDITORIA.md`) cuando Lautaro abra la sesión.

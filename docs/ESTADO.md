@@ -47,6 +47,17 @@ página Next oculta que reusa libs + CSS reales; entrega = Resend + página `/in
 de este plan: ejecutar el PROMPT MP1** (antes, Lautaro configura las env vars del entorno de Claude
 Code — listadas en el plan).
 
+**🗂️ PLAN DEL BACKLOG COMPLETO — misma sesión y PR #49.** Tercer plan del día:
+**[`PLAN_BACKLOG.md`](PLAN_BACKLOG.md)** — tabla de mapeo de TODOS los pendientes a su plan (los ya
+cubiertos apuntan a auditoría E3/E4/E5 o a informes MP1-4, sin duplicar) + **12 prompts autocontenidos
+P1→P12** para los que no tenían: P1 Merval/EWZ/vol. Matba · P2 variación semanal USD · P3 compras
+netas BCRA · P4 camiones en puerto · P5 vista por grano · P6 gráficos v2 · P7 vista productor + PWA ·
+P8 feed A3 intradiario · P9 sintéticos TIR · P10 estrategias avanzadas · P11 capacidad de pago propia ·
+P12 scoring de clientes. Los que esperan insumos de Lautaro (P9-P12, parte de P6) llevan el insumo
+como paso 1 del prompt. Con esto **TODO pendiente del proyecto tiene dueño**: se ejecuta pegando el
+prompt correspondiente de los 3 planes en una sesión nueva; el backlog maestro único lo consolida la
+etapa E7 de la auditoría.
+
 ## Anterior (20/07/2026 — fix compras ÷1000 + prompt Agrochat en el uploader)
 
 **🔧 FIX DE DATOS (compras semana 08/07 ÷1000) + PROMPT AGROCHAT EN EL UPLOADER — rama
@@ -385,6 +396,10 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
 > ya estaban cubiertos por los ítems 4, 5, 6 (con el fix de la pata C3 en el PR #40), 7/10, 8, 9, 16, 18,
 > 19 y la sección "Pendiente del panel de gráficos (v2)" más abajo (tabla de datos en gráficos). Lo único
 > nuevo fue el ítem 21 (resumen/interpretación de informes), agregado abajo.
+>
+> **Mapeo 21/07/2026**: TODOS los pendientes de esta lista (y los de CONTEXTO + gráficos v2) quedaron
+> mapeados a un plan ejecutable en [`PLAN_BACKLOG.md`](PLAN_BACKLOG.md) (tabla de mapeo + prompts
+> P1→P12; lo ya cubierto apunta a `PLAN_AUDITORIA.md` o `PLAN_INFORMES.md`).
 
 **Bloque 1**
 - [x] 1. **Verificación de bases de datos + resiliencia de ingestas — HECHO (13/07, PR #25).** Auditoría
