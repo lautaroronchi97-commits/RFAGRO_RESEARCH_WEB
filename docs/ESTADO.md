@@ -19,7 +19,31 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 21/07/2026 — research P3/P4 HECHO · auditoría E2 CERRADA)
+## Ahora (última actualización: 21/07/2026 — MP3 view de mercado HECHO · research P3/P4 HECHO · auditoría E2 CERRADA)
+
+**🔮 MP3 — VIEW DE MERCADO POR GRANO (PLAN_INFORMES) — HECHO EN CÓDIGO, espera OK de Lautaro al
+1er view — rama `claude/mp3-lee-prompt-th37ix`, PR #53 (draft).** Se ejecutó el PROMPT MP3 **antes
+que MP1** (pedido explícito; la dependencia era blanda — MP3 solo reusa el patrón). **Base**: tabla
+`views_mercado` (migración `20260721150000`, APLICADA por `execute_sql` — el canal de aprobación del
+MCP sigue caído) con RLS interno-mesa DE VERDAD (SELECT solo admin por `is_admin()`, anon revocado;
+feedback por RPC `admin_feedback_view` con guard). **Código**: endpoint `/api/views/insumos?token=`
+(env `INFORME_TOKEN`, patrón del `/api/informes/datos` de MP1) que junta TODOS los insumos reusando
+las libs reales (temperatura/semaforo/empresas/embarques/negociado/estimaciones/curva/pases/
+arbitrajes/capacidad/pizarra/chicago/dólar/noticias/agenda) · skill **`.claude/skills/view-mercado/`**
+(procedimiento semanal + loop de calibración por feedback + regla dura "ni un número inventado") ·
+página **`/granos/view`** (`requireAdmin` SIEMPRE): view vigente por grano + historial + **campo de
+feedback de Lautaro** (server action → RPC), links desde `/granos` y `/comercio/temperatura`.
+**Primer view REAL guardado (21/07)**: soja **ALCISTA 4/5** (crush MESA 85,1 CALIENTE · farmer pctl
+0 · DJVE 60d ratio 0,08 · FAS +2,1 vs pizarra · Chicago 449,3) · maíz **NEUTRAL 3/5** (demanda corta
+8,58 Mt declaradas vs 2,34 originadas PERO cosecha récord 68 Mt y Chicago flojo) · trigo **NEUTRAL
+3/5** (line-up pctl 93 firme HOY pero gap cerrándose y programa AGO chico; "VENDER YA" compartido).
+Verificado: lint/tsc/build ✅ · RLS por SQL (anon denied, no-admin 0 filas/"solo admin") · números
+1:1 vs insumos/SQL · navegador claro/oscuro (bypass y policy temporales revertidos). **Próximos
+pasos: (1) Lautaro lee `/granos/view` logueado y deja feedback → OK → merge; (2) post-merge crea la
+Routine semanal** (cron `0 12 * * 5` = 9:00 ART viernes, modelo Opus/Fable, prompt en el doc de
+sesión) con env vars `INFORME_BASE_URL`/`INFORME_TOKEN` (mismo valor en Vercel)/`SUPABASE_URL`/
+`SUPABASE_SERVICE_KEY` en el entorno de Claude. La sección del semanal la integra MP2. Detalle:
+[`sesiones/2026-07-21-informes-mp3-view-mercado.md`](sesiones/2026-07-21-informes-mp3-view-mercado.md).
 
 **🔎 RESEARCH P3 (compras netas BCRA) + P4 (camiones en puerto) — HECHO, build espera OK de Lautaro —
 rama `claude/research-p3-p4-phases-u4e8k3`, PR #52.** Solo docs (pedido explícito: fases de research de

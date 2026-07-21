@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ArbitrajesTable } from "@/components/arbitrajes-table";
 import { MonitorMercados } from "@/components/monitor-mercados";
 import { MejorCajaPanel } from "@/components/mejor-caja-panel";
@@ -29,6 +30,9 @@ export default async function GranosPage() {
           <MejorCajaPanel />
           <PasesPanel />
           <CapacidadPanel />
+          <p className="ng-admin-link">
+            <Link href="/granos/view">View de mesa por grano (research direccional · solo mesa) →</Link>
+          </p>
         </div>
       </main>
     </>
