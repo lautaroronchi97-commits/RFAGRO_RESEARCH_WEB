@@ -1,9 +1,11 @@
-# Sesión 2026-07-21 — Plan de auditoría integral
+# Sesión 2026-07-21 — Plan de auditoría integral + plan de informes automatizados
 
-- **Rama:** `claude/trading-project-audit-37aiqr` · **PR:** #_ (base `main`)
-- **Objetivo pedido por Lautaro:** planificar (SIN tocar código) una auditoría integral de todo el
-  proyecto — cada módulo, cada fórmula, cada página navegada, la base de datos, la infraestructura y
-  la historia — con prompts listos para ejecutar en sesiones nuevas, una por etapa.
+- **Rama:** `claude/trading-project-audit-37aiqr` · **PR:** #49 (base `main`)
+- **Objetivo pedido por Lautaro:** planificar (SIN tocar código) dos cosas: (1) una auditoría integral
+  de todo el proyecto — cada módulo, cada fórmula, cada página navegada, la base de datos, la
+  infraestructura y la historia; (2) el ítem 11 del backlog (informe diario/semanal para WhatsApp)
+  más el view de mercado por grano y la interpretación automática de informes (ítem 21). En ambos
+  casos el entregable son prompts autocontenidos para ejecutar en sesiones nuevas.
 
 ## Hecho
 - **[`docs/PLAN_AUDITORIA.md`](../PLAN_AUDITORIA.md)**: el plan maestro — metodología, reglas
@@ -21,6 +23,21 @@
   21 migraciones, Edge Function, 106 commits) + MCP Supabase vivo (14 tablas, conteos) + advisors
   oficiales de seguridad y performance. Todo citado como "semilla" en los prompts.
 
+### Segundo plan de la misma sesión — Informes automatizados (ítems 11 y 21)
+- **[`docs/PLAN_INFORMES.md`](../PLAN_INFORMES.md)**: 4 mini-proyectos con un prompt autocontenido
+  cada uno — **MP1 informe diario** (placa PNG vertical para WhatsApp: 4 bloques de datos de la web +
+  "color de la rueda" que Lautaro carga en /admin + prosa con `voz-lautaro` molde "Mesa de
+  operaciones"), **MP2 informe semanal** (PDF 3-5 páginas tipo research de ALyC; cierra de paso el
+  ítem 13), **MP3 view de mercado por grano** (dirección alcista/bajista/neutral con research citando
+  los datos de la web; interno mesa primero), **MP4 interpretación automática de informes de
+  organismos** (ítem 21; borrador → OK de Lautaro en /admin → publica en /produccion).
+- **Arquitectura elegida**: el "worker" son **Routines de Claude Code** (sesiones programadas por cron
+  que corren la skill del repo con la suscripción que Lautaro ya paga — su pedido: no gastar plata en
+  API). Se evaluó y descartó por ahora el consejo externo de OpenRouter+Haiku (intermediario
+  innecesario; Haiku dejaría la voz genérica); **plan B documentado**: GH Actions + API Anthropic
+  directa. Plantilla de render = página Next oculta que reusa las libs y el CSS reales (cero
+  duplicación, branding 1:1); entrega = Resend + página `/informes`.
+
 ## Decisiones tomadas (y por qué)
 - **Historia por PR/sesión**, no commit por commit — Lautaro (mejor costo/valor; el diff individual
   solo ante sospecha).
@@ -32,6 +49,11 @@
 - **UX con las 4 lentes**: mesa, cliente, mobile ~390px, tema claro+oscuro — Lautaro.
 - **Regla de fórmulas**: las define Lautaro; toda duda se presenta como pregunta con ejemplo numérico,
   jamás como "error" — Lautaro.
+- **Informes (21/07, segunda parte)**: diario = 4 bloques + color de la rueda, SIN abrumar; prosa IA
+  desde v1; motor = suscripción Claude vía Routines (mínimo gasto); entrega = mail + web, reenvío
+  manual a WhatsApp; color de la rueda por formulario /admin con degradación si falta; diario placa
+  PNG / semanal PDF; view semanal 3 granos interno primero; interpretaciones SIEMPRE con aprobación
+  previa — todas de Lautaro.
 
 ## Verificado
 - Sesión SOLO de documentación (no se tocó `src/`, `scripts/`, `supabase/` ni configs) → lint/tsc/build
@@ -41,7 +63,9 @@
 
 ## Quedó pendiente / en vuelo
 - **Ejecutar E1** (primer prompt de `PLAN_AUDITORIA.md`) cuando Lautaro abra la sesión.
-- El tablero de `PLAN_AUDITORIA.md` se actualiza etapa por etapa.
+- **Ejecutar MP1** (primer prompt de `PLAN_INFORMES.md`); antes, Lautaro configura las env vars del
+  entorno de Claude Code (SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_*, ADMIN_EMAILS, INFORME_TOKEN).
+- Los tableros de ambos planes se actualizan etapa/MP por etapa/MP.
 
 ## Trampas descubiertas (para la próxima sesión)
 - Los **advisors de Supabase** ya devuelven hallazgos reales hoy (matviews de mesa legibles por anon

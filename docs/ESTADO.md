@@ -34,6 +34,19 @@ matviews de mesa legibles por anon vía API, ~17 RPC SECURITY DEFINER ejecutable
 como "semilla" en los prompts. **Próximo paso: ejecutar el PROMPT E1** de `PLAN_AUDITORIA.md` en una
 sesión nueva. Detalle: [`sesiones/2026-07-21-plan-auditoria.md`](sesiones/2026-07-21-plan-auditoria.md).
 
+**📰 PLAN DE INFORMES AUTOMATIZADOS (ítems 11 y 21) — misma sesión y PR #49.** Segundo plan del día:
+**[`PLAN_INFORMES.md`](PLAN_INFORMES.md)** — 4 mini-proyectos con un prompt autocontenido c/u:
+**MP1 informe diario** (placa PNG para WhatsApp: datos de la web + "color de la rueda" que Lautaro
+carga en /admin + prosa `voz-lautaro` molde "Mesa de operaciones") → **MP2 informe semanal** (PDF
+research 3-5 páginas; cierra de paso el ítem 13) → **MP3 view de mercado por grano** (alcista/bajista/
+neutral con research citando datos de la web; interno mesa primero) → **MP4 interpretación de informes
+de organismos** (ítem 21; borrador → OK en /admin → publica en /produccion). **Worker = Routines de
+Claude Code** (sesiones programadas, corren con la suscripción de Lautaro — decisión: no gastar en
+API; OpenRouter evaluado y descartado, plan B = GH Actions + API Anthropic documentado). Render =
+página Next oculta que reusa libs + CSS reales; entrega = Resend + página `/informes`. **Próximo paso
+de este plan: ejecutar el PROMPT MP1** (antes, Lautaro configura las env vars del entorno de Claude
+Code — listadas en el plan).
+
 ## Anterior (20/07/2026 — fix compras ÷1000 + prompt Agrochat en el uploader)
 
 **🔧 FIX DE DATOS (compras semana 08/07 ÷1000) + PROMPT AGROCHAT EN EL UPLOADER — rama
@@ -435,8 +448,10 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
 **Bloque 3**
 - [~] 10. Terminar login (si sigue abierto del bloque 2). **Código de las 3 etapas HECHO** (ver ítem 7);
   queda el encendido manual (`AUTH_ENFORCED=true`) + hosting. Se marca `[x]` cuando Lautaro prenda y valide.
-- [ ] 11. Automatizar informe diario/semanal (armar la estructura del envío, formato imagen/PDF para
-  WhatsApp según lo charlado — ver `CONTEXTO.md` "Reporte diario").
+- [~] 11. Automatizar informe diario/semanal — **PLAN CERRADO (21/07)** en
+  [`PLAN_INFORMES.md`](PLAN_INFORMES.md) (MP1 placa PNG diaria + MP2 PDF semanal, con prompts listos;
+  decisiones: Routines de Claude como worker, prosa `voz-lautaro`, color de la rueda por /admin,
+  entrega mail + `/informes`). Falta ejecutar MP1 y MP2.
 - [ ] 12. Acumulado de rueda USD + compras BCRA (compras netas BCRA hoy es proxy/manual, ver módulo 7
   "Panel cambiario" en `CONTEXTO.md`).
 - [ ] 13. Variación semanal del USD (gráfico).
@@ -457,8 +472,9 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
   informes que ya se ingestan (WASDE/PSD, CONAB, BCR-GEA, DEA-SAGyP, DJVE) para armar un resumen en
   lenguaje llano de "qué cambió y qué implica" — hoy `/produccion` y `/comercio` muestran los datos crudos
   + tarjetas de cambios numéricas, pero no una interpretación redactada. Podría apoyarse en la skill
-  `voz-lautaro` para el tono. [LAUTARO] definir alcance: ¿por informe individual, resumen diario
-  agregado, o ambos?
+  `voz-lautaro` para el tono. **PLAN CERRADO (21/07): es el MP4 de
+  [`PLAN_INFORMES.md`](PLAN_INFORMES.md)** (alcance decidido: por informe individual, borrador → OK
+  de Lautaro en /admin → publica en /produccion). Falta ejecutarlo (requiere MP1 antes).
 
 ---
 
