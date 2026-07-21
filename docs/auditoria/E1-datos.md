@@ -128,14 +128,19 @@ existen en la tabla cruda `compras` pero **están limpiados en la matview** que 
 **Aprobado pero PENDIENTE de más definición (#2 — cierre de visibilidad):** ver nota abajo.
 **Aprobado y dejado como está (Duda 3):** `calendario_informes` se conserva como base futura (ítem 21/MP4).
 
-### Nota sobre el hallazgo #2 (cierre de RLS) — bloqueado por acoplamiento con el código
+### Nota sobre el hallazgo #2 (cierre de RLS) → **DIFERIDO a E5** (decisión de Lautaro, 21/07/2026)
 
-Lautaro aprobó "cerrar ya por RLS" el `lineup` + las 4 matviews de mesa. Al ir a implementarlo apareció un
-**acoplamiento que impide el revoke directo**: las páginas de mesa (`/comercio/temperatura`, `/empresas`,
-`/puertos`, `/negociado`) leen esos objetos **con la anon key server-side** (`src/lib/supabase.ts` usa
-`SUPABASE_ANON_KEY`; ver `lineup/temperatura.ts:148-150`, `foto.ts:86`, `empresas.ts:85-88`,
-`compras/negociado.ts:101`), NO con el JWT del usuario logueado. Revocar el acceso anon **rompería esas
-páginas para todos, incluido admin**. Queda como decisión adicional (ver «Dudas» #1 ampliada) — no se aplicó.
+Lautaro aprobó primero "cerrar ya por RLS" el `lineup` + las 4 matviews de mesa. Al ir a implementarlo
+apareció un **acoplamiento que impide el revoke directo**: las páginas de mesa (`/comercio/temperatura`,
+`/empresas`, `/puertos`, `/negociado`) leen esos objetos **con la anon key server-side**
+(`src/lib/supabase.ts` usa `SUPABASE_ANON_KEY`; ver `lineup/temperatura.ts:148-150`, `foto.ts:86`,
+`empresas.ts:85-88`, `compras/negociado.ts:101`), NO con el JWT del usuario logueado. Revocar el acceso
+anon **rompería esas páginas para todos, incluido admin**.
+
+Presentada la evidencia, **Lautaro decidió diferirlo al encendido del login (E5)**: cuando `AUTH_ENFORCED`
+se prenda y el data-layer de mesa pase a leer con el JWT del usuario (policies `is_admin()`/authenticated),
+el cierre es natural y no rompe nada. Hoy no hay urgencia porque un anónimo igual no ve `/comercio/*` en la
+web. **No se aplicó ningún cambio de RLS en E1.** → queda anotado para **E5** (ver «Para otras etapas»).
 
 ---
 
