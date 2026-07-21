@@ -19,7 +19,7 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 21/07/2026 — auditoría E4 código CERRADA (fase 1+2) · MP3 view de mercado MERGEADO · research P3/P4 HECHO · auditoría E2 CERRADA)
+## Ahora (última actualización: 21/07/2026 — auditoría E4 código CERRADA (fase 1+2) · auditoría E6 historia CERRADA · MP3 view de mercado MERGEADO · research P3/P4 HECHO · auditoría E2 CERRADA)
 
 **🧑‍💻 AUDITORÍA E4 (código y arquitectura) — CERRADA (fase 1 + fase 2) — rama
 `claude/auditoria-e4-codigo-p28mxd`, PR #55.** Cuarta etapa de la auditoría integral. **Fase 1**: 4
@@ -46,6 +46,28 @@ fixtures exactos de `E2-formulas-fichas.md`, corriendo en CI. **Diferido a E7** 
 `noUncheckedIndexedAccess`. **Bloqueado por E3**: `sample.ts` (depende de la decisión sobre
 `implicitas-panel.tsx`). Informe: [`auditoria/E4-codigo.md`](auditoria/E4-codigo.md). Detalle:
 [`sesiones/2026-07-21-auditoria-e4-codigo.md`](sesiones/2026-07-21-auditoria-e4-codigo.md).
+
+**🕰️ AUDITORÍA E6 (historia del repo) — CERRADA — rama `claude/auditoria-e6-historia-yk24fj`, PR
+#56.** Recorridos los 54 PRs y las 29 bitácoras de `docs/sesiones/` en orden cronológico.
+**Hallazgo operativo (no documental) más importante: la ingesta DEA-SAGyP viene fallando por timeout
+de conexión** a `datosestimaciones.magyp.gob.ar` — nadie lo había notado en 5 días (ni la auditoría
+E1 del mismo 21/07); el dato de DEA quedó parado en el snapshot del 13/07. Se re-corrió el dispatch
+en esta sesión para descartar que fuera transitorio: **falló una 3ª vez con el mismo error**,
+confirmado persistente → **diferido a E5** para la mitigación (reintentos/backoff o mover a Edge
+Function, como ya se hizo con `lineup`/ISA). **Segundo hallazgo: el probe de PAS (BCBA) ya había
+corrido el 12/07 y ya había contestado** (HTTP 403, Cloudflare bloquea también las IPs de GitHub
+Actions) — nadie leyó el log en 9 días; **cerrado formalmente** (`ESTADO.md`/`CONTEXTO.md`/
+`PLAN_CALENDARIO_PRODUCCION.md`/`PLAN_BACKLOG.md` actualizados, respaldo = mail de Lautaro). Además:
+**`PLAN_PUERTOS.md` corregido** (quedó sin tocar desde el 18/07 pese a que sus Fases 2-4 se
+completaron los días siguientes — banner y Fase 4 actualizados) · **lista única de pendientes**
+(`CONTEXTO.md` retiró su propia sección «Pendientes», apunta a este archivo + `PLAN_BACKLOG.md`; la
+lista v2 de gráficos de acá apunta a **P6**) · **7 ramas remotas con PR ya mergeado sin borrar**
+(comandos en el informe, sin borrar ninguna) · tabla "Ramas vivas" vieja de este archivo marcada
+obsoleta · 3 migraciones con version de Supabase distinto al nombre de archivo, comentadas. Lo bueno
+verificado: 53/54 PRs mergearon limpio (el único cerrado sin merge, #2, tuvo su contenido rescatado
+sin pérdida) y el protocolo de sesión se sostuvo con disciplina real. **Pendiente real que sigue
+abierto**: si Lautaro ya probó el uploader de `/admin/datos` logueado (sin confirmar). Informe:
+[`auditoria/E6-historia.md`](auditoria/E6-historia.md).
 
 **🔮 MP3 — VIEW DE MERCADO POR GRANO (PLAN_INFORMES) — CÓDIGO EN `main`, PENDIENTE 1 PASO MANUAL DE
 LAUTARO: crear la Routine semanal.** Lautaro validó el primer view en `/granos/view` y se mergeó el
@@ -732,17 +754,12 @@ feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→
   0,5796. Mapeo CBOT confirmado por SQL (ej. maíz ABR↔CBOT MAY, soja NOV↔CBOT JUL). CI verde.
   Decisiones (30 preguntas) e historia en `docs/sesiones/2026-07-11-plan-graficos-spreads.md`.
 
-**Pendiente del panel de gráficos (v2, no bloquea nada — anotado a pedido de Lautaro 11/07):**
-- Persistir el estado del **modo Período en la URL** (hoy solo el modo Campañas es compartible por link).
-- **Ratio/base en %** (`pizarra/futuro − 1`) como métrica adicional.
-- **Guardar presets del usuario** / compartir persistente (requiere login — P28).
-- Export **PNG/CSV**, **media móvil**, subpanel de **volumen/OI**, ~~tabla alternativa~~ **→ HECHO
-  (20/07: tabla SIEMPRE visible bajo cada gráfico, no alternativa, por decisión de Lautaro — rama
-  `claude/data-table-charts-2m8nvd`)** + queda el guard "parcial".
-- **P12** (relaciones % tipo "180% pizarra maíz" / "57% soja julio") y **P17** (serie continua
-  front-month): faltan ejemplos numéricos reales de Lautaro.
-- Ajustar/agregar presets cuando Lautaro los pida (P27 quedó con la lista actual).
-- Import de las campañas 2018/2019 del Excel a una tabla aparte, si algún día las quiere para las bandas.
+**Pendiente del panel de gráficos (v2, no bloquea nada):** persistir el modo Período en la URL ·
+ratio/base en % · guardar presets del usuario (requiere login) · export PNG/CSV · media móvil ·
+volumen/OI (tabla alternativa → **HECHO** 20/07, ver arriba) · P12/P17 (esperan ejemplos de Lautaro) ·
+import de campañas 2018/19. Mapeado completo con prompt de ejecución en **P6 de
+[`PLAN_BACKLOG.md`](PLAN_BACKLOG.md)** (retirado de acá el 21/07 por la auditoría E6, para no
+mantener dos copias — ver [`auditoria/E6-historia.md`](auditoria/E6-historia.md)).
 
 **Recién entrado a `main` de otras sesiones (contexto + pendientes de Lautaro):**
 - **Calculadora "Negocios de planta" (PR #18, mergeada):** `src/components/calc-planta.tsx` en
@@ -758,17 +775,10 @@ feriado 9/7 de por medio) · `cbot_cierres` **28.915 filas, 129 contratos** (→
   datos reales en horario de rueda (10:30–17:00) tildando el scope Preview/Production en las 3 vars A3 de
   Vercel. Detalle: `docs/sesiones/2026-07-09-feed-a3-en-vivo.md`.
 
-**Ramas vivas y su veredicto:**
-| Rama | Estado |
-|---|---|
-| `main` | Única rama de integración y producción. |
-| `claude/login-stage-3-kqt0pg` | Login Etapa 3 (sesión única + marca de agua + landing + hardening) — PR abierto, base `main`. |
-| `claude/website-ux-redesign-plan-irvt6k` | Rediseño UX «web en capas» (PR #22 **MERGEADO**) → borrar. |
-| `claude/timeline-spread-charts-plan-3zlt1g` | Panel de gráficos (PR #17 **MERGEADO**) → borrar. |
-| `claude/production-forecast-calendar-zdpmd6` | Módulo calendario — plan + Sesión A (PR #20). |
-| `claude/session-b-pr20-wwijnz` | Sesión B — ingestas USDA+CONAB (PR #21 **MERGEADO**) → borrar. |
-| `claude/session-c-local-production-pvqf6f` | Sesión C — ingestas Argentina (GEA/DEA/PAS) + comparador AR (PR #23 **MERGEADO**, Supabase poblado) → borrar. Solo queda validar el PAS. |
-| `claude/futures-position-databases-j10vpr` · `claude/feed-a3-live-plan-obxzcz` · `claude/news-section-redesign-k3zctf` · `claude/plant-business-calculator-0sf28m` | PRs #10/#14, #11, #12/#15/#16 y #18 ya mergeados → borrar. |
+**Ramas vivas y su veredicto:** ⚠️ tabla **congelada al 12/07/2026** (ninguna de estas ramas existe ya
+— se limpiaron sin volver a este apunte). Para las ramas remotas vivas de HOY y los comandos de
+limpieza, ver [`auditoria/E6-historia.md`](auditoria/E6-historia.md) § «Higiene de ramas remotas»
+(auditoría del 21/07).
 
 **Lo próximo (en orden — detalle en CONTEXTO «Pendientes»):**
 0. **Gráficos de spreads — v2** (panel ya en producción): persistir el modo Período en la URL ·

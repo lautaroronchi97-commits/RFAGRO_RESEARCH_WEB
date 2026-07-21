@@ -25,7 +25,7 @@
 | E3 | UX / navegación página por página | pendiente | `auditoria/E3-ux.md` | — |
 | E4 | Código y arquitectura | **cerrada** (fase 2 aplicada; refactors grandes → E7; `sample.ts` bloqueado por E3) | `auditoria/E4-codigo.md` | #55 |
 | E5 | Infraestructura, ingestas y seguridad | pendiente | `auditoria/E5-infra.md` | — |
-| E6 | Historia del repo (PRs + sesiones) | pendiente | `auditoria/E6-historia.md` | — |
+| E6 | Historia del repo (PRs + sesiones) | **cerrada** (fase 2 aplicada; mitigación DEA-SAGyP → E5) | `auditoria/E6-historia.md` | #56 |
 | E7 | Síntesis y backlog maestro | pendiente | `auditoria/E7-sintesis.md` | — |
 
 E1–E6 se ejecutan en ese orden (pueden intercalarse con los ciclos de corrección de etapas ya
