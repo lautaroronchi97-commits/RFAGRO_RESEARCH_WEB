@@ -25,7 +25,7 @@
 | E3 | UX / navegación página por página | pendiente | `auditoria/E3-ux.md` | — |
 | E4 | Código y arquitectura | pendiente | `auditoria/E4-codigo.md` | — |
 | E5 | Infraestructura, ingestas y seguridad | pendiente | `auditoria/E5-infra.md` | — |
-| E6 | Historia del repo (PRs + sesiones) | pendiente | `auditoria/E6-historia.md` | — |
+| E6 | Historia del repo (PRs + sesiones) | **informe listo, esperando OK de Lautaro** | `auditoria/E6-historia.md` | #_ |
 | E7 | Síntesis y backlog maestro | pendiente | `auditoria/E7-sintesis.md` | — |
 
 E1–E6 se ejecutan en ese orden (pueden intercalarse con los ciclos de corrección de etapas ya
