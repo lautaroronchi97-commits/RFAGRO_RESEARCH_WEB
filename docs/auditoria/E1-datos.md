@@ -113,10 +113,29 @@ existen en la tabla cruda `compras` pero **están limpiados en la matview** que 
 - **Para E2 (fórmulas):** `futuros_cierres` ↔ `vencimientos` es consistente para las 16 posiciones vivas
   (todas tienen vencimiento cargado); `vencimientos` tiene 41 filas (18 ya vencidas) — sano.
 
-## Fase 2 — correcciones implementadas (completar tras el OK)
+## Fase 2 — correcciones implementadas (tras el OK de Lautaro, 21/07/2026)
 
-| # hallazgo | Qué se hizo | Commit | Verificación |
+| # hallazgo | Qué se hizo | Migración / archivo | Verificación |
 |---|---|---|---|
+| 1 | `REVOKE EXECUTE ON ingest_cierres_cem FROM anon, authenticated` (el cron la usa con service_role) | `20260721033455_e1_seguridad_indices.sql` (aplicada por MCP) | `curl` anon a `/rpc/ingest_cierres_cem` → **HTTP 404**; `proacl` sin anon/authenticated |
+| 3 | Borradas las 7 filas `fuente=MAGYP` + refresh de la matview | `20260721033519_e1_limpieza_compras.sql` (aplicada) | `count(*) where fuente='MAGYP'` = **0** |
+| 4 | Healthcheck: +`djve` (5d), +`compras` (14d) y +3 checks de matview-refrescada (matview vs base) | `scripts/healthcheck-frescura.mjs` | corrido con datos reales: 15 checks, todos ✓, exit 0 |
+| 5 | Migración-baseline idempotente del DDL vivo de las 5 tablas heredadas (versiona lo que existe; no-op sobre esta base) | `00000000000000_baseline_tablas_heredadas.sql` (repo, NO re-aplicada) | `CREATE ... IF NOT EXISTS` + guards en DO blocks |
+| 6 | `campana_ini_year` → `SET search_path = public` | `20260721033455_...` (aplicada) | `proconfig` = `{search_path=public}` |
+| 7 | Creado `profiles_approved_by_idx`; dropeado `idx_lineup_port` (muerto) | `20260721033455_...` (aplicada) | `pg_indexes`: nuevo=1, viejo=0 |
+| 9 | Clampeado a 0 el único `saldo_a_fijar_tn` negativo | `20260721033519_...` (aplicada) | `count(*) where saldo_a_fijar_tn<0` = **0** |
+
+**Aprobado pero PENDIENTE de más definición (#2 — cierre de visibilidad):** ver nota abajo.
+**Aprobado y dejado como está (Duda 3):** `calendario_informes` se conserva como base futura (ítem 21/MP4).
+
+### Nota sobre el hallazgo #2 (cierre de RLS) — bloqueado por acoplamiento con el código
+
+Lautaro aprobó "cerrar ya por RLS" el `lineup` + las 4 matviews de mesa. Al ir a implementarlo apareció un
+**acoplamiento que impide el revoke directo**: las páginas de mesa (`/comercio/temperatura`, `/empresas`,
+`/puertos`, `/negociado`) leen esos objetos **con la anon key server-side** (`src/lib/supabase.ts` usa
+`SUPABASE_ANON_KEY`; ver `lineup/temperatura.ts:148-150`, `foto.ts:86`, `empresas.ts:85-88`,
+`compras/negociado.ts:101`), NO con el JWT del usuario logueado. Revocar el acceso anon **rompería esas
+páginas para todos, incluido admin**. Queda como decisión adicional (ver «Dudas» #1 ampliada) — no se aplicó.
 
 ---
 
