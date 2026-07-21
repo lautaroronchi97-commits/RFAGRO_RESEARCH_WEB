@@ -454,3 +454,121 @@
 - **Bordes:** fuera de 2025-2027 todo L-V cuenta hábil (sin lista); en 2027 conviven `2027-06-20`
   (domingo, redundante/typo inocuo) y `2027-06-21` — limpiar cuando Lautaro valide la lista 2027.
 - **Veredicto:** **OK.**
+
+## Familia 5 — Mesa / comercio exterior (src/lib/lineup/*)
+
+> Port 1:1 de `LineUps_Code` (repo Python privado, NO está acá — la referencia son negocio/05, los
+> docs de sesión de las Fases 0-4 y las migraciones SQL). Los tests del port (39/39 y 41/41 citados
+> en ESTADO) NO están commiteados: fueron efímeros de sesión. El auditor armó suite propia en
+> scratchpad (47 aserciones puras + harness con datos reales: módulos TS reales vs recomputación
+> independiente).
+
+### Ficha 5.1: campanas.ts — cotejo vs SQL campana_ini_year
+- **Verificado:** cotejo exhaustivo TS vs reimplementación 1:1 de la SQL viva: **612/612 checks
+  idénticos** (17 códigos × 12 meses × días 1/15/28). Bordes: SBS 15-mar→2025 / 1-abr→2026 · MAIZE
+  1-mar→2026 · WHEAT 1-dic→2026 · SFSEED 1-feb→2026 · default ene. Única delta de cobertura:
+  `SOJA_CRUSH: 4` existe solo en TS — correcto (sintético TS-only, nunca llega a la base). Trigo
+  cruza el año ✓; bisiesto clampeado en `fechaEquivalente` ✓.
+- **Veredicto:** **OK** — espejo exacto (el test de paridad para E4 sale gratis de acá).
+
+### Ficha 5.2: cobertura.ts — gap foto-forward, umbrales 0,7/1,3, mín 5.000 t
+- **Implementación:** `cobertura.ts:8-11, 21-24, 27-34, 42-60`.
+- **Ejemplo verificado (rueda 20/07):** MAIZE declarado60d 8.577.497 / originado 2.335.750 → ratio
+  **0,27 ALCISTA FAS** · SBS 0,08 ALCISTA · BARLEY 2,82 BAJISTA · SORGHUM 1,19 NEUTRO (consistente
+  en signo con el 1:1 del 19/07; el drift es dato nuevo).
+- **Bordes (testeados):** umbral exacto 0,7/1,3 → NEUTRO (desigualdad estricta); decl<5.000 nunca
+  ALCISTA; decl≤0 ∧ orig≤0 → null; **decl=0 ∧ orig>0 → ratio ∞ → BAJISTA** aunque haya 1 t (el
+  mínimo de 5.000 t solo protege el lado alcista). Sin div/0.
+- **Veredicto:** **PREGUNTA a Lautaro** — (a) 0,7/1,3/5.000 t/cortes de intensidad 60k-720k son
+  literales heredados de `cobertura.py` sin validación en el repo: ¿calibrados o provisorios?
+  (b) ¿mínimo también del lado bajista? (hoy declarado 0 + originado 10.000 t → BAJISTA int. 1).
+
+### Ficha 5.3: estacional.ts — percentil estacional ±15d, mín 2 campañas
+- **Verificado (datos reales, snapshot 16/07):** módulo real vs recomputación independiente: MAIZE
+  gap **39,4/39,4** · dens **94,4/94,4** · WHEAT 55,7 · 98,6 · SBS 38,0 · 17,5 — **8/8 idénticos** y
+  coinciden con el 1:1 por SQL de la sesión (MAIZE 39/94, SBS 38/18).
+- **Bordes (testeados):** 1 campaña → null; serie vacía → null; empates cuentan ≤ (percentil débil).
+- **Veredicto:** **OK.**
+
+### Ficha 5.4: mesa_calor.ts — pesos, bandas, matriz, equivalente poroto
+- **Verificado:** `indiceCalor(80,60,30)` = 0,35·80+0,30·60+0,35·70 = **70,5** ✓ · sin farmer:
+  46/0,65 = **70,77** (renormalización exacta) ✓ · `equivalentePoroto(745.000, 190.000)` =
+  **2.000.000** ✓. Con datos reales (al 16/07): SOJA_CRUSH **87,5 CALIENTE ↗ DIFERIR** · MAIZE 56,4
+  NEUTRO · WHEAT 76,1 FIRME. Bordes de banda exactos (80/79,99 · 20/19,99) ✓; pesos 0 → null sin
+  div/0 ✓; rinde 0 → 0 ✓.
+- **Veredicto:** **PREGUNTA a Lautaro** — mecánica OK; los literales **0,35/0,30/0,35**, bandas
+  **80/60/40/20**, umbral dirección **32.500 t** (media Panamax), K=10 días y rindes
+  **0,745 harina / 0,19 aceite** no tienen fuente en este repo (la spec vive en LineUps_Code).
+  ¿Son tus parámetros de referencia o defaults del Python? (Sensibilidad: 10.000 t de aceite,
+  0,19→0,185 mueve ~1.400 t de equivalente poroto.)
+
+### Ficha 5.5: temperatura.ts — 3 patas + SOJA_CRUSH + degradación
+- **Verificado (datos reales):** pipeline completo, módulos reales vs recomputación independiente:
+  farmer MAIZE avance **49,7%** (08/07) → **pctl 59,1** (= "maíz 49,7%→pctl 59" del PR #40, exacto) ·
+  WHEAT 71,2% → **22,7** (doc: 23 ✓) · SBS 43,3% → 0,0 (el doc del 19/07 decía 5: el dato cambió el
+  20/07 con el fix ÷1000; la recomputación independiente da lo mismo que el módulo).
+- **Bordes:** farmer <2 años → null → renormaliza; avance opcional; momentum degrada a SIN DATO;
+  "hoy" por producto = máx fecha de SUS series (consistente aunque la matview se atrase).
+- **Hallazgo operativo (no de fórmula):** `lineup_gap_hist`/`lineup_densidad_hist` llegan al
+  **16/07** con `lineup` al **20/07** → el refresh post-ingesta no corrió (o falló en silencio). El
+  índice muestra la foto del 16/07. → E5/healthcheck de matviews.
+- **Veredicto:** **OK** (fórmulas).
+
+### Ficha 5.6: semaforo.ts — señal física × capacidad × pizarra
+- **Verificado:** soja = SBS+SBM+SBO: declarado 6.128.357 / originado 2.065.064 → ratio 0,34 ALCISTA
+  (reusa `senalDe` exacta); spread = FAS − pizarra, resta directa; matriz 3×3 con degradación si
+  falta FAS ✓.
+- **Veredicto:** **OK** + pregunta menor: acá la soja suma poroto+harina+aceite en toneladas físicas
+  SIN equivalente poroto (temperatura.ts sí lo usa) — ¿agregación intencional distinta?
+
+### Ficha 5.7: empresas.ts — gap 60d, avance, ritmo, PY/UY aparte
+- **Verificado (21/07):** tránsito PY/UY excluido = **223.058 t** de la rueda del 20/07 (≈3,4%,
+  consistente con sesión); decisión "PY/UY fuera del ratio" respetada (`:136-140` `continue` antes de
+  sumar); LD COMMODITIES → LDC ✓; ritmo con guards (sin historia → null; normal=0 → null) ✓;
+  coerción `Number(camp_ini)` presente ✓.
+- **BUG OBJETIVO (runtime, no de fórmula):** `djve_cobertura?select=*` — la query exacta de
+  `getEmpresas` — devuelve **HTTP 500 `57014` statement timeout** vía PostgREST anon (reproducido
+  2/2 por el auditor principal el 21/07 ~11:50 UTC, ~4-5 s cada intento; 3/3 por el subagente). La
+  vista agrega los 334k de `djve` en cada request desde el backfill 2011-2025. Como `djveRes` es
+  fatal (`empresas.ts:90-97`), **`/comercio/empresas` y `/comercio/senal` degradan a "fuente no
+  disponible"**. Fix propuesto: materializar la vista (patrón `lineup_visitas`) o filtrar campañas
+  viejas. (`lineup_estacional` falla intermitente 1/3 — vigilar.)
+- **Menor:** exclusión PY/UY del TS incluye `\bPGY\b` (`shippers.ts:52`); las vistas SQL no (`\yPY\y|
+  PARAGUAY|\yUY\y|URUGUAY`) → un shipper "… PGY" divergiría entre foto TS y originado SQL. Hoy ~0.
+- **Veredicto:** **OK en fórmulas + BUG OBJETIVO operativo.**
+
+### Ficha 5.8: embarque.ts — programa DJVE mensual, cumplimiento, a3De
+- **Verificado (datos reales 21/07):** MAIZE jul-2026 = op30 1.153.251 + op360 2.700.818 =
+  **3.854.069 t** (= "maíz JUL 3.854 kt" del 1:1 de la Fase 3, exacto) · embarcado jul-2026
+  5.619.788 t / 214 buques → cumplimiento **146%** (= doc, leído como sano ✓) · año previo MAIZE
+  jul-2025 = 4.659.773 t (el backfill alimenta la referencia) ✓ · embarcado solo i≤1 (mes corriente
+  + borde) — coherente con "el line-up ve ~10 días" de negocio/05 ✓ · a3De: mes exacto o primera
+  posición posterior ✓.
+- **Veredicto:** **OK** (el módulo mejor anclado a doc).
+
+### Ficha 5.9 (cortas): config.ts / zonas.ts / shippers.ts / foto.ts
+- **config.ts:** roster decisión 8 exacto; MALT y fertilizantes → null ✓; SHULLS→SBM = el `case when`
+  de todas las vistas ✓. **OK.**
+- **zonas.ts:** berth antes que port; TERMINAL 6→Norte · GRAL. LAGOS→Sur · ING. WHITE→Bahía · SAN
+  LORENZO s/berth→Norte · ROSARIO s/berth→Sur · QUEQUEN→Otros — ✓ decisión 9. **OK.**
+- **shippers.ts:** primer match gana; ACA con tilde ✓; GLENCORE→VITERRA-BUNGE ✓; COFCO UY →
+  {COFCO, UY} ✓; null→OTROS ✓. **OK** (nota PGY en 5.7).
+- **foto.ts:** umbral buque nuevo 30.000 t (= `mesa_diff.py`, documentado "≥30kt" ✓); diff por buque,
+  multi-cargo suma ✓; agregación verificada 1:1 vs SQL en Fase 1 (187 buques / 6.497.074 t). **OK.**
+
+## Ficha transversal — Los 6 parsers de mes/posición duplicados
+
+- **Alcance:** `curva.ts:18-39` · `futuros.ts:48-61` · `derivadas.ts:20-37,171` ·
+  `market.ts:176-186` (parseDdf, dominio MAE `DLR<MM><YYYY>`) · `lineup/embarque.ts:31,76-79`
+  (labelMes, dominio ISO) · `monitor-mercados.ts:89-118` (parsePos, dominio inglés Yahoo/Sina).
+- **Test de paridad ejecutado (batería de 17 casos + 22 del subagente):** los `vencKey` de
+  curva/futuros son **numéricamente idénticos en todos los inputs** (misma regex, misma tabla
+  ENE..DIC, misma clave (2000+aa)·100+mm); `hoyVencKey` copia idéntica carácter a carácter;
+  `mesDePosicion` (derivadas) consistente. Los otros 3 operan en dominios distintos (numérico MAE,
+  ISO, inglés) con la MISMA tabla de nombres ENE..DIC → sin divergencia posible de meses.
+- **Única divergencia real:** semántica del filtro con `vencKey=0` — futuros CONSERVA (disponible
+  primero), curva DESCARTA — intencional y documentada; y el borde documental `futuros.ts:53`
+  ("DIS24 → 0" pero DIS24 matchea la regex → 202400 → se descartaría como vencida). Verificado por
+  SQL: **0 filas** con posición no estándar en `futuros_cierres` hoy → latente.
+- **Veredicto:** **OK** — sin bug de paridad. Para E4: unificar `vencKey`/`hoyVencKey`/tabla de
+  meses en un util único (6 copias es deuda, no defecto).
