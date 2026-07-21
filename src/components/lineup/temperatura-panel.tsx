@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getTemperatura, type ProductoCalor } from "@/lib/lineup/temperatura";
 import { nfmt } from "@/lib/format";
 import { Panel, PanelHead } from "../panel";
@@ -120,6 +121,9 @@ export async function TemperaturaPanel() {
           </>
         }
       />
+      <p className="ng-admin-link">
+        <Link href="/granos/view">View de mesa por grano (research direccional semanal) →</Link>
+      </p>
     </Panel>
   );
 }

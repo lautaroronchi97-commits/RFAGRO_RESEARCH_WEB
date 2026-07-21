@@ -101,6 +101,7 @@ export async function GET(request: Request): Promise<Response> {
       empresas,
       embarques,
       negociado,
+      estimaciones,
       curva,
       pases,
       arbitrajes,
