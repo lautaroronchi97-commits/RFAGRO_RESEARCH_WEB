@@ -41,13 +41,45 @@
 - Cada hallazgo del informe con evidencia archivo:línea verificada por lectura directa o `grep`/
   `git log`, no especulación.
 
+## Fase 2 (mismo día, misma rama/PR)
+
+Lautaro contestó las 4 dudas + los 3 puntos de criterio en el chat (sin scrollear el informe línea
+por línea) y aprobó los 11 quick wins restantes en bloque. Fase 2 implementada completa:
+
+- **Espejos (import real, no reimplementación):** `cargar-compras.mjs` importa `parseAgrochat` de
+  `parse-agrochat.ts` (verificado contra el CSV real: 9.522 filas, trigo 25/26 = 16.238.900 t);
+  `ingest-noticias.mjs` importa `clasificar`/`esRuido`/`esExcluido`/`esRelevante`/`claveTitulo` de
+  `noticias-clasificar.ts` (con `with {type:"json"}` agregado al import JSON) — verificado con
+  `--dry-run` real.
+- **3 migraciones SQL** (aplicadas por MCP vía `execute_sql`, el canal de aprobación de
+  `apply_migration` seguía caído — mismo workaround de E1/E2): `SOJA_CRUSH` sumado a la función
+  `campana_ini_year` · `admin_seed_emails_actuales()` para poder auditar `ADMIN_SEED_EMAILS` contra
+  `handle_new_user()` · `compras.*` (9 columnas) migrado de `double precision` a `numeric`
+  (requirió dropear y recrear `compras_avance_hist`, que dependía de `toneladas`).
+- **Hallazgo de performance (#1) corregido**: `AuthMenu` pasa a `next/dynamic({ssr:false})` desde un
+  wrapper client-only nuevo (`auth-menu-lazy.tsx`) — Next 16 exige que `ssr:false` viva en un Client
+  Component, no en el Server Component que lo importaba antes. Verificado con `npm run build`:
+  `/comercio` bajó de ~783 KB a **526 KB** First Load JS, `/graficos` de 1.150 KB a **911 KB**.
+- **Resto de quick wins** (#6, #8, #9, #16, #17, #18, #19, #20, #21, #22): `arNum` null-safe
+  compartida, try/catch en el upload de compras y en `auth/session.ts` (proxy), `calc-negocios-pago`
+  reusa `precioConPago`, fórmula de `calc-planta.tsx` extraída a `src/lib/planta.ts`,
+  `numDeInput`/`fmtInputDate` centralizados (12 call-sites), fallback de `empresaDisplay` unificado a
+  "OTROS", `fmtFecha` muerta de `auth/admin.ts` borrada + `navegadorYSO` extraído a `session-id.ts`,
+  factores CBOT compartidos en `factores-commodities.ts` (usado por el `.mjs` también), clamp de
+  `sumarHabiles`, 6 funciones + 3 clases CSS muertas borradas.
+- **Vitest completo** (hallazgo #12, tanda completa aprobada): `vitest.config.ts` + paso `npm test`
+  en `ci.yml` + **14 archivos de test, 91 tests**, todos verdes — las 11 libs del encargo original +
+  `porcentaje.ts` + `campanas.ts` (paridad TS↔SQL, "sale gratis" según E2) + `dates.ts` (bundlado con
+  la ficha de `habiles.ts`), con los fixtures exactos de `E2-formulas-fichas.md`.
+- **Diferidos a E7** (aprobado explícitamente): partir `market.ts`, unificar los 9 parsers de
+  mes/posición A3, motor de gráfico SVG compartido, `noUncheckedIndexedAccess`.
+- **Bloqueado, sin decisión posible en esta etapa**: `sample.ts` (hallazgo #15) — depende de la
+  decisión de E3 sobre `implicitas-panel.tsx`.
+
 ## Quedó pendiente / en vuelo
-- **Todo el informe está en fase 1** — espera la decisión de Lautaro hallazgo por hallazgo
-  (columna «Decisión Lautaro» de la tabla) antes de implementar cualquier fix en fase 2.
-- 4 dudas de criterio para Lautaro (import real de los `.mjs` vs test de paridad congelado · alcance
-  de la 1ª tanda de tests · si prender `noUncheckedIndexedAccess` en esta etapa o diferir a E7 · si
-  migrar `compras.*` a `numeric` ahora o esperar la definición de `compras.fuente` de E1).
-- Los tests nuevos (Vitest) NO se implementaron — quedan para fase 2 si Lautaro aprueba el hallazgo #12.
+- Nada de esta etapa — E4 queda cerrada. `sample.ts` sigue bloqueado por E3 (no es un pendiente de
+  E4, es una dependencia cruzada documentada).
+- Los 4 refactors diferidos a E7 quedan en el informe con esfuerzo estimado, para el backlog maestro.
 
 ## Trampas descubiertas (para la próxima sesión)
 - **Next 16/Turbopack ya no imprime la tabla "Route / Size / First Load JS" en la consola del
