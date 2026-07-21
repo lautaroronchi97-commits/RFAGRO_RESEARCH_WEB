@@ -1,6 +1,9 @@
 -- RF AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
 -- Uploader admin de la serie de comercialización (tabla `compras`) + fix de seguridad.
 --
+-- Nota (auditoría E6, 21/07/2026): se aplicó por `execute_sql` (workaround del canal de aprobación
+-- del MCP caído) con version real `20260720144443` — distinto al timestamp de este nombre de archivo.
+--
 -- Contexto: la serie semanal de compras (SIO Granos, export de Agrochat) se cargó una vez por
 -- `scripts/cargar-compras.mjs` con la service key desde GitHub Actions. Para que Lautaro pueda
 -- actualizarla él mismo desde /admin/datos SIN meter la service key en la web, la escritura va por

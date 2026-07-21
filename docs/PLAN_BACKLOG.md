@@ -36,7 +36,7 @@
 | CONTEXTO 7 — modelo propio de capacidad de pago | **P11** (insumo Lautaro paso 1) |
 | CONTEXTO 8 — módulo scoring de clientes (`negocio/03`) | **P12** (insumo Lautaro paso 1; datos personales NUNCA al repo) |
 | Cinta con pizarra de ejemplo · `implicitas-panel` con `sample.ts` | **E3** (auditoría, semilla ya cargada) |
-| PAS (BCBA) sin validar | **E5** (auditoría, semilla ya cargada) |
+| PAS (BCBA) sin validar | **Cerrado por E6 (21/07):** `pas_probe` ya había corrido el 12/07 y confirmó Cloudflare también desde IPs de GitHub Actions (HTTP 403) — descartado automatizar, respaldo por mail |
 
 ## Tablero de los prompts de este plan
 

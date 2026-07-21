@@ -40,11 +40,33 @@
   de archivo (aplicadas por `execute_sql` como workaround).
 - `git log -1 -- docs/PLAN_PUERTOS.md` (18/07) vs `ESTADO.md` (declara el ítem 6 HECHO el 19/07) —
   confirma la contradicción del hallazgo #3.
-- No se corrió `lint`/`tsc`/`build` en esta fase: no se tocó ningún archivo de código, solo
-  `docs/auditoria/E6-historia.md` y este doc de sesión.
+- No se corrió `lint`/`tsc`/`build`: todos los cambios de la sesión (Fase 1 y 2) son `.md` y
+  comentarios en 3 `.sql` de `supabase/migrations/` — cero archivos `.ts`/`.tsx` tocados. (El sandbox
+  tampoco tenía `node_modules` instalado esta vez; no hizo falta instalarlo para este alcance.)
+
+## Fase 2 (aplicada en la misma sesión, tras el OK de Lautaro)
+- **DEA-SAGyP**: re-corrido el `workflow_dispatch` (run `29861219905`) — falló con el mismo
+  `ConnectTimeoutError` que las corridas del 16/07 y 17/07. Confirmado que no es transitorio;
+  diferido a **E5** para la mitigación (reintentos/backoff o Edge Function como `lineup-ingest`).
+- **PAS (BCBA)**: cerrada la promesa — `PLAN_CALENDARIO_PRODUCCION.md`, `CONTEXTO.md` (2 lugares) y
+  `PLAN_BACKLOG.md` actualizados de "pendiente de validar" a "descartado, confirmado 2/2 por
+  Cloudflare (12/07 y el probe re-verificado en esta sesión)".
+- **`PLAN_PUERTOS.md`**: banner a "PLAN COMPLETO", Fase 4 marcada `✅ HECHA (19/07)`, ítem 1 de
+  "Abiertos/riesgos" tachado (ya resuelto en PR #34).
+- **Lista única de pendientes**: `CONTEXTO.md` § Pendientes reemplazada por un pointer a
+  `ESTADO.md`+`PLAN_BACKLOG.md` (con la regla de no volver a duplicar); `ESTADO.md` § gráficos v2
+  comprimida a un pointer a **P6** de `PLAN_BACKLOG.md`.
+- **Higiene de docs**: tabla "Ramas vivas" obsoleta de `ESTADO.md` reemplazada por nota + link a
+  este informe; 3 migraciones `.sql` con version distinto al nombre de archivo, comentadas con el
+  version real aplicado.
+- **No se borró ninguna rama** (regla del plan: solo se dejan los comandos en el informe para que
+  Lautaro los corra).
 
 ## Quedó pendiente / en vuelo
-- Fase 2 (implementar solo lo aprobado por Lautaro) — pendiente de su decisión hallazgo por hallazgo.
+- Los 7 `git push origin --delete` de `auditoria/E6-historia.md` § «Higiene» — los corre Lautaro.
+- Mitigación de fondo de DEA-SAGyP (reintentos/Edge Function) — diferida a **E5**.
+- Uploader de `/admin/datos` probado por Lautaro logueado — sigue sin confirmar.
+- Suscripción de Lautaro por mail al informe PAS — paso manual suyo, fuera del repo.
 
 ## Trampas descubiertas (para la próxima sesión)
 - El `list_pull_requests` de GitHub MCP sin `minimal_output` devuelve el body completo de los 54 PRs
