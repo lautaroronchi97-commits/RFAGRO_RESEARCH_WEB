@@ -19,7 +19,27 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 21/07/2026 — auditoría E2 CERRADA: fase 2 aplicada)
+## Ahora (última actualización: 21/07/2026 — research P3/P4 HECHO · auditoría E2 CERRADA)
+
+**🔎 RESEARCH P3 (compras netas BCRA) + P4 (camiones en puerto) — HECHO, build espera OK de Lautaro —
+rama `claude/research-p3-p4-phases-u4e8k3`, PR #52.** Solo docs (pedido explícito: fases de research de
+`PLAN_BACKLOG.md`, cero código). **P3** → [`negocio/07_fuente_compras_netas_bcra.md`](negocio/07_fuente_compras_netas_bcra.md):
+la **API v4 del BCRA ya tiene el dato oficial** — var 78 "Variación de reservas internacionales por
+compra de divisas" (diaria, M USD, 2003→hoy = 5.768 filas, backfill en 2 requests, rezago ~3 hábiles).
+Semántica verificada 1:1: es la compra neta al **sector privado** (el MULC), var 78 = var 47 ÷ TC
+mayorista SIEMPRE, incluso los 14 días desde 2025 con operaciones al Tesoro (var 48) ≠ 0. X/medios
+descartados para automatizar; volumen MAE queda como color del día. **P4** →
+[`negocio/08_fuente_camiones_puerto.md`](negocio/08_fuente_camiones_puerto.md): **SAGyP/MAGyP publica
+la entrada diaria de camiones** por zona portuaria (4) y producto (6) + vagones + camiones en playa
+(página de logística, mismo dominio que `ingest-compras.mjs`), **rezago 1 día hábil** (al 21/07 llegaba
+al 20/07) y con **historia diaria 2018→hoy en ~103 PDFs mensuales** (formato estable verificado en
+ambas puntas; identidades zona=producto=total cierran; extractor de PDF sin dependencias probado).
+BCR = solo prosa · dataPORTUARIA = noticias · CKAN MAGyP muerto → descartadas. Cada informe cierra con
+comparativa + arquitectura del build + **preguntas abiertas para Lautaro** (P3: ¿alcanza rezago 3
+hábiles o quiere carga manual del día? · P4: visibilidad solo-mesa vs pública, alcance del backfill).
+**Próximo paso: Lautaro responde esas preguntas → recién ahí correr las fases build** (prompts P3/P4
+de `PLAN_BACKLOG.md`, tablero actualizado). Detalle:
+[`sesiones/2026-07-21-research-p3-p4.md`](sesiones/2026-07-21-research-p3-p4.md).
 
 **🧮 AUDITORÍA E2 — CERRADA (fase 1 + fase 2) — rama `claude/e2-formulas-go9i9y`, PR #51.**
 Lautaro contestó los 6 hallazgos y las 11 preguntas en bloque (21/07) y la FASE 2 quedó implementada:
