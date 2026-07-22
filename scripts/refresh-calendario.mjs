@@ -7,8 +7,10 @@
  * si ya aparecieron las fuentes del AÑO SIGUIENTE para poder sembrar el seed del año que viene:
  *   - ICS oficial de NASS del próximo año (aparece ~oct-nov).
  *   - Calendario BCR (ICS/JSON) por si lo reactivan para fechas futuras (hoy está vacío 2025/26).
- * No escribe en la base: reporta en el log del Action (y sale con código ≠0 si el seed próximo ya
- * está disponible pero todavía no se cargó en el código, para que salte el aviso).
+ * No escribe en la base. Cuando el seed próximo ya está disponible emite un `::warning` en el run
+ * (deliberadamente NO exit≠0: mails de error + GitHub deshabilita crons que fallan seguido). El
+ * aviso que SÍ enrojece vive en el healthcheck diario: check "seed de calendario por agotarse"
+ * (scripts/healthcheck-frescura.mjs, E5 #9c) — este centinela quedó como detalle informativo.
  *
  * Uso: node scripts/refresh-calendario.mjs
  */

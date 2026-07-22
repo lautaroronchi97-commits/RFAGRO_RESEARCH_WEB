@@ -14,6 +14,21 @@ import { updateSession } from "@/lib/auth/session";
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const path = request.nextUrl.pathname;
   const esAdmin = path === "/admin" || path.startsWith("/admin/");
+
+  // E5 #5: los endpoints con auth PROPIA por token (los consumen las Routines de informes,
+  // que fetchean sin cookies) no pasan por el gate de sesión — con el flag prendido el
+  // redirect a /ingresar les llegaba ANTES de que su token corriera y mataba MP1/MP3.
+  if (path.startsWith("/api/views/") || path.startsWith("/api/informes/")) {
+    return NextResponse.next();
+  }
+
+  // E5 #12c: el bodySizeLimit de server actions es GLOBAL (16 MB, por el uploader admin) →
+  // acá se acota temprano todo POST público; solo /admin necesita bodies grandes.
+  if (request.method === "POST" && !esAdmin) {
+    const len = Number(request.headers.get("content-length") ?? 0);
+    if (len > 2_000_000) return new NextResponse("Payload demasiado grande.", { status: 413 });
+  }
+
   // El panel /admin está SIEMPRE protegido (aun con el flag global apagado); por eso
   // se refresca su sesión aunque `AUTH_ENFORCED` esté off. El resto del sitio solo
   // pasa por el gate cuando el flag está prendido → con el flag off queda estático/ISR.

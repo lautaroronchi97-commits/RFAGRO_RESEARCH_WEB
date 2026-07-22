@@ -39,7 +39,12 @@ vencimiento sin ningún aviso (seed `vencimientos` hasta SEP27, `FERIADOS_AR` 20
 
 ## Hallazgos (priorizados, el más grave primero)
 
-> La columna **Decisión** la completa Lautaro: `corregir` / `no` / `diferir a E7` / `preguntar más`.
+> **Decisión de Lautaro (22/07/2026, en el chat): TODO APROBADO** — respondió las 7 Dudas
+> (fuente de compras = (b) MAGyP automática + Agrochat como corrección · fix refresh por MCP: sí ·
+> alertas a lautaroronchi97@gmail.com · DEA: la recomendación (Edge Function) · matviews: la
+> recomendación (service key + revoke al encendido) · Vercel Pro: se contrata ANTES de clientes,
+> con guía paso a paso · env vars sensibles ya en Production-only) y para los hallazgos restantes
+> eligió **«Implementá todos»**. El qué-se-hizo de cada uno está en «Fase 2» al final.
 
 | # | Hallazgo | Evidencia | Impacto | Esfuerzo | Propuesta de fix | Decisión Lautaro |
 |---|---|---|---|---|---|---|
@@ -199,7 +204,26 @@ pone hostil. **Cloudflare ($5)**: re-evaluar en 6 meses — hoy el Node middlewa
 - Roster de exportadores (`shippers.ts`) sin chequeo de erosión ("share de OTROS > X%") — señalado
   por el sub-informe de login; es calibración de negocio, no infra.
 
-## Fase 2 — correcciones implementadas (completar tras el OK)
+## Fase 2 — correcciones implementadas (22/07/2026, todo aprobado por Lautaro)
 
-| # hallazgo | Qué se hizo | Commit | Verificación |
+| # hallazgo | Qué se hizo | Dónde | Verificación |
 |---|---|---|---|
+| 1+2 (compras) | Decisión (b): MAGyP sigue automática. Parser: descarta el grupo de paneles VIEJO (filas >7 días más viejas que la más nueva de la página) + guard ≥6/7 paneles con nombres de los faltantes + chequeo de identidad contable (`::warning`) + backfill "N snapshots y 0 filas = rojo". Upsert pasó a `ignore-duplicates`: MAGyP solo INSERTA semanas nuevas, nunca pisa claves existentes (Agrochat manda). La semana 15/07 vuelve sola con el cron del jueves 23/07 — ahora sin la basura del 27/05. | `scripts/ingest-compras.mjs` | dry-run real contra la página viva: 30 → **23 filas, todas 15/07, 7 granos**, "descartadas 7 filas de un grupo viejo" |
+| 3 (refresh 500) | `ALTER FUNCTION refresh_lineup_visitas() SET statement_timeout='300s'` — **APLICADA por MCP** + refresh manual corrido. | `supabase/migrations/20260722013000_…` | refresh medido: **28,8 s** (vs límite viejo de 8 s); matviews al 20/07 = base. El próximo cron de lineup debería salir verde — verificar con dispatch post-merge |
+| 4 (RPC muerta) | `DROP FUNCTION ingest_cierres_cem` — **APLICADA por MCP** (lección: revocar PUBLIC, no solo anon). | misma migración | `pg_proc`: la función ya no existe |
+| 5 (proxy vs API token) | El proxy deja pasar `/api/views/*` y `/api/informes/*` (su token ES su auth) antes del gate de sesión. | `src/proxy.ts` | build OK; la Routine MP3 sobrevive al encendido |
+| 6 (falso-verde) | Guards por componente: GEA (3 tablas obligatorias + PROHIBIDO fecha fallback en live), pizarra (`parseSerie` tipada rota≠vacía + guard por grano soja/maíz/trigo + `::warning` si falta el día), CBOT (`ok < 50%` = rojo), cierres (guard POR PRODUCTO), noticias (<60% fuentes OK = rojo), USDA (WASDE presente con 0 filas = rojo; `--no-psd` con 0 = rojo). | `scripts/ingest-{gea,pizarra,cbot,cierres,noticias,usda}.mjs` | dry-runs locales + lint |
+| 7 (alertas) | `scripts/alerta-mail.mjs` (Resend → lautaroronchi97@gmail.com) + step `if: failure()` en healthcheck, estimaciones-ar, lineup, compras, cierres y cbot. Healthcheck ampliado: `views_mercado` (≤10d), DEA 16d→**9d**, `vencimientos` con ≥180d de futuro, seed de calendario con ≥60d de futuro. Falta 1 paso manual: cargar el secret `RESEND_API_KEY` en GitHub (guía Parte B §3). | `scripts/alerta-mail.mjs`, `scripts/healthcheck-frescura.mjs`, 6 YMLs | healthcheck corrido contra la base real: 17 checks, todos ✓ salvo `views_mercado` con anon (esperado: RLS solo-admin; el workflow usa service key) |
+| 8 (DEA) | Edge Function **`dea-fetch`** (sa-east-1, deployada por MCP, auth por comparación de service key) que baja el CSV; `ingest-dea.mjs` la invoca con creds (dry-run local sigue directo). | `supabase/functions/dea-fetch/index.ts`, `scripts/ingest-dea.mjs` | anon → 403 verificado por curl; e2e con dispatch post-merge |
+| 9 (hardcodeos) | (a) `ingest-cierres.mjs` ahora upsertea `vencimientos` cada noche desde CEM `/symbols` (paginado, solo futuros vivos ≤+5 años — el CEM ya lista DIC27, más nuevo que el seed) + check en healthcheck; (b) test Vitest que FALLA desde octubre si `FERIADOS_AR` no tiene el año próximo; (c) check "seed calendario <60 días de futuro" en healthcheck + comentario del centinela corregido (#14e). | `scripts/ingest-cierres.mjs`, `src/lib/habiles.test.ts`, `scripts/healthcheck-frescura.mjs` | endpoint CEM verificado en vivo (1.214 futuros de grano, filtro OK); tests verdes |
+| 10 (pizarra T-1) | 4º cron `0 21 * * 1-5` (18:00 ART) que captura la fecha del día + `::warning` cuando la ventana no trae "hoy". | `.github/workflows/ingest-pizarra.yml`, `scripts/ingest-pizarra.mjs` | YAML validado; comportamiento se ve mañana |
+| 11 (concurrency) | `concurrency` en cbot/lineup/pizarra + **group `compras` COMPARTIDO** entre ingest-compras y cargar-compras + ci con cancel-in-progress; `timeout-minutes` en los 13; `replace_legacy` default **false**. | 13 YMLs | parseados los 13 con PyYAML: perms/conc/timeout OK |
+| 12 (hardening web) | (a) `INFORME_TOKEN` por header `Authorization: Bearer` + `timingSafeEqual` (skill MP3, doc de sesión y prompt MP1 actualizados); (b) CSP **Report-Only** + HSTS explícito; (c) cap de 2 MB por `content-length` en el proxy para POSTs públicos (admin exento); (d) `permissions: contents: read` en los 13 workflows; (e) las 2 Edge Functions comparan el bearer contra la service key real (redeploy de `lineup-ingest` v3). | `src/app/api/views/insumos/route.ts`, `next.config.ts`, `src/proxy.ts`, YMLs, `supabase/functions/*` | curl anon a ambas functions → 403; build OK |
+| 13 (higiene Supabase) | RLS initplan: `(select auth.uid())` en las 4 policies — **APLICADA por MCP**. Policies permisivas duplicadas: NO se tocaron (cambiar semántica de policies por un warning de performance en tablas de <100 filas no paga el riesgo — deliberado). Leaked password protection + borrar `lineup-probe`/`lineup-fetch`: son clicks del dashboard → guía Parte B §6-7. | `supabase/migrations/20260722013100_…` | `pg_policy`: las 4 con `(select auth.uid())` |
+| 14 (menores) | `node-version-file: .nvmrc` + `checkout@v5`/`setup-node@v5` en los 13 YMLs; comentario del centinela corregido; banner HISTÓRICO en `INFRAESTRUCTURA.md`; guía con 5 pestañas. El healthcheck de 15→17 checks se verifica en el run del 23/07. | YMLs, docs | YAML validado |
+| Duda 5 (matviews mesa) | `src/lib/supabase.ts` (server-only) prefiere `SUPABASE_SERVICE_KEY` con fallback a anon + migración de revoke de las 7 matviews **versionada SIN APLICAR** — se aplica en el encendido (Parte B §5 de la guía), cuando producción ya deploye con la service key. | `src/lib/supabase.ts`, `supabase/migrations/20260722013200_…` (NO aplicada) | build OK; producción hoy sigue leyendo con anon, sin cambio de comportamiento |
+| Duda 6 (guías) | **Guía definitiva en orden** al tope de `GUIA_LOGIN_SETUP.md`: Parte A Vercel Pro (upgrade + spend limit + gru1) → Parte B pre-encendido (env, secret, dispatches, revoke, leaked protection, higiene) → Parte C encendido + validación. Sección hosting de la Etapa 3 marcada DECIDIDA. | `docs/GUIA_LOGIN_SETUP.md` | — |
+
+**Pasos que quedan en manos de Lautaro** (todo en la guía): contratar Vercel Pro (Parte A) ·
+mergear el PR #58 · `SUPABASE_SERVICE_KEY` en Vercel + `RESEND_API_KEY` en GitHub · dispatches
+de prueba post-merge · aplicar el revoke (Parte B §5) · encendido (Parte C).

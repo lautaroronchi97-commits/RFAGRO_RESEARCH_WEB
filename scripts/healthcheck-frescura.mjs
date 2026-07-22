@@ -56,8 +56,27 @@ const CHECKS = [
   { nombre: "estimaciones USDA", tabla: "estimaciones_produccion", col: "fecha_publicacion", filtro: "&organismo=eq.USDA", maxDias: 45, cadencia: "mensual (WASDE)" },
   { nombre: "estimaciones CONAB", tabla: "estimaciones_produccion", col: "fecha_publicacion", filtro: "&organismo=eq.CONAB", maxDias: 45, cadencia: "mensual" },
   { nombre: "estimaciones BCR-GEA", tabla: "estimaciones_produccion", col: "fecha_publicacion", filtro: "&organismo=eq.BCR", maxDias: 45, cadencia: "mensual" },
-  { nombre: "estimaciones DEA-SAGyP", tabla: "estimaciones_produccion", col: "fecha_publicacion", filtro: "&organismo=eq.DEA", maxDias: 16, cadencia: "semanal" },
+  { nombre: "estimaciones DEA-SAGyP", tabla: "estimaciones_produccion", col: "fecha_publicacion", filtro: "&organismo=eq.DEA", maxDias: 9, cadencia: "semanal" },
+  // views_mercado tiene RLS solo-admin → este check requiere la SERVICE key (la del workflow); con anon da 401.
+  { nombre: "views_mercado (view semanal MP3)", tabla: "views_mercado", col: "creado_en", maxDias: 10, cadencia: "semanal (Routine viernes)" },
 ];
+
+// E5 #9: "seeds de futuro" — datos que no se atrasan hacia el pasado sino que se AGOTAN hacia
+// adelante (el ángulo ciego de los checks de frescura). Fallan con meses de anticipación.
+const FUTURO = [
+  {
+    nombre: "vencimientos con futuro suficiente",
+    tabla: "vencimientos",
+    col: "vencimiento",
+    minDiasFuturo: 180,
+    nota: "los refresca ingest-cierres.mjs desde el CEM cada noche hábil",
+  },
+];
+
+// Última fecha OFICIAL sembrada en src/lib/calendario.ts (CONAB_2026 termina el 15/12/2026).
+// ⚠️ Mantener EN SYNC al sembrar el seed del año siguiente (y subir SEED_ACTUAL en
+// refresh-calendario.mjs). Con <60 días de seed restante este check enrojece el healthcheck.
+const ULTIMO_SEED_CALENDARIO = "2026-12-15";
 
 // Matviews de mesa: no tienen fecha de "hoy" propia; se controla que su última fila coincida con la de
 // su tabla base (si la base avanzó y la matview no, quedó sin refrescar y muestra datos viejos callada).
@@ -119,6 +138,37 @@ async function main() {
             : `matview ${String(mvF).slice(0, 10)} vs base ${String(baseF).slice(0, 10)} (rezago ${rezago}d)`),
     );
     detalle.push({ nombre: `matview ${m.nombre}`, mvF, baseF, rezago, atrasado, error });
+  }
+
+  // Seeds de futuro (E5 #9): días RESTANTES en vez de días de atraso.
+  for (const f of FUTURO) {
+    let fecha = null;
+    let error = null;
+    try {
+      fecha = await ultimaFecha(f.tabla, f.col);
+    } catch (e) {
+      error = e.message;
+    }
+    const restantes = fecha ? -diasDesde(fecha) : null;
+    const agotado = error != null || fecha == null || restantes < f.minDiasFuturo;
+    if (agotado) fallas++;
+    const marca = error ? "✗ ERROR" : agotado ? "✗ POR AGOTARSE" : "✓";
+    console.log(
+      `${marca}  ${f.nombre}: ` +
+        (error ? error : fecha == null ? "sin filas" : `hasta ${String(fecha).slice(0, 10)} (${restantes}d de futuro · mínimo ${f.minDiasFuturo}d · ${f.nota})`),
+    );
+    detalle.push({ nombre: f.nombre, fecha, restantes, atrasado: agotado, error });
+  }
+
+  {
+    const restantes = -diasDesde(ULTIMO_SEED_CALENDARIO);
+    const agotado = restantes < 60;
+    if (agotado) fallas++;
+    console.log(
+      `${agotado ? "✗ POR AGOTARSE" : "✓"}  seed calendario oficial: hasta ${ULTIMO_SEED_CALENDARIO} ` +
+        `(${restantes}d de futuro · mínimo 60d · sembrar el año próximo en src/lib/calendario.ts y actualizar ULTIMO_SEED_CALENDARIO acá)`,
+    );
+    detalle.push({ nombre: "seed calendario oficial", fecha: ULTIMO_SEED_CALENDARIO, restantes, atrasado: agotado });
   }
 
   if (JSON_OUT) console.log("\n" + JSON.stringify(detalle, null, 2));

@@ -66,20 +66,25 @@ function ventanas(from, to, anios = VENTANA_ANIOS) {
   return out;
 }
 
-/** Extrae settings.app_prices.plot.data del HTML de la consulta. */
+/**
+ * Extrae settings.app_prices.plot.data del HTML de la consulta.
+ * E5 #6 (camino 7): distingue "estructura rota" (falta el <script> de Drupal, JSON inválido o
+ * la clave app_prices.plot.data) de "serie legítimamente vacía" — antes ambas devolvían [].
+ */
 function parseSerie(html) {
   const m = html.match(
     /<script[^>]*data-drupal-selector="drupal-settings-json"[^>]*>([\s\S]*?)<\/script>/,
   );
-  if (!m) return [];
+  if (!m) return { rota: "sin <script drupal-settings-json>", data: [] };
   let settings;
   try {
     settings = JSON.parse(m[1]);
   } catch {
-    return [];
+    return { rota: "drupalSettings no es JSON válido", data: [] };
   }
   const data = settings?.app_prices?.plot?.data;
-  return Array.isArray(data) ? data : [];
+  if (!Array.isArray(data)) return { rota: "falta app_prices.plot.data", data: [] };
+  return { rota: null, data };
 }
 
 async function fetchSerie(pid, type, from, to) {
@@ -89,7 +94,9 @@ async function fetchSerie(pid, type, from, to) {
     signal: AbortSignal.timeout(30000),
   });
   if (!res.ok) throw new Error(`CAC pid=${pid} ${type} ${from}..${to}: HTTP ${res.status}`);
-  return parseSerie(await res.text());
+  const { rota, data } = parseSerie(await res.text());
+  if (rota) throw new Error(`CAC pid=${pid} ${type}: estructura cambiada — ${rota}`);
+  return data;
 }
 
 const num = (v) => (v == null || v === "" ? null : Number(v));
@@ -157,6 +164,23 @@ async function main() {
   if (all.length === 0 && !process.argv.includes("--from")) {
     console.error("ERROR: 0 filas de pizarra CAC en la ventana de 10 días. No se da por bueno (probable cambio de estructura / fuente caída).");
     process.exit(1);
+  }
+  if (!process.argv.includes("--from")) {
+    // E5 #6 (camino 7, parcial por grano): los 3 granos grandes tienen que traer ALGO en la
+    // ventana; girasol/sorgo pueden estar sin pizarra varios días y no enrojecen.
+    const porGrano = new Map();
+    for (const r of all) porGrano.set(r.grano, (porGrano.get(r.grano) || 0) + 1);
+    const vacios = ["soja", "maiz", "trigo"].filter((g) => !porGrano.get(g));
+    if (vacios.length > 0) {
+      console.error(`ERROR: pizarra sin filas de ${vacios.join(", ")} en la ventana diaria (parcialmente rota).`);
+      process.exit(1);
+    }
+    // E5 #10 (pizarra T-1): aviso visible si la corrida no capturó la fecha de hoy — el 4º cron
+    // del día (18:00 ART) debería traerla; si tampoco, el ::warning queda en ese run.
+    const hoy = isoDaysAgo(0);
+    if (!all.some((r) => r.fecha === hoy)) {
+      console.log(`::warning::pizarra: la ventana no trae la fecha de hoy (${hoy}) — la consulta de CAC suele cargar el día tarde; ver corrida de las 18:00 ART.`);
+    }
   }
   console.log(`Upsert de ${all.length} filas...`);
   await upsert(all);

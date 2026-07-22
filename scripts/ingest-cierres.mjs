@@ -132,12 +132,21 @@ async function main() {
   console.log(`Ingesta cierres granos ${from} → ${to}`);
 
   let all = [];
+  const esDiario = !process.argv.includes("--from");
   for (const product of PRODUCTS) {
     const rows = await fetchProduct(product, from, to);
     console.log(`  ${product}: ${rows.length} filas`);
     // Excluir OPCIONES: el filtro por producto también trae opciones, cuyo símbolo
     // lleva strike + C/P con espacio (ej. "SOJ.ROS/NOV26 336 C"). Solo futuros puros.
-    all.push(...rows.map(toRow).filter((r) => r.symbol && r.fecha && !r.symbol.includes(" ")));
+    const filtradas = rows.map(toRow).filter((r) => r.symbol && r.fecha && !r.symbol.includes(" "));
+    // E5 #6 (camino 2): guard POR PRODUCTO en el diario — la ventana cubre varias ruedas;
+    // 0 filas de un grano = el nombre de producto cambió en el CEM o ese feed murió,
+    // aunque los otros dos sigan vivos (antes eso quedaba verde con el grano congelado).
+    if (esDiario && filtradas.length === 0) {
+      console.error(`ERROR: 0 filas de "${product}" en la ventana diaria del CEM (¿cambió el nombre del producto?). No se da por bueno.`);
+      process.exit(1);
+    }
+    all.push(...filtradas);
   }
   // dedup por (symbol, fecha) por si el CEM repite
   const seen = new Set();
@@ -156,7 +165,61 @@ async function main() {
   }
   console.log(`Upsert de ${all.length} filas...`);
   await upsert(all);
+
+  // E5 #9a: refrescar la tabla `vencimientos` desde el CEM (/api/v2/symbols, campo maturityDate).
+  // El seed de la migración 20260708120000 era una foto única (moría en SEP27 y el CEM ya lista
+  // DIC27). No fatal: los cierres ya están arriba; si esto falla lo agarra el healthcheck
+  // (check "vencimientos con futuro suficiente").
+  try {
+    const n = await refreshVencimientos();
+    console.log(`vencimientos: ${n} símbolos vivos upserteados.`);
+  } catch (e) {
+    console.log(`::warning::vencimientos: no se pudo refrescar desde el CEM — ${e.message}`);
+  }
   console.log("OK");
+}
+
+/** Upsertea (symbol, vencimiento) de los futuros de grano USD vivos del CEM. */
+async function refreshVencimientos() {
+  const hoy = new Date().toISOString().slice(0, 10);
+  const tope = `${Number(hoy.slice(0, 4)) + 5}${hoy.slice(4)}`; // +5 años (descarta placeholders 2050/2100)
+  const rows = [];
+  for (const product of PRODUCTS) {
+    for (let page = 1; page <= 5; page++) {
+      const url =
+        `${CEM.replace("/closing-prices", "/symbols")}?securityType=FUT&product=${encodeURIComponent(product)}` +
+        `&page=${page}&pageSize=1000`;
+      const res = await fetch(url, { headers: { accept: "application/json" }, signal: AbortSignal.timeout(30000) });
+      if (!res.ok) throw new Error(`CEM symbols ${product} p${page}: HTTP ${res.status}`);
+      const data = (await res.json())?.data ?? [];
+      for (const s of data) {
+        if (!s?.symbol || !s?.maturityDate) continue;
+        if (s.symbol.includes(" ") || s.symbol.includes("/DIS")) continue; // ni opciones ni disponible
+        if (s.maturityDate < hoy || s.maturityDate > tope) continue; // solo vivos y sanos
+        const m = s.symbol.match(/^([A-Z]+)\.ROS\/([A-Z]{3}\d{2})$/);
+        rows.push({
+          symbol: s.symbol,
+          underlying: m ? m[1] : null,
+          posicion: m ? m[2] : null,
+          vencimiento: s.maturityDate,
+        });
+      }
+      if (data.length < 1000) break;
+    }
+  }
+  if (rows.length === 0) throw new Error("0 símbolos vivos (¿cambió el endpoint?)");
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/vencimientos?on_conflict=symbol`, {
+    method: "POST",
+    headers: {
+      apikey: SERVICE_KEY,
+      authorization: `Bearer ${SERVICE_KEY}`,
+      "content-type": "application/json",
+      prefer: "resolution=merge-duplicates,return=minimal",
+    },
+    body: JSON.stringify(rows),
+  });
+  if (!res.ok) throw new Error(`upsert vencimientos: HTTP ${res.status} ${await res.text()}`);
+  return rows.length;
 }
 
 main().catch((e) => {

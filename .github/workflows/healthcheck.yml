@@ -7,6 +7,10 @@ name: Healthcheck de frescura (Supabase)
 # terminaba en verde sin insertar y nadie se enteraba.
 # Los `schedule` de GitHub Actions corren desde la rama default del repo.
 
+# El GITHUB_TOKEN no se usa (todo va por secrets de Supabase) → mínimo privilegio (E5 #12d).
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: "45 23 * * *" # 20:45 ART, tras el cron de cierres (23:00 UTC) — ve el dato más fresco del día
@@ -15,13 +19,19 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version-file: ".nvmrc"
       - name: Healthcheck
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/healthcheck-frescura.mjs
+      - name: Avisar por mail si falló (E5 #7)
+        if: failure()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/alerta-mail.mjs --workflow "${{ github.workflow }}" --run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

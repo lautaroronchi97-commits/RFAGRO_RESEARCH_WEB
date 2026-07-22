@@ -236,7 +236,22 @@ async function main() {
     }
   } else {
     const html = await fetchText(PAGE);
-    const rows = filasDe(html, new Date().toISOString().slice(0, 10));
+    // E5 #6 (camino 17): en live NUNCA degradar a fecha "hoy" — si no se puede leer la fecha del
+    // informe, insertar con fecha inventada fabrica un vintage falso por corrida. Falla ruidoso.
+    const { fecha } = parseInforme(html);
+    if (!fecha) {
+      console.error("ERROR: GEA live — no pude leer la fecha del informe (cambió el bloque 'Informe de Estimación Mensual Nacional'). No se inserta con fecha inventada.");
+      process.exit(1);
+    }
+    // E5 #6 (camino 16): exigir las TRES tablas de grano — antes 1-2 muertas quedaban en verde
+    // con esos granos congelados.
+    const granosTabla = new Set(parseTablas(html).map((t) => t.grano));
+    const faltan = ["soja", "maiz", "trigo"].filter((g) => !granosTabla.has(g));
+    if (faltan.length > 0) {
+      console.error(`ERROR: GEA live — no matchearon las tablas de: ${faltan.join(", ")} (¿cambió la clase bcr-estimaciones?).`);
+      process.exit(1);
+    }
+    const rows = filasDe(html, null);
     console.log(`GEA vigente: ${rows.length} filas`);
     all.push(...rows);
   }

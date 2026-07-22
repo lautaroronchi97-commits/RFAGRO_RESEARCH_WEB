@@ -9,6 +9,10 @@ name: Ingesta line-up buques (ISA → Supabase)
 # previos → si un día no salió a la mañana, lo agarra la corrida de la noche o la
 # del día siguiente. Los `schedule` de GitHub Actions corren desde la rama default.
 
+# El GITHUB_TOKEN no se usa (todo va por secrets de Supabase) → mínimo privilegio (E5 #12d).
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: "0 13 * * *" # 10:00 ART
@@ -22,14 +26,20 @@ on:
         description: "Fecha hasta (YYYY-MM-DD) — default: hoy"
         required: false
 
+# Backfill × cron = doble REFRESH MATERIALIZED VIEW concurrente + doble compute de la Edge Function (E5 #11).
+concurrency:
+  group: ingest-lineup
+  cancel-in-progress: false
+
 jobs:
   ingest:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version-file: ".nvmrc"
       - name: Ingesta line-up
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -40,3 +50,8 @@ jobs:
           else
             node scripts/ingest-lineup.mjs
           fi
+      - name: Avisar por mail si falló (E5 #7)
+        if: failure()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/alerta-mail.mjs --workflow "${{ github.workflow }}" --run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

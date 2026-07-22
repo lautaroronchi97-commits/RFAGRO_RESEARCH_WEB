@@ -10,6 +10,10 @@ name: Cargar serie histórica de compras (Agrochat → Supabase)
 # scraper muerto, semántica incompatible) antes de subir la serie semanal buena.
 # Secrets: SUPABASE_URL / SUPABASE_SERVICE_KEY. Upsert idempotente por (campana, codigo_interno, sector, fecha).
 
+# El GITHUB_TOKEN no se usa (todo va por secrets de Supabase) → mínimo privilegio (E5 #12d).
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
     inputs:
@@ -20,16 +24,22 @@ on:
       replace_legacy:
         description: "Borrar las filas fuente='LEGACY' antes de cargar."
         type: boolean
-        default: true
+        default: false
+
+# Group COMPARTIDO con ingest-compras.yml (misma tabla + --replace-legacy borra antes de cargar; E5 #11).
+concurrency:
+  group: compras
+  cancel-in-progress: false
 
 jobs:
   cargar:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version-file: ".nvmrc"
 
       - name: Cargar serie (Agrochat)
         env:

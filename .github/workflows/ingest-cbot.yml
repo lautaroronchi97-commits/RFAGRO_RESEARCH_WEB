@@ -5,6 +5,10 @@ name: Ingesta cierres CBOT (Barchart → Supabase)
 # Toma T-1 (el día en curso es intradía hasta el settle) → corre L-V post-cierre.
 # Los `schedule` de GitHub Actions corren desde la rama default del repo.
 
+# El GITHUB_TOKEN no se usa (todo va por secrets de Supabase) → mínimo privilegio (E5 #12d).
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: "0 22 * * 1-5" # 22:00 UTC, tras el settle de CBOT
@@ -18,14 +22,20 @@ on:
         description: "Año desde para el backfill (default 2020)"
         required: false
 
+# Un backfill por dispatch comparte el rate-limit de Barchart con el cron → nunca a la vez (E5 #11).
+concurrency:
+  group: ingest-cbot
+  cancel-in-progress: false
+
 jobs:
   ingest:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version-file: ".nvmrc"
       - name: Ingesta
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -36,3 +46,8 @@ jobs:
           else
             node scripts/ingest-cbot.mjs
           fi
+      - name: Avisar por mail si falló (E5 #7)
+        if: failure()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/alerta-mail.mjs --workflow "${{ github.workflow }}" --run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

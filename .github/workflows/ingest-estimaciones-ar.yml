@@ -8,6 +8,10 @@ name: Ingesta estimaciones Argentina (GEA · SAGyP · PAS → Supabase)
 # Un solo workflow para no multiplicar YAML (plan §3). Los upserts son idempotentes.
 # Los `schedule` corren desde la rama default del repo. Secrets: SUPABASE_URL / SUPABASE_SERVICE_KEY.
 
+# El GITHUB_TOKEN no se usa (todo va por secrets de Supabase) → mínimo privilegio (E5 #12d).
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: "0 1 * * 4" # mié 22:00 AR — tras la estimación mensual de GEA (2° miércoles)
@@ -34,11 +38,12 @@ on:
 jobs:
   ingest:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version-file: ".nvmrc"
 
       - name: GEA (BCR)
         env:
@@ -73,3 +78,8 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/ingest-pas.mjs --probe
+      - name: Avisar por mail si falló (E5 #7)
+        if: failure()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/alerta-mail.mjs --workflow "${{ github.workflow }}" --run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

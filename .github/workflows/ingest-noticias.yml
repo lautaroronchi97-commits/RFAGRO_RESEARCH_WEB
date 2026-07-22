@@ -5,6 +5,10 @@ name: Ingesta noticias (medios → Supabase)
 # tabla public.noticias. Corre cada hora; también se puede lanzar a mano.
 # Los `schedule` de GitHub Actions corren desde la rama default del repo (main).
 
+# El GITHUB_TOKEN no se usa (todo va por secrets de Supabase) → mínimo privilegio (E5 #12d).
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: "17 * * * *" # cada hora a los :17 (los :00 en punto sufren la congestión de GitHub)
@@ -17,11 +21,12 @@ concurrency:
 jobs:
   ingest:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version-file: ".nvmrc"
       - name: Ingesta
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

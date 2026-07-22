@@ -8,11 +8,16 @@ name: Ingesta pizarra Rosario (CAC → Supabase)
 # así que re-correr es inocuo: la primera que tenga el dato lo mete y las otras re-pisan igual.
 # Los `schedule` de GitHub Actions corren desde la rama default del repo.
 
+# El GITHUB_TOKEN no se usa (todo va por secrets de Supabase) → mínimo privilegio (E5 #12d).
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: "30 13 * * 1-5" # 10:30 ART
     - cron: "45 13 * * 1-5" # 10:45 ART (reintento si aún no había datos)
     - cron: "0 14 * * 1-5" #  11:00 ART (reintento final; a esta hora ya debería estar)
+    - cron: "0 21 * * 1-5" # 18:00 ART — captura la fecha del DÍA: la consulta de CAC la carga tarde y los 3 crons de la mañana venían quedando T-1 (E5 #10)
   workflow_dispatch:
     inputs:
       from:
@@ -22,14 +27,20 @@ on:
         description: "Fecha hasta (YYYY-MM-DD)"
         required: false
 
+# Los 3 crons están a 15 min y GitHub los demora — que no se pisen (E5 #11).
+concurrency:
+  group: ingest-pizarra
+  cancel-in-progress: false
+
 jobs:
   ingest:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version-file: ".nvmrc"
       - name: Ingesta
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

@@ -5,6 +5,10 @@ name: Refresh calendario (centinela mensual)
 # (ICS de NASS, calendario BCR) para avisar cuándo sembrar el seed del próximo año. Emite una
 # anotación ::warning:: en el run cuando el seed próximo está disponible. No usa secrets.
 
+# El GITHUB_TOKEN no se usa (todo va por secrets de Supabase) → mínimo privilegio (E5 #12d).
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: "0 12 1 * *" # día 1 de cada mes, 09:00 AR
@@ -13,10 +17,11 @@ on:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version-file: ".nvmrc"
       - name: Chequear fuentes del próximo año
         run: node scripts/refresh-calendario.mjs

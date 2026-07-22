@@ -83,13 +83,22 @@ function splitSemicolon(line) {
 }
 
 async function fetchCsv() {
-  const res = await fetch(URL_DEA, {
-    method: "POST",
-    headers: { "user-agent": UA, "content-type": "application/x-www-form-urlencoded" },
-    body: "Dataset=Dataset",
-    signal: AbortSignal.timeout(180000),
-  });
-  if (!res.ok) throw new Error(`DEA CSV: HTTP ${res.status}`);
+  // MAGyP filtra las IPs de GitHub Actions (ConnectTimeout persistente, E5 #8) → con creds
+  // vamos vía la Edge Function `dea-fetch` (sa-east-1, misma solución que lineup/ISA).
+  // Sin creds (dry-run local con --out) se pega directo a la fuente.
+  const viaEdge = SUPABASE_URL && SERVICE_KEY;
+  const res = viaEdge
+    ? await fetch(`${SUPABASE_URL}/functions/v1/dea-fetch`, {
+        headers: { authorization: `Bearer ${SERVICE_KEY}`, apikey: SERVICE_KEY },
+        signal: AbortSignal.timeout(180000),
+      })
+    : await fetch(URL_DEA, {
+        method: "POST",
+        headers: { "user-agent": UA, "content-type": "application/x-www-form-urlencoded" },
+        body: "Dataset=Dataset",
+        signal: AbortSignal.timeout(180000),
+      });
+  if (!res.ok) throw new Error(`DEA CSV${viaEdge ? " (via dea-fetch)" : ""}: HTTP ${res.status} ${await res.text().catch(() => "")}`);
   const buf = Buffer.from(await res.arrayBuffer());
   return new TextDecoder("latin1").decode(buf);
 }

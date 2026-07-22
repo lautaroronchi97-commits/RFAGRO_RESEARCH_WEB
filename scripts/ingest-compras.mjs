@@ -286,7 +286,10 @@ async function upsert(rows) {
         apikey: SERVICE_KEY,
         authorization: `Bearer ${SERVICE_KEY}`,
         "content-type": "application/json",
-        prefer: "resolution=merge-duplicates,return=minimal",
+        // Decisión Duda #1(b) de E5 (22/07/2026): MAGyP solo INSERTA semanas nuevas — nunca
+        // pisa una clave existente (el export de Agrochat / el uploader admin mandan en las
+        // claves ya cargadas). Antes era merge-duplicates y flipeaba `fuente` al pisar.
+        prefer: "resolution=ignore-duplicates,return=minimal",
       },
       body: JSON.stringify(batch),
     });
@@ -303,11 +306,13 @@ async function main() {
 
   let all = [];
 
+  let nSnapshots = 0;
   if (hasFlag("backfill")) {
     const from = arg("from", "20200101");
     const to = arg("to", new Date().toISOString().slice(0, 10).replace(/-/g, ""));
     console.log(`Compras backfill Wayback ${from} → ${to}`);
     const stamps = await snapshotsWayback(from, to);
+    nSnapshots = stamps.length;
     console.log(`  ${stamps.length} snapshots`);
     for (const ts of stamps) {
       try {
@@ -324,6 +329,38 @@ async function main() {
     const html = await fetchText(PAGE);
     all = parseCompras(html);
     console.log(`Compras vigente: ${all.length} filas`);
+
+    // E5 #2: la página trae un 2º grupo de paneles VIEJO (ej. "AL 27/05" conviviendo con el
+    // "AL 15/07" vigente) → eran las 7 filas basura que E1 catalogó de huérfanas. Nos quedamos
+    // solo con la foto vigente: fuera toda fila >7 días más vieja que la más nueva de la página.
+    if (all.length > 0) {
+      const maxF = all.map((r) => r.fecha).sort().at(-1);
+      const corte = new Date(new Date(`${maxF}T00:00:00Z`).getTime() - 7 * 864e5)
+        .toISOString().slice(0, 10);
+      const viejas = all.filter((r) => r.fecha < corte).length;
+      if (viejas > 0) console.log(`  descartadas ${viejas} filas de un grupo viejo de la página (fecha < ${corte}).`);
+      all = all.filter((r) => r.fecha >= corte);
+    }
+
+    // Guard por panel (E5 #6): si parsean <6 de los 7 granos, se rompió PARCIALMENTE — antes
+    // eso quedaba verde con granos congelados. Falla nombrando los que faltan.
+    const granos = new Set(all.map((r) => r.codigo_interno));
+    if (granos.size < 6) {
+      const faltan = [...new Set(Object.values(PANEL_A_CODIGO))].filter((g) => !granos.has(g));
+      console.error(`ERROR: solo ${granos.size}/7 paneles de grano parseados — faltan: ${faltan.join(", ") || "?"}. No se da por bueno.`);
+      process.exit(1);
+    }
+
+    // Identidad contable de la fuente: precio hecho + a fijar ≈ total comprado. Si no cierra,
+    // probablemente se corrieron las columnas (num() tragaría basura como números válidos).
+    let raras = 0;
+    for (const r of all) {
+      if (r.toneladas != null && r.precio_hecho_tn != null && r.toneladas_a_fijar != null) {
+        const suma = r.precio_hecho_tn + r.toneladas_a_fijar;
+        if (Math.abs(suma - r.toneladas) > Math.max(0.01 * r.toneladas, 1000)) raras++;
+      }
+    }
+    if (raras > 0) console.log(`::warning::compras: ${raras} filas no cierran precio_hecho + a_fijar ≈ total (¿columnas corridas?).`);
   }
 
   all = dedup(all);
@@ -341,7 +378,12 @@ async function main() {
       console.error("ERROR: compras live devolvió 0 filas — cambió el HTML de MAGyP. No se congela en silencio.");
       process.exit(1);
     }
-    console.log("Backfill sin filas parseables — nada que subir.");
+    // E5 #6 (camino 8): "hubo capturas y 0 filas" = parser roto, no rango vacío.
+    if (nSnapshots > 0) {
+      console.error(`ERROR: backfill con ${nSnapshots} snapshots y 0 filas parseables — el parser no entiende ese HTML.`);
+      process.exit(1);
+    }
+    console.log("Backfill sin capturas — nada que subir.");
     return;
   }
   console.log("Upsert a compras...");

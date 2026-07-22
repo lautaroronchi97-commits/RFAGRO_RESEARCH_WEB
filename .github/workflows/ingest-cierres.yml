@@ -4,6 +4,10 @@ name: Ingesta cierres granos (CEM → Supabase)
 # Corre después del cierre de la rueda (L-V) y también se puede lanzar a mano.
 # Los `schedule` de GitHub Actions corren desde la rama default del repo.
 
+# El GITHUB_TOKEN no se usa (todo va por secrets de Supabase) → mínimo privilegio (E5 #12d).
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: "0 23 * * 1-5" # 23:00 UTC = 20:00 ART, tras el cierre
@@ -19,11 +23,12 @@ on:
 jobs:
   ingest:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version-file: ".nvmrc"
       - name: Ingesta
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -34,3 +39,8 @@ jobs:
           else
             node scripts/ingest-cierres.mjs --days 5
           fi
+      - name: Avisar por mail si falló (E5 #7)
+        if: failure()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/alerta-mail.mjs --workflow "${{ github.workflow }}" --run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

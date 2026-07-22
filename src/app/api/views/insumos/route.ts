@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { getTemperatura } from "@/lib/lineup/temperatura";
 import { getSemaforo } from "@/lib/lineup/semaforo";
 import { getEmpresas } from "@/lib/lineup/empresas";
@@ -17,7 +18,7 @@ import { sbSelectAll } from "@/lib/supabase";
 import { parseRows, construirPizarra, construirCambios, organismosPresentes } from "@/lib/estimaciones";
 
 /**
- * GET /api/views/insumos?token=<INFORME_TOKEN>
+ * GET /api/views/insumos — auth: header `Authorization: Bearer <INFORME_TOKEN>`.
  *
  * JSON con TODOS los insumos del view de mercado semanal (MP3 de docs/PLAN_INFORMES.md):
  * lo que la web ya computa, en un solo lugar, para que la sesión de research
@@ -26,14 +27,22 @@ import { parseRows, construirPizarra, construirCambios, organismosPresentes } fr
  *
  * Gate por token de env (INFORME_TOKEN): sin token válido → 401. Si la env no está
  * configurada, la ruta queda cerrada (401 siempre). Nunca se cachea.
+ * E5 #12a: el token viaja por HEADER (antes ?token= quedaba en los request logs de
+ * Vercel y de cualquier proxy) y el compare es timing-safe.
  */
 
+function tokenValido(recibido: string, esperado: string): boolean {
+  if (!esperado || !recibido) return false;
+  const a = Buffer.from(recibido);
+  const b = Buffer.from(esperado);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 export async function GET(request: Request): Promise<Response> {
-  const url = new URL(request.url);
-  const token = url.searchParams.get("token") ?? "";
+  const token = (request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
   const esperado = process.env.INFORME_TOKEN ?? "";
   const noCache = { "cache-control": "private, no-store" };
-  if (!esperado || token !== esperado) {
+  if (!tokenValido(token, esperado)) {
     return Response.json({ error: "No autorizado." }, { status: 401, headers: noCache });
   }
 

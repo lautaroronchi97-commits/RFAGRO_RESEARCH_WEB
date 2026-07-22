@@ -7,6 +7,10 @@ name: Ingesta estimaciones USDA (WASDE + PSD → Supabase)
 # días para cubrir la fecha variable (el upsert es idempotente; si el WASDE del mes no salió,
 # el script lo saltea). Los `schedule` corren desde la rama default del repo.
 
+# El GITHUB_TOKEN no se usa (todo va por secrets de Supabase) → mínimo privilegio (E5 #12d).
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: "0 20 9,10,11,12,13 * *" # 17:00 AR, tras el release del WASDE + regeneración del PSD
@@ -30,11 +34,12 @@ on:
 jobs:
   ingest:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version-file: ".nvmrc"
       - name: Ingesta
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

@@ -80,15 +80,40 @@ doble guard · el proxy degrada sin 500s si Supabase cae.
 Netlify Pro; Cloudflare re-evaluar en 6 meses (el adapter no soporta el Node middleware que
 `src/proxy.ts` usa).**
 
-## Quedó pendiente / en vuelo
+## Fase 2 (22/07/2026) — TODO aprobado e implementado
 
-- **Lautaro responde las 7 Dudas del informe** (fuente de compras · fix del refresh por MCP · casilla
-  de alertas · DEA Edge vs retry · visibilidad de matviews al prender login · Vercel Pro · checklist
-  de env vars por scope) + la columna Decisión de los 14 hallazgos → **FASE 2** implementa solo lo
-  aprobado en esta misma rama/PR.
-- Paso post-merge documentado: los cambios de workflows/scripts de fase 2 se prueban con
-  `workflow_dispatch` recién cuando el PR llegue a `main` (GitHub solo despacha workflows de la
-  default).
-- Verificaciones de seguimiento anotadas en el informe: el healthcheck del 22/07 debería correr los
-  15 checks (la extensión de E1 recién entró a `main`) y el cron de compras del jueves 23/07
-  reinserta la semana 15/07 (+ las 7 basura si no se corrige antes).
+Lautaro respondió las 7 Dudas en el chat y eligió «Implementá todos» para el resto. Tabla completa
+con evidencia en `auditoria/E5-infra.md` § Fase 2. Resumen:
+
+- **Por MCP a la base viva:** `ALTER FUNCTION refresh_lineup_visitas SET statement_timeout='300s'`
+  (refresh medido 28,8 s + refresh manual) · `DROP FUNCTION ingest_cierres_cem` · RLS initplan
+  `(select auth.uid())` en 4 policies. Migraciones versionadas `20260722013000/013100`. La
+  `20260722013200` (revoke de las 7 matviews de mesa) quedó versionada **SIN aplicar** — se aplica
+  en el encendido, cuando producción deploye con la service key.
+- **Edge Functions (por MCP):** `dea-fetch` nueva (sa-east-1) + redeploy `lineup-ingest` v3 (auth
+  por comparación directa de la service key). Ambas → 403 con anon (verificado por curl).
+- **Ingestas:** compras decisión (b) (parser descarta el grupo viejo — dry-run real 30→23 filas —,
+  upsert ignore-duplicates, guards por panel) · guards por componente en gea/pizarra/cbot/cierres/
+  noticias/usda · `ingest-cierres.mjs` refresca `vencimientos` desde CEM /symbols · `ingest-dea.mjs`
+  vía `dea-fetch`.
+- **Monitoreo:** `scripts/alerta-mail.mjs` (Resend) + `if: failure()` en 6 workflows · healthcheck
+  15→17 checks (views_mercado, vencimientos-futuro ≥180d, seed-calendario ≥60d, DEA a 9d).
+- **Workflows:** permissions/timeouts/concurrency (group `compras` compartido)/nvmrc/actions v5/
+  replace_legacy=false/4º cron de pizarra en los 13 YMLs.
+- **Web:** proxy deja pasar `/api/views|informes/*` + cap 2 MB en POSTs públicos · INFORME_TOKEN por
+  header Bearer + timingSafeEqual · CSP Report-Only + HSTS · `src/lib/supabase.ts` prefiere la
+  service key (server-only).
+- **Tests/docs:** test Vitest FERIADOS_AR año-próximo · guía definitiva de encendido (Vercel Pro +
+  login) al tope de `GUIA_LOGIN_SETUP.md` · banner histórico en `INFRAESTRUCTURA.md` · skill MP3 y
+  prompt MP1 con el token por header. Verificado: **lint + tsc + build + vitest** en verde.
+
+## Quedó en manos de Lautaro (todo en la «Guía definitiva 22/07» de `GUIA_LOGIN_SETUP.md`)
+
+- **Parte A:** contratar Vercel Pro (upgrade + spend limit + functions en gru1 + redeploy).
+- **Parte B (post-merge del PR #58):** `SUPABASE_SERVICE_KEY` en Vercel (Production) +
+  `RESEND_API_KEY` como secret de GitHub · dispatches de prueba (lineup / estimaciones-ar /
+  healthcheck) · aplicar `20260722013200_e5_revoke_matviews_mesa.sql` · leaked password protection ·
+  borrar Edge Functions fantasma `lineup-probe` / `lineup-fetch`.
+- **Parte C:** encendido del login (checklist Etapa 3 + validación de 5 min).
+- **Seguimiento automático:** el cron de compras del jueves 23/07 reinserta la semana 15/07 (ya sin
+  la basura del 27/05); el healthcheck del 22/07 pasa a 17 checks.
