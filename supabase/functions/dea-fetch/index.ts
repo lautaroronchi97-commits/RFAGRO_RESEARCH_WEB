@@ -44,7 +44,10 @@ Deno.serve(async (req: Request) => {
         "content-type": "application/x-www-form-urlencoded",
       },
       body: "Dataset=Dataset",
-      signal: AbortSignal.timeout(120000),
+      // El reporte pesa ~11,5 MB y MAGyP lo arma dinámicamente: 120s no alcanzaba
+      // (2 timeouts reales verificados, ~121s cada uno) — el wall clock limit de
+      // Supabase Edge Functions es 400s, dejamos margen.
+      signal: AbortSignal.timeout(240000),
     });
     if (!res.ok) {
       return Response.json({ ok: false, error: `dea_http_${res.status}` }, { status: 502 });

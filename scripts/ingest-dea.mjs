@@ -86,17 +86,20 @@ async function fetchCsv() {
   // MAGyP filtra las IPs de GitHub Actions (ConnectTimeout persistente, E5 #8) → con creds
   // vamos vía la Edge Function `dea-fetch` (sa-east-1, misma solución que lineup/ISA).
   // Sin creds (dry-run local con --out) se pega directo a la fuente.
+  // 260s: por encima del AbortSignal de 240s de la Edge Function (el reporte de
+  // ~11,5 MB que arma MAGyP dinámicamente puede tardar >120s — 2 timeouts reales
+  // verificados el 22/07). El job del workflow tiene timeout-minutes: 20, sobra margen.
   const viaEdge = SUPABASE_URL && SERVICE_KEY;
   const res = viaEdge
     ? await fetch(`${SUPABASE_URL}/functions/v1/dea-fetch`, {
         headers: { authorization: `Bearer ${SERVICE_KEY}`, apikey: SERVICE_KEY },
-        signal: AbortSignal.timeout(180000),
+        signal: AbortSignal.timeout(260000),
       })
     : await fetch(URL_DEA, {
         method: "POST",
         headers: { "user-agent": UA, "content-type": "application/x-www-form-urlencoded" },
         body: "Dataset=Dataset",
-        signal: AbortSignal.timeout(180000),
+        signal: AbortSignal.timeout(260000),
       });
   if (!res.ok) throw new Error(`DEA CSV${viaEdge ? " (via dea-fetch)" : ""}: HTTP ${res.status} ${await res.text().catch(() => "")}`);
   const buf = Buffer.from(await res.arrayBuffer());
