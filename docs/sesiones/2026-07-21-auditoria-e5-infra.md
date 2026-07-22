@@ -117,3 +117,70 @@ con evidencia en `auditoria/E5-infra.md` § Fase 2. Resumen:
 - **Parte C:** encendido del login (checklist Etapa 3 + validación de 5 min).
 - **Seguimiento automático:** el cron de compras del jueves 23/07 reinserta la semana 15/07 (ya sin
   la basura del 27/05); el healthcheck del 22/07 pasa a 17 checks.
+
+## Continuación (mismo día, 22/07) — Parte A/B ejecutadas + Parte C en curso
+
+**Vercel Pro contratado**: upgrade $20/mes + **spend limit $20 con "pausar implementaciones"
+activado** (más conservador que los $40 sugeridos, decisión de Lautaro) + functions en `gru1`
+(São Paulo).
+
+**Al correr los dispatches de prueba post-merge del PR #58 aparecieron 2 bugs reales, arreglados
+en el PR #59 (mismo día, mergeado):**
+
+1. **403 en `lineup-ingest`/`dea-fetch`** — comparaban el bearer **string a string** contra
+   `Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")`; el proyecto tiene en paralelo las keys legacy
+   (JWT) y las nuevas (`sb_publishable_.../sb_secret_...`) y ese valor reservado no coincidía con
+   el JWT legacy que manda `SUPABASE_SERVICE_KEY` (el secret de GitHub), aunque las dos son
+   credenciales válidas. **Fix**: como el gateway (`verify_jwt=true`) ya valida la firma, es
+   seguro decodificar el payload y exigir el claim `role=service_role`, sin depender de esa
+   comparación. `lineup-ingest` v4 y `dea-fetch` v2 deployados por MCP; verificado con
+   `lineup-ingest` → dispatch SUCCESS completo.
+2. **DEA sigue sin conectar ni desde sa-east-1** — con el 403 resuelto, `dea-fetch` no llegaba a
+   bajar el CSV de MAGyP. Subir el `AbortSignal` de 120s a 240s (dentro del wall clock limit de
+   400s de Supabase) reveló la causa real: **`tcp connect error: Connection timed out` a los
+   ~130s** — la conexión TCP nunca se completa, no es una respuesta lenta. Es la misma familia de
+   bloqueo que ya afecta a GitHub Actions (E5 #8), ahora parece alcanzar también a sa-east-1.
+   **Sin resolver** — necesita investigación aparte (¿bloqueo por rango de IP más amplio? ¿outage
+   puntual?); el healthcheck (guard 9d) y las alertas Resend ya cubren la degradación mientras
+   tanto. Documentado en el PR #59, no bloqueó el merge del fix del 403.
+
+**Resto de Parte B, verificado en vivo:**
+- `RESEND_API_KEY` cargada en GitHub → **confirmado**: 3 mails de alerta reales llegaron a
+  lautaroronchi97@gmail.com durante las pruebas de DEA.
+- `SUPABASE_SERVICE_KEY` en Vercel: el primer intento quedó **con el nombre cargado pero sin
+  valor** (variable vacía) — Lautoro lo completó con la key real de Supabase (`service_role`,
+  Settings → API) + redeploy. Verificado con `/comercio/puertos` mostrando datos reales.
+- Migración `20260722013200_e5_revoke_matviews_mesa.sql` **aplicada por MCP** — verificado con
+  curl que `anon` ahora recibe 401 en `lineup_visitas`, y que la web sigue sirviendo datos (con la
+  service key) sin degradar.
+- Edge Functions fantasma `lineup-probe`/`lineup-fetch` **borradas** por Lautoro (dashboard).
+- Healthcheck fresco post-merge: **17/17 en verde** ("Todas las tablas al día ✔").
+- **Leaked password protection: DEFERIDO A PROPÓSITO.** El toggle en Supabase se ve verde pero el
+  advisor de seguridad lo sigue marcando deshabilitado — la función requiere **Supabase Pro
+  ($25/mes)**, y el proyecto está en plan Free (verificado con `get_organization`). Lautoro decidió
+  no contratarlo por ahora. Queda pendiente, no bloqueante.
+
+**Parte C (encendido del login) — arrancada, no cerrada:**
+- 4 env vars básicas cargadas en Vercel (`NEXT_PUBLIC_SUPABASE_URL`/`_ANON_KEY`/`_SITE_URL`,
+  `AUTH_ENFORCED=false`) + redeploy.
+- Google OAuth configurado: credenciales creadas en Google Cloud Console, cargadas en Supabase
+  (Authentication → Providers → Google), redirect URLs configuradas. **Login con Google probado
+  y funciona** (Lautoro entró con su cuenta, quedó admin auto-aprobado).
+- App name "RF AGRO" + logo (isotipo convertido a PNG 512×512 con `sharp`, mandado por
+  `SendUserFile`) cargados en el consent screen de Google.
+- **Pendiente, anotado para retomar**: publicar la app de Google a producción (para que cualquiera
+  pueda loguearse, no solo el dueño del proyecto de Google) — chocó con un paso nuevo de Google
+  ("Estado de verificación — la información de tu marca debe verificarse", botón "Verificar la
+  marca" que aparecía deshabilitado). **Aclarado con Lautoro: publicar la app es gratis** (no
+  requiere plan pago de Google ni de Supabase); lo único pago es sacar el texto
+  "gbpfgfeksqmzmsxnxiwg.supabase.co" de la pantalla de Google por uno propio, que sí requiere
+  Supabase Pro y es solo estético — no bloquea el login. Quedó sin resolver **qué botón exacto usar
+  para publicar** dado el flujo nuevo de verificación de marca de Google; retomar pidiendo captura
+  completa de la pantalla de OAuth consent screen.
+- **AUTH_ENFORCED sigue en `false`** — la web sigue 100% pública, nada de esto afecta producción
+  todavía.
+
+**Próximo paso**: retomar Parte C — resolver el flujo de publicación de Google (o directamente
+probar si ya funciona para otros usuarios sin publicar formalmente, dado que Lautoro es el único
+que probó hasta ahora) → seguir el checklist de encendido de la Etapa 3 (aprobar a Mauro →
+`AUTH_ENFORCED=true` → validación de 5 min).
