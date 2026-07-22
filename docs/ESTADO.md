@@ -22,7 +22,7 @@
 ## Ahora (última actualización: 22/07/2026 — 🏁 AUDITORÍA INTEGRAL COMPLETA: E7 síntesis CERRADA → BACKLOG MAESTRO ÚNICO en `auditoria/E7-sintesis.md` §4 · encendido del login Parte A/B HECHAS, Parte C EN CURSO · E1–E6 cerradas · MP3 view de mercado MERGEADO · research P3/P4 HECHO)
 
 **🏁 AUDITORÍA E7 (síntesis y backlog maestro) — CERRADA, cierra la auditoría integral completa
-(E1→E7) — rama `claude/auditoria-e7-sintesis-a919cq`, PR #_.** Etapa final: se fusionaron los 6
+(E1→E7) — rama `claude/auditoria-e7-sintesis-a919cq`, PR #61.** Etapa final: se fusionaron los 6
 informes (deduplicando los hallazgos vistos por más de una etapa, con la decisión de Lautaro
 arrastrada — nada aprobado se perdió, nada rechazado reaparece), se armó la **matriz impacto ×
 esfuerzo** de todo lo aprobado-y-pendiente, y quedó el **BACKLOG MAESTRO ÚNICO** en

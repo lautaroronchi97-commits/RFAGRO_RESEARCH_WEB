@@ -1,6 +1,6 @@
 # Auditoría E7 — Síntesis y backlog maestro (2026-07-22)
 
-- **Rama:** `claude/auditoria-e7-sintesis-a919cq` · **PR:** #_ (base `main`, draft hasta el OK)
+- **Rama:** `claude/auditoria-e7-sintesis-a919cq` · **PR:** #61 (base `main`, draft hasta el OK)
 - **Alcance:** etapa final de la auditoría integral ([`PLAN_AUDITORIA.md`](../PLAN_AUDITORIA.md)):
   fusionar los 6 informes E1–E6, deduplicar los hallazgos que aparecieron en más de una etapa
   arrastrando la decisión de Lautaro de cada uno, armar la matriz impacto × esfuerzo de lo

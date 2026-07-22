@@ -1,6 +1,6 @@
 # Sesión 2026-07-22 — Auditoría E7: síntesis y backlog maestro
 
-- **Rama:** `claude/auditoria-e7-sintesis-a919cq` · **PR:** #_ (base `main`, draft)
+- **Rama:** `claude/auditoria-e7-sintesis-a919cq` · **PR:** #61 (base `main`, draft)
 - **Objetivo pedido por Lautaro:** etapa final de la auditoría integral (PROMPT E7 de
   `PLAN_AUDITORIA.md`): fusionar los 6 informes E1–E6, deduplicar, matriz impacto × esfuerzo,
   backlog maestro único y un prompt por lote grande. Sin descubrir hallazgos nuevos, sin tocar código.
@@ -65,8 +65,6 @@
   feedback → ready for review.
 - Los 8 pasos manuales del grupo A del backlog (login Parte C, Routine MP3, mail PAS, ramas,
   respuestas P3/P4, uploader, H12/girasol, leaked protection si upgradea Supabase).
-- El PR # de esta sesión hay que anotarlo en el tablero de `PLAN_AUDITORIA.md` y en el encabezado
-  de `E7-sintesis.md` al crearlo.
 
 ## Trampas descubiertas (para la próxima sesión)
 
