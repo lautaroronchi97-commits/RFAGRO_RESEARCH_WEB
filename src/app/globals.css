@@ -1494,3 +1494,70 @@ a.estim-inf:hover { color:var(--gold-text); }
 .vw-fb-ok { font-size:var(--fs-xs); color:var(--pos); }
 .vw-fb-err { font-size:var(--fs-xs); color:var(--neg); }
 .vw-hist-fb { max-width:380px; white-space:normal; }
+
+/* ============================================================
+   PLACA — informe diario (MP1 de PLAN_INFORMES.md). Página standalone
+   (sin header/nav del sitio), pensada para screenshotear a PNG 1080×~1600.
+   El tema NO depende de next-themes/localStorage (el screenshot es headless
+   y no corre el toggle): [data-tema] en el wrapper .plc fija los tokens
+   localmente, así el render es determinístico para Playwright.
+   ============================================================ */
+.plc-page { min-height:100vh; display:flex; justify-content:center;
+  background:#11150f; padding:0; }
+.plc { width:1080px; box-sizing:border-box; padding:52px 58px 40px;
+  background:var(--bg); color:var(--ink); font-family:var(--font-ui); }
+
+.plc[data-tema="light"] {
+  --bg:#EDF2E3; --panel:#FCFDF8; --panel-2:#F4F8EB;
+  --ink:#17251B; --ink-2:#44553D; --ink-3:#5B6C51;
+  --line:rgba(47,74,42,.16); --gold:#EFBF2E; --gold-text:#8A6608;
+  --pos:#16A34A; --neg:#DC2626; --neu:#7E8C74;
+}
+.plc[data-tema="dark"] {
+  --bg:#060A07; --panel:#0C130D; --panel-2:#111A12;
+  --ink:#EDF4E7; --ink-2:#ADBFA6; --ink-3:#86987E;
+  --line:rgba(168,198,160,.12); --gold:#EFBF2E; --gold-text:#EFBF2E;
+  --pos:#37D982; --neg:#FF5C5C; --neu:#8B9E85;
+}
+
+.plc-hd { display:flex; align-items:center; gap:16px; padding-bottom:20px;
+  border-bottom:2px solid var(--gold); margin-bottom:22px; }
+.plc-hd-wm { display:flex; flex-direction:column; }
+.plc-hd-tit { font-family:var(--font-mono); font-weight:700; font-size:20px; letter-spacing:.02em; }
+.plc-hd-fecha { font-size:14px; color:var(--ink-2); margin-top:2px; }
+
+.plc-titulo { font-family:var(--font-mono); font-size:28px; font-weight:800;
+  margin:0 0 16px; letter-spacing:.01em; }
+
+.plc-comentario { list-style:none; padding:0; margin:0 0 26px; display:flex;
+  flex-direction:column; gap:8px; }
+.plc-comentario li { font-size:16px; line-height:1.5; padding-left:18px; position:relative; }
+.plc-comentario li::before { content:"–"; position:absolute; left:0; color:var(--gold-text); }
+
+.plc-granos { display:flex; flex-direction:column; gap:16px; margin-bottom:26px; }
+.plc-grano { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px 22px; }
+.plc-grano-hd { display:flex; align-items:baseline; justify-content:space-between;
+  margin-bottom:8px; gap:10px; flex-wrap:wrap; }
+.plc-grano-nombre { font-family:var(--font-mono); font-weight:700; font-size:18px; }
+.plc-grano-pizarra { font-family:var(--font-mono); font-size:14px; color:var(--ink-2); }
+.plc-grano-linea { font-size:15px; line-height:1.5; margin:0 0 10px; color:var(--ink-2); }
+.plc-grano-pos-list { display:flex; flex-wrap:wrap; gap:8px; }
+.plc-pos { font-family:var(--font-mono); font-size:13.5px; background:var(--panel-2);
+  border-radius:8px; padding:6px 10px; display:inline-flex; gap:6px; align-items:center; }
+.plc-pos .up { color:var(--pos); } .plc-pos .down { color:var(--neg); } .plc-pos .flat { color:var(--neu); }
+
+.plc-franja { display:flex; gap:14px; margin-bottom:26px; }
+.plc-franja-col { flex:1; background:var(--panel-2); border-radius:12px; padding:14px 18px; }
+.plc-franja-h { font-size:11.5px; text-transform:uppercase; letter-spacing:.08em;
+  color:var(--ink-3); margin-bottom:8px; font-weight:700; }
+.plc-franja-row { display:flex; justify-content:space-between; gap:10px;
+  font-family:var(--font-mono); font-size:13.5px; padding:3px 0; }
+
+.plc-pie { border-top:1px solid var(--line); padding-top:16px;
+  display:flex; flex-direction:column; gap:8px; }
+.plc-pie-tit { font-size:11.5px; text-transform:uppercase; letter-spacing:.08em;
+  color:var(--ink-3); font-weight:700; }
+.plc-pie-item { font-size:13.5px; line-height:1.4; color:var(--ink-2); }
+.plc-disclaimer { font-size:11px; color:var(--ink-3); margin-top:8px; }
+.plc-sello { font-family:var(--font-mono); font-size:11px; color:var(--ink-3);
+  text-align:right; margin-top:6px; }
