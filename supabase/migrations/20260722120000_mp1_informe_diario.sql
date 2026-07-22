@@ -97,3 +97,55 @@ grant select on public.informes_generados to anon, authenticated;
 insert into storage.buckets (id, name, public)
 values ('informes', 'informes', false)
 on conflict (id) do nothing;
+
+-- ============================================================================
+-- 4. compras_bcra — compras netas de divisas del BCRA (M USD), carga MANUAL del
+--    día en /admin/datos (mismo patrón que mesa_color). El research de P3
+--    (PLAN_BACKLOG.md, decisión 22/07/2026) definió el dato final como
+--    "automático (API BCRA v4 var 78) + carga manual del día" — acá solo la
+--    pata manual (MP1); cuando P3 se construya, su ingesta escribe en esta
+--    MISMA tabla con fuente='api' (upsert por fecha, no se duplica).
+-- ============================================================================
+create table if not exists public.compras_bcra (
+  fecha       date primary key,
+  monto_musd  numeric not null,
+  fuente      text not null default 'manual' check (fuente in ('manual', 'api')),
+  actualizado timestamptz not null default now()
+);
+
+comment on table public.compras_bcra is
+  'Compras netas de divisas del BCRA por día (M USD). Carga manual desde /admin/datos (MP1); P3 (PLAN_BACKLOG.md) suma la ingesta automática a esta misma tabla con fuente=api.';
+
+alter table public.compras_bcra enable row level security;
+
+drop policy if exists compras_bcra_select_admin on public.compras_bcra;
+create policy compras_bcra_select_admin on public.compras_bcra
+  for select to authenticated using (public.is_admin());
+
+revoke all on public.compras_bcra from public, anon;
+grant select on public.compras_bcra to authenticated;
+
+create or replace function public.admin_upsert_compras_bcra(p_fecha date, p_monto_musd numeric)
+returns boolean
+language plpgsql
+security definer
+set search_path to 'public'
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'solo admin';
+  end if;
+
+  insert into public.compras_bcra (fecha, monto_musd, fuente, actualizado)
+  values (p_fecha, p_monto_musd, 'manual', now())
+  on conflict (fecha) do update
+    set monto_musd = excluded.monto_musd,
+        fuente = 'manual',
+        actualizado = now();
+
+  return true;
+end;
+$$;
+
+revoke all on function public.admin_upsert_compras_bcra(date, numeric) from public, anon;
+grant execute on function public.admin_upsert_compras_bcra(date, numeric) to authenticated;

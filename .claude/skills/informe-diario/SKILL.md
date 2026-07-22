@@ -45,10 +45,27 @@ GET {INFORME_BASE_URL}/api/informes/datos?fecha=YYYY-MM-DD
 Sin `?fecha=` toma hoy (Córdoba). Devuelve: `cierres` (futuros por grano y
 posición con `settlement` + `changePercent` vs la rueda anterior), `arbitrajes`
 (spread/TNA disponible vs futuro), `pizarra` (CAC $ y USD por grano),
-`dolarFuturo` (mayorista + curva DDF con TNA), `chicago` (los 5 de Chicago en
-USD/tn + Δ), `noticias.destacados` (top 4 del día), `agenda` (informes de
-hoy/mañana) y `color` (el texto que Lautaro cargó en `/admin/datos`, o `null`
-si no cargó nada ese día — el informe sale igual).
+`volumenPorGrano` (total operado en A3 del día, sumando TODAS las posiciones
+vivas de cada grano — `null` si no hubo dato, `0` si hubo dato y no se operó
+nada), `dolarFuturo` (mayorista + curva DDF con TNA), `chicago` (los 5 de
+Chicago en USD/tn + Δ), `noticias.destacados` (top 4 del día), `agenda`
+(informes de hoy/mañana), `color` (el texto que Lautaro cargó en
+`/admin/datos`, o `null` si no cargó nada ese día — el informe sale igual),
+`informesHoy` (informes de organismos —USDA/CONAB/GEA/DEA— publicados JUSTO
+ese día, con sus `cambios` exactos: grano/país/campaña, antes→ahora, unidad),
+`interpretaciones` (si el mini-proyecto MP4 ya publicó su lectura de alguno de
+esos informes — normalmente vacío hasta que MP4 exista, no es un error) y
+`bcra` (compras netas del BCRA del día en M USD — carga MANUAL de Lautaro en
+`/admin/datos`; `null` si no cargó nada ese día. P3 de `PLAN_BACKLOG.md` va a
+sumar la ingesta automática a la misma tabla más adelante — hasta entonces,
+solo hay dato si Lautaro lo cargó).
+
+La plantilla (paso 4) YA renderiza el volumen por grano, el `bcra` del día y
+una sección "Informe del día" con `informesHoy`/`interpretaciones` solas — no
+hace falta que los repitas en la prosa, pero si `informesHoy` trae algo
+relevante (una revisión grande) o `bcra` fue un día fuerte, está bien
+mencionarlo en el `comentario` general (ej. "BCRA siguió acumulando firme",
+tal como en los ejemplos de `voz-lautaro`).
 
 Si la URL de producción no responde (la ruta recién deployada), levantá la web
 local: `NODE_USE_ENV_PROXY=1 npm run build && npm run start` y usá
@@ -71,6 +88,15 @@ Con el JSON del paso 1, armá:
   de `cierres` y el nivel de `pizarra`/`arbitrajes` de ese grano. Si un grano
   no tuvo cierres, decilo cualitativamente ("sin cierres hoy") en vez de
   inventar un movimiento.
+
+**Sobre el `color`**: leé `references/ejemplo-color-operador.md` — casi
+siempre trae precios/volúmenes/pizarra estimada REALES de un operador de la
+mesa (no solo una sensación), incluyendo si hubo negocios a fijar y si la
+exportación está "apretando" o floja. Son tan citables como el JSON: si el
+color trae un precio o volumen que `cierres`/`pizarra` no tiene (ej. sorgo,
+"contractual"), usalo igual. Si el color y el dato automático difieren (pizarra
+estimada de la mesa vs cierre oficial CAC), mostrá los dos — no "corrijas" uno
+con el otro, son lecturas distintas del mismo día.
 
 Regla dura de `voz-lautaro`: **ni un número inventado**. Todo dato sale del
 JSON del paso 1 o del `color` cargado por Lautaro.

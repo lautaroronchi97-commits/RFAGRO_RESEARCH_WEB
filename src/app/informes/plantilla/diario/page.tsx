@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
-import { getCierresGranos, type CierrePos } from "@/lib/futuros";
+import { getCierresGranos, volumenTotalGrano, type CierrePos } from "@/lib/futuros";
 import { getPizarra } from "@/lib/pizarra";
 import { getDolarFuturo } from "@/lib/market";
 import { getMonitorMercados } from "@/lib/monitor-mercados";
 import { getNoticias } from "@/lib/noticias";
 import { getEventos } from "@/lib/calendario";
 import { hoyCordobaISO } from "@/lib/dates";
-import { sbSelect } from "@/lib/supabase";
+import { sbSelect, sbSelectAll } from "@/lib/supabase";
 import { tokenValido, esFechaValida } from "@/lib/informe-auth";
 import { nfmt, pfmt, dirOf, horaCordoba } from "@/lib/format";
+import { parseRows, construirCambios, organismosPresentes, type Cambio } from "@/lib/estimaciones";
 
 /**
  * Placa del informe diario (MP1 de docs/PLAN_INFORMES.md). Página standalone
@@ -49,6 +50,41 @@ async function getBorrador(fecha: string): Promise<FilaInforme | null> {
   return res.data[0] as FilaInforme;
 }
 
+type InformeHoy = { organismo: string; fecha: string | null; informe: string; cambios: Cambio[] };
+
+/** Informes de organismo publicados JUSTO ese día (ej. USDA/CONAB/GEA/DEA) — reusa estimaciones.ts. */
+async function getInformesHoy(fecha: string): Promise<InformeHoy[]> {
+  const res = await sbSelectAll(
+    "estimaciones_produccion?select=organismo,pais,grano,campania,variable,valor,unidad,fecha_publicacion,informe,url&order=fecha_publicacion.asc",
+    3600,
+  );
+  if (!res.ok) return [];
+  const rows = parseRows(res.data);
+  return organismosPresentes(rows)
+    .map((o) => construirCambios(rows, o))
+    .filter((c) => c.fecha === fecha && c.cambios.length > 0);
+}
+
+type Interpretacion = { organismo: string; informe: string; publicado_md: string };
+
+/** MP4 (interpretación de informes, aún sin construir): degrada a [] mientras no exista la tabla. */
+async function getInterpretaciones(fecha: string): Promise<Interpretacion[]> {
+  const res = await sbSelect(
+    `interpretaciones?estado=eq.publicado&fecha_publicacion=eq.${fecha}&select=organismo,informe,publicado_md`,
+    0,
+  );
+  return res.ok && Array.isArray(res.data) ? (res.data as Interpretacion[]) : [];
+}
+
+type BcraDia = { monto_musd: number; fuente: string };
+
+/** Compras BCRA del día (carga manual de /admin/datos — P3 suma la ingesta automática). */
+async function getBcra(fecha: string): Promise<BcraDia | null> {
+  const res = await sbSelect(`compras_bcra?fecha=eq.${fecha}&select=monto_musd,fuente&limit=1`, 0);
+  if (!res.ok || !Array.isArray(res.data) || res.data.length === 0) return null;
+  return res.data[0] as BcraDia;
+}
+
 function PosChip({ p }: { p: CierrePos }) {
   const dir = dirOf(p.changePercent);
   const glifo = dir === "up" ? "🟢" : dir === "down" ? "🔴" : "🟡";
@@ -86,14 +122,18 @@ export default async function PlantillaDiarioPage({
     .toISOString()
     .slice(0, 10);
 
-  const [cierres, pizarra, dolarFuturo, chicago, noticias, borrador] = await Promise.all([
-    getCierresGranos(),
-    getPizarra(),
-    getDolarFuturo(),
-    getMonitorMercados(),
-    getNoticias(),
-    getBorrador(fecha),
-  ]);
+  const [cierres, pizarra, dolarFuturo, chicago, noticias, borrador, informesHoy, interpretaciones, bcra] =
+    await Promise.all([
+      getCierresGranos(),
+      getPizarra(),
+      getDolarFuturo(),
+      getMonitorMercados(),
+      getNoticias(),
+      getBorrador(fecha),
+      getInformesHoy(fecha),
+      getInterpretaciones(fecha),
+      getBcra(fecha),
+    ]);
 
   const prosa: ProsaDiaria = borrador?.prosa ?? {};
   const titulo = borrador?.titulo || prosa.titulo || "Mesa de operaciones";
@@ -134,6 +174,7 @@ export default async function PlantillaDiarioPage({
             const grano = cierres.granos.find((c) => c.underlying === g.underlying);
             const pz = pizarra.granos[g.underlying];
             const posiciones = (grano?.posiciones ?? []).filter((p) => p.venc > 0).slice(0, 3);
+            const volTotal = grano ? volumenTotalGrano(grano) : null;
             return (
               <div className="plc-grano" key={g.underlying}>
                 <div className="plc-grano-hd">
@@ -141,6 +182,7 @@ export default async function PlantillaDiarioPage({
                   <span className="plc-grano-pizarra">
                     Pizarra {pz?.usd != null ? `US$${nfmt(pz.usd, 1)}` : "—"}
                     {pz?.ars != null ? ` · $${nfmt(pz.ars, 0)}` : ""}
+                    {volTotal != null ? ` · Vol. A3 ${nfmt(volTotal, 0)}` : ""}
                   </span>
                 </div>
                 {lineasPorGrano[g.underlying.toLowerCase()] && (
@@ -169,6 +211,12 @@ export default async function PlantillaDiarioPage({
                 <span>{p.ultimo != null ? `${nfmt(p.ultimo, 1)} (TNA ${nfmt(p.tnaPct, 1)}%)` : "—"}</span>
               </div>
             ))}
+            {bcra && (
+              <div className="plc-franja-row">
+                <span>🏦 BCRA compras netas</span>
+                <span>US$ {nfmt(bcra.monto_musd, 1)}M</span>
+              </div>
+            )}
           </div>
           <div className="plc-franja-col">
             <div className="plc-franja-h">🌽 Chicago</div>
@@ -198,6 +246,27 @@ export default async function PlantillaDiarioPage({
                   · {e.organismo} — {e.informe} ({e.fechaISO === fecha ? "hoy" : "mañana"})
                 </div>
               ))}
+            </>
+          )}
+          {informesHoy.length > 0 && (
+            <>
+              <div className="plc-pie-tit">Informe del día</div>
+              {informesHoy.map((inf) => {
+                const interp = interpretaciones.find((i) => i.organismo === inf.organismo);
+                return (
+                  <div className="plc-pie-item" key={inf.organismo}>
+                    · <b>{inf.organismo}</b> — {inf.informe}:{" "}
+                    {inf.cambios.slice(0, 3).map((c, i) => (
+                      <span key={i}>
+                        {i > 0 && " · "}
+                        {c.grano} {c.pais} {c.campania} {nfmt(c.antes, 1)}→{nfmt(c.ahora, 1)} {c.unidad}
+                        {" "}({pfmt(c.antes ? (c.delta / c.antes) * 100 : 0, 1)})
+                      </span>
+                    ))}
+                    {interp && <span> — {interp.publicado_md}</span>}
+                  </div>
+                );
+              })}
             </>
           )}
           <p className="plc-disclaimer">
