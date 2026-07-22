@@ -6,18 +6,34 @@
 // remedio que ya salvó a lineup/ISA. La función SOLO baja y devuelve el CSV: el
 // parse y el upsert siguen en scripts/ingest-dea.mjs (que ahora la invoca).
 //
-// Auth: verify_jwt del gateway + comparación del bearer contra la service key
-// (la anon key pública no puede gatillar el fetch).
+// Auth: verify_jwt del gateway (valida la firma) + el bearer decodificado debe
+// traer el claim role=service_role (la anon key pública no puede gatillar el
+// fetch). No compara contra Deno.env SUPABASE_SERVICE_ROLE_KEY string-a-string:
+// el proyecto tiene en paralelo las keys legacy (JWT) y las nuevas (sb_secret_…)
+// y ese valor reservado puede no ser idéntico al JWT que manda el caller aunque
+// ambos sean válidos — fix 22/07, mismo criterio que lineup-ingest.
 // -----------------------------------------------------------------------------
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const URL_DEA = "https://datosestimaciones.magyp.gob.ar/reportes.php?reporte=Estimaciones";
-const SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+function jwtRole(token: string): string | null {
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  try {
+    const b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const pad = b64.length % 4 ? "=".repeat(4 - (b64.length % 4)) : "";
+    const payload = JSON.parse(atob(b64 + pad));
+    return typeof payload.role === "string" ? payload.role : null;
+  } catch {
+    return null;
+  }
+}
 
 Deno.serve(async (req: Request) => {
   const bearer = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
-  if (!bearer || bearer !== SVC) {
+  if (jwtRole(bearer) !== "service_role") {
     return Response.json({ ok: false, error: "forbidden" }, { status: 403 });
   }
   try {
