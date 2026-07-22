@@ -145,8 +145,8 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 | **MP2** — informe semanal (PDF) | PLAN_INFORMES | alto | **alto** | — | 1 | MP1 |
 | **MP4** — interpretación de informes de organismos | PLAN_INFORMES / ítem 21 | alto | alto | — | 1 | MP1 |
 | Routine semanal MP3 | PLAN_INFORMES | alto | — | — | manual (~10 min) | prompt listo en la sesión MP3 |
-| **P3** build — compras netas BCRA (API v4 var 78) | PLAN_BACKLOG | alto | medio | — | 1 | 🔒 respuestas a `negocio/07` |
-| **P4** build — camiones en puerto (SAGyP diario + backfill 2018→) | PLAN_BACKLOG | alto | medio | — | 1–1,5 | 🔒 respuestas a `negocio/08` |
+| **P3** build — compras netas BCRA (API v4 var 78 + carga manual del día) | PLAN_BACKLOG | alto | medio | — | 1 | ✅ decidido 22/07 (§7) |
+| **P4** build — camiones en puerto (SAGyP diario, público, backfill 2020→) | PLAN_BACKLOG | alto | medio | — | 1–1,5 | ✅ decidido 22/07 (§7) |
 | **L4** — calibración de mesa (umbrales cobertura · parámetros MESA · comisiones estrategias · roster) | E2 r3/r4/r9b + E5 | **alto** | bajo | medio | 1 | 🔒 tus valores (paso 1 del prompt) |
 | **P1** — Merval + EWZ + volumen Matba en el monitor | PLAN_BACKLOG / ítem 5 | medio | medio | — | 0,5 | — |
 | **P2** — variación semanal USD (gráfico) | PLAN_BACKLOG / ítem 13 | medio | medio | — | 1 | — |
@@ -159,13 +159,13 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 | **L1** — partir `market.ts` + util única de mes/posición | E4 #10+#11 | — | — | medio | 1 | mejor ANTES de P2/P6 (tocan lo mismo) |
 | **L3** — `noUncheckedIndexedAccess` (152 errores, 32 archivos) | E4 #13 | — | — | medio | 1 | después de L1 (menos archivos que sanear) |
 | **L2** — motor de gráfico SVG compartido | E4 #14 | — | — | bajo | 1 | mejor antes de P2 (que suma un chart) |
-| **H12** — overflow mobile de `/graficos` | E3 | bajo | medio | — | 0,25 | 🔒 tu OK (quedó sin aprobar) |
-| **D6** — montos "VIEJA" enormes en `/comercio/empresas` (¿acumulan campañas?) | E3 → E1/E2 | medio | — | — | 0,5 | 🔒 tu criterio, o se investiga |
+| ~~**H12** — overflow mobile de `/graficos`~~ | E3 | bajo | medio | — | — | **NO** por ahora (22/07, §7) |
+| **D6** — montos "VIEJA" enormes en `/comercio/empresas` (¿acumulan campañas?) | E3 → E1/E2 | medio | — | — | 0,5 | Claude investiga (22/07, §7) |
 | **P9** — sintéticos TIR | PLAN_BACKLOG | medio | medio | — | 1 | 🔒 tabla IAMC + tu fórmula |
 | **P10** — estrategias avanzadas (primas reales · costos por pata) | PLAN_BACKLOG | medio | medio | — | 1–2 | 🔒 tus decisiones/ejemplos |
 | **P11** — modelo propio de capacidad de pago | PLAN_BACKLOG | medio | bajo | — | 1 | 🔒 tu fórmula |
 | **P12** — scoring de clientes | PLAN_BACKLOG | alto (producto) | — | — | 2+ | 🔒 datos de fijaciones |
-| Girasol/sorgo en "Negocios de planta" | E6 promesas | bajo | bajo | — | 0,1 | 🔒 ¿sigue interesando? |
+| Girasol/sorgo en "Negocios de planta" | E6 promesas | bajo | bajo | — | 0,1 | ✅ sí (22/07, §7) |
 | Leaked password protection | E1/E5 | — | — | bajo | 1 click | 🔒 requiere Supabase Pro ($25/mes) — decidiste NO por ahora; re-evaluar si upgradeás |
 
 ## 4. BACKLOG MAESTRO ÚNICO
@@ -191,24 +191,22 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   (`claude/auditoria-e3-ux-auikht`, `claude/auditoria-e4-codigo-p28mxd`, `claude/auditoria-e5-infra`,
   `claude/auditoria-e6-historia-yk24fj`, `claude/e5-fix-edge-auth-jwt-role`,
   `claude/e5-parte-b-c-cierre` — mismo comando `git push origin --delete <rama>`).
-- [ ] **A5. Responder las preguntas de P3** (`negocio/07`: ¿alcanza rezago ~3 hábiles o querés carga
-  manual del día?) **y P4** (`negocio/08`: ¿visibilidad solo-mesa o pública? ¿alcance del backfill
-  2018→?) → destraban los 2 builds del grupo C.
+- [x] **A5. Responder las preguntas de P3 y P4** — ✅ respondido 22/07 (§7): P3 = automático +
+  carga manual del día · P4 = público, backfill 2020→hoy. C4 y C5 desbloqueados.
 - [ ] **A6. Confirmar si ya probaste el uploader de `/admin/datos` logueado** (promesa abierta desde
   el PR #44; si no, probarlo con el próximo export de Agrochat).
-- [ ] **A7. Decidir H12** (fix del overflow mobile de `/graficos`, 15 min de sesión — ¿va?) **y
-  girasol/sorgo** en "Negocios de planta" (¿sigue interesando o se cierra sin hacer?).
+- [x] **A7. Decidir H12 y girasol/sorgo** — ✅ decidido 22/07 (§7): H12 no por ahora · girasol/sorgo sí.
 - [ ] **A8. (Cuando corresponda) re-evaluar Leaked password protection** si algún día upgradeás
   Supabase a Pro — hoy decidido NO (plan Free).
 
 ### B. Quick wins restantes (fixes chicos, se pueden juntar en una sola sesión)
 
-- [ ] **B1. H12** — `/graficos` overflow horizontal en mobile 390px (body=741px por el constructor;
-  el fix de `.head-tools` de E3 no lo cubre). *Espera A7.*
 - [ ] **B2. D6** — investigar los montos "VIEJA" de `/comercio/empresas` (soja 108,9 Mt / maíz
   395,3 Mt declarado campaña vieja: ¿acumulan varias campañas por diseño o es atribución errada?).
-  Con evidencia SQL, o criterio directo de Lautaro.
-- [ ] **B3. Girasol/sorgo** en el selector de "Negocios de planta". *Espera A7.*
+  **Claude investiga** con SQL y trae diagnóstico antes de tocar nada (decidido 22/07, §7).
+- [ ] **B3. Girasol/sorgo** en el selector de "Negocios de planta" (confirmado 22/07, §7).
+- [x] ~~**B1. H12** — overflow mobile de `/graficos`~~ → **NO por ahora** (22/07, §7): es
+  herramienta de mesa que se usa en desktop. Revisable si se empieza a usar en celular.
 
 ### C. Features de producto (el valor nuevo; orden por matriz §3)
 
@@ -217,9 +215,10 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   viejo: metales/petróleo/Merval/SPY/EWZ al informe).
 - [ ] **C3. MP4 — interpretación de informes de organismos** (tras MP1; borrador → OK en /admin →
   publica en /produccion).
-- [ ] **C4. P3 build — compras netas BCRA** (fuente ya elegida: API v4 var 78; *espera A5*).
-- [ ] **C5. P4 build — camiones en puerto** (fuente ya elegida: SAGyP diario + ~103 PDFs de
-  historia; *espera A5*).
+- [ ] **C4. P3 build — compras netas BCRA** (fuente: API v4 var 78 para la historia/rezago +
+  **carga manual del día** en /admin — decidido 22/07, §7). Desbloqueado.
+- [ ] **C5. P4 build — camiones en puerto** (fuente: SAGyP diario; panel **público** en /comercio;
+  backfill **2020→hoy** — decidido 22/07, §7). Desbloqueado.
 - [ ] **C6. P1 — Merval + EWZ + volumen Matba** en el monitor de `/granos`.
 - [ ] **C7. P2 — variación semanal del USD** (gráfico en /dolar; *conviene después de L1/L2*).
 - [ ] **C8. P5 — vista por grano** (compone libs existentes, cero lógica nueva).
@@ -260,12 +259,15 @@ D2 (L4) 🔒 valores de Lautaro;  C13–C16 🔒 insumos de Lautaro
 noindex→index: ✅ YA RESUELTO (E3/E4) — la dependencia que citaba PLAN_BACKLOG quedó caída
 ```
 
-### Orden sugerido si Lautaro no reordena
+### Orden decidido (tras los 3 bloques de decisiones del 22/07 — ver §7)
 
-**Ahora:** A1 + A2 (manuales) → C1 (MP1) → D1/L5 (DEA) → C2 (MP2).
-**Después:** A5 → C4/C5 (P3/P4) → D2/L4 (calibración) → C3 (MP4) → C6 (P1) + B (quick wins).
-**Luego:** D4/L1 + D6/L2 → C7 (P2) → C8 (P5) → D3/L6 → C10 (P6) → C11 (P7, ya con login) →
-C12 (P8) → C9 → D5/L3 → C13–C16 a medida que estén los insumos.
+**Ahora:** A1 + A2 (manuales de Lautaro) → C1 (MP1) → D1/L5 (DEA) → C2 (MP2) → **D2/L4
+(calibración — Lautaro se sienta con los números)** → C4/C5 (P3/P4, ya desbloqueados) → C3 (MP4).
+**Refactors intercalados:** D4/L1 y D6/L2 se meten **antes** de cualquier feature que toque su
+código (P2 el USD semanal, P6 gráficos); D5/L3 después de L1.
+**En cola (Lautaro evalúa una por una, sin orden fijo):** C6 (P1), C7 (P2), C8 (P5), C9 (extras
+puertos), C10 (P6), C11 (P7, mejor con login), C12 (P8), y C13–C16 cuando estén sus insumos.
+**Cuando haya ventana:** B2 (Claude investiga D6), B3 (girasol/sorgo, quick win), D3/L6.
 
 ## 5. Rechazados y descartados (para que NO reaparezcan)
 
@@ -453,6 +455,48 @@ con un dry-run forzando el fallo (fixture roto o flag); (3) el calendario genera
 seed 2026 actual (diff vacío) ANTES de agregarle 2027; (4) dispatches de smoke-test documentados
 como paso post-merge; (5) lint/tsc/build/test verdes. PR draft base main; doc de sesión + tachar D3.
 ```
+
+---
+
+## 7. Registro de decisiones de Lautaro (post-síntesis)
+
+> Se van asentando acá a medida que Lautaro las responde (en bloques, como en cada etapa), para que
+> queden en el repo y no dependan del chat. Cada decisión actualiza también su ítem en el §4.
+
+### Bloque 1 — arranque + research listos (22/07/2026)
+
+| Decisión | Respuesta de Lautaro | Efecto en el backlog |
+|---|---|---|
+| **Orden de arranque** | **Orden sugerido** (§4 "Orden sugerido"): A1+A2 manuales → MP1 → L5 (DEA) → MP2 → P3/P4 | Se mantiene el orden del §4 tal cual |
+| **P3 — compras netas BCRA** (C4/A5) | **Automático (API v4 var 78) + carga manual del día** en /admin (patrón "color de la rueda") | C4: build = ingesta BCRA v4 para la historia/rezago + campo admin para el dato del día. Queda desbloqueado (ya no espera respuesta) |
+| **P4 — visibilidad** (C5/A5) | **Público** (como la DJVE, no solo-mesa) | C5: el panel de camiones va público en /comercio, sin `requireAdmin` |
+| **P4 — backfill** (C5/A5) | **Desde 2020 en adelante** (no todo 2018→, no solo 2 años) | C5: backfill de los PDFs mensuales de camiones 2020→hoy |
+
+**Con esto A5 queda respondido** → C4 (P3) y C5 (P4) dejan de estar bloqueados: se pueden ejecutar
+cuando les toque en el orden.
+
+### Bloque 2 — quick wins + un dato a validar (22/07/2026)
+
+| Decisión | Respuesta de Lautaro | Efecto en el backlog |
+|---|---|---|
+| **H12** — overflow mobile de /graficos | **No por ahora** (herramienta de mesa, se usa en desktop) | B1 sale del backlog activo → queda anotado como descartado (revisable si /graficos se usa en celular) |
+| **Girasol/sorgo** en "Negocios de planta" | **Sí, sumarlos** | B3 confirmado como quick win activo |
+| **D6** — montos "VIEJA" enormes en /comercio/empresas | **Claude lo investiga** y trae diagnóstico antes de tocar nada | B2 = investigación (SQL) a cargo de la sesión; con el resultado se decide si hay fix |
+| **Uploader** /admin/datos probado logueado | **No todavía** | A6 sigue como pendiente manual: probarlo con el próximo export de Agrochat |
+
+### Bloque 3 — prioridad fina de features + lotes técnicos (22/07/2026)
+
+| Decisión | Respuesta de Lautaro | Efecto en el backlog |
+|---|---|---|
+| **Features chicas** (P5 vista por grano · P1 monitor · P2 USD semanal · extras puertos) | **Ninguna priorizada ahora** — quedan registradas, las evalúa por separado más adelante | C6/C7/C8/C9 quedan en cola sin orden fijo; se retoman cuando Lautaro las evalúe |
+| **Refactors L1-L3 / L6** | **Intercalados antes de tocar lo mismo** | L1 antes de P2/P6, L2 antes de P2, L3 después de L1 (ya reflejado en las dependencias del §4) |
+| **L4 calibración de mesa** | **Pronto — se sienta con los números** | L4 sube en prioridad: se agenda entre lo primero tras el arranque; el prompt le muestra el efecto de cada valor con datos del día |
+
+**Orden actualizado tras los 3 bloques:** A1+A2 (manuales) → MP1 → L5 (DEA) → MP2 → **L4
+(calibración, pronto)** → C4/C5 (P3/P4, ya desbloqueados) → MP4. Los refactors L1/L2/L3 se
+intercalan cuando toque el código que comparten (antes de P2/P6). Las features chicas (P5/P1/P2/
+extras puertos) esperan a que Lautaro las evalúe una por una. B2 (D6) lo investiga Claude cuando
+haya una ventana; B3 (girasol/sorgo) entra como quick win.
 
 ---
 
