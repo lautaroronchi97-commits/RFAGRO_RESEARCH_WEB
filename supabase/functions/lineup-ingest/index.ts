@@ -50,6 +50,24 @@ const SVC = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const CONFLICT =
   "fecha_consulta,port,berth,vessel,cargo,quantity,eta,dest_orig,shipper,ops";
 
+// El proyecto tiene en paralelo las keys legacy (JWT) y las nuevas (sb_secret_…);
+// el valor reservado SUPABASE_SERVICE_ROLE_KEY puede no ser string-idéntico al
+// service_role JWT que manda el caller aunque ambos sean válidos. El gateway
+// (verify_jwt=true) ya validó la firma → es seguro decodificar el payload y
+// exigir el claim role=service_role, sin depender de esa comparación exacta.
+function jwtRole(token: string): string | null {
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  try {
+    const b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const pad = b64.length % 4 ? "=".repeat(4 - (b64.length % 4)) : "";
+    const payload = JSON.parse(atob(b64 + pad));
+    return typeof payload.role === "string" ? payload.role : null;
+  } catch {
+    return null;
+  }
+}
+
 // --- helpers de parseo (puerto de utils.py) --------------------------------
 
 function cleanText(raw: string | null): string | null {
@@ -193,11 +211,12 @@ async function upsert(rows: Fila[]): Promise<void> {
 // --- handler ---------------------------------------------------------------
 
 Deno.serve(async (req: Request) => {
-  // Solo el service_role puede disparar la ingesta (escribe en la base). Además del
-  // verify_jwt del gateway, comparamos el bearer contra la service key real — antes se
-  // decodificaba el JWT SIN verificar firma, confiando solo en el gateway (E5 #12e).
+  // Solo el service_role puede disparar la ingesta (escribe en la base). El gateway
+  // (verify_jwt=true) ya validó la firma del JWT; acá exigimos el claim role=service_role
+  // (antes se comparaba contra SUPABASE_SERVICE_ROLE_KEY string-a-string, frágil con las
+  // dos generaciones de keys del proyecto conviviendo — E5 #12e / fix 22/07).
   const bearer = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
-  if (!bearer || bearer !== SVC) {
+  if (jwtRole(bearer) !== "service_role") {
     return Response.json({ ok: false, error: "forbidden" }, { status: 403 });
   }
 
