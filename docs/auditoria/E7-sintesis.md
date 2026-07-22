@@ -211,7 +211,9 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 
 ### C. Features de producto (el valor nuevo; orden por matriz §3)
 
-- [ ] **C1. MP1 — informe diario** (placa PNG WhatsApp; prompt en `PLAN_INFORMES.md`).
+- [x] **C1. MP1 — informe diario** — ✅ código hecho 22/07, PR #63 (rama
+  `claude/resolver-pendientes-qnts8j`). Falta el paso manual A2 (crear la Routine) para que
+  corra sola; el primer disparo real termina de verificar RPC/Storage/mail.
 - [ ] **C2. MP2 — informe semanal PDF** (tras MP1; cierra también el remanente "reporte" del ítem 5
   viejo: metales/petróleo/Merval/SPY/EWZ al informe).
 - [ ] **C3. MP4 — interpretación de informes de organismos** (tras MP1; borrador → OK en /admin →

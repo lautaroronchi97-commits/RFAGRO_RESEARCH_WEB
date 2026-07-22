@@ -11,7 +11,7 @@
 
 | MP | Tema | Depende de | Estado | PR |
 |---|---|---|---|---|
-| MP1 | Informe diario (placa PNG para WhatsApp) | — | pendiente | — |
+| MP1 | Informe diario (placa PNG para WhatsApp) | — | **código HECHO** — falta que Lautaro cree la Routine diaria (paso manual, prompt en el doc de sesión) | #63 |
 | MP2 | Informe semanal (PDF research) | MP1 | pendiente | — |
 | MP3 | View de mercado por grano (research direccional) | MP1 (patrón; se ejecutó antes — dependencia blanda, ver nota) | **HECHO y MERGEADO** — falta que Lautaro cree la Routine semanal (paso manual, prompt listo en el doc de sesión) | #53 |
 | MP4 | Interpretación de informes de organismos (ítem 21) | MP1 | pendiente | — |

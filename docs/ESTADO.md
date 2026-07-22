@@ -19,7 +19,30 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 22/07/2026 — 🏁 AUDITORÍA INTEGRAL COMPLETA: E7 síntesis CERRADA → BACKLOG MAESTRO ÚNICO en `auditoria/E7-sintesis.md` §4 · encendido del login Parte A/B HECHAS, Parte C EN CURSO · E1–E6 cerradas · MP3 view de mercado MERGEADO · research P3/P4 HECHO)
+## Ahora (última actualización: 22/07/2026 — 📰 MP1 informe diario (placa PNG) HECHO, falta la Routine (paso manual de Lautaro) · 🏁 AUDITORÍA INTEGRAL COMPLETA: E7 síntesis CERRADA → BACKLOG MAESTRO ÚNICO en `auditoria/E7-sintesis.md` §4 · encendido del login Parte A/B HECHAS, Parte C EN CURSO · E1–E6 cerradas · MP3 view de mercado MERGEADO · research P3/P4 HECHO)
+
+**📰 MP1 — INFORME DIARIO (placa PNG para WhatsApp) — CÓDIGO HECHO, falta la Routine — rama
+`claude/resolver-pendientes-qnts8j`, PR #63.** Primer ítem ejecutado del backlog maestro (C1 de
+`auditoria/E7-sintesis.md` §4), siguiendo el prompt de `PLAN_INFORMES.md`. **Migración APLICADA**
+(`20260722120000_mp1_informe_diario.sql`, por MCP con OK de Lautaro): tablas `mesa_color` (color de
+la rueda) + `informes_generados` (registro de placas/PDFs, RLS anon solo `estado=enviado`) +
+`compras_bcra` (compras BCRA de carga manual — P3 sumará la ingesta automática a la MISMA tabla) +
+bucket privado `informes`. **Código**: `/api/informes/datos` (junta arbitrajes/pizarra/dólar/
+Chicago/noticias/agenda/color/BCRA/volumen A3 por grano + informe de organismo del día con hook a
+la interpretación de MP4, hoy vacío) · plantilla `/informes/plantilla/diario` (placa 1080px, **tema
+claro** elegido por Lautaro tras comparar bocetos con datos reales) · sección "Datos del día" en
+`/admin/datos` (color de la rueda + compras BCRA, un solo form) · skill
+`.claude/skills/informe-diario/` (procedimiento paso a paso de la Routine, con un ejemplo real de
+color de operador guardado como referencia) · página pública `/informes` (histórico, sección nueva
+en `SECCIONES_META`). **Verificado**: lint/tsc/build ✅ · bocetos claro/oscuro mostrados y elegidos ·
+backend por SQL (guard `is_admin()` rechaza sin sesión, RPC funcionan con JWT admin simulado, RLS de
+`informes_generados` oculta borradores a anon y los muestra al pasar a enviado) · UI en navegador con
+bypass temporal revertido (git diff limpio). **Falta (paso manual de Lautaro, A2 del backlog
+maestro): crear la Routine diaria** (`create_trigger`, cron sugerido `30 21 * * 1-5` = 18:30 ART,
+env vars `SUPABASE_URL/SUPABASE_SERVICE_KEY/RESEND_API_KEY/RESEND_FROM/ADMIN_EMAILS/INFORME_TOKEN/
+INFORME_BASE_URL` en el entorno de Claude Code) — el primer disparo prueba de punta a punta lo que
+el sandbox no pudo (RPC con sesión real, Storage, Resend). Detalle:
+[`sesiones/2026-07-22-informes-mp1-diario.md`](sesiones/2026-07-22-informes-mp1-diario.md).
 
 **🏁 AUDITORÍA E7 (síntesis y backlog maestro) — CERRADA, cierra la auditoría integral completa
 (E1→E7) — rama `claude/auditoria-e7-sintesis-a919cq`, PR #61.** Etapa final: se fusionaron los 6
