@@ -19,7 +19,30 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 22/07/2026 — auditoría E5 infra CERRADA (fase 1+2, quedan pasos manuales de Lautaro en la guía) · auditoría E4 código CERRADA (fase 1+2) · auditoría E3 UX FASE 1+2 HECHAS · auditoría E6 historia CERRADA · MP3 view de mercado MERGEADO · research P3/P4 HECHO · auditoría E2 CERRADA)
+## Ahora (última actualización: 22/07/2026 — auditoría E5 infra CERRADA (fase 1+2 + PR #59 de fix de auth) · encendido del login Parte A/B HECHAS, Parte C EN CURSO · auditoría E4 código CERRADA (fase 1+2) · auditoría E3 UX FASE 1+2 HECHAS · auditoría E6 historia CERRADA · MP3 view de mercado MERGEADO · research P3/P4 HECHO · auditoría E2 CERRADA)
+
+**🔐 ENCENDIDO DEL LOGIN — PARTE A (Vercel Pro) Y PARTE B (pre-encendido) HECHAS, PARTE C
+(Google OAuth) EN CURSO — 22/07/2026.** Siguiendo la «Guía definitiva» de
+[`GUIA_LOGIN_SETUP.md`](GUIA_LOGIN_SETUP.md): **Parte A** — Vercel Pro contratado ($20/mes + spend
+limit $20 con pausa automática + functions en `gru1`). **Parte B** — al correr los dispatches de
+prueba aparecieron 2 bugs reales en las Edge Functions de E5, arreglados en **PR #59 (mergeado)**:
+el 403 de `lineup-ingest`/`dea-fetch` (comparaban el bearer contra un valor de Supabase que puede
+no coincidir entre las keys legacy/nuevas del proyecto — fix: decodificar el JWT ya verificado por
+el gateway y exigir `role=service_role`) y el timeout de `dea-fetch` (120s→240s, reveló que **DEA
+sigue sin conectar ni desde São Paulo** — `tcp connect error`, mismo bloqueo que ya afecta a GitHub
+Actions, **sin resolver**, cubierto por el healthcheck+alertas mientras tanto). Resto de Parte B
+verificado: `RESEND_API_KEY` (3 alertas reales confirmadas), `SUPABASE_SERVICE_KEY` en Vercel
+(el primer intento quedó sin valor, corregido), revoke de las 7 matviews de mesa aplicado y
+verificado (anon 401, web sigue sirviendo con la service key), Edge Functions fantasma borradas,
+healthcheck 17/17 verde. **Leaked password protection quedó diferido a propósito** (requiere
+Supabase Pro $25/mes, plan Free confirmado por MCP; decisión de Lautaro: no por ahora). **Parte C**
+arrancada: env vars básicas + Google OAuth configurado y **probado con éxito** (Lautoro logueado,
+admin auto-aprobado), app name + logo cargados en el consent screen de Google. **Quedó pendiente:
+publicar la app de Google a producción** (gratis, no confundir con el dominio custom de Supabase
+que sí es pago y es solo estético) — chocó con el paso nuevo de "verificación de marca" de Google,
+retomar con captura completa de esa pantalla. `AUTH_ENFORCED` sigue en `false` — la web sigue
+100% pública. Detalle completo:
+[`sesiones/2026-07-21-auditoria-e5-infra.md`](sesiones/2026-07-21-auditoria-e5-infra.md) § «Continuación».
 
 **🏗️ AUDITORÍA E5 (infraestructura, ingestas y seguridad operativa) — CERRADA (fase 1 + fase 2,
 TODO aprobado por Lautaro el 22/07) — rama `claude/auditoria-e5-infra`, PR #58.** Quinta etapa de la
