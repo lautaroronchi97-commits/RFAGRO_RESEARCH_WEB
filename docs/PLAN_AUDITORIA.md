@@ -26,10 +26,13 @@
 | E4 | Código y arquitectura | **cerrada** (fase 2 aplicada; refactors grandes → E7; `sample.ts` desbloqueado por E3, borrado) | `auditoria/E4-codigo.md` | #55 |
 | E5 | Infraestructura, ingestas y seguridad | **cerrada** (fase 2 aplicada; quedan los pasos manuales de la guía de encendido) | `auditoria/E5-infra.md` | #58 |
 | E6 | Historia del repo (PRs + sesiones) | **cerrada** (fase 2 aplicada; mitigación DEA-SAGyP → E5) | `auditoria/E6-historia.md` | #56 |
-| E7 | Síntesis y backlog maestro | pendiente | `auditoria/E7-sintesis.md` | — |
+| E7 | Síntesis y backlog maestro | **cerrada** (fusión + matriz + backlog maestro único + prompts L1–L6) | `auditoria/E7-sintesis.md` | #61 |
 
 E1–E6 se ejecutan en ese orden (pueden intercalarse con los ciclos de corrección de etapas ya
 aprobadas). **E7 es la única que exige que las 6 anteriores estén cerradas.**
+
+> ✅ **AUDITORÍA INTEGRAL COMPLETA (22/07/2026).** Las 7 etapas cerradas. Desde acá se prioriza en
+> el **backlog maestro único**: [`auditoria/E7-sintesis.md`](auditoria/E7-sintesis.md) §4.
 
 ## Modelo y estrategia de agentes por etapa (elegir el modelo AL ABRIR la sesión)
 
