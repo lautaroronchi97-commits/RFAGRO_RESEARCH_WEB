@@ -8,6 +8,10 @@ name: Ingesta compras de granos (MAGyP farmer selling → Supabase)
 # Los `schedule` corren desde la rama default del repo. Secrets: SUPABASE_URL / SUPABASE_SERVICE_KEY.
 # El upsert es idempotente por (campana, codigo_interno, sector, fecha).
 
+# El GITHUB_TOKEN no se usa (todo va por secrets de Supabase) → mínimo privilegio (E5 #12d).
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: "0 13 * * 4" # jue 10:00 AR — el informe suele actualizar a mitad de semana
@@ -27,14 +31,20 @@ on:
         type: string
         default: ""
 
+# Group COMPARTIDO con cargar-compras.yml: tres escritores de la misma tabla, uno con borrado (E5 #11).
+concurrency:
+  group: compras
+  cancel-in-progress: false
+
 jobs:
   ingest:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version-file: ".nvmrc"
 
       - name: Compras (MAGyP)
         env:
@@ -49,3 +59,8 @@ jobs:
           else
             node scripts/ingest-compras.mjs
           fi
+      - name: Avisar por mail si falló (E5 #7)
+        if: failure()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/alerta-mail.mjs --workflow "${{ github.workflow }}" --run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

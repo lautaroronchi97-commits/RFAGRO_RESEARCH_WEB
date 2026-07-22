@@ -263,6 +263,12 @@ async function main() {
     console.error("ERROR: 0 filas CBOT en modo diario (todos los contratos fallaron o cambió Barchart). No se da por bueno.");
     process.exit(1);
   }
+  // E5 #6 (camino 4): antes con 1 contrato vivo de 35 el run quedaba verde — los catch por
+  // contrato solo logueaban. Si respondió menos de la mitad del universo, algo grande se rompió.
+  if (!backfill && ok < lista.length / 2) {
+    console.error(`ERROR: solo ${ok}/${lista.length} contratos CBOT con datos (falla masiva parcial de Barchart). No se da por bueno.`);
+    process.exit(1);
+  }
   console.log(`Contratos con datos: ${ok}. Upsert de ${dedup.length} filas...`);
   await upsert(dedup);
   console.log("OK");

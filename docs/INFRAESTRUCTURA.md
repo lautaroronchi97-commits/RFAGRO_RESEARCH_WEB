@@ -1,5 +1,11 @@
 # RF AGRO — Análisis de infraestructura (actual y a escala)
 
+> ⚠️ **DOC HISTÓRICO (07-08/07/2026)** — anterior a casi toda la infraestructura real de hoy
+> (13 workflows, Edge Functions, healthcheck, login, hosting decidido). La foto vigente de
+> infra/ingestas/seguridad es la auditoría **[`auditoria/E5-infra.md`](auditoria/E5-infra.md)**
+> (21-22/07/2026); el estado vivo, como siempre, en [`ESTADO.md`](ESTADO.md). Se conserva por
+> las decisiones de arquitectura y los aprendizajes de fuentes (CEM, etc.) que siguen válidos.
+
 > Escrito el 07/07/2026 a pedido de Lautaro, a partir de la lista completa de trabajos de research
 > (pizarra vs matba, pases históricos, volúmenes, informes de bolsas/USDA/Conab, lineups, DJVE,
 > sintéticos, reporte diario, etc.). Objetivo declarado: **web rápida, dinámica y poco costosa**.

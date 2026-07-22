@@ -9,6 +9,69 @@ El proyecto Supabase es **`lineup-argentina`**, ref **`gbpfgfeksqmzmsxnxiwg`**.
 
 ---
 
+## ⚡ GUÍA DEFINITIVA 22/07/2026 — Vercel Pro + encendido, EN ORDEN (E5 fase 2)
+
+> Decisión de Lautaro (22/07): Vercel Pro se contrata YA (antes de clientes) y después se
+> prende el login. Esta sección es la lista maestra en orden; el detalle de cada paso viejo
+> sigue abajo en su etapa. Tiempo total estimado: ~30-40 min de clics.
+
+### Parte A — Vercel Pro (hacelo primero; ~10 min)
+
+1. Entrá a https://vercel.com → tu cuenta → el proyecto **rfagro-research-web** → arriba a la
+   izquierda elegí el *scope* (equipo) dueño del proyecto → **Settings → Billing → Upgrade to
+   Pro**. Es **US$20/mes por asiento** y alcanza con **1 asiento** (los deploys entran por
+   GitHub, nadie más necesita cuenta de Vercel). Cargás la tarjeta y listo.
+2. **Spend limit** (que no haya sorpresas): en *Billing* → *Spend Management* → activá el
+   límite (ej. **US$40/mes**) con "pause projects" — con nuestro tráfico jamás se acerca; es
+   un seguro.
+3. **Functions a São Paulo** (esto es EL beneficio técnico del Pro): proyecto → *Settings* →
+   *Functions* → *Function Region* → elegí **São Paulo (gru1)**. La base (Supabase) vive ahí:
+   cada regeneración ISR y, con el login prendido, cada chequeo de sesión deja de viajar a
+   Washington (~130 ms) y pasa a ~10-20 ms.
+4. *Deployments* → botón **Redeploy** del último deploy de producción (para que tome la región).
+
+### Parte B — pre-encendido técnico (después de mergear el PR #58)
+
+1. **Mergeá el PR #58** (fase 2 de E5 — trae los fixes que el encendido necesita: el proxy ya
+   no bloquea `/api/views/insumos`, la web de mesa puede leer con service key, alertas, etc.).
+2. **Env var nueva en Vercel**: *Settings → Environment Variables* → agregá
+   **`SUPABASE_SERVICE_KEY`** con scope **Production ÚNICAMENTE** (el valor está en Supabase →
+   *Settings → API keys* → `service_role`). Con esto las páginas de mesa leen salteando RLS.
+   Aprovechá y verificá que estén: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+   `NEXT_PUBLIC_SITE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `INFORME_TOKEN` y las `RESEND_*`
+   (sensibles = solo Production, como ya dejaste el 22/07). Después: **Redeploy**.
+3. **Secret nuevo en GitHub** (para los avisos de crons rotos): repo en GitHub → *Settings →
+   Secrets and variables → Actions → New repository secret* → nombre **`RESEND_API_KEY`**,
+   valor = la misma key `re_...` de Resend que está en Vercel. (Opcional: `RESEND_FROM` si ya
+   verificaste dominio.) Sin esto los workflows andan igual; solo no mandan el mail de alerta.
+4. **Probá los crons arreglados** (Actions → cada workflow → *Run workflow* en `main`):
+   *Ingesta line-up* (tiene que salir VERDE — antes moría en el refresh),
+   *Ingesta estimaciones Argentina* (tiene que salir VERDE — DEA ahora va vía Edge Function) y
+   *Healthcheck* (todos ✓). El de compras se prueba solo el jueves 23/07 a las 10:00.
+5. **Aplicá el cierre de las matviews de mesa** (recién DESPUÉS del paso 2 + redeploy):
+   Supabase → *SQL Editor* → pegá el contenido de
+   `supabase/migrations/20260722013200_e5_revoke_matviews_mesa.sql` → *Run*. Verificación:
+   `/comercio/temperatura` logueado como admin se ve igual que antes. (Para revertir:
+   `grant select on public.<matview> to anon, authenticated;`)
+6. **Un click en Supabase**: *Authentication → Sign In / Up → Passwords* → activar **Leaked
+   password protection** (chequea contraseñas filtradas contra HaveIBeenPwned).
+7. **Higiene opcional**: *Edge Functions* → borrar `lineup-probe` y `lineup-fetch` (sobras del
+   desarrollo de la Fase 0 de puertos; la única viva es `lineup-ingest` + la nueva `dea-fetch`).
+
+### Parte C — prender el login
+
+Seguí el checklist de la **Etapa 3 §3** de abajo (cuenta admin OK → Mauro → aprobar clientes →
+`AUTH_ENFORCED=true` en Production → Redeploy). Validación de 5 minutos post-encendido:
+
+- Ventana de incógnito → `rfagro-research-web.vercel.app` → tiene que aparecer **/bienvenida**.
+- Logueado vos → tablero completo + marca de agua + `/comercio/temperatura` visible.
+- `curl -H "Authorization: Bearer <INFORME_TOKEN>" https://<tu-dominio>/api/views/insumos`
+  → JSON (200); sin el header → 401. **Ojo MP3**: el token ahora va por header — el prompt de
+  la Routine semanal ya quedó actualizado en la sesión MP3.
+- Si algo se rompe feo: `AUTH_ENFORCED=false` + Redeploy y la web vuelve a ser pública al toque.
+
+---
+
 ## Etapa 1 — lo que hay que hacer para probar el login
 
 Nada de esto cierra la web: mientras `AUTH_ENFORCED` no esté en `true`, la web sigue
@@ -110,7 +173,7 @@ hay que hacer nada; queda versionada por si recreás el proyecto.
 ### 2. Entrar al panel
 
 Con las env vars de la Etapa 1 cargadas y tu cuenta ya registrada (admin sembrado), entrá a
-**`/admin`**. Vas a ver 4 pestañas:
+**`/admin`**. Vas a ver 5 pestañas (la 5ª, **Datos**, se sumó el 20/07 con el uploader de compras):
 - **Pendientes:** las cuentas nuevas. Aprobás eligiendo una empresa (existente o nueva) o rechazás.
 - **Usuarios:** todos, con estado/empresa/rol/último ingreso. Bloquear, cambiar de empresa,
   **promover a admin** (así habilitás a Mauro cuando se registre) y permisos individuales.
@@ -189,8 +252,9 @@ Recién acá se cierra la web. Antes de prenderlo, asegurate de:
 
 Para **apagarlo** de nuevo: poné `AUTH_ENFORCED=false` y redeploy → la web vuelve a ser pública.
 
-### 4. Antes de invitar clientes reales — hosting (pendiente aparte)
+### 4. Hosting — ✅ DECIDIDO (22/07/2026, auditoría E5)
 
-Vercel Hobby es no-comercial. **Antes de poner esto frente a clientes que pagan**, resolvé el
-hosting (Vercel Pro u otra alternativa). Es una decisión aparte (decisión 11 del plan), no la
-del encendido técnico.
+Vercel Hobby es no-comercial. Decisión de Lautaro con la comparación de E5
+([`auditoria/E5-infra.md`](auditoria/E5-infra.md) § hosting): **Vercel Pro, US$20/mes, 1
+asiento, functions en gru1 (São Paulo) + spend limit** — y se contrata ANTES de invitar
+clientes. Los pasos exactos están en la **Parte A de la guía definitiva** (arriba de todo).

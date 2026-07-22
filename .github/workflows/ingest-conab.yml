@@ -5,6 +5,10 @@ name: Ingesta estimaciones CONAB (LevantamentoGraos → Supabase)
 # día siguiente. Corremos L-V a la mañana AR. El upsert es idempotente (trae todos los vintages
 # del TXT). Los `schedule` corren desde la rama default del repo.
 
+# El GITHUB_TOKEN no se usa (todo va por secrets de Supabase) → mínimo privilegio (E5 #12d).
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: "30 11 * * 1-5" # 08:30 AR, tras la regeneración del TXT
@@ -18,11 +22,12 @@ on:
 jobs:
   ingest:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version-file: ".nvmrc"
       - name: Ingesta
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

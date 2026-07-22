@@ -126,8 +126,10 @@ CONSTRUIR (en este orden):
 2. ADMIN: campo "Color de la rueda" en /admin/datos (pestaña nueva o sección): textarea grande,
    usable desde el celular, con la fecha de hoy precargada y lo último guardado visible; server action
    → RPC. Seguí el patrón de src/app/admin/datos/ existente.
-3. DATOS DEL DÍA: route handler /api/informes/datos?fecha=&token= (token = env INFORME_TOKEN,
-   401 sin él) que devuelve el JSON del día REUSANDO las libs existentes (no dupliques lógica):
+3. DATOS DEL DÍA: route handler /api/informes/datos?fecha= con auth por HEADER
+   `Authorization: Bearer <INFORME_TOKEN>` (401 sin él; NO por query string — decisión E5 #12a,
+   y compare timing-safe: copiá el patrón de /api/views/insumos) que devuelve el JSON del día
+   REUSANDO las libs existentes (no dupliques lógica):
    granos = getArbitrajes/pizarra (ajustes A3 con variación vs rueda anterior + pizarra CAC $ y USD),
    dólar = market.ts (mayorista, DLR próximas 2-3 posiciones con TNA, brecha), chicago =
    getMonitorMercados (los 5 de Chicago en USD/tn + Δ), noticias = getNoticias (top 3-4 del día),

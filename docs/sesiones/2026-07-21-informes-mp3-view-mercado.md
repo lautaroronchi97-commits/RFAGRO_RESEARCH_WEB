@@ -10,8 +10,9 @@
   **interno mesa**: SELECT solo `authenticated` + `is_admin()` (anon revocado), escritura solo
   service_role; + RPC `admin_feedback_view(p_id, p_feedback)` SECURITY DEFINER con guard
   `is_admin()` (patrón `admin_upsert_compras`).
-- **Endpoint `/api/views/insumos?token=`** (`src/app/api/views/insumos/route.ts`, gate por env
-  `INFORME_TOKEN`, mismo esquema que el `/api/informes/datos` de MP1): un JSON con TODOS los
+- **Endpoint `/api/views/insumos`** (`src/app/api/views/insumos/route.ts`, gate por env
+  `INFORME_TOKEN` — desde E5 fase 2 (22/07) por header `Authorization: Bearer`, ya NO `?token=`
+  — mismo esquema que el `/api/informes/datos` de MP1): un JSON con TODOS los
   insumos del research **reusando las libs reales** (getTemperatura, getSemaforo, getEmpresas,
   getMesaEmbarque, getNegociado, estimaciones, getCurvaGranos, getPases, getArbitrajes,
   getCapacidad, getPizarra, getMonitorMercados, getDolarFuturo, getNoticias, getEventos) —

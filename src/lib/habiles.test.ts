@@ -38,4 +38,18 @@ describe("habiles.ts + dates.ts — ficha E2 6.7", () => {
     const b = sumarCorridos(a, 31);
     expect(diasCorridos(a, b)).toBe(31);
   });
+
+  // E5 #9b: FERIADOS_AR se agota en silencio (en 2028 todo feriado contaría como hábil y las
+  // fechas de pago / corrimientos GEA-DEA saldrían mal sin error visible). Este test empieza a
+  // fallar en CI desde el 1º de octubre si el año siguiente aún no está cargado — la falla ES el
+  // recordatorio: cargar los feriados del año próximo en src/lib/habiles.ts (fuente: decreto del
+  // PEN, sale ~sep-oct) y esto vuelve a verde.
+  it("FERIADOS_AR tiene cargado el año siguiente (obligatorio desde octubre)", () => {
+    const hoy = new Date();
+    const esDesdeOctubre = hoy.getUTCMonth() >= 9; // 9 = octubre
+    const anioProximo = hoy.getUTCFullYear() + 1;
+    const tieneProximo = [...FERIADOS_AR].some((f) => f.startsWith(`${anioProximo}-`));
+    if (esDesdeOctubre) expect(tieneProximo).toBe(true);
+    else expect(true).toBe(true); // antes de octubre no exige nada
+  });
 });

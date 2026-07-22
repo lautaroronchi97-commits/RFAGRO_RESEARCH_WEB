@@ -4,17 +4,22 @@ import { cache } from "react";
 /**
  * Lectura de datos históricos desde Supabase (Postgres) vía PostgREST.
  *
- * - Solo LECTURA, con la clave pública (publishable/anon): las tablas tienen RLS
- *   con policy de SELECT para el rol anónimo, así que la clave no da acceso de
- *   escritura ni a filas fuera de la policy. Por eso puede ir en env sin drama.
+ * - Solo LECTURA. Este módulo es `server-only` (la clave jamás llega al cliente).
+ * - E5 Duda #5(a), 22/07/2026: si `SUPABASE_SERVICE_KEY` está en el entorno (Vercel,
+ *   scope Production) se lee con ELLA — es lo que permite revocar el SELECT de anon en
+ *   las 7 matviews de mesa (migración 20260722013200, se aplica en el encendido del
+ *   login) sin romper las páginas /comercio/*. Bonus: la service key no tiene
+ *   statement_timeout de rol (los 3s de anon mataban matviews bajo concurrencia, E3 H1/H6).
+ * - Sin service key (local, previews) cae a la anon key: lo público anda igual; lo de
+ *   mesa queda vacío recién cuando el revoke esté aplicado.
  * - Mismo patrón que `market.ts`: React.cache() dedup por render + `revalidate`
  *   (ISR) entre requests. Nunca tira: devuelve un Result y el panel degrada solo.
  *
- * Config: SUPABASE_URL + SUPABASE_ANON_KEY (en .env.local local y en Vercel).
+ * Config: SUPABASE_URL + SUPABASE_ANON_KEY (+ SUPABASE_SERVICE_KEY en producción).
  */
 
 const URL = process.env.SUPABASE_URL ?? "";
-const KEY = process.env.SUPABASE_ANON_KEY ?? "";
+const KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || "";
 
 export function supabaseConfigured(): boolean {
   return Boolean(URL && KEY);
@@ -40,7 +45,7 @@ export const sbSelect = cache(async (path: string, revalidate: number): Promise<
   if (!supabaseConfigured()) return { ok: false, reason: "unconfigured" };
   try {
     const res = await fetch(`${URL}/rest/v1/${path}`, {
-      headers: { apikey: KEY, accept: "application/json" },
+      headers: { apikey: KEY, authorization: `Bearer ${KEY}`, accept: "application/json" },
       next: { revalidate },
       signal: AbortSignal.timeout(8000),
     });
@@ -70,7 +75,7 @@ export const sbSelectAll = cache(async (path: string, revalidate: number): Promi
   try {
     for (;;) {
       const res = await fetch(`${URL}/rest/v1/${path}${sep}limit=${PAGE}&offset=${offset}`, {
-        headers: { apikey: KEY, accept: "application/json" },
+        headers: { apikey: KEY, authorization: `Bearer ${KEY}`, accept: "application/json" },
         next: { revalidate },
         signal: AbortSignal.timeout(8000),
       });

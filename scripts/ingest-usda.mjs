@@ -336,6 +336,13 @@ async function main() {
       if (csv) {
         const rows = parseWasde(csv);
         console.log(`WASDE ${ym}: ${rows.length} filas`);
+        // E5 #6 (camino 14): el CSV EXISTE pero el parser sacó 0 filas = cambió el formato.
+        // Antes esto quedaba verde para siempre (el PSD refresca la misma fecha_publicacion
+        // y ni el healthcheck lo veía) con la producción por país congelada.
+        if (rows.length === 0) {
+          console.error(`ERROR: el CSV del WASDE ${ym} existe pero el parser sacó 0 filas (¿cambió el formato?). No se da por bueno.`);
+          process.exit(1);
+        }
         all.push(...rows);
       } else {
         console.log(`WASDE ${ym}: todavía no salió`);
@@ -364,10 +371,10 @@ async function main() {
     console.log(`Escrito ${outFile} (dry-run, no se subió nada).`);
     return;
   }
-  // Guard anti "falso verde": el PSD siempre trae cientos de filas; si con doPsd quedó 0, algo se
-  // rompió (ZIP / columnas cambiadas). El WASDE del mes puede faltar (0 legítimo), por eso se exige doPsd.
-  if (all.length === 0 && doPsd && !hasFlag("backfill-wasde")) {
-    console.error("ERROR: 0 filas USDA con PSD activo. No se da por bueno (probable cambio de formato del PSD/WASDE).");
+  // Guard anti "falso verde": el PSD siempre trae cientos de filas y el WASDE roto ya falla arriba.
+  // E5 #6 (camino 12): ahora incondicional salvo backfill — antes `--no-psd` con 0 filas era verde.
+  if (all.length === 0 && !hasFlag("backfill-wasde")) {
+    console.error("ERROR: 0 filas USDA. Con PSD activo = cambio de formato; con --no-psd = WASDE ausente (esperá el release o corré con PSD). No se da por bueno.");
     process.exit(1);
   }
   console.log(`Upsert a estimaciones_produccion...`);

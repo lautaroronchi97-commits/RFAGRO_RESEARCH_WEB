@@ -50,8 +50,12 @@ escribas a la base por otra vía.
 Un solo request junta lo que la web ya computa (cero lógica duplicada):
 
 ```
-GET {INFORME_BASE_URL}/api/views/insumos?token={INFORME_TOKEN}
+GET {INFORME_BASE_URL}/api/views/insumos
+    Authorization: Bearer {INFORME_TOKEN}
 ```
+
+> E5 (22/07/2026): el token va por HEADER, ya no por `?token=` (los query strings quedan en los
+> request logs de Vercel). Un fetch con `?token=` devuelve 401.
 
 | Campo del JSON | Qué es | Página que lo origina (para citar/cotejar) |
 |---|---|---|

@@ -302,6 +302,12 @@ async function main() {
     console.error("Todas las fuentes fallaron.");
     process.exit(1);
   }
+  // E5 #6 (camino 11): antes con 1 fuente viva de 26 el run seguía verde — erosión invisible.
+  // Menos del 60% de fuentes OK = falla masiva (red, bloqueo, cambio estructural), no flakiness.
+  if (ok < FUENTES.length * 0.6) {
+    console.error(`ERROR: solo ${ok}/${FUENTES.length} fuentes OK (<60%). No se da por bueno.`);
+    process.exit(1);
+  }
 
   if (DRY_RUN) {
     for (const r of rows.slice(0, 40)) console.log(`  [${r.categoria}] ${r.titulo} — ${r.fuente}`);

@@ -193,13 +193,11 @@ async function upsert(rows: Fila[]): Promise<void> {
 // --- handler ---------------------------------------------------------------
 
 Deno.serve(async (req: Request) => {
-  // Solo el service_role puede disparar la ingesta (escribe en la base). verify_jwt
-  // ya valida la firma del JWT; acá exigimos que el rol sea service_role, así la
-  // anon key pública (que la web expone) NO puede gatillar scrapes/escrituras.
+  // Solo el service_role puede disparar la ingesta (escribe en la base). Además del
+  // verify_jwt del gateway, comparamos el bearer contra la service key real — antes se
+  // decodificaba el JWT SIN verificar firma, confiando solo en el gateway (E5 #12e).
   const bearer = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
-  let rol = "";
-  try { rol = JSON.parse(atob(bearer.split(".")[1] ?? "")).role ?? ""; } catch { /* token inválido */ }
-  if (rol !== "service_role") {
+  if (!bearer || bearer !== SVC) {
     return Response.json({ ok: false, error: "forbidden" }, { status: 403 });
   }
 

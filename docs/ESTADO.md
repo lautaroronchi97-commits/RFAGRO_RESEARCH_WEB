@@ -19,7 +19,46 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 21/07/2026 — auditoría E4 código CERRADA (fase 1+2) · auditoría E3 UX FASE 1+2 HECHAS · auditoría E6 historia CERRADA · MP3 view de mercado MERGEADO · research P3/P4 HECHO · auditoría E2 CERRADA)
+## Ahora (última actualización: 22/07/2026 — auditoría E5 infra CERRADA (fase 1+2, quedan pasos manuales de Lautaro en la guía) · auditoría E4 código CERRADA (fase 1+2) · auditoría E3 UX FASE 1+2 HECHAS · auditoría E6 historia CERRADA · MP3 view de mercado MERGEADO · research P3/P4 HECHO · auditoría E2 CERRADA)
+
+**🏗️ AUDITORÍA E5 (infraestructura, ingestas y seguridad operativa) — CERRADA (fase 1 + fase 2,
+TODO aprobado por Lautaro el 22/07) — rama `claude/auditoria-e5-infra`, PR #58.** Quinta etapa de la
+auditoría integral: 14 ingestas × ~120 runs reales de Actions + monitoreo + crons + secretos + camino
+del login + hosting. Informe: **[`auditoria/E5-infra.md`](auditoria/E5-infra.md)** (14 hallazgos + 22
+caminos de falso-verde + salud por workflow + hosting con precios verificados). **Fase 1 — lo más
+grave que apareció:** (1) la fase 2 de E1 **borró sin saberlo la semana real del 15/07 de `compras`**
+(`delete where fuente='MAGYP'` sin filtro; el cron del lunes ya había cargado 23 filas reales + 7
+basura de un 2º grupo de paneles viejo de la página MAGyP) — se auto-repara el jueves 23/07; (2)
+`ingest-lineup` **rojo 6/6** (la RPC de refresh creció a 6 matviews y el `statement_timeout=8s` de
+PostgREST la mataba); (3) el revoke de E1 sobre `ingest_cierres_cem` **neutralizado por el grant a
+PUBLIC** (anon la ejecutaba — test empírico); (4) prender `AUTH_ENFORCED` **rompía la Routine MP3**
+(el proxy bloqueaba `/api/views/insumos` antes del token); + DEA caída 4/4, alertas de un solo canal,
+hardcodeos con vencimiento sin aviso, pizarra T-1, INFORME_TOKEN por query. **Verificado BIEN:** cero
+secretos en 139 commits · crons sin líos de DST · cierres/cbot/conab/usda/noticias verdes de verdad ·
+CONAB "vieja" es la fuente, no la ingesta · PAS ya cerrado por E6. **Fase 2 HECHA el 22/07 (todo
+aprobado):** por MCP → `ALTER FUNCTION refresh_lineup_visitas SET statement_timeout='300s'` (refresh
+medido 28,8 s, aplicado + refresh manual) · DROP `ingest_cierres_cem` · RLS initplan `(select
+auth.uid())` · **Edge Function nueva `dea-fetch`** (sa-east-1, mismo remedio que ISA; `ingest-dea.mjs`
+la invoca) · redeploy `lineup-ingest` v3 (auth por comparación de service key, adiós decode sin
+firma). En el repo → **compras decisión (b)**: MAGyP sigue automática, parser descarta el grupo viejo
+(verificado: 30→23 filas todas del 15/07), upsert `ignore-duplicates` (MAGyP solo inserta, Agrochat
+manda) · **guards por componente** en GEA/pizarra/CBOT/cierres/noticias/USDA (los 22 caminos de
+falso-verde del Anexo A) · **alertas Resend** en rojo (6 workflows críticos → lautaroronchi97@gmail.com)
+· healthcheck ampliado (17 checks: +views_mercado, +vencimientos-futuro ≥180d, +seed-calendario ≥60d,
+DEA 16d→9d) · `ingest-cierres.mjs` ahora **refresca `vencimientos` cada noche** desde CEM /symbols
+(el CEM ya lista DIC27, el seed moría en SEP27) · test Vitest que exige `FERIADOS_AR` del año próximo
+desde octubre · 4º cron de pizarra (18:00 ART, fin del T-1) · barrido de 13 workflows (permissions,
+timeouts, concurrency —group `compras` compartido—, nvmrc, actions v5, `replace_legacy` default
+false) · proxy deja pasar `/api/views|informes/*` (token es su auth) + cap 2 MB en POSTs públicos ·
+`INFORME_TOKEN` por header Bearer + timingSafeEqual (skill MP3 y prompt MP1 actualizados) · CSP
+Report-Only + HSTS · `src/lib/supabase.ts` prefiere `SUPABASE_SERVICE_KEY` (server-only) + migración
+de **revoke de las 7 matviews de mesa versionada SIN aplicar** (se aplica en el encendido). **Hosting
+DECIDIDO: Vercel Pro $20/mes 1 asiento + gru1 + spend limit, se contrata ANTES de clientes.**
+**Próximo paso — pasos manuales de Lautaro, EN ORDEN, en la «Guía definitiva 22/07» al tope de
+[`GUIA_LOGIN_SETUP.md`](GUIA_LOGIN_SETUP.md):** Parte A Vercel Pro → Parte B pre-encendido (mergear
+PR #58 · `SUPABASE_SERVICE_KEY` en Vercel · secret `RESEND_API_KEY` en GitHub · dispatches de prueba
+· aplicar revoke · leaked protection · borrar Edge Functions fantasma) → Parte C encendido del login.
+Detalle: [`sesiones/2026-07-21-auditoria-e5-infra.md`](sesiones/2026-07-21-auditoria-e5-infra.md).
 
 **🧑‍💻 AUDITORÍA E4 (código y arquitectura) — CERRADA (fase 1 + fase 2) — rama
 `claude/auditoria-e4-codigo-p28mxd`, PR #55.** Cuarta etapa de la auditoría integral. **Fase 1**: 4
