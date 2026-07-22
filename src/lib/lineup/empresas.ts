@@ -171,13 +171,17 @@ export const getEmpresas = cache(async (): Promise<EmpresasData> => {
       add(decl60Emp.get(empresa)!, d.cod, d60);
       add(decl60Prod, d.cod, d60);
     }
-    const esActual = Number(d.camp_ini) === campActual.get(d.cod);
+    const campAct = campActual.get(d.cod);
+    const esActual = Number(d.camp_ini) === campAct;
     if (esActual) {
       add(declCampEmp, empresa, dTot);
       add(declDispProd, d.cod, d.opcion === "30" ? dTot : 0);
       add(declFwdProd, d.cod, d.opcion === "360" ? dTot : 0);
       add(declNuevaProd, d.cod, dTot);
-    } else {
+    } else if (campAct !== undefined && Number(d.camp_ini) === campAct - 1) {
+      // "VIEJA" = SOLO la campaña inmediatamente anterior (la que se está cerrando),
+      // coherente con la etiqueta campanaLabel(campN - 1). Sin este filtro sumaba TODAS
+      // las campañas del backfill DJVE 2010→ (Fase 3) bajo una sola etiqueta (D6, E7).
       add(declViejaProd, d.cod, dTot);
     }
   }
