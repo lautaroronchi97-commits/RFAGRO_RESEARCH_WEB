@@ -482,7 +482,7 @@ cuando les toque en el orden.
 |---|---|---|
 | **H12** — overflow mobile de /graficos | **No por ahora** (herramienta de mesa, se usa en desktop) | B1 sale del backlog activo → queda anotado como descartado (revisable si /graficos se usa en celular) |
 | **Girasol/sorgo** en "Negocios de planta" | **Sí, sumarlos** | B3 confirmado como quick win activo |
-| **D6** — montos "VIEJA" enormes en /comercio/empresas | **Investigado + fix elegido:** era bug real (la columna sumaba 17 campañas 2010→2025 bajo la etiqueta de una sola) → **VIEJA = solo la campaña anterior** (camp_ini = actual−1) | B2 = fix chico en `empresas.ts` → PR aparte (no ensucia el #61 de docs) |
+| **D6** — montos "VIEJA" enormes en /comercio/empresas | **Investigado + fix elegido:** era bug real (la columna sumaba 17 campañas 2010→2025 bajo la etiqueta de una sola) → **VIEJA = solo la campaña anterior** (camp_ini = actual−1) | B2 = fix en `empresas.ts` → **PR #62** (maíz 395,3→29,0 Mt, soja 108,9→12,1 Mt; lint/tsc/build ✅) |
 | **Uploader** /admin/datos probado logueado | **No todavía** | A6 sigue como pendiente manual: probarlo con el próximo export de Agrochat |
 
 ### Bloque 3 — prioridad fina de features + lotes técnicos (22/07/2026)
