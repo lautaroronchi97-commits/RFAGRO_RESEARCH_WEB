@@ -201,9 +201,10 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 
 ### B. Quick wins restantes (fixes chicos, se pueden juntar en una sola sesión)
 
-- [ ] **B2. D6** — investigar los montos "VIEJA" de `/comercio/empresas` (soja 108,9 Mt / maíz
-  395,3 Mt declarado campaña vieja: ¿acumulan varias campañas por diseño o es atribución errada?).
-  **Claude investiga** con SQL y trae diagnóstico antes de tocar nada (decidido 22/07, §7).
+- [~] **B2. D6** — ✅ investigado 22/07 (§7): era bug real — la columna "VIEJA" de
+  `/comercio/empresas` sumaba las 17 campañas 2010→2025 (backfill Fase 3) pero la UI la etiquetaba
+  como la campaña anterior sola. **Fix elegido: VIEJA = solo camp_ini = actual−1** (maíz 395,3→29,0
+  Mt, soja 108,9→12,1 Mt). Implementación en PR aparte (`empresas.ts`).
 - [ ] **B3. Girasol/sorgo** en el selector de "Negocios de planta" (confirmado 22/07, §7).
 - [x] ~~**B1. H12** — overflow mobile de `/graficos`~~ → **NO por ahora** (22/07, §7): es
   herramienta de mesa que se usa en desktop. Revisable si se empieza a usar en celular.
@@ -481,7 +482,7 @@ cuando les toque en el orden.
 |---|---|---|
 | **H12** — overflow mobile de /graficos | **No por ahora** (herramienta de mesa, se usa en desktop) | B1 sale del backlog activo → queda anotado como descartado (revisable si /graficos se usa en celular) |
 | **Girasol/sorgo** en "Negocios de planta" | **Sí, sumarlos** | B3 confirmado como quick win activo |
-| **D6** — montos "VIEJA" enormes en /comercio/empresas | **Claude lo investiga** y trae diagnóstico antes de tocar nada | B2 = investigación (SQL) a cargo de la sesión; con el resultado se decide si hay fix |
+| **D6** — montos "VIEJA" enormes en /comercio/empresas | **Investigado + fix elegido:** era bug real (la columna sumaba 17 campañas 2010→2025 bajo la etiqueta de una sola) → **VIEJA = solo la campaña anterior** (camp_ini = actual−1) | B2 = fix chico en `empresas.ts` → PR aparte (no ensucia el #61 de docs) |
 | **Uploader** /admin/datos probado logueado | **No todavía** | A6 sigue como pendiente manual: probarlo con el próximo export de Agrochat |
 
 ### Bloque 3 — prioridad fina de features + lotes técnicos (22/07/2026)
