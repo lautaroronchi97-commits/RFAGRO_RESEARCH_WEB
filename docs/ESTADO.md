@@ -19,7 +19,26 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 22/07/2026 — auditoría E5 infra CERRADA (fase 1+2 + PR #59 de fix de auth) · encendido del login Parte A/B HECHAS, Parte C EN CURSO · auditoría E4 código CERRADA (fase 1+2) · auditoría E3 UX FASE 1+2 HECHAS · auditoría E6 historia CERRADA · MP3 view de mercado MERGEADO · research P3/P4 HECHO · auditoría E2 CERRADA)
+## Ahora (última actualización: 22/07/2026 — 🏁 AUDITORÍA INTEGRAL COMPLETA: E7 síntesis CERRADA → BACKLOG MAESTRO ÚNICO en `auditoria/E7-sintesis.md` §4 · encendido del login Parte A/B HECHAS, Parte C EN CURSO · E1–E6 cerradas · MP3 view de mercado MERGEADO · research P3/P4 HECHO)
+
+**🏁 AUDITORÍA E7 (síntesis y backlog maestro) — CERRADA, cierra la auditoría integral completa
+(E1→E7) — rama `claude/auditoria-e7-sintesis-a919cq`, PR #_.** Etapa final: se fusionaron los 6
+informes (deduplicando los hallazgos vistos por más de una etapa, con la decisión de Lautaro
+arrastrada — nada aprobado se perdió, nada rechazado reaparece), se armó la **matriz impacto ×
+esfuerzo** de todo lo aprobado-y-pendiente, y quedó el **BACKLOG MAESTRO ÚNICO** en
+**[`auditoria/E7-sintesis.md`](auditoria/E7-sintesis.md) §4** — reemplaza a las 3 listas paralelas
+(absorbe el checklist «Plan RF AGRO» de abajo, que queda como histórico, y el tablero de
+`PLAN_BACKLOG.md`; los prompts P1–P12/MP1–MP4 siguen siendo los prompts de ejecución). El informe
+abre con el **resumen ejecutivo de TODA la auditoría** (~71 hallazgos, ~30 decisiones, qué se
+corrigió y qué queda) escrito para leerse de una sentada. Trae además **6 prompts de lote listos**
+(§6): L1 partir `market.ts`+util mes/posición · L2 motor de gráfico SVG · L3
+`noUncheckedIndexedAccess` · L4 calibración de parámetros de mesa (insumo de Lautaro) · L5 **DEA
+destrabar la fuente** (único incidente abierto: MAGyP no acepta ni Actions ni São Paulo) · L6
+robustez de ingestas v2 (falso-verde en backfills + calendario desde ICS NASS). **Orden sugerido:**
+A1 terminar login + A2 Routine MP3 (manuales) → MP1 → L5 (DEA) → MP2 → respuestas P3/P4 → builds.
+Tablero de `PLAN_AUDITORIA.md` marcado completo. **Regla desde hoy: todo pendiente nuevo se agrega
+al backlog maestro (§4 de E7-sintesis), no acá ni en listas paralelas.** Detalle:
+[`sesiones/2026-07-22-auditoria-e7-sintesis.md`](sesiones/2026-07-22-auditoria-e7-sintesis.md).
 
 **🔐 ENCENDIDO DEL LOGIN — PARTE A (Vercel Pro) Y PARTE B (pre-encendido) HECHAS, PARTE C
 (Google OAuth) EN CURSO — 22/07/2026.** Siguiendo la «Guía definitiva» de
@@ -622,6 +641,12 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
 ---
 
 ## Plan RF AGRO (backlog priorizado por Lautaro, registrado 13/07/2026)
+
+> ⚠️ **REEMPLAZADO POR EL BACKLOG MAESTRO (22/07/2026, auditoría E7).** Esta lista queda como
+> **registro histórico** de los 21 ítems originales y su estado al cierre de la auditoría. La lista
+> viva donde se prioriza y se tacha es **[`auditoria/E7-sintesis.md`](auditoria/E7-sintesis.md) §4**
+> (integra lo vigente de acá: remanente del 5, 11-21, extras del 6, encendido del 7/10). Todo
+> pendiente NUEVO va directo allá — esta sección no se vuelve a editar.
 
 > Lista de tareas que Lautaro quiere hacer. **Las fechas/semanas son solo agrupación de orden, NO
 > deadlines duros** — no hay que forzar nada por calendario. Cada sesión que arranque revisa esta lista,

@@ -147,14 +147,14 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
 
 ## Pendientes
 
-> **Retirada la lista propia (21/07/2026, auditoría E6 — `auditoria/E6-historia.md`):** este archivo
-> tenía su propia lista de pendientes desde el 09/07, que divergió de la de `ESTADO.md` y de
-> `PLAN_BACKLOG.md`. El backlog vivo (con checkboxes, actualizado sesión a sesión) está en
-> [`ESTADO.md`](ESTADO.md) § «Plan RF AGRO»; el mapeo completo de TODO pendiente del proyecto — el de
-> acá, el de gráficos v2 y el de `ESTADO.md` — con el prompt autocontenido para ejecutar cada uno, está
-> en [`PLAN_BACKLOG.md`](PLAN_BACKLOG.md). **Regla en adelante: `CONTEXTO.md` no vuelve a mantener su
-> propia lista de pendientes** — todo pendiente nuevo se agrega directo al backlog de `ESTADO.md` y,
-> si hace falta un prompt propio, a `PLAN_BACKLOG.md`.
+> **Retirada la lista propia (21/07/2026, auditoría E6) y backlog consolidado (22/07/2026, auditoría
+> E7):** desde el cierre de la auditoría integral, **la única lista donde se prioriza y se tacha es el
+> BACKLOG MAESTRO de [`auditoria/E7-sintesis.md`](auditoria/E7-sintesis.md) §4** (con matriz impacto ×
+> esfuerzo y dependencias). Los prompts de ejecución viven donde siempre: P1–P12 en
+> [`PLAN_BACKLOG.md`](PLAN_BACKLOG.md), MP1–MP4 en [`PLAN_INFORMES.md`](PLAN_INFORMES.md), lotes
+> L1–L6 en el propio `E7-sintesis.md` §6. El checklist «Plan RF AGRO» de `ESTADO.md` quedó como
+> registro histórico. **Regla: ni `CONTEXTO.md` ni ninguna otra lista paralela — todo pendiente nuevo
+> se agrega directo al backlog maestro.**
 
 ## Comandos
 - `npm run dev` (real en sandbox: `NODE_USE_ENV_PROXY=1 npm run dev`) · `npm run build` · push a la rama → deploy.

@@ -1,5 +1,11 @@
 # PLAN DEL BACKLOG — RF AGRO (pendientes sin plan previo)
 
+> ⚠️ **TABLERO ABSORBIDO por el backlog maestro (22/07/2026, auditoría E7).** La priorización y el
+> estado de cada ítem viven ahora en **[`auditoria/E7-sintesis.md`](auditoria/E7-sintesis.md) §4**
+> (una sola lista canónica, como anticipaban las Notas de este plan). Este archivo sigue vigente
+> como **biblioteca de prompts**: los P1–P12 de abajo son los prompts de ejecución que el backlog
+> maestro referencia. No mantener acá estado paralelo.
+
 > **Qué es esto.** El tercer plan del 21/07/2026: cierra el círculo sobre TODOS los pendientes del
 > proyecto. Los que ya tienen plan propio quedan mapeados (tabla abajo, sin duplicar); los que no,
 > reciben acá su **prompt autocontenido** (P1→P12), mismo estándar y reglas que
