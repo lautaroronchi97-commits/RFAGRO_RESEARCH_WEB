@@ -4,6 +4,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { AdminTabs } from "./admin-tabs";
 import { requireAdmin } from "@/lib/auth/dal";
 import { contarPendientes } from "@/lib/auth/admin";
+import { contarBorradoresInterp } from "@/lib/interpretaciones";
 import { cerrarSesion } from "@/app/auth/actions";
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const admin = await requireAdmin();
-  const pendientes = await contarPendientes();
+  const [pendientes, borradoresInterp] = await Promise.all([contarPendientes(), contarBorradoresInterp()]);
 
   return (
     <div className="admin-shell">
@@ -47,7 +48,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </header>
 
-      <AdminTabs pendientes={pendientes} />
+      <AdminTabs pendientes={pendientes} borradoresInterp={borradoresInterp} />
 
       <main className="admin-main">{children}</main>
     </div>

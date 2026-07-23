@@ -14,7 +14,7 @@
 | MP1 | Informe diario (placa PNG para WhatsApp) | — | **código HECHO** — falta que Lautaro cree la Routine diaria (paso manual, prompt en el doc de sesión) | #63 |
 | MP2 | Informe semanal (PDF research) | MP1 | **base + gráfico HECHOS** — falta la skill (Lautaro quiere definir qué destacar cada semana antes) + Routine | #63 |
 | MP3 | View de mercado por grano (research direccional) | MP1 (patrón; se ejecutó antes — dependencia blanda, ver nota) | **HECHO y MERGEADO** — falta que Lautaro cree la Routine semanal (paso manual, prompt listo en el doc de sesión) | #53 |
-| MP4 | Interpretación de informes de organismos (ítem 21) | MP1 | pendiente | — |
+| MP4 | Interpretación de informes de organismos (ítem 21) | MP1 | **código HECHO** — falta aplicar la migración (`20260723170000`) + verificación end-to-end con datos reales (doc de sesión) | #_ |
 
 ## Modelo recomendado por mini-proyecto (elegir AL ABRIR la sesión / crear la Routine)
 

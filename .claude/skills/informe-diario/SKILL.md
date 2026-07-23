@@ -179,7 +179,71 @@ insumo degradó (si alguno), y si el mail salió. Si algo falló a mitad de
 camino, decilo fuerte — nunca en silencio (ej. "se generó el PNG pero no se
 pudo mandar el mail: falta RESEND_API_KEY").
 
+## Paso 9 — Interpretación de informes de organismos (MP4, después del Paso 7)
+
+Con el mismo JSON del Paso 1 ya tenés `informesHoy`: los informes de
+organismos (USDA/CONAB/BCR-GEA/DEA-SAGyP) que se publicaron **justo hoy**,
+cada uno con `organismo`, `informe` y `cambios` (grano/país/campaña,
+antes→ahora, delta, unidad — números exactos, ya calculados por
+`estimaciones.ts`). Si `informesHoy` viene vacío, no hay nada que hacer en
+este paso — seguí directo al cierre (Paso 8).
+
+Para cada entrada de `informesHoy` con `cambios.length > 0`:
+
+1. **Chequeá si ya existe** una interpretación para esa combinación exacta:
+   ```
+   GET {SUPABASE_URL}/rest/v1/interpretaciones?organismo=eq.{organismo}&informe=eq.{informe}&fecha_publicacion=eq.{fecha}&select=id
+   headers: apikey + authorization Bearer {SUPABASE_SERVICE_KEY}
+   ```
+   Si devuelve una fila, **saltealo** (ya se generó — no lo pises: puede tener
+   ediciones de Lautaro encima).
+
+2. **Redactá el borrador** (3-6 párrafos, voz `voz-lautaro` registro
+   **"Informe largo"** — rigor de datos + framing didáctico ["Recordemos
+   que…", "Dato no menor…"], emojis muy puntuales o ninguno): qué publicó el
+   organismo, qué cambió (cada número de `cambios` tal cual: antes → ahora,
+   unidad), qué implica para precios/mesa (a qué grano/plaza pega, si es
+   alcista/bajista/neutral y por qué), y qué mirar ahora. **Regla dura: solo
+   números que están en `cambios` (o en el resto del JSON del Paso 1) — nada
+   inventado.** Si un cambio es chico o dudoso, decilo con la humildad
+   característica ("a mi óptica, no es un cambio que mueva el amperímetro")
+   en vez de forzarle relevancia.
+
+3. **Guardá el borrador**:
+   ```
+   POST {SUPABASE_URL}/rest/v1/interpretaciones
+   headers: apikey + authorization Bearer {SUPABASE_SERVICE_KEY},
+            content-type: application/json, prefer: return=representation,resolution=merge-duplicates
+   body: [{ "organismo": "{organismo}", "informe": "{informe}",
+            "fecha_publicacion": "{fecha}",
+            "granos": [...granos únicos de cambios],
+            "borrador_md": "<el texto en markdown simple: párrafos separados
+              por línea en blanco, **negrita** con doble asterisco>",
+            "estado": "borrador" }]
+   ```
+   El UNIQUE `(organismo, informe, fecha_publicacion)` + `resolution=merge-
+   duplicates` lo hace idempotente (por eso el chequeo del paso 1 ya evita
+   pisar una edición — este POST solo corre si no existía fila).
+
+4. **Avisá por mail** (mismo `RESEND_API_KEY`/`RESEND_FROM`/`ADMIN_EMAILS`
+   del Paso 6, sin adjunto):
+   ```
+   POST https://api.resend.com/emails
+   body: { "from": "{RESEND_FROM}", "to": [...ADMIN_EMAILS],
+           "subject": "Nueva interpretación para revisar — {organismo} {informe}",
+           "html": "<el borrador_md convertido a HTML simple (párrafos) +
+             link a {INFORME_BASE_URL}/admin/interpretaciones>" }
+   ```
+   Su firma nunca sale sin su OK: el borrador queda en `/admin/interpretaciones`
+   hasta que Lautaro lo edite/publique/descarte a mano — este paso NUNCA
+   publica.
+
+Si falta `SUPABASE_SERVICE_KEY` o `RESEND_API_KEY`, saltealo y decilo en el
+resumen del Paso 8 (no es motivo para no completar el resto del informe
+diario, que ya corrió antes en los Pasos 1-7).
+
 ## Modo de prueba
 
 Con `--fecha` (o pedido "en seco"): corré los pasos 1-4 y mostrá el PNG SIN
-guardar en Supabase ni mandar mail — marcá "PRUEBA — no persistido".
+guardar en Supabase ni mandar mail — marcá "PRUEBA — no persistido". El Paso
+9 (interpretaciones) también se salta en modo prueba.

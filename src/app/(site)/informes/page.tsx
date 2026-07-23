@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { requireSeccion } from "@/lib/auth/dal";
 import { sbSelect } from "@/lib/supabase";
+import { getInterpretacionesPublicadas } from "@/lib/interpretaciones";
+import { ORG_LABEL } from "@/lib/calendario";
 import { Panel, PanelHead } from "@/components/panel";
 import { QueEsEsto } from "@/components/que-es-esto";
+import { MdLite } from "@/components/md-lite";
 
 export const metadata: Metadata = {
   title: "Informes · RF AGRO",
@@ -56,6 +59,7 @@ export default async function InformesPage() {
   const filas = res.ok ? (res.data as Informe[]) : [];
   const [destacado, ...resto] = filas;
   const urlDestacado = destacado?.path_png ? await signedUrl(destacado.path_png) : null;
+  const lecturas = (await getInterpretacionesPublicadas()).slice(0, 8);
 
   return (
     <>
@@ -132,6 +136,30 @@ export default async function InformesPage() {
               </div>
             )}
           </Panel>
+
+          {lecturas.length > 0 && (
+            <Panel id="lectura-mesa">
+              <PanelHead title="La lectura de la mesa" sub="interpretación de los informes de organismos" />
+              <QueEsEsto
+                paraQue="Cuando USDA, CONAB, BCR-GEA o SAGyP-DEA publican un informe nuevo, acá va la lectura de la mesa en criollo: qué cambió y qué implica."
+                comoSeCalcula="Se genera un borrador solo, con los números exactos del informe; Lautaro lo revisa y recién ahí lo publica."
+              />
+              <div className="estim-cambios" style={{ padding: "0 4px 10px" }}>
+                {lecturas.map((l) => (
+                  <div className="estim-cam-card" key={`${l.organismo}-${l.informe}-${l.fecha_publicacion}`}>
+                    <div className="estim-cam-hd">
+                      <span className={`cal-org org-${l.organismo}`}>
+                        {ORG_LABEL[l.organismo as keyof typeof ORG_LABEL] ?? l.organismo}
+                      </span>
+                      <span className="estim-cam-inf">{l.informe}</span>
+                      <span className="estim-cam-fecha">{ddmmaaaa(l.fecha_publicacion)}</span>
+                    </div>
+                    <MdLite md={l.publicado_md} className="estim-lectura-body" />
+                  </div>
+                ))}
+              </div>
+            </Panel>
+          )}
         </div>
       </main>
     </>

@@ -64,9 +64,11 @@ $$;
 revoke all on function public.admin_actualizar_interpretacion(uuid, text) from public, anon;
 grant execute on function public.admin_actualizar_interpretacion(uuid, text) to authenticated;
 
--- admin_publicar_interpretacion(p_id) — copia borrador_md → publicado_md, estado='publicado'.
+-- admin_publicar_interpretacion(p_id, p_borrador_md) — si viene texto, lo guarda primero
+-- (así "Publicar" siempre saca el último texto del textarea, aunque no se haya apretado
+-- "Guardar borrador" antes); después copia borrador_md → publicado_md, estado='publicado'.
 -- Su firma nunca sale sin su OK (decisión cerrada, PLAN_INFORMES.md).
-create or replace function public.admin_publicar_interpretacion(p_id uuid)
+create or replace function public.admin_publicar_interpretacion(p_id uuid, p_borrador_md text default null)
 returns boolean
 language plpgsql
 security definer
@@ -78,7 +80,8 @@ begin
   end if;
 
   update public.interpretaciones
-     set publicado_md = borrador_md,
+     set borrador_md = coalesce(nullif(btrim(p_borrador_md), ''), borrador_md),
+         publicado_md = coalesce(nullif(btrim(p_borrador_md), ''), borrador_md),
          estado = 'publicado',
          editado_en = now()
    where id = p_id;
@@ -87,8 +90,8 @@ begin
 end;
 $$;
 
-revoke all on function public.admin_publicar_interpretacion(uuid) from public, anon;
-grant execute on function public.admin_publicar_interpretacion(uuid) to authenticated;
+revoke all on function public.admin_publicar_interpretacion(uuid, text) from public, anon;
+grant execute on function public.admin_publicar_interpretacion(uuid, text) to authenticated;
 
 -- admin_descartar_interpretacion(p_id) — no se publica (informe irrelevante, borrador flojo, etc.).
 create or replace function public.admin_descartar_interpretacion(p_id uuid)

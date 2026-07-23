@@ -220,8 +220,13 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   sumado también a `/dolar` en vivo). **Falta la skill** (a pedido de Lautaro: quiere pensar
   con calma qué destacar cada semana antes de automatizarlo) + la Routine. Detalle:
   [`sesiones/2026-07-23-informes-mp2-semanal.md`](../sesiones/2026-07-23-informes-mp2-semanal.md).
-- [ ] **C3. MP4 — interpretación de informes de organismos** (tras MP1; borrador → OK en /admin →
-  publica en /produccion).
+- [~] **C3. MP4 — interpretación de informes de organismos** — código HECHO 23/07 (rama
+  `claude/avance-c3-1ra0au`): tabla `interpretaciones` + RPCs admin (migración escrita, **sin
+  aplicar** — falta el OK de Lautaro en la sesión), detección/generación como paso nuevo de la
+  skill `informe-diario` (reusa `informesHoy` que MP1 ya dejó preparado en
+  `/api/informes/datos`), panel `/admin/interpretaciones` (editor + Publicar/Descartar), "La
+  lectura de la mesa" colapsable en `/produccion` + feed en `/informes`. Falta aplicar la
+  migración y correr la verificación end-to-end con un informe real. `sesiones/2026-07-23-mp4-interpretacion.md`.
 - [x] **C4. P3 build — compras netas BCRA** — hecho 23/07 (fuente: API v4 var 78 para la
   historia/rezago + carga manual del día en /admin, decidido 22/07, §7): ingesta automática
   `ingest-bcra-mulc.mjs` + workflow + healthcheck, panel nuevo en `panel-cambiario.tsx`

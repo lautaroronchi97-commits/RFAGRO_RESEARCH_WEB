@@ -19,12 +19,32 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 23/07/2026 — día grande de backlog maestro, 5 sesiones en paralelo:
+## Ahora (última actualización: 23/07/2026 — día grande de backlog maestro, 6 sesiones en paralelo:
+📝 C3 (interpretación de informes de organismos) CÓDIGO HECHO (falta aplicar migración) ·
 🧹 LOTE L1 (partir `market.ts`) HECHO · 📄 MP2 informe semanal BASE+gráfico HECHOS (falta la skill) ·
 🔓 LOTE L5 (DEA-SAGyP) HECHO (carga semi-manual) · 📰 MP1 informe diario HECHO (falta la Routine) ·
 🎯 L4 (calibración de cobertura/roster/comisiones) CERRADO · 🌻 B3 (girasol/sorgo) CERRADO ·
 🚚 C5 (camiones en puerto + señal barcos-vs-camiones) CONSTRUIDO con pivote a Williams Entregas ·
 💵 C4 (compras netas BCRA) HECHO, backfill real 2003→hoy cargado)
+
+**📝 C3 — MP4: INTERPRETACIÓN DE INFORMES DE ORGANISMOS (ítem 21) — CÓDIGO HECHO, MIGRACIÓN SIN
+APLICAR — rama `claude/avance-c3-1ra0au`.** Ejecutado el PROMPT MP4 de `PLAN_INFORMES.md`. Tabla
+`interpretaciones` (borrador/publicado/descartado) + 3 RPC admin (`admin_actualizar/publicar/
+descartar_interpretacion`) en la migración `20260723170000` — **escrita, sin aplicar**: el primer
+intento de aplicarla por MCP (y la pregunta de confirmación siguiente) no llegaron a completarse
+en esta sesión, así que se dejó commiteada sin tocar la base, siguiendo el protocolo de "OK de
+Lautaro en la sesión" para migraciones. **Detección + generación**: paso nuevo (Paso 9) al final
+de la skill `informe-diario` — reusa `informesHoy` que MP1 ya había dejado preparado como
+"consulta adelantada" en `/api/informes/datos`; genera el borrador con `voz-lautaro` (registro
+"Informe largo") y NUNCA publica sola. **Admin** `/admin/interpretaciones` (editor con vista
+previa + Guardar/Publicar/Descartar, tab nueva con badge). **Web**: "La lectura de la mesa"
+colapsable en `/produccion` (junto a la tarjeta de cambios del organismo, match por
+organismo+fecha) + feed en `/informes`. **Verificado**: lint/tsc/build/tests ✅ (137/137); NO se
+pudo correr el flujo end-to-end con datos reales ni la verificación visual (bloqueado por la
+migración sin aplicar). **Falta**: aplicar la migración + correr toda la verificación real
+(borrador con un informe ya ingestado, RLS con anon, publicar y ver en `/produccion`). PR queda
+draft hasta entonces. Detalle:
+[`sesiones/2026-07-23-mp4-interpretacion.md`](sesiones/2026-07-23-mp4-interpretacion.md).
 
 **💵 C4 — COMPRAS NETAS BCRA (MULC) — HECHO, PR EN VUELO — rama `claude/avance-c4-rdz586`.**
 Retomado tras el desbloqueo de A5 (22/07) y el merge de MP1 (que ya había creado `compras_bcra`
