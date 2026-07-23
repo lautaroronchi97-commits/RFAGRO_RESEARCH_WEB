@@ -19,7 +19,17 @@ import type { Meta } from "./market";
 
 const URL_CAC = "https://www.cac.bcr.com.ar/es/precios-de-pizarra";
 const SOURCE = "Bolsa de Comercio de Rosario";
-const CLASES: Record<string, string> = { SOJ: "soja", MAI: "maiz", TRI: "trigo" };
+const CLASES: Record<string, string> = {
+  SOJ: "soja",
+  MAI: "maiz",
+  TRI: "trigo",
+  GIR: "girasol",
+  SOR: "sorgo",
+};
+// Los 3 que consumen arbitrajes/capacidad/cinta (tienen futuro A3) — girasol y sorgo son
+// solo para la calculadora "Negocios de planta" (B3, auditoría E7) y no deben degradar el
+// resto de la web si faltan (son menos líquidos, CAC los muestra "S/C" seguido).
+export const GRANOS_REQUERIDOS = ["SOJ", "MAI", "TRI"] as const;
 
 export type PizarraGrano = { underlying: string; usd: number; ars: number | null; estimativo: boolean };
 export type PizarraData = {
@@ -29,20 +39,49 @@ export type PizarraData = {
   meta: Meta;
 };
 
+/**
+ * Recorta el HTML al bloque de UN board (`<div class="board board-{cls} ...">` hasta el
+ * próximo board o el pie de la tabla) — así el parser de cada grano nunca puede "leer" el
+ * precio del board siguiente si el suyo no matchea (bug latente antes de sumar girasol/sorgo,
+ * que sí pueden no tener precio numérico algunos días).
+ */
+function extraerBloque(html: string, cls: string): { claseExtra: string; bloque: string } | null {
+  const re = new RegExp(`<div class="board board-${cls}\\b([^"]*)"`);
+  const m = re.exec(html);
+  if (!m) return null;
+  const start = m.index + m[0].length;
+  const restante = html.slice(start);
+  const finRel = restante.search(/<div class="board board-|<div class="price-board-footer">/);
+  return { claseExtra: m[1], bloque: finRel === -1 ? restante : restante.slice(0, finRel) };
+}
+
 function parseGrano(html: string, cls: string): { usd: number; ars: number; estimativo: boolean } | null {
+  const ext = extraerBloque(html, cls);
+  if (!ext) return null;
+  const { claseExtra, bloque } = ext;
   // CAC marca la pizarra estimativa (días sin fijación, Dto. 1058/99) con la
   // clase `estimative` en el div del board: `<div class="board board-soja estimative">`.
-  // Capturamos el resto de la clase (grupo 1) para detectarlo.
-  const re = new RegExp(
-    `board-${cls}\\b([^"]*)"[\\s\\S]*?<div class="price">\\s*\\$([\\d.]+,\\d{2})[\\s\\S]*?US\\$<\\/strong>\\s*([\\d.]+,\\d{2})`,
-  );
-  const m = html.match(re);
-  if (!m) return null;
-  const ars = arNum(m[2]);
-  const usd = arNum(m[3]);
-  // Si el formato de la fuente cambia y algún número no parsea, no mostramos el grano en vez de un NaN.
-  if (ars == null || usd == null) return null;
-  return { estimativo: /\bestimative\b/.test(m[1]), ars, usd };
+  const claseEstimativa = /\bestimative\b/.test(claseExtra);
+
+  // Formato normal (soja/maíz/trigo/sorgo la mayoría de los días): $ARS directo + US$ directo.
+  let m = bloque.match(/<div class="price">\s*\$([\d.]+,\d{2})[\s\S]*?<strong>US\$<\/strong>\s*([\d.]+,\d{2})/);
+  if (m) {
+    const ars = arNum(m[1]);
+    const usd = arNum(m[2]);
+    if (ars == null || usd == null) return null;
+    return { estimativo: claseEstimativa, ars, usd };
+  }
+
+  // Formato "sin cotización" (frecuente en girasol, producto menos líquido): CAC muestra
+  // "S/C" y un valor de referencia marcado "(E)" tanto en $ como en US$.
+  m = bloque.match(/S\/C[\s\S]*?\(E\)[\s\S]*?\$([\d.]+,\d{2})[\s\S]*?<strong>US\$<\/strong>[\s\S]*?\(E\)[\s\S]*?([\d.]+,\d{2})/);
+  if (m) {
+    const ars = arNum(m[1]);
+    const usd = arNum(m[2]);
+    if (ars == null || usd == null) return null;
+    return { estimativo: true, ars, usd };
+  }
+  return null;
 }
 
 export const getPizarra = cache(async (): Promise<PizarraData> => {
@@ -79,12 +118,13 @@ export const getPizarra = cache(async (): Promise<PizarraData> => {
   const tcBna = tcM ? arNum(tcM[1]) : null;
 
   const n = Object.keys(granos).length;
+  const requeridosOk = GRANOS_REQUERIDOS.every((u) => granos[u] != null);
   const updatedAtRaw = fecha ? Date.parse(`${fecha}T00:00:00-03:00`) : null;
   const updatedAt = updatedAtRaw !== null && !Number.isNaN(updatedAtRaw) ? updatedAtRaw : null;
 
   const problemas: string[] = [];
   if (caida) problemas.push("CAC no respondió");
-  else if (n < 3) problemas.push("CAC: faltan granos en la pizarra");
+  else if (!requeridosOk) problemas.push("CAC: faltan granos en la pizarra");
 
   return {
     granos,
@@ -93,7 +133,7 @@ export const getPizarra = cache(async (): Promise<PizarraData> => {
     meta: {
       source: SOURCE,
       updatedAt,
-      status: n === 3 && !caida ? "real" : n > 0 ? "parcial" : "parcial",
+      status: requeridosOk && !caida ? "real" : n > 0 ? "parcial" : "parcial",
       problemas,
     },
   };

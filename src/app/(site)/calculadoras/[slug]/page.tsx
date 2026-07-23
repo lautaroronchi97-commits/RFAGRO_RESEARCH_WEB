@@ -47,8 +47,16 @@ export default async function CalculadoraPage({
   const curva = await getCurvaGranos();
   const pizarra = await getPizarra();
 
-  const NOMBRES_PIZARRA: Record<string, string> = { SOJ: "Soja", MAI: "Maíz", TRI: "Trigo" };
-  const pizarraProd: PizarraProducto[] = ["SOJ", "MAI", "TRI"]
+  const NOMBRES_PIZARRA: Record<string, string> = {
+    SOJ: "Soja",
+    MAI: "Maíz",
+    TRI: "Trigo",
+    GIR: "Girasol",
+    SOR: "Sorgo",
+  };
+  // Girasol y sorgo solo alimentan esta calc (no tienen futuro A3 → no van a "a fijar"/"por
+  // porcentaje"/etc., que usan curva.granos).
+  const pizarraProd: PizarraProducto[] = ["SOJ", "MAI", "TRI", "GIR", "SOR"]
     .map((u) => pizarra.granos[u])
     .filter((g): g is NonNullable<typeof g> => !!g)
     .map((g) => ({ underlying: g.underlying, nombre: NOMBRES_PIZARRA[g.underlying] ?? g.underlying, usd: g.usd }));
