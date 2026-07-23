@@ -19,7 +19,46 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 22/07/2026 — 🏁 AUDITORÍA INTEGRAL COMPLETA: E7 síntesis CERRADA → BACKLOG MAESTRO ÚNICO en `auditoria/E7-sintesis.md` §4 · encendido del login Parte A/B HECHAS, Parte C EN CURSO · E1–E6 cerradas · MP3 view de mercado MERGEADO · research P3/P4 HECHO)
+## Ahora (última actualización: 23/07/2026 — backlog maestro: B3 (girasol/sorgo) y L4 (calibración
+de cobertura/roster/comisiones) CERRADOS · C5 (camiones en puerto + señal barcos-vs-camiones)
+CONSTRUIDO con pivote a Williams Entregas (cero SAGyP) · MP1 y L5 en sesiones paralelas, sin tocar)
+
+**🚚 C5 — CAMIONES EN PUERTO + SEÑAL BARCOS-VS-CAMIONES — CONSTRUIDO, PR EN VUELO — rama
+`claude/pendientes-restantes-n4x9b5`.** Arrancó como el P4 del backlog (research 21/07: SAGyP/MAGyP
+automático) pero pivotó a mitad de camino: Lautaro aportó por chat 5 CSV reales de **Williams
+Entregas** ("la fuente de camiones por excelencia", vía su export de Agrochat) — zona total + zona
+por maíz/soja/trigo + localidades, 2018→2026. Investigado (`WebFetch`): Williams es un servicio B2B
+**pago sin API pública** → la carga manual es la arquitectura correcta para siempre, no un parche.
+**Decisión final: cero dependencia de SAGyP**, zona Y producto salen de Williams por carga manual
+desde `/admin/datos` (pestaña nueva, con selector de serie + prompt tipo `prompt-agrochat.tsx` para
+pedirle el export a Agrochat). Tabla `camiones` pública (como la DJVE) + panel `/comercio/camiones`;
+el bloque "señal barcos-vs-camiones" (diferencial de percentiles estacionales pctlLineup−pctlCamiones,
+NUNCA un ratio con umbral fijo — mismo hallazgo que L4) queda solo-mesa. Backfill completo 2018-2026
+(42.624 filas) cargado a la base real. `src/lib/camiones/sagyp.ts` quedó escrito/testeado pero sin
+wirear (referencia muerta a propósito). Verificado: 30 tests nuevos (122 total) + página corrida con
+datos reales (KPI "5.069 camiones el 22/07" 1:1 contra el CSV) + señal reproduce exacto el ejemplo de
+`negocio/09` (trigo +19 alcista, maíz+soja+Bahía neutro, Gran Rosario −12 bajista). **Diferido:** C4
+(compras BCRA) — la sesión de MP1 ya creó en la base real la tabla `compras_bcra` pensada para esto,
+mejor esperar a que esa rama mergee antes de escribir la ingesta encima. Detalle:
+[`sesiones/2026-07-23-l4-c5-camiones.md`](sesiones/2026-07-23-l4-c5-camiones.md).
+
+**🎯 L4 — CALIBRACIÓN DE COBERTURA/ROSTER/COMISIONES — CERRADO — misma rama.** Antes de calibrar
+números a ciegas, auditoría real por SQL (pedido explícito de Lautoro: "¿esto tiene lógica?"): el
+umbral fijo 0,7/1,3 de `cobertura.ts` disparaba señal el **74-95% de los días** históricos según el
+producto (maíz 94,7%) — nunca se había validado contra la distribución argentina. Reemplazado por
+**percentiles P25/P75 por producto** (mismo criterio que el índice MESA), con el mínimo de 5.000t
+protegiendo AHORA ambos lados (antes solo el alcista). Índice MESA (pesos/bandas/rindes) auditado y
+**dejado como está** (diseño ya sólido, sin evidencia de que esté mal). Sumado: chequeo de erosión
+del roster de exportadores en el healthcheck (umbral 15%, hoy 2,6% real) + toggle "incluir costos"
+en la calculadora de estrategias (tarifario A3/Cocos). Detalle en el mismo doc de sesión de arriba.
+
+**🌻 B3 — GIRASOL Y SORGO EN LA PIZARRA — CERRADO — misma rama.** La pizarra CAC sí publica esos
+2 boards (verificado con request real); sumados a la calc "Negocios de planta" únicamente (no tienen
+futuro A3). De paso, el parser de `pizarra.ts` quedó acotado a su propio bloque HTML (bug latente
+que podía leer el precio del board siguiente si el propio no matcheaba) + un formato de fallback
+para "S/C" (girasol suele venir así). Detalle en el mismo doc de sesión.
+
+## Anterior (22/07/2026 — 🏁 AUDITORÍA INTEGRAL COMPLETA: E7 síntesis CERRADA → BACKLOG MAESTRO ÚNICO en `auditoria/E7-sintesis.md` §4 · encendido del login Parte A/B HECHAS, Parte C EN CURSO · E1–E6 cerradas · MP3 view de mercado MERGEADO · research P3/P4 HECHO)
 
 **🏁 AUDITORÍA E7 (síntesis y backlog maestro) — CERRADA, cierra la auditoría integral completa
 (E1→E7) — rama `claude/auditoria-e7-sintesis-a919cq`, PR #61.** Etapa final: se fusionaron los 6

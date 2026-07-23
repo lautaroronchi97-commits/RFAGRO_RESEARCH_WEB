@@ -201,11 +201,12 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 
 ### B. Quick wins restantes (fixes chicos, se pueden juntar en una sola sesión)
 
-- [~] **B2. D6** — ✅ investigado 22/07 (§7): era bug real — la columna "VIEJA" de
+- [x] **B2. D6** — ✅ investigado 22/07 (§7): era bug real — la columna "VIEJA" de
   `/comercio/empresas` sumaba las 17 campañas 2010→2025 (backfill Fase 3) pero la UI la etiquetaba
   como la campaña anterior sola. **Fix elegido: VIEJA = solo camp_ini = actual−1** (maíz 395,3→29,0
-  Mt, soja 108,9→12,1 Mt). Implementación en PR aparte (`empresas.ts`).
-- [ ] **B3. Girasol/sorgo** en el selector de "Negocios de planta" (confirmado 22/07, §7).
+  Mt, soja 108,9→12,1 Mt). Mergeado (PR #62).
+- [x] **B3. Girasol/sorgo** en el selector de "Negocios de planta" — hecho 23/07
+  (`sesiones/2026-07-23-l4-c5-camiones.md`).
 - [x] ~~**B1. H12** — overflow mobile de `/graficos`~~ → **NO por ahora** (22/07, §7): es
   herramienta de mesa que se usa en desktop. Revisable si se empieza a usar en celular.
 
@@ -217,9 +218,14 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 - [ ] **C3. MP4 — interpretación de informes de organismos** (tras MP1; borrador → OK en /admin →
   publica en /produccion).
 - [ ] **C4. P3 build — compras netas BCRA** (fuente: API v4 var 78 para la historia/rezago +
-  **carga manual del día** en /admin — decidido 22/07, §7). Desbloqueado.
-- [ ] **C5. P4 build — camiones en puerto** (fuente: SAGyP diario; panel **público** en /comercio;
-  backfill **2020→hoy** — decidido 22/07, §7). Desbloqueado.
+  **carga manual del día** en /admin — decidido 22/07, §7). Desbloqueado — **verificado 23/07 que la
+  API sigue viva, pero diferido**: la sesión de MP1 ya creó en la base real la tabla `compras_bcra`
+  pensada para esto (fuente manual/api); esperar a que esa rama mergee antes de construir encima.
+- [x] **C5. P4 build — camiones en puerto** — hecho 23/07, **pivotó de fuente**: en vez de SAGyP
+  diario automático, Williams Entregas (vía Agrochat) por carga manual — zona Y producto, cero
+  dependencia de SAGyP (Williams confirmado como servicio pago sin API). Panel público + señal
+  barcos-vs-camiones solo-mesa. Backfill 2018→hoy (mejor que el 2020→hoy decidido el 22/07, porque
+  la fuente cambió a una con más historia disponible). `sesiones/2026-07-23-l4-c5-camiones.md`.
 - [ ] **C6. P1 — Merval + EWZ + volumen Matba** en el monitor de `/granos`.
 - [ ] **C7. P2 — variación semanal del USD** (gráfico en /dolar; *conviene después de L1/L2*).
 - [ ] **C8. P5 — vista por grano** (compone libs existentes, cero lógica nueva).
@@ -239,7 +245,10 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 ### D. Lotes técnicos aprobados (refactors/calibración/robustez — prompts en §6)
 
 - [ ] **D1 = L5. DEA: destrabar la fuente** (incidente abierto — primero del grupo).
-- [ ] **D2 = L4. Calibración de mesa** 🔒 (tus valores como paso 1 del prompt).
+- [x] **D2 = L4. Calibración de mesa** — hecho 23/07: umbrales de cobertura pasaron a percentil
+  P25/P75 por producto (el fijo 0,7/1,3 disparaba señal 74-95% de los días, verificado por SQL);
+  índice MESA auditado y dejado como está; roster con aviso al 15% de OTROS; comisiones de
+  estrategias con toggle (tarifario A3/Cocos). `sesiones/2026-07-23-l4-c5-camiones.md`.
 - [ ] **D3 = L6. Robustez de ingestas v2** (falso-verde en backfills + ICS NASS + roster-erosión).
 - [ ] **D4 = L1. Partir `market.ts` + util única de mes/posición** (antes de C7/C10 idealmente).
 - [ ] **D5 = L3. `noUncheckedIndexedAccess`** (después de L1).
@@ -498,6 +507,25 @@ cuando les toque en el orden.
 intercalan cuando toque el código que comparten (antes de P2/P6). Las features chicas (P5/P1/P2/
 extras puertos) esperan a que Lautaro las evalúe una por una. B2 (D6) lo investiga Claude cuando
 haya una ventana; B3 (girasol/sorgo) entra como quick win.
+
+### Bloque 4 — B3/L4/C5 ejecutados, pivote de fuente en camiones (23/07/2026)
+
+| Decisión | Respuesta de Lautoro | Efecto en el backlog |
+|---|---|---|
+| **Umbral de cobertura** (L4) — el fijo 0,7/1,3 disparaba señal 74-95% de los días (SQL real) | **Percentiles P25/P75 por producto** (mismo criterio que el índice MESA) | `cobertura.ts` recalibrado; `empresas.ts`/`semaforo.ts` lo consumen. B2/D2 cerrado |
+| **Índice MESA** (pesos/bandas/rindes) — auditado, ¿tiene sentido? | **Dejarlos como están** (diseño ya sólido; sin backtesting no se puede afirmar que otro valor sea mejor) | Sin cambios en `mesa_calor.ts`; queda anotado si algún día se hace el backtesting |
+| **Roster de exportadores** — umbral de aviso de "OTROS" | **15%** (hoy 2,6% real) | Chequeo nuevo en `healthcheck-frescura.mjs`, `::warning` sin fallar el workflow |
+| **Comisiones de estrategias** — ¿qué tarifario? | **A3/Cocos** (reusar `costos.ts`), con **toggle** para calcular con o sin costos | Toggle en `calc-estrategias.tsx`; monto gravable = prima/strike × cttos (simplificación documentada, sin tamaño de contrato todavía) |
+| **Camiones — módulo nuevo propuesto por Lautoro**: cruzar barcos (line-up) vs camiones, no solo un panel aislado | **Sí** — "si están los barcos y los camiones no llegan debería ser alcista, y viceversa" | Research nuevo `negocio/09` → señal barcos-vs-camiones (diferencial de percentiles), integrada a C5 en vez de un proyecto aparte |
+| **Fuente de camiones** — el plan original apuntaba a SAGyP/MAGyP | **Williams Entregas** ("la fuente de camiones por excelencia"), Lautoro aportó 5 CSV reales 2018-2026 vía su export de Agrochat (zona total + zona por maíz/soja/trigo + localidades) | Pivote de arquitectura a mitad del build C5: cero SAGyP, todo carga manual — ver `sesiones/2026-07-23-l4-c5-camiones.md` |
+| **Ingesta diaria de camiones hacia adelante** | **Botón manual en `/admin/datos`** (mismo patrón que compras/Agrochat) — confirmado "y no depender más de MAGyP" | Uploader + prompt nuevo (`prompt-camiones.tsx`) en vez de un cron automático |
+| **Visibilidad de la señal barcos-vs-camiones** | Datos crudos públicos, **señal solo mesa** | Página `/comercio/camiones` pública, bloque de señal gateado por `esAdmin` |
+| **Alcance zonal v1** | Nacional + Gran Rosario + Bahía Blanca alcanza (no sumar Necochén/Quequén todavía) | Sin cambios a `zonas.ts` |
+| **Timing del índice MESA** | En fases: señal en el panel de camiones ahora, evaluar sumarla al índice recién después de que L4 asiente | `temperatura.ts`/`mesa_calor.ts` sin tocar en este lote |
+| **C4 (compras BCRA)** — ¿arrancar ya que la API sigue viva? | No fue preguntado directamente, pero se descubrió que la sesión de MP1 ya creó `compras_bcra` en la base real | C4 diferido hasta que la rama de MP1 mergee (evitar pisarse con su migración/uploader) |
+
+**B3, L4 y C5 quedan CERRADOS** (backlog §4 actualizado arriba). Próximo en el orden sugerido:
+esperar a MP1/L5 (sesiones paralelas) y retomar C4 cuando MP1 mergee.
 
 ---
 
