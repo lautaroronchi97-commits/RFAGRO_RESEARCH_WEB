@@ -28,7 +28,9 @@ marca — abrió research de dominio/marca/SRL, PAUSADO a pedido de Lautaro ·
 🎯 L4 (calibración de cobertura/roster/comisiones) CERRADO · 🌻 B3 (girasol/sorgo) CERRADO ·
 🚚 C5 (camiones en puerto + señal barcos-vs-camiones) CONSTRUIDO con pivote a Williams Entregas ·
 💵 C4 (compras netas BCRA) HECHO, backfill real 2003→hoy cargado ·
-⏰ A2 (Routines MP1/MP2/MP3) HECHO, las 3 creadas y activas)
+⏰ A2 (Routines MP1/MP2/MP3) HECHO, las 3 creadas y activas ·
+📈 A3 (BCBA-PAS) suscripción HECHA + producción histórica cargada (26 campañas), condición de
+cultivos fasada para después)
 
 **📝 C3 — MP4: INTERPRETACIÓN DE INFORMES DE ORGANISMOS (ítem 21) — HECHO, MIGRACIÓN APLICADA Y
 PROBADA — rama `claude/avance-c3-1ra0au`, PR #67 (mergeado).** Ejecutado el PROMPT MP4 de
@@ -149,6 +151,28 @@ intentaba publicar el consent screen de Google (pide URL de política de privaci
 **Routine semanal creada** (23/07: `create_trigger` cron `0 22 * * 5` = 19:00 ART viernes) —
 **falta**: el primer PDF real de punta a punta (primer disparo real recién el viernes que viene).
 Detalle: [`sesiones/2026-07-23-mp2-skill-y-alta-srl.md`](sesiones/2026-07-23-mp2-skill-y-alta-srl.md).
+
+**📈 A3 — SUSCRIPCIÓN PAS (BCBA) HECHA + producción histórica cargada a la base.** Lautaro se
+suscribió al Panorama Agrícola Semanal por WhatsApp (la automatización sigue descartada,
+Cloudflare 403 confirmado 2/2) y pasó el PDF del informe de hoy + 5 exports descargables de
+`bolsadecereales.com/estimaciones-agricolas`. De esos 5, **`historico_pas_datasets.csv`** (26
+campañas 2000/01→2025/26, los 6 granos) resultó ser el dato correcto — verificado 1:1 contra
+cifras reales conocidas (soja 2024/25 = 50,3 Mt, maíz 2024/25 = 49,0 Mt) — mientras que
+`reporte_1.xlsx` (solo la campaña en curso) quedó descartado por no poder confirmar si su columna
+"Producción(**MTn**)" son millones o no (nunca trajo un valor >0 para verificar). Los otros 4
+reportes (`reporte_2-5`: condición semanal + avance fenológico por grano, dato que la web no
+modela en ningún lado hoy) quedan **fasados a propósito** — Lautaro eligió "los dos, pero fasado"
+cuando se le preguntó el alcance: arrancar con lo chico (producción → comparador existente) y
+diseñar con calma un panel de "condición de cultivos" más adelante. **Construido**: `src/lib/
+parse-pas.ts` (reusa la RPC `admin_upsert_estimaciones` de L5, CERO migración nueva) con dos
+defensas reales encontradas en los datos (fila de trigo 2025/26 duplicada byte-a-byte de 2024/25
+→ descartada; rinde de girasol 2024/25 corrupto en el origen → recalculado siempre desde
+producción/cosechado, nunca se confía en la columna del origen) + sección nueva en `/admin/datos`
+(mismo patrón 2 pasos que DEA, descartes siempre visibles en la previsualización). **Backfill real
+cargado**: 400 filas verificadas con Node pelado contra el CSV real antes de tocar la base, subidas
+por REST con la service key (mismo patrón que los scripts de ingesta) — BCBA sumado al comparador
+de `/produccion` junto a USDA/CONAB/BCR/DEA, 2000/01→2025/26. Detalle:
+[`sesiones/2026-07-23-mp2-skill-y-alta-srl.md`](sesiones/2026-07-23-mp2-skill-y-alta-srl.md).
 
 **🔓 A1 — LOGIN CON GOOGLE: verificación de marca TRABADA, abrió un tema de negocio (nombre/
 dominio/SRL) — PAUSADO a pedido explícito de Lautaro ("documentan todo lo que hablamos y lo

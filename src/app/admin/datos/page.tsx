@@ -8,15 +8,16 @@ import { UploaderCamiones } from "./uploader-camiones";
 import { PromptCamiones } from "./prompt-camiones";
 import { DatosDia } from "./datos-dia";
 import { DeaUploader } from "./dea-uploader";
+import { PasUploader } from "./pas-uploader";
 
 /**
  * Pestaña DATOS del panel admin: actualizar series que se cargan a mano (sin cron), subiendo
  * exports de Agrochat/Williams — comercialización de granos (tabla `compras`), camiones en
  * puerto (tabla `camiones`, Williams Entregas), "datos del día" del informe diario (MP1: color
- * de la rueda + compras BCRA), y estimaciones DEA-SAGyP (lote L5 — fuente automática bloqueada
- * por IP). Protegida como las páginas hermanas: requireAdmin acá mismo (además del layout), y
- * cada server action vuelve a exigir admin en su primera línea; la escritura va por RPC con
- * guard is_admin() (sin service key en la web).
+ * de la rueda + compras BCRA), y estimaciones DEA-SAGyP + BCBA-PAS (lotes L5/A3 — fuentes
+ * bloqueadas por IP/Cloudflare). Protegida como las páginas hermanas: requireAdmin acá mismo
+ * (además del layout), y cada server action vuelve a exigir admin en su primera línea; la
+ * escritura va por RPC con guard is_admin() (sin service key en la web).
  */
 export default async function DatosPage() {
   await requireAdmin();
@@ -60,6 +61,7 @@ export default async function DatosPage() {
 
       <DatosDia fechaHoy={fechaHoy} colorHoy={deHoy?.texto ?? ""} bcraHoy={bcraHoy} recientes={recientes} />
       <DeaUploader hoy={fechaHoy} />
+      <PasUploader hoy={fechaHoy} />
     </section>
   );
 }

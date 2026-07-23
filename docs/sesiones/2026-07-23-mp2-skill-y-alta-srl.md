@@ -177,6 +177,60 @@ para otro momento"** — el tema de nombre/dominio/SRL queda EXPLÍCITAMENTE PAU
 ningún dominio, no se registró ninguna marca, no se dio de alta ninguna SRL, no se completó la
 verificación de marca de Google. **Nada de A1 quedó resuelto** — sigue To Do completo.
 
+### A3 (cont.) — Carga de estimaciones BCBA-PAS: producción histórica cargada, condición de cultivos queda para después
+
+Con A3 resuelto (suscripción por WhatsApp), Lautaro adjuntó el PDF del informe de hoy y 5 exports
+descargables de bolsadecereales.com/estimaciones-agricolas. Evaluados **antes de construir nada**
+(pedido explícito: "no me pidas que registre si está disponible, dame ideas" no aplica acá — sí
+aplicó la regla de no suponer con datos de producción):
+
+- **`reporte_1.xlsx`** (snapshot de la campaña en curso, columna rotulada "Producción**(MTn)**"):
+  descartado — nunca trajo un valor >0 para verificar si "M" significa millones (todo en 0,
+  recién arranca la siembra de trigo/girasol/cebada 2026/27). Sin forma de confirmar la escala,
+  no se usó.
+- **`historico_pas_datasets.csv`** (Lautoro: "creo que el dato que esperábamos era este, los
+  otros aparecieron de casualidad") — el correcto: 26 campañas (2000/01→2025/26), los 6 granos,
+  columna "Producción**(Tn)**" (SIN el prefijo M). Verificado 1:1 contra números reales conocidos
+  (soja 2024/25 = 50.300.000 Tn = 50,3 Mt, maíz 2024/25 = 49,0 Mt — coinciden con lo publicado) →
+  confirma que son toneladas CRUDAS, no millones.
+- **`reporte_2` a `reporte_5`** — condición semanal + avance fenológico (% mala/regular/buena/
+  excelente, % humedad, % floración/llenado/madurez/cosecha) de girasol/maíz/soja/trigo,
+  2018-2020→hoy. Dato que la web NO modela en ningún lado hoy — es harina de otro costal (no es
+  "producción final", es el pulso semana a semana). Lautoro eligió explícitamente **"los dos, pero
+  fasado"**: esto queda anotado como próximo proyecto (¿panel de "condición de cultivos"? ¿gráfico
+  de avance de cosecha vs. años anteriores?) para diseñar con calma, NO construido en esta sesión.
+
+**Construido** (reusa TODO lo de L5/DEA — cero migración nueva, la RPC `admin_upsert_estimaciones`
+ya es genérica por organismo):
+- `src/lib/parse-pas.ts` — parser del CSV histórico. Dos defensas encontradas en los datos reales
+  y manejadas explícitamente (nunca en silencio):
+  1. **Fila duplicada real**: trigo 2025/26 es byte-a-byte idéntica a 2024/25 en el CSV (dato sin
+     actualizar en el origen pese a que el trigo 2025/26 ya debería estar cosechado en julio) →
+     detectada comparando la fila cruda contra la campaña anterior del mismo grano, EXCLUIDA y
+     listada como descarte.
+  2. **Campo corrupto real**: girasol 2024/25 trae `Rinde(qq/Ha) = "2.343.650.213"` (basura). El
+     parser NUNCA confía en la columna de rinde del origen — la recalcula siempre como
+     producción/cosechado (mismo criterio que `parse-dea.ts`), lo que de paso resolvió el caso: el
+     rinde recalculado (2,3437 tn/ha) coincide con los primeros dígitos del valor corrupto,
+     confirmando que es la cifra correcta con basura pegada atrás.
+  3. Guard adicional de rango plausible por grano (`RANGO_MT`, mismos límites que
+     `scripts/ingest-pas.mjs`) por si una carga futura cambia de escala sin avisar (ej. si algún
+     día se sube `reporte_1` y su "MTn" resultara NO ser millones).
+- `src/app/admin/datos/pas-actions.ts` + `pas-uploader.tsx` — mismo patrón 2 pasos (previsualizar
+  → confirmar) que el uploader de DEA, con los descartes mostrados en la previsualización (nunca
+  se cargan en silencio). Sección nueva en `/admin/datos`.
+- **Backfill real cargado a la base**: verificado el parser con Node pelado contra el CSV real
+  (400 filas, 1 descarte — el trigo 2025/26 esperado), y subido directo por REST con la service
+  key (`POST .../estimaciones_produccion`, `Prefer: resolution=merge-duplicates`, mismo patrón que
+  usan los scripts de ingesta) — no hizo falta que Lautoro repita el mismo upload que ya verifiqué
+  yo mismo. Confirmado por SQL: 400 filas, 6 granos, 26 campañas (2000/01→2025/26), BCBA sumado al
+  comparador de `/produccion` junto a USDA/CONAB/BCR/DEA.
+
+**Verificado**: lint/tsc/build ✅ (46 rutas) · parser corrido contra el CSV real fuera de la web
+(Node `--experimental-strip-types`) antes de tocar la base · valores cruzados contra BCR-GEA
+(trigo área 6,7-7,1 Mha en ambas fuentes, mismo orden de magnitud) y contra cifras públicas
+conocidas · el upsert real confirmado por SQL después de cargar.
+
 ## Trampas descubiertas (para la próxima sesión)
 - **`create_trigger`/`list_triggers` SÍ están disponibles desde esta sesión** (contradice el
   apunte de sesiones anteriores que decía "paso manual de Lautaro, crear la Routine desde su
@@ -192,3 +246,21 @@ verificación de marca de Google. **Nada de A1 quedó resuelto** — sigue To Do
 - **Que un dominio `.com.ar` no resuelva a un sitio activo NO significa que esté disponible** —
   puede estar registrado sin usar. Confirmar SIEMPRE con el buscador de disponibilidad de compra
   de nic.ar, no navegando a la URL.
+- **Read de PDF necesita `poppler-utils`, que no está instalado en el sandbox** (`pdftoppm is not
+  installed`) — el intento de `apt-get install` quedó interrumpido por Lautaro; terminó no
+  haciendo falta (los datos reales llegaron como xlsx/csv, más fáciles de leer con `openpyxl` vía
+  `pip install openpyxl`, que sí funcionó al toque).
+- **Los distintos exports de la misma web de BCBA pueden rotular la MISMA columna con unidades
+  DISTINTAS** (`reporte_1.xlsx` decía "Producción(**MTn**)", el histórico real decía
+  "Producción(**Tn**)", crudas) — nunca asumir la escala de un export nuevo sin un valor >0 para
+  verificar contra un número conocido; si no se puede verificar, no usar ese export.
+- **Node con `--experimental-strip-types` no resuelve imports relativos sin extensión** (a
+  diferencia de tsc/webpack con `moduleResolution: bundler`) — por eso `parse-pas.ts` duplica
+  `splitSemicolon` en vez de importarla de `parse-dea.ts` (además de dejarlo desacoplado de otro
+  parser de origen distinto). Para verificar un módulo de `src/lib/` sueltos con Node pelado,
+  escribir el script de prueba en la scratchpad, no con `node -e`.
+- **Backfills grandes por MCP `execute_sql` tienen límite de tokens de respuesta** (un INSERT con
+  400 filas de JSON embebido en el SQL se vuelve inviable de pasar en el prompt) — mejor usar
+  `curl` directo contra `{SUPABASE_URL}/rest/v1/<tabla>` con la service key del entorno y
+  `Prefer: resolution=merge-duplicates`, el mismo patrón que ya usan los scripts de ingesta. Deja
+  además menos texto en el contexto de la sesión.
