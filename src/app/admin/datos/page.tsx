@@ -5,12 +5,14 @@ import { hoyCordobaISO } from "@/lib/dates";
 import { Uploader } from "./uploader";
 import { PromptAgrochat } from "./prompt-agrochat";
 import { DatosDia } from "./datos-dia";
+import { DeaUploader } from "./dea-uploader";
 
 /**
  * Pestaña DATOS del panel admin: actualizar la serie semanal de comercialización de
- * granos (tabla `compras`, base SIO Granos) subiendo el export de Agrochat, y cargar los
+ * granos (tabla `compras`, base SIO Granos) subiendo el export de Agrochat, cargar los
  * "datos del día" del informe diario (MP1 de PLAN_INFORMES.md): color de la rueda +
- * compras BCRA. Protegida como las páginas hermanas: requireAdmin acá mismo (además del
+ * compras BCRA, y cargar el CSV de estimaciones DEA-SAGyP (lote L5 — fuente automática
+ * bloqueada por IP). Protegida como las páginas hermanas: requireAdmin acá mismo (además del
  * layout), y cada server action vuelve a exigir admin en su primera línea; la escritura
  * va por RPC con guard is_admin().
  */
@@ -42,6 +44,7 @@ export default async function DatosPage() {
       <PromptAgrochat />
       <Uploader />
       <DatosDia fechaHoy={fechaHoy} colorHoy={deHoy?.texto ?? ""} bcraHoy={bcraHoy} recientes={recientes} />
+      <DeaUploader hoy={fechaHoy} />
     </section>
   );
 }

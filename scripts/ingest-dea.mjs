@@ -3,6 +3,14 @@
  * Ingesta de estimaciones de producción de la DEA — SAGyP (Argentina, oficial) a Supabase
  * (tabla estimaciones_produccion). Módulo "Calendario + estimaciones" — docs/PLAN_CALENDARIO_PRODUCCION.md (sesión C).
  *
+ * ⚠️ FUENTE BLOQUEADA por IP (lote L5, 22/07/2026): `datosestimaciones.magyp.gob.ar` resetea la
+ * conexión a nivel TLS desde GitHub Actions, la Edge Function `dea-fetch` (São Paulo) y un sandbox
+ * de Claude Code — 3 proveedores cloud distintos, mismo bloqueo. La vía real de actualización pasó
+ * a ser la CARGA SEMI-MANUAL (Lautaro baja el CSV de su navegador, no bloqueado, y lo sube por
+ * `/admin/datos` → RPC `admin_upsert_estimaciones`, reusando el parser de `src/lib/parse-dea.ts`).
+ * Este script queda para: (a) reprocesar un CSV ya descargado (`--csv archivo.csv`), y (b) reintentar
+ * la fuente automática si el bloqueo se levanta algún día (dispatch manual, ya no en el schedule).
+ *
  * Fuente: exportación CSV completa por POST, sin auth (Datos de Estimaciones Agrícolas):
  *   POST https://datosestimaciones.magyp.gob.ar/reportes.php?reporte=Estimaciones   body: Dataset=Dataset
  *   CSV Latin-1, separador ';', ~11,5 MB (serie 1969/70 → hoy). Columnas:
@@ -20,7 +28,8 @@
  * Cultivos "total" para no doblar (Soja total, Trigo total, Cebada total; Maíz/Girasol/Sorgo son únicos).
  *
  * Uso:
- *   node scripts/ingest-dea.mjs                     # cron: snapshot de las últimas 3 campañas
+ *   node scripts/ingest-dea.mjs                     # snapshot de las últimas 3 campañas (fetch a la fuente, HOY bloqueada)
+ *   node scripts/ingest-dea.mjs --csv archivo.csv   # reprocesar un CSV ya descargado (Lautaro/navegador), sin red
  *   node scripts/ingest-dea.mjs --since 2019        # snapshot de campañas desde 2019/20 (base histórica)
  *   node scripts/ingest-dea.mjs --full              # todas las campañas del CSV (1969/70 → hoy)
  *   node scripts/ingest-dea.mjs --out filas.json    # dry-run: escribe JSON, no sube nada
@@ -30,7 +39,8 @@
  *   SUPABASE_URL, SUPABASE_SERVICE_KEY (service_role; solo en el cron, nunca en la web)
  */
 
-import { writeFileSync } from "node:fs";
+import { writeFileSync, readFileSync } from "node:fs";
+import { parseDea } from "../src/lib/parse-dea.ts";
 
 const URL_DEA = "https://datosestimaciones.magyp.gob.ar/reportes.php?reporte=Estimaciones";
 const UA = "Mozilla/5.0 (RFAGRO research)";
@@ -45,50 +55,16 @@ function arg(name, def) {
   return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : def;
 }
 
-// Cultivo DEA → grano normalizado. Tomamos los "total" para no sumar dos veces (1ra/2da, cervecera/forrajera).
-const CULTIVO = {
-  "Soja total": "soja",
-  "Maíz": "maiz",
-  "Trigo total": "trigo",
-  "Girasol": "girasol",
-  "Sorgo": "sorgo",
-  "Cebada total": "cebada",
-};
-
-const round2 = (n) => Math.round(n * 100) / 100;
-const round4 = (n) => Math.round(n * 10000) / 10000;
-
-/** split de una línea CSV `;` con comillas (los nombres de provincia/depto/cultivo van entre comillas). */
-function splitSemicolon(line) {
-  const out = [];
-  let cur = "";
-  let q = false;
-  for (let i = 0; i < line.length; i++) {
-    const c = line[i];
-    if (q) {
-      if (c === '"') {
-        if (line[i + 1] === '"') {
-          cur += '"';
-          i++;
-        } else q = false;
-      } else cur += c;
-    } else if (c === '"') q = true;
-    else if (c === ";") {
-      out.push(cur);
-      cur = "";
-    } else cur += c;
+async function fetchCsv(csvPath) {
+  if (csvPath) {
+    // Reprocesar un CSV ya descargado (ej. por Lautaro desde su navegador) sin pasar por la red.
+    return new TextDecoder("latin1").decode(readFileSync(csvPath));
   }
-  out.push(cur);
-  return out.map((s) => s.trim());
-}
-
-async function fetchCsv() {
-  // MAGyP filtra las IPs de GitHub Actions (ConnectTimeout persistente, E5 #8) → con creds
-  // vamos vía la Edge Function `dea-fetch` (sa-east-1, misma solución que lineup/ISA).
-  // Sin creds (dry-run local con --out) se pega directo a la fuente.
-  // 260s: por encima del AbortSignal de 240s de la Edge Function (el reporte de
-  // ~11,5 MB que arma MAGyP dinámicamente puede tardar >120s — 2 timeouts reales
-  // verificados el 22/07). El job del workflow tiene timeout-minutes: 20, sobra margen.
+  // MAGyP filtra las IPs de datacenter en `datosestimaciones.magyp.gob.ar` (E5 #8; confirmado en
+  // el lote L5 del 22/07 desde 3 proveedores cloud distintos — GitHub Actions, la Edge Function
+  // `dea-fetch` en São Paulo, y un sandbox de Claude Code — los 3 bloqueados a nivel TLS/conexión).
+  // Este dispatch queda SOLO para re-probar si el bloqueo algún día se levanta; la vía real pasó a
+  // ser la carga semi-manual del CSV por /admin/datos (Lautaro no está bloqueado).
   const viaEdge = SUPABASE_URL && SERVICE_KEY;
   const res = viaEdge
     ? await fetch(`${SUPABASE_URL}/functions/v1/dea-fetch`, {
@@ -104,52 +80,6 @@ async function fetchCsv() {
   if (!res.ok) throw new Error(`DEA CSV${viaEdge ? " (via dea-fetch)" : ""}: HTTP ${res.status} ${await res.text().catch(() => "")}`);
   const buf = Buffer.from(await res.arrayBuffer());
   return new TextDecoder("latin1").decode(buf);
-}
-
-/** CSV → filas nacionales por (grano, campaña, variable), snapshoteadas con `fecha`. */
-function parse(csv, fecha, sinceYear) {
-  const lines = csv.split(/\r?\n/);
-  // clave = grano|campaña → { semb, cos, prod }
-  const agg = new Map();
-  for (let i = 1; i < lines.length; i++) {
-    const l = lines[i];
-    if (!l) continue;
-    const c = splitSemicolon(l);
-    if (c.length < 12) continue;
-    const grano = CULTIVO[c[5]];
-    if (!grano) continue;
-    const campania = c[7];
-    if (!/^\d{4}\/\d{2}$/.test(campania)) continue;
-    if (sinceYear && Number(campania.slice(0, 4)) < sinceYear) continue;
-    const semb = Number(c[8]) || 0;
-    const cos = Number(c[9]) || 0;
-    const prod = Number(c[10]) || 0;
-    const k = `${grano}|${campania}`;
-    const a = agg.get(k) || { semb: 0, cos: 0, prod: 0 };
-    a.semb += semb;
-    a.cos += cos;
-    a.prod += prod;
-    agg.set(k, a);
-  }
-
-  const out = [];
-  for (const [k, v] of agg.entries()) {
-    if (v.prod <= 0) continue;
-    const [grano, campania] = k.split("|");
-    const base = {
-      organismo: "DEA",
-      pais: "argentina",
-      grano,
-      campania,
-      fecha_publicacion: fecha,
-      informe: "SAGyP · Estimaciones Agrícolas",
-      url: "https://datosestimaciones.magyp.gob.ar/",
-    };
-    out.push({ ...base, variable: "produccion", valor: round2(v.prod / 1e6), unidad: "Mt" });
-    if (v.semb > 0) out.push({ ...base, variable: "area", valor: round2(v.semb / 1e6), unidad: "Mha" });
-    if (v.cos > 0) out.push({ ...base, variable: "rinde", valor: round4(v.prod / v.cos), unidad: "tn/ha" });
-  }
-  return out;
 }
 
 async function upsert(rows) {
@@ -172,6 +102,7 @@ async function upsert(rows) {
 
 async function main() {
   const outFile = arg("out", null);
+  const csvPath = arg("csv", null);
   if (!outFile && (!SUPABASE_URL || !SERVICE_KEY)) {
     console.error("Faltan SUPABASE_URL / SUPABASE_SERVICE_KEY (o usá --out para dry-run).");
     process.exit(1);
@@ -183,9 +114,9 @@ async function main() {
   else if (arg("since", null)) sinceYear = Number(arg("since", null));
   else sinceYear = new Date().getUTCFullYear() - 2;
 
-  console.log(`Ingesta DEA snapshot ${fecha}${sinceYear ? ` (campañas desde ${sinceYear}/…)` : " (todas)"}`);
-  const csv = await fetchCsv();
-  const rows = parse(csv, fecha, sinceYear);
+  console.log(`Ingesta DEA snapshot ${fecha}${sinceYear ? ` (campañas desde ${sinceYear}/…)` : " (todas)"}${csvPath ? ` — desde ${csvPath}` : ""}`);
+  const csv = await fetchCsv(csvPath);
+  const rows = parseDea(csv, fecha, sinceYear);
   console.log(`${rows.length} filas nacionales (grano × campaña × variable).`);
 
   if (outFile) {
