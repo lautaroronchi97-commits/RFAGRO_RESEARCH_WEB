@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { nfmt, sfmt } from "@/lib/format";
+import { DISPLAY_NEGOCIADO, PRODUCTOS_NEGOCIADO } from "@/lib/compras/negociado-productos";
 import type { FilaSector } from "@/lib/compras/negociado";
 
 /**
@@ -36,9 +37,12 @@ function sumar(vals: (number | null)[]): number | null {
 
 export function NegociadoTabla({ filas, avance, fecha }: { filas: FilaSector[]; avance: Record<string, number>; fecha: string | null }) {
   const [sector, setSector] = useState("todos");
+  const [producto, setProducto] = useState("todos");
 
   const agregadas = useMemo<Agregada[]>(() => {
-    const filtradas = filas.filter((f) => sector === "todos" || f.sector === sector);
+    const filtradas = filas
+      .filter((f) => sector === "todos" || f.sector === sector)
+      .filter((f) => producto === "todos" || f.cod === producto);
     const porClave = new Map<string, FilaSector[]>();
     for (const f of filtradas) {
       const k = `${f.cod}|${f.campana}`;
@@ -68,7 +72,7 @@ export function NegociadoTabla({ filas, avance, fecha }: { filas: FilaSector[]; 
     }
     // El orden ya viene del server (producto → activa → campaña); se preserva por inserción.
     return out;
-  }, [filas, avance, sector]);
+  }, [filas, avance, sector, producto]);
 
   function exportarCsv() {
     const cols = ["Producto", "Campana", "Activa", "Ultimo_dato", "Semanal_t", "Delta_sem_t", "Acumulado_t", "Pct_cosecha", "Pct_priceado", "Saldo_a_fijar_t"];
@@ -98,6 +102,15 @@ export function NegociadoTabla({ filas, avance, fecha }: { filas: FilaSector[]; 
   return (
     <div className="lu-tabla">
       <div className="lu-filtros">
+        <label className="lu-field">
+          <span>Producto</span>
+          <select value={producto} onChange={(e) => setProducto(e.target.value)}>
+            <option value="todos">Todos</option>
+            {PRODUCTOS_NEGOCIADO.map((cod) => (
+              <option key={cod} value={cod}>{DISPLAY_NEGOCIADO[cod]}</option>
+            ))}
+          </select>
+        </label>
         <label className="lu-field">
           <span>Sector</span>
           <select value={sector} onChange={(e) => setSector(e.target.value)}>

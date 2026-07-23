@@ -2,6 +2,9 @@ import "server-only";
 import { cache } from "react";
 import { sbSelectAll } from "../supabase";
 import type { Meta } from "../market";
+import { PRODUCTOS_NEGOCIADO, DISPLAY_NEGOCIADO } from "./negociado-productos";
+
+export { PRODUCTOS_NEGOCIADO, DISPLAY_NEGOCIADO };
 
 /**
  * negociado.ts — Capa de datos de /comercio/negociado (volumen negociado por producto).
@@ -17,18 +20,6 @@ import type { Meta } from "../market";
 
 const SOURCE = "SIO Granos";
 const REVALIDATE = 900; // 15 min
-
-/** Orden y nombre de display por producto (codigo_interno). */
-export const PRODUCTOS_NEGOCIADO = ["SBS", "MAIZE", "WHEAT", "SFSEED", "SORGHUM", "MALT", "BARLEY"] as const;
-export const DISPLAY_NEGOCIADO: Record<string, string> = {
-  SBS: "Soja",
-  MAIZE: "Maíz",
-  WHEAT: "Trigo",
-  SFSEED: "Girasol",
-  SORGHUM: "Sorgo",
-  MALT: "Cebada cervecera",
-  BARLEY: "Cebada forrajera",
-};
 
 /** Semanas de historia que se mandan al histograma (~30 meses: cubre 52 sem. y 24 meses). */
 const SEMANAS_HISTO = 130;

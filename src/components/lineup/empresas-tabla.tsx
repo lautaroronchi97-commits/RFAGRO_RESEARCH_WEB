@@ -3,13 +3,22 @@
 import { useMemo, useState } from "react";
 import { nfmt, sfmt } from "@/lib/format";
 import { ratioFmt } from "@/lib/lineup/cobertura";
+import { PRODUCTOS } from "@/lib/lineup/config";
 import type { EmpresaRow } from "@/lib/lineup/empresas";
 
 /**
  * Tabla de empresas exportadoras: gap de cobertura (foto forward), avance de
- * campaña, standing y ritmo vs lo normal. Filtrable por señal + búsqueda, con
- * export CSV (el CSV lleva el detalle completo). Client: filtros en el navegador.
+ * campaña, standing y ritmo vs lo normal. Filtrable por señal + producto + búsqueda,
+ * con export CSV (el CSV lleva el detalle completo). Client: filtros en el navegador.
+ *
+ * El filtro de producto acota las EMPRESAS a las que operan ese complejo (según
+ * porProducto); las columnas numéricas (standing/cobertura/señal) siguen siendo el
+ * total de la empresa en todos los productos — no hay desglose de cobertura por
+ * producto en esta tabla, solo en el detalle de porProducto/porZona del CSV.
  */
+
+const DISPLAY_TO_FAMILIA = new Map(PRODUCTOS.map((p) => [p.display, p.familia]));
+const FAMILIAS = [...new Set(PRODUCTOS.map((p) => p.familia))];
 
 function SenalBadge({ tag }: { tag: EmpresaRow["senal"]["tag"] }) {
   const cls = tag === "ALCISTA FAS" ? "sn-alcista" : tag === "BAJISTA" ? "sn-bajista" : "sn-neutro";
@@ -30,14 +39,16 @@ function RitmoCell({ r }: { r: EmpresaRow }) {
 
 export function EmpresasTabla({ empresas, fecha }: { empresas: EmpresaRow[]; fecha: string | null }) {
   const [senal, setSenal] = useState("todas");
+  const [producto, setProducto] = useState("todas");
   const [q, setQ] = useState("");
 
   const filtradas = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return empresas
       .filter((e) => senal === "todas" || e.senal.tag === senal)
+      .filter((e) => producto === "todas" || e.porProducto.some((p) => DISPLAY_TO_FAMILIA.get(p.display) === producto))
       .filter((e) => !needle || e.empresa.toLowerCase().includes(needle));
-  }, [empresas, senal, q]);
+  }, [empresas, senal, producto, q]);
 
   function exportarCsv() {
     const cols = ["Empresa", "Buques", "Standing_t", "Declarado_60d", "Originado_60d", "Falta_cubrir", "Cobertura", "Senal", "Declarado_campana", "Originado_campana", "Transito_PYUY", "Ritmo_actual", "Ritmo_normal", "Productos", "Zonas"];
@@ -74,6 +85,15 @@ export function EmpresasTabla({ empresas, fecha }: { empresas: EmpresaRow[]; fec
             <option value="ALCISTA FAS">Alcista (corta)</option>
             <option value="BAJISTA">Bajista</option>
             <option value="NEUTRO">Neutro</option>
+          </select>
+        </label>
+        <label className="lu-field">
+          <span>Producto</span>
+          <select value={producto} onChange={(e) => setProducto(e.target.value)}>
+            <option value="todas">Todos</option>
+            {FAMILIAS.map((f) => (
+              <option key={f} value={f}>{f}</option>
+            ))}
           </select>
         </label>
         <label className="lu-field lu-grow">

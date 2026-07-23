@@ -448,6 +448,19 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
   border-top:1px solid var(--line); }
 .sec-title:first-child { border-top:none; padding-top:0; margin-top:0; }
 
+/* Filtro de grano (chips "Todos/Soja/Maíz/Trigo"), compartido por los paneles
+   transversales a los 3 granos (Arbitrajes, Pases, Monitor, Temperatura). Mismo
+   lenguaje visual que .news-chip, con nombre neutro para reusarlo fuera de Noticias. */
+.fg-bar { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 10px; }
+.fg-chip { display:inline-flex; align-items:center; gap:5px; font-size:var(--fs-2xs); font-weight:800;
+  letter-spacing:.05em; text-transform:uppercase; color:var(--ink-2); padding:4px 10px;
+  border:1px solid var(--line-2); border-radius:999px; cursor:pointer; background:transparent;
+  transition:color var(--t-fast) ease, border-color var(--t-fast) ease, background var(--t-fast) ease; }
+.fg-chip:hover { color:var(--ink); border-color:var(--gold-hair); }
+.fg-chip[aria-pressed="true"] { color:var(--gold-text);
+  border-color:color-mix(in srgb, var(--gold) 55%, transparent);
+  background:color-mix(in srgb, var(--gold) 9%, transparent); }
+
 /* ===== Portada / tablero (hub) ===== */
 .hub-hoy-hd { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
 .hub-hoy-more { font-size:var(--fs-2xs); font-weight:800; text-transform:uppercase; letter-spacing:.06em;
@@ -889,7 +902,7 @@ a.estim-inf:hover { color:var(--gold-text); }
 /* Plantilla informe semanal (MP2) — A4 multipágina, siempre tema claro (impreso: ahorra
    tinta y es el estándar de cualquier research en PDF, a diferencia de la placa diaria que
    sí sigue el tema del sitio). Redefine los tokens de color localmente (mismo valor que
-   .plc[data-tema="light"]) para reusar .tbl/.chart-wrap/.evo-*/.vb-* tal cual. */
+   .plc[data-tema="light"]) para reusar .tbl/.chart-wrap/.evo-* /.vb-* tal cual. */
 .sem-page { background:#EDF2E3; padding:24px 0; display:flex; flex-direction:column; align-items:center; gap:18px; }
 .sem-hoja {
   width:210mm; min-height:297mm; box-sizing:border-box; padding:16mm 14mm; position:relative;

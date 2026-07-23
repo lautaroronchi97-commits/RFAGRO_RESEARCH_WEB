@@ -1,9 +1,9 @@
-import { getMonitorMercados, type MonitorRow } from "@/lib/monitor-mercados";
+import { getMonitorMercados } from "@/lib/monitor-mercados";
 import { nfmt, pfmt } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
-import { GlyphSoja, GlyphMaiz, GlyphTrigo } from "./icons";
 import { SourceStamp } from "./source-stamp";
 import { QueEsEsto } from "./que-es-esto";
+import { MonitorAgroTabla } from "./monitor-agro-tabla";
 
 function IconMonitor() {
   return (
@@ -13,17 +13,6 @@ function IconMonitor() {
   );
 }
 
-function glyphFor(g: MonitorRow["glyph"]) {
-  if (g === "soja") return <GlyphSoja />;
-  if (g === "maiz") return <GlyphMaiz />;
-  if (g === "trigo") return <GlyphTrigo />;
-  return null;
-}
-function glyphColor(g: MonitorRow["glyph"]) {
-  if (g === "soja") return "var(--brand-agro)";
-  if (g === "maiz") return "var(--gold-text)";
-  return "var(--brand-deep)";
-}
 function deltaClass(d: number | null) {
   return d == null ? "neu2" : d > 0 ? "pos" : d < 0 ? "neg" : "neu2";
 }
@@ -46,36 +35,7 @@ export async function MonitorMercados() {
       </p>
 
       {/* Agro — destacado, en USD/tn */}
-      <div className="table-scroll">
-        <table className="tbl mon-tbl" style={{ minWidth: 460 }}>
-          <thead>
-            <tr>
-              <th className="l" scope="col">Producto</th>
-              <th scope="col">USD/tn</th>
-              <th scope="col">Día</th>
-              <th scope="col">Chicago</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.agro.map((r) => (
-              <tr key={r.yahoo}>
-                <td className="l">
-                  <span className="grp-cell">
-                    <span className="gglyph" style={{ color: glyphColor(r.glyph) }}>{glyphFor(r.glyph)}</span>
-                    <span className="gname">{r.nombre}</span>
-                    {r.pos && <span className="gmeta">{r.pos}</span>}
-                  </span>
-                </td>
-                <td className="mon-tn">{r.usdTn != null ? nfmt(r.usdTn, 1) : "—"}</td>
-                <td className={deltaClass(r.deltaPct)}>{pfmt(r.deltaPct, 2)}</td>
-                <td className="dim">
-                  {r.ultimo != null ? `${nfmt(r.ultimo, r.unidadDec)} ${r.unidad}` : "—"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <MonitorAgroTabla rows={data.agro} />
 
       {/* Macro — informativo, unidad propia */}
       <div className="mon-sub-hd">Referencias</div>
