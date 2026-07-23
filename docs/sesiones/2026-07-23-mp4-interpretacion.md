@@ -9,8 +9,9 @@
 
 ## Hecho
 
-- **Migración `supabase/migrations/20260723170000_mp4_interpretaciones.sql`** (escrita, **sin
-  aplicar** — ver «Quedó pendiente»): tabla `interpretaciones` (organismo, informe,
+- **Migración `supabase/migrations/20260723170000_mp4_interpretaciones.sql`** — **APLICADA** por
+  MCP con el OK de Lautaro (después del primer intento que no se había completado): tabla
+  `interpretaciones` (organismo, informe,
   fecha_publicacion, granos[], borrador_md, publicado_md, estado
   borrador/publicado/descartado, UNIQUE organismo+informe+fecha_publicacion) con RLS (anon/
   authenticated solo ven `estado=publicado`; admin ve todo vía `is_admin()`) + 3 RPC
@@ -62,26 +63,38 @@
 - `npm run lint` ✅ · `npx tsc --noEmit` ✅ · `NODE_USE_ENV_PROXY=1 npm run build` ✅ (44 rutas,
   `/admin/interpretaciones` dinámica como sus hermanas, `/produccion` sigue estática con
   `revalidate=1h`) · `npm run test` ✅ (137/137, sin regresiones).
-- Revisión de código: `getInterpretacionesAdmin`/`getInterpretacionesPublicadas` degradan a `[]`
-  ante error (tabla inexistente, sin sesión, etc.) — ni `/admin/interpretaciones` ni `/produccion`
-  deberían romper antes de que la migración esté aplicada.
+- **Migración aplicada** por MCP (`gbpfgfeksqmzmsxnxiwg`), con Lautaro pidiendo explícitamente
+  probar con un informe viejo antes de mergear.
+- **Simulación real del Paso 9** con el último WASDE ya ingestado (USDA WASDE #673, 10/07/2026):
+  calculado por SQL el mismo delta que arma `construirCambios` contra el vintage anterior (#672,
+  11/06) — el más grande fue maíz mundial 2026/27 (1.300,38→1.297,09 Mt, -3,29), seguido de
+  Argentina maíz 2025/26 (61→63 Mt) y EEUU soja 2026/27 (120,70→121,79 Mt). Redactado el borrador
+  con `voz-lautaro` (registro "Informe largo") citando esos números exactos, insertado como
+  `estado='borrador'` — **queda ahí, sin publicar**, para que Lautaro lo lea en
+  `/admin/interpretaciones` y decida (publicar tal cual, editarlo, o descartarlo): que yo lo
+  publique directo por SQL hubiera saltado la regla dura "su firma nunca sale sin su OK", que es
+  el punto central de todo este mini-proyecto.
+- **RLS verificado por SQL contra la tabla real**: con `set local role anon`, el borrador de
+  arriba devuelve 0 filas por `id` (no lo ve nadie sin sesión admin). Con una fila sintética de
+  prueba (`_TEST_MP4`, borrada al terminar) se confirmó también el otro sentido: al pasarla a
+  `estado='publicado'` con `publicado_md` seteado, `anon` SÍ la lee completa — el mismo camino que
+  usan `/produccion` y `/api/informes/datos`.
+- `get_advisors(security)`: los únicos warnings sobre las 3 RPC nuevas son
+  "ejecutable por `authenticated`" — el mismo patrón aceptado que ya tienen TODAS las demás RPC
+  `admin_*` del proyecto (guard `is_admin()` adentro); nada nuevo que corregir.
 
 ## Quedó pendiente / en vuelo
 
-- **La migración `20260723170000_mp4_interpretaciones.sql` NO se aplicó a la base.** En esta
-  sesión el primer intento de aplicarla por MCP (y la pregunta de confirmación siguiente) no
-  llegaron a completarse — se dejó el archivo commiteado, sin tocar la base, siguiendo el
-  protocolo del repo ("migraciones... aplicadas por MCP con OK de Lautaro en la sesión"). **Falta
-  aplicarla** antes de que nada de esto funcione con datos reales.
-- **Verificación end-to-end sin correr** (bloqueada por lo anterior): flujo completo con un
-  informe YA ingestado (simular la detección con el último WASDE/GEA de la base), mostrarle el
-  borrador a Lautaro (¿suena a él? ¿números exactos?), mail de aviso, editar/publicar en
-  `/admin/interpretaciones` con sesión real, ver que aparece en `/produccion`, y confirmar por SQL
-  que anon no ve borradores (`estado != 'publicado'`). Ninguno de estos pasos se pudo correr en
-  este sandbox sin la migración aplicada.
-- **Verificación visual en navegador** (claro/oscuro, mobile) tampoco se hizo — mismo bloqueo.
-- Por lo anterior, este PR queda **draft**: falta que la migración se aplique y se corra la
-  verificación real antes de mergear.
+- **El borrador real de prueba (USDA WASDE #673) queda en la base, sin publicar**, esperando que
+  Lautaro lo lea en `/admin/interpretaciones` — es el primer caso real del flujo completo, útil
+  para calibrar si el tono/nivel de detalle sirve antes de que la skill empiece a generarlos sola.
+- **Verificación visual en navegador** (claro/oscuro, mobile, con sesión admin real) no se hizo —
+  el preview de Vercel quedó atrás de su SSO y este sandbox no tiene credenciales para pasarlo.
+  Falta mirar `/admin/interpretaciones` y `/produccion` logueado en el Preview del PR o ya en
+  producción.
+- El primer disparo real de la Routine diaria (cuando exista, A2 del backlog) va a ser la primera
+  vez que el Paso 9 corra de punta a punta con `SUPABASE_SERVICE_KEY`/`RESEND_API_KEY` reales —
+  hasta ahora solo se simuló la lógica por SQL.
 
 ## Trampas descubiertas (para la próxima sesión)
 
