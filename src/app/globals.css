@@ -318,6 +318,9 @@ table.tbl { width:100%; border-collapse:collapse; min-width:640px; }
   border:1px solid var(--edge); border-radius:999px; color:var(--ink-2);
   background:color-mix(in srgb, var(--panel) 55%, transparent); }
 .foot .disc { flex-basis:100%; font-size:var(--fs-2xs); color:var(--ink-3); max-width:70ch; }
+.foot-legal { flex-basis:100%; font-size:var(--fs-2xs); color:var(--ink-3); margin:-4px 0 0; }
+.foot-legal a { color:var(--ink-3); font-weight:600; }
+.foot-legal a:hover { color:var(--gold-text); text-decoration:underline; }
 .foot .maqueta { margin-left:auto; font-size:var(--fs-2xs); text-transform:uppercase; letter-spacing:var(--tr-caps);
   color:var(--ink-3); font-weight:600; display:inline-flex; align-items:center; gap:6px; }
 .foot .maqueta .k { background:var(--gold); color:var(--gold-ink); padding:1px 6px; border-radius:3px; letter-spacing:.05em; }
@@ -1245,6 +1248,13 @@ a.estim-inf:hover { color:var(--gold-text); }
 .lp-cierre { padding:clamp(60px,9vw,104px) 0; text-align:center;
   background:var(--atmos), var(--panel-2); border-top:1px solid var(--line); }
 .lp-cierre-t { font-size:clamp(30px,4.4vw,50px); }
+
+/* --- Páginas legales (/privacidad, /terminos) --- */
+.legal-doc h2 { margin-top:34px; }
+.legal-list { margin:0 0 14px; padding-left:22px; font-size:var(--fs-lg); line-height:1.6; color:var(--ink-2); }
+.legal-list li { margin-bottom:8px; }
+.legal-doc a { color:var(--gold-text); font-weight:700; }
+.legal-doc a:hover { text-decoration:underline; }
 
 /* ==========================================================================
    Panel de administración (/admin) — Etapa 2 del login.
