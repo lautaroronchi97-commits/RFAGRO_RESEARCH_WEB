@@ -240,7 +240,11 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 
 ### D. Lotes técnicos aprobados (refactors/calibración/robustez — prompts en §6)
 
-- [ ] **D1 = L5. DEA: destrabar la fuente** (incidente abierto — primero del grupo).
+- [x] **D1 = L5. DEA: destrabar la fuente** — ✅ hecho 23/07, PR #63. Bloqueo confirmado a nivel
+  TLS desde 3 proveedores cloud (GitHub Actions, Edge Function São Paulo, este sandbox); CKAN
+  descartado (le falta la campaña 2025/26 completa). Decisión: carga semi-manual (Lautaro sube el
+  CSV por `/admin/datos`, mismo patrón que compras/Agrochat). Detalle:
+  [`sesiones/2026-07-23-lote-l5-dea-carga-manual.md`](../sesiones/2026-07-23-lote-l5-dea-carga-manual.md).
 - [ ] **D2 = L4. Calibración de mesa** 🔒 (tus valores como paso 1 del prompt).
 - [ ] **D3 = L6. Robustez de ingestas v2** (falso-verde en backfills + ICS NASS + roster-erosión).
 - [ ] **D4 = L1. Partir `market.ts` + util única de mes/posición** (antes de C7/C10 idealmente).
@@ -500,6 +504,14 @@ cuando les toque en el orden.
 intercalan cuando toque el código que comparten (antes de P2/P6). Las features chicas (P5/P1/P2/
 extras puertos) esperan a que Lautaro las evalúe una por una. B2 (D6) lo investiga Claude cuando
 haya una ventana; B3 (girasol/sorgo) entra como quick win.
+
+### Bloque 4 — L5 destrabado (23/07/2026)
+
+| Decisión | Respuesta de Lautaro | Efecto en el backlog |
+|---|---|---|
+| **L5 — cómo destrabar DEA** (semi-manual · probar Cloudflare Worker · las dos · descartar) | **Carga semi-manual** (mismo patrón que el uploader de compras/Agrochat) — elegida directo, sin pasar por la prueba del Worker | D1/L5 cerrado. Código: `src/lib/parse-dea.ts` + migración `admin_upsert_estimaciones` (aplicada) + sección nueva en `/admin/datos` + `ingest-estimaciones-ar.yml` con DEA dispatch-only. Detalle: [`sesiones/2026-07-23-lote-l5-dea-carga-manual.md`](../sesiones/2026-07-23-lote-l5-dea-carga-manual.md) |
+
+**Siguiente en el orden:** MP2 (informe semanal).
 
 ---
 

@@ -19,7 +19,29 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 22/07/2026 — 📰 MP1 informe diario (placa PNG) HECHO, falta la Routine (paso manual de Lautaro) · 🏁 AUDITORÍA INTEGRAL COMPLETA: E7 síntesis CERRADA → BACKLOG MAESTRO ÚNICO en `auditoria/E7-sintesis.md` §4 · encendido del login Parte A/B HECHAS, Parte C EN CURSO · E1–E6 cerradas · MP3 view de mercado MERGEADO · research P3/P4 HECHO)
+## Ahora (última actualización: 23/07/2026 — 🔓 LOTE L5 (DEA-SAGyP) HECHO: fuente bloqueada por IP → carga semi-manual · 📰 MP1 informe diario (placa PNG) HECHO, falta la Routine (paso manual de Lautaro) · 🏁 AUDITORÍA INTEGRAL COMPLETA: E7 síntesis CERRADA → BACKLOG MAESTRO ÚNICO en `auditoria/E7-sintesis.md` §4 · encendido del login Parte A/B HECHAS, Parte C EN CURSO · E1–E6 cerradas · MP3 view de mercado MERGEADO · research P3/P4 HECHO)
+
+**🔓 LOTE L5 — DEA-SAGyP: destrabar la fuente — HECHO (carga semi-manual) — rama
+`claude/resolver-pendientes-qnts8j`, PR #63.** Incidente abierto desde E5/E6: `datosestimaciones.
+magyp.gob.ar` clavado en el snapshot del 13/07. **Research confirmado desde este sandbox**: el
+bloqueo es a nivel **TLS** (`Connection reset by peer` apenas se manda el Client Hello, no un
+timeout) — mismo patrón que ya habían visto GitHub Actions y la Edge Function `dea-fetch` en São
+Paulo, 3 proveedores cloud distintos. **No es un bloqueo de todo MAGyP**: `www.magyp.gob.ar`
+(compras) responde 200 OK. La copia CKAN (`datos.magyp.gob.ar`) es alcanzable pero **le falta toda
+la campaña 2025/26** (un año de atraso, no meses) → descartada como reemplazo. **Decisión de
+Lautaro (vía `AskUserQuestion`): carga semi-manual**, mismo patrón que el uploader de compras/
+Agrochat — él baja el CSV de su navegador (no bloqueado) y lo sube por `/admin/datos`. **Código**:
+`src/lib/parse-dea.ts` (parser extraído de `ingest-dea.mjs`, ahora importado por el script — cero
+duplicación) · migración `20260722180000` (RPC `admin_upsert_estimaciones`, guard `is_admin()`,
+**aplicada** por MCP con OK de Lautaro) · sección nueva "Estimaciones DEA-SAGyP (carga manual)" en
+`/admin/datos` (preview/confirm) · `ingest-estimaciones-ar.yml`: DEA sale del schedule (generaría
+solo rojo sin datos) y pasa a dispatch-only (`dea_probe`), mismo patrón que PAS. **Verificado**:
+lint/tsc/build ✅ · parser con fixture sintético en el formato oficial exacto · backend por SQL
+(guard rechaza sin sesión, RPC funciona con JWT admin simulado) · uploader en navegador (bypass
+temporal revertido, git diff limpio) — la previsualización con un CSV de prueba funcionó; la
+escritura real se prueba en la primera carga real de Lautaro. **Healthcheck sigue en rojo para DEA
+hasta esa primera carga** (correcto: avisa que falta subir el CSV). Detalle:
+[`sesiones/2026-07-23-lote-l5-dea-carga-manual.md`](sesiones/2026-07-23-lote-l5-dea-carga-manual.md).
 
 **📰 MP1 — INFORME DIARIO (placa PNG para WhatsApp) — CÓDIGO HECHO, falta la Routine — rama
 `claude/resolver-pendientes-qnts8j`, PR #63.** Primer ítem ejecutado del backlog maestro (C1 de
