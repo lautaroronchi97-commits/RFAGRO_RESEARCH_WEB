@@ -6,6 +6,7 @@ import {
   joinFfill, metricaDiaria, alinear, mesDePosicion, mediana, percentil,
   type Metric, type Eje, type BandaPunto, type PuntoXY,
 } from "@/lib/derivadas";
+import { mesIndice } from "@/lib/dates";
 import { nfmt } from "@/lib/format";
 import { SpreadChart, type CampLine } from "./spread-chart";
 import { PeriodoPanel } from "./periodo-panel";
@@ -18,7 +19,6 @@ import { PeriodoPanel } from "./periodo-panel";
  * ventana 12m (P3). Todo el estado va a la URL (compartible por WhatsApp).
  */
 
-const MESES = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
 const GRANO_NOMBRE: Record<string, string> = {
   soja: "Soja", maiz: "Maíz", trigo: "Trigo", girasol: "Girasol", sorgo: "Sorgo",
 };
@@ -65,7 +65,7 @@ function construirIdx(cat: SerieCat[]): Idx {
     exact.set(`${c.fuente}:${c.grano}:${mon}:${year}`, c);
   }
 
-  const ordMes = (a: string, b: string) => MESES.indexOf(a) - MESES.indexOf(b);
+  const ordMes = (a: string, b: string) => mesIndice(a) - mesIndice(b);
   const monsSorted = new Map<string, string[]>();
   for (const [k, v] of monsPorGF) monsSorted.set(k, [...v].sort(ordMes));
 

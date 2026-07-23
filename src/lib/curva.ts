@@ -4,6 +4,7 @@ import { sbSelect } from "./supabase";
 import { getVencimientos } from "./vencimientos";
 import type { Meta } from "./market";
 import type { GranoCurva } from "./curva-types";
+import { vencKeyDePosicion, vtoDePosicion, hoyVencKey } from "./dates";
 
 /**
  * Curva de futuros de granos (último cierre por posición), para autocompletar
@@ -19,40 +20,7 @@ export type { PosCurva, GranoCurva } from "./curva-types";
 export type CurvaData = { granos: GranoCurva[]; meta: Meta };
 
 const NOMBRES: Record<string, string> = { SOJ: "Soja", MAI: "Maíz", TRI: "Trigo" };
-const MESES: Record<string, number> = {
-  ENE: 1, FEB: 2, MAR: 3, ABR: 4, MAY: 5, JUN: 6,
-  JUL: 7, AGO: 8, SEP: 9, OCT: 10, NOV: 11, DIC: 12,
-};
-
-/** "JUL26" → "2026-07-31" (último día del mes; suficiente para estimar el plazo). */
-function vtoDePosicion(posicion: string): string {
-  const m = (posicion || "").toUpperCase().match(/^([A-Z]{3})(\d{2})$/);
-  if (!m) return "";
-  const mes = MESES[m[1]] ?? 0;
-  const anio = 2000 + Number(m[2]);
-  if (!mes) return "";
-  const ultimo = new Date(Date.UTC(anio, mes, 0)).getUTCDate(); // día 0 del mes siguiente = último del actual
-  return `${anio}-${String(mes).padStart(2, "0")}-${String(ultimo).padStart(2, "0")}`;
-}
-
-/** "JUL26" → 202607 (para ordenar y filtrar vivas). 0 si no matchea. */
-function vencKey(posicion: string): number {
-  const m = (posicion || "").toUpperCase().match(/^([A-Z]{3})(\d{2})$/);
-  if (!m) return 0;
-  return (2000 + Number(m[2])) * 100 + (MESES[m[1]] ?? 0);
-}
-
-/** Año-mes actual en zona Córdoba como clave aaaamm (para descartar posiciones muertas). */
-function hoyVencKey(): number {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Argentina/Cordoba",
-    year: "numeric",
-    month: "2-digit",
-  }).formatToParts(new Date());
-  const anio = Number(parts.find((p) => p.type === "year")?.value ?? 0);
-  const mes = Number(parts.find((p) => p.type === "month")?.value ?? 0);
-  return anio * 100 + mes;
-}
+const vencKey = vencKeyDePosicion;
 
 type RawRow = { symbol: string; underlying: string | null; posicion: string | null; settlement: number | null };
 

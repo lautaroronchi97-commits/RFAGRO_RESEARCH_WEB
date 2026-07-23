@@ -1,4 +1,5 @@
 import type { SeriePuntos } from "./series-types";
+import { parsePosicion } from "./dates";
 
 /**
  * Motor de transformaciones del panel de gráficos (PURO, client-side). Ninguna
@@ -17,17 +18,9 @@ export type Eje = "vto" | "cal";
 /** Punto ya listo para el chart: x (eje), y (valor), f (fecha real, para tooltip). */
 export type PuntoXY = { x: number; y: number; f: string };
 
-const MESES3: Record<string, number> = {
-  ENE: 1, FEB: 2, MAR: 3, ABR: 4, MAY: 5, JUN: 6,
-  JUL: 7, AGO: 8, SEP: 9, OCT: 10, NOV: 11, DIC: 12,
-};
-
-
 /** Mes de una posición A3/CBOT ("ABR27" → 4). 0 si no matchea. */
 export function mesDePosicion(pos: string | null | undefined): number {
-  if (!pos) return 0;
-  const m = pos.toUpperCase().match(/^([A-Z]{3})\d{2}$/);
-  return m ? MESES3[m[1]] ?? 0 : 0;
+  return parsePosicion(pos)?.mes ?? 0;
 }
 
 type Join = { f: string; va: number; vb: number };

@@ -19,7 +19,27 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 23/07/2026 — 📄 MP2 informe semanal: BASE + gráfico PDF HECHOS, falta la skill (a pedido de Lautaro, cortado para seguir con otros pendientes) · 🔓 LOTE L5 (DEA-SAGyP) HECHO: fuente bloqueada por IP → carga semi-manual · 📰 MP1 informe diario (placa PNG) HECHO, falta la Routine (paso manual de Lautaro) · 🏁 AUDITORÍA INTEGRAL COMPLETA: E7 síntesis CERRADA → BACKLOG MAESTRO ÚNICO en `auditoria/E7-sintesis.md` §4 · encendido del login Parte A/B HECHAS, Parte C EN CURSO · E1–E6 cerradas · MP3 view de mercado MERGEADO · research P3/P4 HECHO)
+## Ahora (última actualización: 23/07/2026 — 🧹 LOTE L1 (partir `market.ts` + util de mes/posición) HECHO: refactor puro, 107/107 tests, HTML real verificado antes/después · 📄 MP2 informe semanal: BASE + gráfico PDF HECHOS, falta la skill (a pedido de Lautaro, cortado para seguir con otros pendientes) · 🔓 LOTE L5 (DEA-SAGyP) HECHO: fuente bloqueada por IP → carga semi-manual · 📰 MP1 informe diario (placa PNG) HECHO, falta la Routine (paso manual de Lautaro) · 🏁 AUDITORÍA INTEGRAL COMPLETA: E7 síntesis CERRADA → BACKLOG MAESTRO ÚNICO en `auditoria/E7-sintesis.md` §4 · encendido del login Parte A/B HECHAS, Parte C EN CURSO · E1–E6 cerradas · MP3 view de mercado MERGEADO · research P3/P4 HECHO)
+
+**🧹 LOTE L1 — partir `market.ts` + util única de mes/posición — HECHO — rama `claude/l1-resolution-40gotx`,
+PR #_.** Primer lote de refactor del backlog maestro (D4 de `auditoria/E7-sintesis.md` §4, hallazgos #10
++ #11 de E4-codigo.md). REFACTOR PURO: cero cambios de comportamiento. `market.ts` (546 líneas, 8
+responsabilidades mezcladas) partido en `src/lib/market/{http,types,tickers,fuentes,cinta,dolar-futuro,
+dolar-linked,volumen,lecaps}.ts` según el diseño §A de E4, con `market.ts` como fachada de re-export (los
+13 importadores actuales — creció de 11 desde el audit del 21/07 por las páginas nuevas de MP1/MP2/MP3 —
+no se tocaron; `getMaeOficial` sigue 100% interno). `src/lib/dates.ts` sumó la util única de mes/posición
+(`MESES_ES`/`mesIndice`/`parsePosicion`/`vencKeyDePosicion`/`vtoDePosicion`/`posicionDeFecha`/
+`hoyVencKey`), migrados los 9 call-sites duplicados (`curva.ts`, `futuros.ts`, `derivadas.ts`,
+`market/tickers.ts`, `lineup/embarque.ts`, `graficos-client.tsx`, `periodo-panel.tsx`, `calc-fijar.tsx`,
+`compras/negociado-chart.tsx`); se preservó a propósito el quirk heredado de "DIS24" (matchea el patrón
+3 letras + 2 dígitos pero no es mes válido → `vencKeyDePosicion` da 202400 en vez de 0), documentado y
+testeado. **Verificado**: 107/107 tests (16 nuevos de `dates.test.ts`) · lint/tsc/build ✅ · diff de HTML
+real antes/después (`git stash` del código viejo, rebuild en la misma ventana) — `/` y `/granos` **byte a
+byte idénticos**; `/dolar` estructuralmente idéntico, la única diferencia es qué bonos devuelve
+`data912.com` en ese instante (confirmado: el código viejo solo, corrido dos veces con minutos de
+diferencia, también varía en ese mismo campo). Habilita L3 (`noUncheckedIndexedAccess`, con menos
+archivos para sanear) y despeja el camino de P2/P6 (que tocaban el mismo código). Detalle:
+[`sesiones/2026-07-23-lote-l1-market.md`](sesiones/2026-07-23-lote-l1-market.md).
 
 **📄 MP2 — INFORME SEMANAL (PDF research) — BASE + GRÁFICO HECHOS, falta la skill — rama
 `claude/resolver-pendientes-qnts8j`, PR #63.** Segundo informe automatizado de

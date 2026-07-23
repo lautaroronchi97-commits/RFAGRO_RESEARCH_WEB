@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { nfmt } from "@/lib/format";
+import { MESES_ES } from "@/lib/dates";
 import type { PuntoHisto } from "@/lib/compras/negociado";
 import { ChartMarca } from "@/components/chart-marca";
 import { ChartTabla } from "@/components/chart-tabla";
@@ -20,15 +21,14 @@ const pad = { l: 48, r: 16, t: 16, b: 30 };
 const iw = W - pad.l - pad.r;
 const ih = H - pad.t - pad.b;
 
-const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
-
 type Barra = { clave: string; label: string; exp: number; ind: number };
 
 function labelSemana(iso: string): string {
   return `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 }
 function labelMes(ym: string): string {
-  return `${MESES[Number(ym.slice(5, 7)) - 1]} ${ym.slice(2, 4)}`;
+  const mes = Number(ym.slice(5, 7));
+  return `${(MESES_ES[mes - 1] ?? "").toLowerCase()} ${ym.slice(2, 4)}`;
 }
 
 export function NegociadoChart({ serie, productos }: { serie: PuntoHisto[]; productos: { cod: string; display: string }[] }) {

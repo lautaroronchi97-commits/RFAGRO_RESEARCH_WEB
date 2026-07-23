@@ -250,7 +250,14 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   [`sesiones/2026-07-23-lote-l5-dea-carga-manual.md`](../sesiones/2026-07-23-lote-l5-dea-carga-manual.md).
 - [ ] **D2 = L4. Calibración de mesa** 🔒 (tus valores como paso 1 del prompt).
 - [ ] **D3 = L6. Robustez de ingestas v2** (falso-verde en backfills + ICS NASS + roster-erosión).
-- [ ] **D4 = L1. Partir `market.ts` + util única de mes/posición** (antes de C7/C10 idealmente).
+- [x] **D4 = L1. Partir `market.ts` + util única de mes/posición** — ✅ hecho 23/07, PR #_. Refactor
+  puro (cero cambios de comportamiento): `market.ts` (546 líneas) partido en 8 módulos de
+  `src/lib/market/*` + fachada de re-export; `dates.ts` extendido con la util única de mes/posición
+  (`MESES_ES`/`mesIndice`/`parsePosicion`/`vencKeyDePosicion`/`vtoDePosicion`/`posicionDeFecha`/
+  `hoyVencKey`), migrados los 9 call-sites duplicados. 107/107 tests verdes (16 nuevos), HTML real
+  antes/después verificado (byte a byte en `/` y `/granos`; `/dolar` con la única diferencia siendo
+  datos en vivo de `data912`, no código). Detalle:
+  [`sesiones/2026-07-23-lote-l1-market.md`](../sesiones/2026-07-23-lote-l1-market.md).
 - [ ] **D5 = L3. `noUncheckedIndexedAccess`** (después de L1).
 - [ ] **D6 = L2. Motor de gráfico SVG compartido** (antes de C7 idealmente).
 

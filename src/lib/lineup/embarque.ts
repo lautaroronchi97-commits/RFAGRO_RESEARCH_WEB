@@ -5,6 +5,7 @@ import type { Meta } from "../market";
 import { PRODUCTOS, type Familia } from "./config";
 import { campaniaIniYear, campanaLabel, parseFechaUTC } from "./campanas";
 import { getCurvaGranos } from "../curva";
+import { posicionDeFecha } from "../dates";
 
 /**
  * Mesa de embarque (Fase 3 del plan de puertos): el programa de embarques declarado
@@ -28,7 +29,6 @@ import { getCurvaGranos } from "../curva";
 const SOURCE = "SAGyP · Matba Rofex";
 const MESES_ADELANTE = 6; // mes corriente + 6 = 7 columnas
 
-const MES_ABREV = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
 /** Grano DJVE → underlying A3 (solo los que cotizan en Matba Rofex). */
 const COD_A3: Record<string, string> = { SBS: "SOJ", MAIZE: "MAI", WHEAT: "TRI" };
 
@@ -74,8 +74,7 @@ function addMeses(mesISO: string, n: number): string {
 }
 
 function labelMes(mesISO: string): string {
-  const d = parseFechaUTC(mesISO)!;
-  return `${MES_ABREV[d.getUTCMonth()]}${String(d.getUTCFullYear()).slice(-2)}`;
+  return posicionDeFecha(mesISO);
 }
 
 /** Primer día del mes actual en zona Córdoba, como "YYYY-MM-01". */

@@ -6,6 +6,7 @@ import { ChartMarca } from "./chart-marca";
 import { sfmt, rfmt, nfmt, numDeInput as num } from "@/lib/format";
 import { evaluarFijar, type PosCurva, type Lado, type FilaFijar } from "@/lib/fijar";
 import { hoyCordoba, parseYmd } from "@/lib/habiles";
+import { posicionDeFecha } from "@/lib/dates";
 import type { GranoCurva } from "@/lib/curva-types";
 
 function IconFijar() {
@@ -17,11 +18,9 @@ function IconFijar() {
   );
 }
 
-const MESES = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
 function mesCorto(iso: string): string {
-  const m = iso.match(/^(\d{4})-(\d{2})/);
-  if (!m) return iso || "—";
-  return `${MESES[Number(m[2]) - 1] ?? m[2]}${m[1].slice(2)}`;
+  if (!/^\d{4}-\d{2}/.test(iso)) return iso || "—";
+  return posicionDeFecha(iso);
 }
 
 const CURVA_INI: PosCurva[] = [
