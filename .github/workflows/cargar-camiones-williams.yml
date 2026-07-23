@@ -1,0 +1,48 @@
+name: Cargar camiones en puerto (Williams Entregas → Supabase)
+
+# Carga (o re-carga) el backfill de camiones en puerto a la tabla `camiones`, desde los CSV de
+# Williams Entregas versionados en data/camiones/. TODA la dimensión zona/producto sale de Williams
+# (servicio B2B pago vía Agrochat, sin API pública) — no hay ingesta automática, ver
+# src/lib/camiones/williams.ts y docs/negocio/08_fuente_camiones_puerto.md / 09_camiones_vs_lineup_senal.md.
+#
+# --all carga los 4 CSV conocidos (total/maíz/soja/trigo, ~42.600 filas 2018→2026 combinadas).
+# Para un archivo puntual nuevo (girasol/sorgo/cebada que Lautoro consiga más adelante) usar
+# --in/--producto (ver el header de scripts/cargar-camiones-williams.mjs). Idempotente: upsert por
+# (fecha, zona, producto, fuente).
+# Secrets: SUPABASE_URL / SUPABASE_SERVICE_KEY.
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      in:
+        description: "Archivo puntual a cargar (vacío = --all, los 4 CSV conocidos)."
+        type: string
+        default: ""
+      producto:
+        description: "Producto del archivo puntual (TOTAL/SBS/MAIZE/WHEAT/BARLEY/SORGHUM/SFSEED) — requerido si 'in' no está vacío."
+        type: string
+        default: ""
+
+jobs:
+  cargar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Cargar camiones (Williams Entregas)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ -z "${{ github.event.inputs.in }}" ]; then
+            node scripts/cargar-camiones-williams.mjs --all
+          else
+            node scripts/cargar-camiones-williams.mjs --in "${{ github.event.inputs.in }}" --producto "${{ github.event.inputs.producto }}"
+          fi
