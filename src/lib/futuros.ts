@@ -145,3 +145,15 @@ export const getCierresGranos = cache(async (): Promise<CierresData> => {
     },
   };
 });
+
+/**
+ * Volumen operado del día en A3, sumando TODAS las posiciones vivas del grano
+ * (venc > 0, mismo filtro de "posición futura" que usa el resto de la web —
+ * ver futuros.ts/arbitrajes-cierres.ts). `null` si ninguna posición trajo volumen
+ * (no confundir con 0: 0 es "hubo dato y no se operó nada").
+ */
+export function volumenTotalGrano(g: GranoCierres): number | null {
+  const vols = g.posiciones.filter((p) => p.venc > 0).map((p) => p.volume).filter((v): v is number => v != null);
+  if (vols.length === 0) return null;
+  return vols.reduce((a, b) => a + b, 0);
+}

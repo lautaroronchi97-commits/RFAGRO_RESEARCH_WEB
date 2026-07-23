@@ -4,6 +4,7 @@ import { DolarLinkedPanel } from "@/components/dolar-linked-panel";
 import { ImplicitasPanel } from "@/components/implicitas-panel";
 import { SinteticosPanel } from "@/components/sinteticos-panel";
 import { PanelCambiario } from "@/components/panel-cambiario";
+import { DolarOficialPanel } from "@/components/dolar-oficial-panel";
 import { requireSeccion } from "@/lib/auth/dal";
 
 export const revalidate = 60;
@@ -23,6 +24,7 @@ export default async function DolarPage() {
         <div className="col">
           <h2 className="sec-title">Dólar y tasas</h2>
           <DolarFuturoPanel />
+          <DolarOficialPanel />
           <DolarLinkedPanel />
           <ImplicitasPanel />
           <SinteticosPanel />

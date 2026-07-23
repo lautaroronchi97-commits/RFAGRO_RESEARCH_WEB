@@ -19,8 +19,9 @@ export const AUTH_ENFORCED = process.env.AUTH_ENFORCED === "true";
 export const ADMIN_SEED_EMAILS = ["lautaroronchi97@gmail.com"];
 
 /**
- * Las 7 secciones del sitio con su clave canónica, etiqueta y ruta. Fuente única
+ * Las secciones del sitio con su clave canónica, etiqueta y ruta. Fuente única
  * para la nav, el filtro de permisos y los checkboxes del panel admin (Etapa 2).
+ * ("informes" sumada en MP1 de PLAN_INFORMES.md, 22/07/2026.)
  */
 export const SECCIONES_META = [
   { key: "granos", label: "Granos", href: "/granos" },
@@ -30,12 +31,13 @@ export const SECCIONES_META = [
   { key: "graficos", label: "Gráficos", href: "/graficos" },
   { key: "produccion", label: "Producción", href: "/produccion" },
   { key: "noticias", label: "Noticias", href: "/noticias" },
+  { key: "informes", label: "Informes", href: "/informes" },
 ] as const;
 
 /** Clave canónica de una sección (derivada de la metadata). */
 export type SeccionKey = (typeof SECCIONES_META)[number]["key"];
 
-/** Claves canónicas de las 7 secciones (permisos por sección). */
+/** Claves canónicas de las secciones (permisos por sección). */
 export const SECCIONES: readonly SeccionKey[] = SECCIONES_META.map((s) => s.key);
 
 /** Etiqueta legible de una sección (para el panel y las pantallas de acceso). */
