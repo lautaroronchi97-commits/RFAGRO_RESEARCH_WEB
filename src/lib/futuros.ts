@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { sbSelect } from "./supabase";
 import type { Meta } from "./market";
+import { vencKeyDePosicion, hoyVencKey } from "./dates";
 
 /**
  * Cierres de futuros de granos (A3/Matba ROFEX), leídos de Supabase
@@ -45,36 +46,14 @@ type RawRow = {
 };
 
 const NOMBRES: Record<string, string> = { SOJ: "Soja", MAI: "Maíz", TRI: "Trigo" };
-const MESES: Record<string, number> = {
-  ENE: 1, FEB: 2, MAR: 3, ABR: 4, MAY: 5, JUN: 6,
-  JUL: 7, AGO: 8, SEP: 9, OCT: 10, NOV: 11, DIC: 12,
-};
 
-/** JUL26 → 202607 ; DISPO (no matchea la regex) → 0, disponible primero. Ojo: un "DIS24" SÍ matchea → 202400. */
-function vencKey(posicion: string | null): number {
-  if (!posicion) return 0;
-  const m = posicion.toUpperCase().match(/^([A-Z]{3})(\d{2})$/);
-  if (!m) return 0; // DISPO u otros
-  const mes = MESES[m[1]] ?? 0;
-  const anio = 2000 + Number(m[2]);
-  return anio * 100 + mes;
-}
+// JUL26 → 202607 ; DISPO (no matchea la regex) → 0, disponible primero. Ojo: un
+// "DIS24" SÍ matchea → 202400 (comportamiento heredado, ver dates.ts#parsePosicion).
+const vencKey = vencKeyDePosicion;
 
-/**
- * Año-mes actual en zona Córdoba como clave aaaamm. La vista `_ultimo` trae el
- * último cierre de CADA símbolo histórico (incluye posiciones ya vencidas como
- * JUL21): para la pizarra vigente hay que descartar las muertas (venc < hoy).
- */
-function hoyVencKey(): number {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Argentina/Cordoba",
-    year: "numeric",
-    month: "2-digit",
-  }).formatToParts(new Date());
-  const anio = Number(parts.find((p) => p.type === "year")?.value ?? 0);
-  const mes = Number(parts.find((p) => p.type === "month")?.value ?? 0);
-  return anio * 100 + mes;
-}
+// La vista `_ultimo` trae el último cierre de CADA símbolo histórico (incluye
+// posiciones ya vencidas como JUL21): para la pizarra vigente hay que descartar
+// las muertas (venc < hoy) con `hoyVencKey()`.
 
 const SOURCE = "Matba Rofex";
 
@@ -145,3 +124,15 @@ export const getCierresGranos = cache(async (): Promise<CierresData> => {
     },
   };
 });
+
+/**
+ * Volumen operado del día en A3, sumando TODAS las posiciones vivas del grano
+ * (venc > 0, mismo filtro de "posición futura" que usa el resto de la web —
+ * ver futuros.ts/arbitrajes-cierres.ts). `null` si ninguna posición trajo volumen
+ * (no confundir con 0: 0 es "hubo dato y no se operó nada").
+ */
+export function volumenTotalGrano(g: GranoCierres): number | null {
+  const vols = g.posiciones.filter((p) => p.venc > 0).map((p) => p.volume).filter((v): v is number => v != null);
+  if (vols.length === 0) return null;
+  return vols.reduce((a, b) => a + b, 0);
+}

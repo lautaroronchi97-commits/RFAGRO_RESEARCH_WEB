@@ -3,6 +3,7 @@
 import * as React from "react";
 import type { SerieCat, SeriePuntos, Fuente } from "@/lib/series-types";
 import { joinFfill, metricaDiaria, posCalendario } from "@/lib/derivadas";
+import { MESES_ES, mesIndice } from "@/lib/dates";
 import { SpreadChart, type CampLine } from "./spread-chart";
 
 /**
@@ -13,7 +14,6 @@ import { SpreadChart, type CampLine } from "./spread-chart";
  * permite apagar posiciones. Decisión de Lautaro (11/07): "todas las que cotizan".
  */
 
-const MESES = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
 const GRANO_NOMBRE: Record<string, string> = {
   soja: "Soja", maiz: "Maíz", trigo: "Trigo", girasol: "Girasol", sorgo: "Sorgo",
 };
@@ -24,10 +24,6 @@ const POS_COLORS = [
 ];
 
 type Target = { serieId: string; posicion: string; mon: string; yy: number; venc: string | null };
-
-function mesNum(mon: string): number {
-  return MESES.indexOf(mon) + 1;
-}
 
 /** Posiciones A3 .ROS del grano que cotizan en el año (su [desde,hasta] lo cruza). */
 function targetsDelAnio(cat: SerieCat[], grano: string, anio: number): Target[] {
@@ -42,7 +38,7 @@ function targetsDelAnio(cat: SerieCat[], grano: string, anio: number): Target[] 
       yy: 2000 + Number(c.posicion!.slice(3)),
       venc: c.vencimiento,
     }))
-    .sort((a, b) => (a.yy - b.yy) || (mesNum(a.mon) - mesNum(b.mon)));
+    .sort((a, b) => (a.yy - b.yy) || (mesIndice(a.mon) - mesIndice(b.mon)));
 }
 
 /* ---------------- presets de pizarra ---------------- */
@@ -180,7 +176,7 @@ export function PeriodoPanel({ catalogo, anioActual }: { catalogo: SerieCat[]; a
             </select>
             {baseFuente === "a3" && (
               <select value={baseMon} onChange={(e) => setBaseMon(e.target.value)} aria-label="Posición base">
-                {MESES.map((m) => <option key={m} value={m}>{m}</option>)}
+                {MESES_ES.map((m) => <option key={m} value={m}>{m}</option>)}
               </select>
             )}
           </div>

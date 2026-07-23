@@ -212,9 +212,14 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 
 ### C. Features de producto (el valor nuevo; orden por matriz §3)
 
-- [ ] **C1. MP1 — informe diario** (placa PNG WhatsApp; prompt en `PLAN_INFORMES.md`).
-- [ ] **C2. MP2 — informe semanal PDF** (tras MP1; cierra también el remanente "reporte" del ítem 5
-  viejo: metales/petróleo/Merval/SPY/EWZ al informe).
+- [x] **C1. MP1 — informe diario** — ✅ código hecho 22/07, PR #63 (rama
+  `claude/resolver-pendientes-qnts8j`). Falta el paso manual A2 (crear la Routine) para que
+  corra sola; el primer disparo real termina de verificar RPC/Storage/mail.
+- [~] **C2. MP2 — informe semanal PDF** — base + gráfico HECHOS 23/07, PR #63 (datos
+  semanales, plantilla A4 de 5 páginas verificada con PDF real, dólar oficial BCRA A3500
+  sumado también a `/dolar` en vivo). **Falta la skill** (a pedido de Lautaro: quiere pensar
+  con calma qué destacar cada semana antes de automatizarlo) + la Routine. Detalle:
+  [`sesiones/2026-07-23-informes-mp2-semanal.md`](../sesiones/2026-07-23-informes-mp2-semanal.md).
 - [ ] **C3. MP4 — interpretación de informes de organismos** (tras MP1; borrador → OK en /admin →
   publica en /produccion).
 - [ ] **C4. P3 build — compras netas BCRA** (fuente: API v4 var 78 para la historia/rezago +
@@ -244,13 +249,24 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 
 ### D. Lotes técnicos aprobados (refactors/calibración/robustez — prompts en §6)
 
-- [ ] **D1 = L5. DEA: destrabar la fuente** (incidente abierto — primero del grupo).
+- [x] **D1 = L5. DEA: destrabar la fuente** — ✅ hecho 23/07, PR #63. Bloqueo confirmado a nivel
+  TLS desde 3 proveedores cloud (GitHub Actions, Edge Function São Paulo, este sandbox); CKAN
+  descartado (le falta la campaña 2025/26 completa). Decisión: carga semi-manual (Lautaro sube el
+  CSV por `/admin/datos`, mismo patrón que compras/Agrochat). Detalle:
+  [`sesiones/2026-07-23-lote-l5-dea-carga-manual.md`](../sesiones/2026-07-23-lote-l5-dea-carga-manual.md).
 - [x] **D2 = L4. Calibración de mesa** — hecho 23/07: umbrales de cobertura pasaron a percentil
   P25/P75 por producto (el fijo 0,7/1,3 disparaba señal 74-95% de los días, verificado por SQL);
   índice MESA auditado y dejado como está; roster con aviso al 15% de OTROS; comisiones de
   estrategias con toggle (tarifario A3/Cocos). `sesiones/2026-07-23-l4-c5-camiones.md`.
 - [ ] **D3 = L6. Robustez de ingestas v2** (falso-verde en backfills + ICS NASS + roster-erosión).
-- [ ] **D4 = L1. Partir `market.ts` + util única de mes/posición** (antes de C7/C10 idealmente).
+- [x] **D4 = L1. Partir `market.ts` + util única de mes/posición** — ✅ hecho 23/07, PR #_. Refactor
+  puro (cero cambios de comportamiento): `market.ts` (546 líneas) partido en 8 módulos de
+  `src/lib/market/*` + fachada de re-export; `dates.ts` extendido con la util única de mes/posición
+  (`MESES_ES`/`mesIndice`/`parsePosicion`/`vencKeyDePosicion`/`vtoDePosicion`/`posicionDeFecha`/
+  `hoyVencKey`), migrados los 9 call-sites duplicados. 107/107 tests verdes (16 nuevos), HTML real
+  antes/después verificado (byte a byte en `/` y `/granos`; `/dolar` con la única diferencia siendo
+  datos en vivo de `data912`, no código). Detalle:
+  [`sesiones/2026-07-23-lote-l1-market.md`](../sesiones/2026-07-23-lote-l1-market.md).
 - [ ] **D5 = L3. `noUncheckedIndexedAccess`** (después de L1).
 - [ ] **D6 = L2. Motor de gráfico SVG compartido** (antes de C7 idealmente).
 
@@ -508,7 +524,15 @@ intercalan cuando toque el código que comparten (antes de P2/P6). Las features 
 extras puertos) esperan a que Lautaro las evalúe una por una. B2 (D6) lo investiga Claude cuando
 haya una ventana; B3 (girasol/sorgo) entra como quick win.
 
-### Bloque 4 — B3/L4/C5 ejecutados, pivote de fuente en camiones (23/07/2026)
+### Bloque 4 — L5 destrabado (23/07/2026)
+
+| Decisión | Respuesta de Lautaro | Efecto en el backlog |
+|---|---|---|
+| **L5 — cómo destrabar DEA** (semi-manual · probar Cloudflare Worker · las dos · descartar) | **Carga semi-manual** (mismo patrón que el uploader de compras/Agrochat) — elegida directo, sin pasar por la prueba del Worker | D1/L5 cerrado. Código: `src/lib/parse-dea.ts` + migración `admin_upsert_estimaciones` (aplicada) + sección nueva en `/admin/datos` + `ingest-estimaciones-ar.yml` con DEA dispatch-only. Detalle: [`sesiones/2026-07-23-lote-l5-dea-carga-manual.md`](../sesiones/2026-07-23-lote-l5-dea-carga-manual.md) |
+
+**Siguiente en el orden:** MP2 (informe semanal).
+
+### Bloque 5 — B3/L4/C5 ejecutados, pivote de fuente en camiones (23/07/2026)
 
 | Decisión | Respuesta de Lautoro | Efecto en el backlog |
 |---|---|---|
@@ -524,8 +548,9 @@ haya una ventana; B3 (girasol/sorgo) entra como quick win.
 | **Timing del índice MESA** | En fases: señal en el panel de camiones ahora, evaluar sumarla al índice recién después de que L4 asiente | `temperatura.ts`/`mesa_calor.ts` sin tocar en este lote |
 | **C4 (compras BCRA)** — ¿arrancar ya que la API sigue viva? | No fue preguntado directamente, pero se descubrió que la sesión de MP1 ya creó `compras_bcra` en la base real | C4 diferido hasta que la rama de MP1 mergee (evitar pisarse con su migración/uploader) |
 
-**B3, L4 y C5 quedan CERRADOS** (backlog §4 actualizado arriba). Próximo en el orden sugerido:
-esperar a MP1/L5 (sesiones paralelas) y retomar C4 cuando MP1 mergee.
+**L5, B3, L4 y C5 quedan CERRADOS** (backlog §4 actualizado arriba). MP1/MP2/L1 también cerraron en
+sesiones paralelas el mismo día (ver `ESTADO.md`). Próximo en el orden: retomar C4 (compras BCRA)
+ahora que MP1 ya mergeó.
 
 ---
 

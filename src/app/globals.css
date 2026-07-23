@@ -742,6 +742,7 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
 .org-CFTC  { --org-c:#B06A4A; }
 .org-EIA   { --org-c:#7E8C74; }
 .org-NOPA  { --org-c:#7E8C74; }
+.org-DOLAR { --org-c:var(--brand-deep); }
 
 /* color por zona/producto — panel de camiones en puerto (C5) */
 .cam-ROSARIO_ALEDANOS { --org-c:#4E9C3A; }
@@ -881,6 +882,59 @@ a.estim-inf:hover { color:var(--gold-text); }
 .cv-tip-sub { display:block; font-size:9px; color:var(--ink-3); font-weight:400; margin-top:1px; }
 .cv-legend .evo-sw { width:14px; height:2.5px; border-radius:2px; background:var(--org-c); }
 .cv-legend .lk-val { font-family:var(--font-mono); font-weight:700; color:var(--ink); margin-left:2px; }
+
+/* Plantilla informe semanal (MP2) — A4 multipágina, siempre tema claro (impreso: ahorra
+   tinta y es el estándar de cualquier research en PDF, a diferencia de la placa diaria que
+   sí sigue el tema del sitio). Redefine los tokens de color localmente (mismo valor que
+   .plc[data-tema="light"]) para reusar .tbl/.chart-wrap/.evo-*/.vb-* tal cual. */
+.sem-page { background:#EDF2E3; padding:24px 0; display:flex; flex-direction:column; align-items:center; gap:18px; }
+.sem-hoja {
+  width:210mm; min-height:297mm; box-sizing:border-box; padding:16mm 14mm; position:relative;
+  box-shadow:0 2px 18px rgba(23,37,27,.12);
+  --bg:#EDF2E3; --panel:#FCFDF8; --panel-2:#F4F8EB; --panel-3:#EBF1DC;
+  --ink:#17251B; --ink-2:#44553D; --ink-3:#5B6C51;
+  --line:rgba(47,74,42,.16); --line-2:rgba(47,74,42,.10);
+  --gold:#EFBF2E; --gold-text:#8A6608; --pos:#16A34A; --neg:#DC2626; --neu:#7E8C74;
+  --brand-deep:#2F6E34; --grid:rgba(47,74,42,.14);
+  background:var(--panel); color:var(--ink); font-family:var(--font-ui);
+}
+@media print {
+  .sem-page { background:none; padding:0; gap:0; }
+  .sem-hoja { box-shadow:none; page-break-after:always; }
+  .sem-hoja:last-child { page-break-after:auto; }
+}
+.sem-tapa { display:flex; flex-direction:column; height:100%; }
+.sem-tapa-logo { width:88px; margin-bottom:26px; }
+.sem-tapa-tit { font-family:var(--font-mono); font-size:28px; font-weight:800; margin:0 0 8px; }
+.sem-tapa-sub { font-size:14px; color:var(--ink-2); margin:0 0 30px; }
+.sem-resumen { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px; }
+.sem-resumen li { font-size:14.5px; line-height:1.55; padding-left:18px; position:relative; }
+.sem-resumen li::before { content:"–"; position:absolute; left:0; color:var(--gold-text); }
+.sem-hd { display:flex; align-items:baseline; justify-content:space-between; border-bottom:2px solid var(--gold);
+  padding-bottom:10px; margin-bottom:18px; }
+.sem-hd-tit { font-family:var(--font-mono); font-weight:700; font-size:17px; }
+.sem-hd-pag { font-size:11px; color:var(--ink-3); }
+.sem-sec { margin-bottom:22px; }
+.sem-sec-tit { font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3);
+  margin:0 0 10px; }
+.sem-texto { font-size:14px; line-height:1.6; color:var(--ink-2); margin:0 0 4px; white-space:pre-wrap; }
+.sem-pie { position:absolute; bottom:14mm; left:14mm; right:14mm; font-size:10px; color:var(--ink-3);
+  border-top:1px solid var(--line); padding-top:8px; }
+
+/* VariacionBarras (informe semanal MP2): barras horizontales centradas en 0%. */
+.vb-wrap { display:flex; flex-direction:column; gap:6px; padding:10px 4px; }
+.vb-tit { font-size:var(--fs-xs); font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--ink-3); margin-bottom:2px; }
+.vb-row { display:grid; grid-template-columns:100px 1fr 64px; align-items:center; gap:8px; }
+.vb-label { font-size:var(--fs-sm); color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.vb-bar-wrap { position:relative; height:16px; }
+.vb-axis { position:absolute; left:50%; top:0; bottom:0; width:1px; background:var(--line-2); }
+.vb-bar { position:absolute; top:2px; height:12px; border-radius:2px; left:50%; }
+.vb-bar.up { background:var(--pos); }
+.vb-bar.down { background:var(--neg); right:50%; left:auto; }
+.vb-val { font-family:var(--font-mono); font-size:var(--fs-sm); font-weight:700; text-align:right; }
+.vb-val.up { color:var(--pos); }
+.vb-val.down { color:var(--neg); }
 
 .estim-cambios { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; }
 .estim-cam-card { border:1px solid var(--line); border-radius:var(--r-chip); padding:10px 12px; background:color-mix(in srgb, var(--ink) 2%, transparent); }
@@ -1506,3 +1560,70 @@ a.estim-inf:hover { color:var(--gold-text); }
 .vw-fb-ok { font-size:var(--fs-xs); color:var(--pos); }
 .vw-fb-err { font-size:var(--fs-xs); color:var(--neg); }
 .vw-hist-fb { max-width:380px; white-space:normal; }
+
+/* ============================================================
+   PLACA — informe diario (MP1 de PLAN_INFORMES.md). Página standalone
+   (sin header/nav del sitio), pensada para screenshotear a PNG 1080×~1600.
+   El tema NO depende de next-themes/localStorage (el screenshot es headless
+   y no corre el toggle): [data-tema] en el wrapper .plc fija los tokens
+   localmente, así el render es determinístico para Playwright.
+   ============================================================ */
+.plc-page { min-height:100vh; display:flex; justify-content:center;
+  background:#11150f; padding:0; }
+.plc { width:1080px; box-sizing:border-box; padding:52px 58px 40px;
+  background:var(--bg); color:var(--ink); font-family:var(--font-ui); }
+
+.plc[data-tema="light"] {
+  --bg:#EDF2E3; --panel:#FCFDF8; --panel-2:#F4F8EB;
+  --ink:#17251B; --ink-2:#44553D; --ink-3:#5B6C51;
+  --line:rgba(47,74,42,.16); --gold:#EFBF2E; --gold-text:#8A6608;
+  --pos:#16A34A; --neg:#DC2626; --neu:#7E8C74;
+}
+.plc[data-tema="dark"] {
+  --bg:#060A07; --panel:#0C130D; --panel-2:#111A12;
+  --ink:#EDF4E7; --ink-2:#ADBFA6; --ink-3:#86987E;
+  --line:rgba(168,198,160,.12); --gold:#EFBF2E; --gold-text:#EFBF2E;
+  --pos:#37D982; --neg:#FF5C5C; --neu:#8B9E85;
+}
+
+.plc-hd { display:flex; align-items:center; gap:16px; padding-bottom:20px;
+  border-bottom:2px solid var(--gold); margin-bottom:22px; }
+.plc-hd-wm { display:flex; flex-direction:column; }
+.plc-hd-tit { font-family:var(--font-mono); font-weight:700; font-size:20px; letter-spacing:.02em; }
+.plc-hd-fecha { font-size:14px; color:var(--ink-2); margin-top:2px; }
+
+.plc-titulo { font-family:var(--font-mono); font-size:28px; font-weight:800;
+  margin:0 0 16px; letter-spacing:.01em; }
+
+.plc-comentario { list-style:none; padding:0; margin:0 0 26px; display:flex;
+  flex-direction:column; gap:8px; }
+.plc-comentario li { font-size:16px; line-height:1.5; padding-left:18px; position:relative; }
+.plc-comentario li::before { content:"–"; position:absolute; left:0; color:var(--gold-text); }
+
+.plc-granos { display:flex; flex-direction:column; gap:16px; margin-bottom:26px; }
+.plc-grano { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px 22px; }
+.plc-grano-hd { display:flex; align-items:baseline; justify-content:space-between;
+  margin-bottom:8px; gap:10px; flex-wrap:wrap; }
+.plc-grano-nombre { font-family:var(--font-mono); font-weight:700; font-size:18px; }
+.plc-grano-pizarra { font-family:var(--font-mono); font-size:14px; color:var(--ink-2); }
+.plc-grano-linea { font-size:15px; line-height:1.5; margin:0 0 10px; color:var(--ink-2); }
+.plc-grano-pos-list { display:flex; flex-wrap:wrap; gap:8px; }
+.plc-pos { font-family:var(--font-mono); font-size:13.5px; background:var(--panel-2);
+  border-radius:8px; padding:6px 10px; display:inline-flex; gap:6px; align-items:center; }
+.plc-pos .up { color:var(--pos); } .plc-pos .down { color:var(--neg); } .plc-pos .flat { color:var(--neu); }
+
+.plc-franja { display:flex; gap:14px; margin-bottom:26px; }
+.plc-franja-col { flex:1; background:var(--panel-2); border-radius:12px; padding:14px 18px; }
+.plc-franja-h { font-size:11.5px; text-transform:uppercase; letter-spacing:.08em;
+  color:var(--ink-3); margin-bottom:8px; font-weight:700; }
+.plc-franja-row { display:flex; justify-content:space-between; gap:10px;
+  font-family:var(--font-mono); font-size:13.5px; padding:3px 0; }
+
+.plc-pie { border-top:1px solid var(--line); padding-top:16px;
+  display:flex; flex-direction:column; gap:8px; }
+.plc-pie-tit { font-size:11.5px; text-transform:uppercase; letter-spacing:.08em;
+  color:var(--ink-3); font-weight:700; }
+.plc-pie-item { font-size:13.5px; line-height:1.4; color:var(--ink-2); }
+.plc-disclaimer { font-size:11px; color:var(--ink-3); margin-top:8px; }
+.plc-sello { font-family:var(--font-mono); font-size:11px; color:var(--ink-3);
+  text-align:right; margin-top:6px; }

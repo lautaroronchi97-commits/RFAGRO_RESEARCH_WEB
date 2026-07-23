@@ -2,9 +2,12 @@ name: Ingesta estimaciones Argentina (GEA · SAGyP · PAS → Supabase)
 
 # Popula estimaciones_produccion con las estimaciones nacionales de Argentina:
 #   - BCR-GEA  (scripts/ingest-gea.mjs): soja/maíz/trigo, informe mensual + backfill Wayback.
-#   - DEA-SAGyP(scripts/ingest-dea.mjs): los 6 granos, snapshot semanal del CSV oficial.
-#   - BCBA-PAS (scripts/ingest-pas.mjs): PENDIENTE de validar — el dominio está tras Cloudflare; corre
-#     SOLO por dispatch (pas_probe) para diagnosticar si la IP de Actions pasa el challenge.
+#   - DEA-SAGyP(scripts/ingest-dea.mjs): PENDIENTE — `datosestimaciones.magyp.gob.ar` bloquea las
+#     IPs de datacenter (E5 #8, confirmado en el lote L5 desde 3 proveedores cloud distintos).
+#     Corre SOLO por dispatch (dea_probe) para reintentar si el bloqueo se levanta algún día; la
+#     vía real de actualización es la carga semi-manual por /admin/datos (Lautaro sube el CSV).
+#   - BCBA-PAS (scripts/ingest-pas.mjs): descartado automatizar (Cloudflare 403 confirmado 2/2,
+#     auditoría E6) — corre SOLO por dispatch (pas_probe) para re-chequear si algún día cambia.
 # Un solo workflow para no multiplicar YAML (plan §3). Los upserts son idempotentes.
 # Los `schedule` corren desde la rama default del repo. Secrets: SUPABASE_URL / SUPABASE_SERVICE_KEY.
 
@@ -15,19 +18,25 @@ permissions:
 on:
   schedule:
     - cron: "0 1 * * 4" # mié 22:00 AR — tras la estimación mensual de GEA (2° miércoles)
-    - cron: "0 12 * * 5" # vie 09:00 AR — tras el informe semanal de la DEA (jueves)
+    # DEA salió del schedule (lote L5, 22/07): la fuente está bloqueada por IP desde Actions,
+    # así que un cron semanal solo generaría rojo/alertas sin datos. La actualización real es
+    # la carga semi-manual por /admin/datos. `dea_probe` abajo reintenta a mano si hace falta.
   workflow_dispatch:
     inputs:
       backfill_gea:
         description: "GEA: reconstruir vintages 2020→hoy desde Wayback."
         type: boolean
         default: false
+      dea_probe:
+        description: "DEA: reintentar la fuente automática (por si el bloqueo de IP se levantó)."
+        type: boolean
+        default: false
       dea_full:
-        description: "DEA: snapshotear TODAS las campañas del CSV (1969/70→hoy)."
+        description: "DEA (con dea_probe=true): snapshotear TODAS las campañas del CSV (1969/70→hoy)."
         type: boolean
         default: false
       dea_since:
-        description: "DEA: año de campaña mínimo (ej. 2019). Vacío = últimas 3 campañas."
+        description: "DEA (con dea_probe=true): año de campaña mínimo (ej. 2019). Vacío = últimas 3 campañas."
         type: string
         default: ""
       pas_probe:
@@ -56,10 +65,8 @@ jobs:
             node scripts/ingest-gea.mjs
           fi
 
-      - name: DEA (SAGyP)
-        # Corre aunque GEA haya fallado (0 filas / HTML roto): son fuentes independientes. El workflow
-        # igual queda en rojo por GEA (alerta), pero no perdemos el snapshot de la DEA.
-        if: ${{ !cancelled() }}
+      - name: DEA (SAGyP) — solo probe por dispatch (fuente bloqueada por IP, lote L5)
+        if: ${{ !cancelled() && github.event.inputs.dea_probe == 'true' }}
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}

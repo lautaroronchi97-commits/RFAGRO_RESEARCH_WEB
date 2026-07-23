@@ -20,6 +20,7 @@ const SECCIONES: { key: string; href: string; nombre: string; desc: string }[] =
   { key: "graficos", href: "/graficos", nombre: "Gráficos", desc: "Spreads entre cosechas, con las campañas superpuestas." },
   { key: "produccion", href: "/produccion", nombre: "Producción", desc: "Calendario de informes y estimaciones por país y grano." },
   { key: "noticias", href: "/noticias", nombre: "Noticias", desc: "El portal del agro: granos, dólar, clima y exportaciones." },
+  { key: "informes", href: "/informes", nombre: "Informes", desc: "El informe diario de la mesa: research y color de la rueda." },
 ];
 
 export default async function Home() {

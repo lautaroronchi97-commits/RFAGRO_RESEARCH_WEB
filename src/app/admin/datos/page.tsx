@@ -1,18 +1,37 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/dal";
+import { createSupabaseServerClient } from "@/lib/auth/server";
+import { hoyCordobaISO } from "@/lib/dates";
 import { Uploader } from "./uploader";
 import { PromptAgrochat } from "./prompt-agrochat";
 import { UploaderCamiones } from "./uploader-camiones";
 import { PromptCamiones } from "./prompt-camiones";
+import { DatosDia } from "./datos-dia";
+import { DeaUploader } from "./dea-uploader";
 
 /**
  * Pestaña DATOS del panel admin: actualizar series que se cargan a mano (sin cron), subiendo
- * exports de Agrochat. Protegida como las páginas hermanas: requireAdmin acá mismo (además del
- * layout), y cada server action vuelve a exigir admin en su primera línea; la escritura va por
- * RPC con guard is_admin() (sin service key en la web).
+ * exports de Agrochat/Williams — comercialización de granos (tabla `compras`), camiones en
+ * puerto (tabla `camiones`, Williams Entregas), "datos del día" del informe diario (MP1: color
+ * de la rueda + compras BCRA), y estimaciones DEA-SAGyP (lote L5 — fuente automática bloqueada
+ * por IP). Protegida como las páginas hermanas: requireAdmin acá mismo (además del layout), y
+ * cada server action vuelve a exigir admin en su primera línea; la escritura va por RPC con
+ * guard is_admin() (sin service key en la web).
  */
 export default async function DatosPage() {
   await requireAdmin();
+
+  const fechaHoy = hoyCordobaISO();
+  const supabase = await createSupabaseServerClient();
+  const [{ data: colorRows }, { data: bcraRow }] = await Promise.all([
+    supabase.from("mesa_color").select("fecha,texto").order("fecha", { ascending: false }).limit(6),
+    supabase.from("compras_bcra").select("monto_musd").eq("fecha", fechaHoy).maybeSingle(),
+  ]);
+  const filas = (colorRows ?? []) as { fecha: string; texto: string }[];
+  const deHoy = filas.find((f) => f.fecha === fechaHoy);
+  const recientes = filas.filter((f) => f.fecha !== fechaHoy).slice(0, 3);
+  const bcraHoy = (bcraRow as { monto_musd: number } | null)?.monto_musd ?? null;
+
   return (
     <section>
       <div className="admin-hd">
@@ -38,6 +57,9 @@ export default async function DatosPage() {
       </div>
       <PromptCamiones />
       <UploaderCamiones />
+
+      <DatosDia fechaHoy={fechaHoy} colorHoy={deHoy?.texto ?? ""} bcraHoy={bcraHoy} recientes={recientes} />
+      <DeaUploader hoy={fechaHoy} />
     </section>
   );
 }
