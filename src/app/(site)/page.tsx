@@ -3,7 +3,7 @@ import { getCintaData } from "@/lib/market";
 import { getNoticias, type NoticiaItem } from "@/lib/noticias";
 import { getInterpretacionesPublicadas } from "@/lib/interpretaciones";
 import { ORG_LABEL, type Organismo } from "@/lib/calendario";
-import { hoyCordobaISO } from "@/lib/dates";
+import { hoyCordobaISO, fechaCordobaISO } from "@/lib/dates";
 import { Cinta } from "@/components/cinta";
 import { MercadoHoy } from "@/components/mercado-hoy";
 import { InformesPanel } from "@/components/informes-panel";
@@ -34,13 +34,14 @@ export default async function Home() {
   const cinta = await getCintaData();
   const [noticias, interpretaciones] = await Promise.all([getNoticias(), getInterpretacionesPublicadas()]);
 
-  // Toda interpretación de informe (MP4) que se publicó HOY va a la cabecera de
-  // "Novedades del día", antes que las noticias — es contenido propio de la mesa,
-  // más relevante que un titular externo. Al día siguiente deja de filtrar por
-  // `hoy` y desaparece sola (mismo criterio "day-scoped" que `mesa_color`/`informesHoy`).
+  // Toda interpretación de informe (MP4) que Lautaro PUBLICÓ hoy (no la fecha del informe
+  // original — un WASDE del 10/07 puede aprobarse recién el 23/07) va a la cabecera de
+  // "Novedades del día", antes que las noticias — es contenido propio de la mesa, más
+  // relevante que un titular externo. Al día siguiente `editado_en` ya no es hoy y
+  // desaparece sola (mismo criterio "day-scoped" que `mesa_color`/`informesHoy`).
   const hoy = hoyCordobaISO();
   const interpHoy: Titular[] = interpretaciones
-    .filter((i) => i.fecha_publicacion === hoy)
+    .filter((i) => fechaCordobaISO(i.editado_en) === hoy)
     .map((i) => ({
       titulo: `La lectura de la mesa: ${i.informe} (${ORG_LABEL[i.organismo as Organismo] ?? i.organismo})`,
       fuente: "RF AGRO",

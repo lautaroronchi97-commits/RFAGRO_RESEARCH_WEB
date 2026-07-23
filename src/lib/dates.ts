@@ -3,15 +3,21 @@
  * para evitar corrimientos por huso horario al contar días calendario.
  */
 
-/** Hoy en Córdoba como 'YYYY-MM-DD'. */
-export function hoyCordobaISO(): string {
+/** Un instante (Date o ISO string) como 'YYYY-MM-DD' en Córdoba. */
+export function fechaCordobaISO(instante: Date | string): string {
+  const d = typeof instante === "string" ? new Date(instante) : instante;
   // en-CA formatea como 'YYYY-MM-DD'.
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/Argentina/Cordoba",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(new Date());
+  }).format(d);
+}
+
+/** Hoy en Córdoba como 'YYYY-MM-DD'. */
+export function hoyCordobaISO(): string {
+  return fechaCordobaISO(new Date());
 }
 
 /** Días calendario entre dos fechas 'YYYY-MM-DD' (hasta − desde). NaN si inválidas. */

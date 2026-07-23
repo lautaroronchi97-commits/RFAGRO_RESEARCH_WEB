@@ -21,7 +21,9 @@
 
 ## Ahora (última actualización: 23/07/2026 — día grande de backlog maestro, 6 sesiones en paralelo:
 📝 C3 (interpretación de informes de organismos) HECHO, migración aplicada y probada con un informe real ·
-🧹 LOTE L1 (partir `market.ts`) HECHO · 📄 MP2 informe semanal BASE+gráfico HECHOS (falta la skill) ·
+🧹 LOTE L1 (partir `market.ts`) HECHO · 📄 MP2 informe semanal HECHO (skill + Novedades del día con
+interpretaciones + páginas legales, PR #68 en vuelo) · 🔓 A1 login Google TRABADO en verificación de
+marca — abrió research de dominio/marca/SRL, PAUSADO a pedido de Lautaro ·
 🔓 LOTE L5 (DEA-SAGyP) HECHO (carga semi-manual) · 📰 MP1 informe diario HECHO (falta la Routine) ·
 🎯 L4 (calibración de cobertura/roster/comisiones) CERRADO · 🌻 B3 (girasol/sorgo) CERRADO ·
 🚚 C5 (camiones en puerto + señal barcos-vs-camiones) CONSTRUIDO con pivote a Williams Entregas ·
@@ -129,29 +131,53 @@ diferencia, también varía en ese mismo campo). Habilita L3 (`noUncheckedIndexe
 archivos para sanear) y despeja el camino de P2/P6 (que tocaban el mismo código). Detalle:
 [`sesiones/2026-07-23-lote-l1-market.md`](sesiones/2026-07-23-lote-l1-market.md).
 
-**📄 MP2 — INFORME SEMANAL (PDF research) — BASE + GRÁFICO HECHOS, falta la skill — rama
-`claude/resolver-pendientes-qnts8j`, PR #63.** Segundo informe automatizado de
-`docs/PLAN_INFORMES.md`. **Hallazgo antes de construir**: el spot `UST$T` de MAE (el que usa
-el resto de la web para "oficial mayorista") **no tiene historial en ningún lado** —
-verificado con request real a la API de MAE (`?fecha=` no tiene efecto, siempre devuelve hoy).
-Única fuente con historial real: **BCRA A3500** (API v4 variable 5) — decisión de Lautaro:
-usarla igual, aclarando la fuente en toda la UI/PDF (trae el spread bancario implícito).
-**Código**: `src/lib/informe-semanal.ts` (variación semanal de granos/Chicago/pizarra/dólar
-oficial, última fecha real vs la más cercana a 7 días antes, sin asumir "viernes calendario";
-filtro `esReciente` para contratos que dejaron de operar aunque su mes siga "vigente" por
-nombre) · `/api/informes/datos?tipo=semanal` (nueva rama, reusa libs existentes) · plantilla
-`/informes/plantilla/semanal` (PDF A4 de 5 páginas, CSS de impresión nuevo en `globals.css`,
-tema siempre claro) · `VariacionBarras` (gráfico de barras reusable) · `DolarOficialChart` +
-`DolarOficialPanel`, sumados también a **`/dolar` en vivo — cierra de paso el ítem 13 del
-backlog viejo (P2 de `PLAN_BACKLOG.md`)**. **Verificado**: datos reales contra la base (fechas
-exactas 7 días apart) · PDF real generado con Playwright (`page.pdf()`, confirmado 5 páginas
-exactas) · bug encontrado y corregido en navegador (el gráfico de dólar renderizaba con
-relleno negro sólido — faltaba la clase `.evo-serie` junto a `.org-DOLAR`; de paso se sacó un
-Δ% inconsistente que la leyenda calculaba sola) · lint/tsc/build ✅. **Falta (a pedido
-explícito de Lautaro, 23/07: "no necesito que arme el skill ahora, dejalo programado como
-tarea")**: la skill `.claude/skills/informe-semanal/` (prosa "informe largo" + el criterio de
-**qué destacar cada semana**, que Lautaro quiere pensar con calma) y la Routine (depende de la
-skill). Detalle: [`sesiones/2026-07-23-informes-mp2-semanal.md`](sesiones/2026-07-23-informes-mp2-semanal.md).
+**📄 MP2 — INFORME SEMANAL (PDF research) — HECHO, PR EN VUELO — rama
+`claude/pending-tasks-mp2-writing-6kfbrp`, PR #68.** La skill `.claude/skills/informe-semanal/`
+se construyó en esta sesión (23/07, misma tarde): Lautaro contestó "definilo vos" cuando se le
+preguntó si quería retomar el criterio de "qué destacar cada semana" que había pedido pensar con
+calma — quedó como Paso 2 de la skill, marcado explícitamente como borrador a validar con el
+primer envío real (prioridad: informes de organismos de la semana → mayor movimiento de precio →
+cambios de régimen → resto como contexto). Se sumó también la sección "Informe semanal" a
+`/informes` (antes solo listaba el diario). **De paso, en la misma sesión**: (1) Lautaro aprobó y
+publicó el borrador de interpretación del WASDE #673 (MP4) y pidió que toda interpretación
+publicada aparezca en la cabecera "Novedades del día" del home hasta el día siguiente — hecho,
+con un bug real encontrado y corregido antes de pushear (el filtro comparaba la fecha del INFORME
+original, no la fecha en que Lautaro la publicó — con el bug original, este caso real nunca
+hubiera aparecido). (2) Páginas `/privacidad` y `/terminos` nuevas, a pedido de Lautaro mientras
+intentaba publicar el consent screen de Google (pide URL de política de privacidad pública).
+**Falta**: Routine semanal (depende de A2, ver abajo) y el primer PDF real de punta a punta.
+Detalle: [`sesiones/2026-07-23-mp2-skill-y-alta-srl.md`](sesiones/2026-07-23-mp2-skill-y-alta-srl.md).
+
+**🔓 A1 — LOGIN CON GOOGLE: verificación de marca TRABADA, abrió un tema de negocio (nombre/
+dominio/SRL) — PAUSADO a pedido explícito de Lautaro ("documentan todo lo que hablamos y lo
+dejamos para otro momento").** Al intentar publicar el consent screen (Google Auth Platform, UI
+nueva), Google rechazó la verificación de marca por 4 motivos, todos con la misma raíz: la web
+vive en un subdominio de Vercel (`rfagro-research-web.vercel.app`, no verificable como propiedad
+de Lautaro), la URL de página principal cargada no explica el propósito (probablemente `/` en vez
+de `/bienvenida`), el nombre "RF AGRO WEB" no coincide con la marca del sitio ("RF AGRO"), y el
+logo (probablemente el isotipo solo) no identifica la marca de forma inequívoca. **Investigado en
+el camino**: `rfagro.com.ar` (la primera opción de Lautaro) está tomado — Vercel no puede
+consultar ni vender `.ar`/`.com.ar` (hay que ir a nic.ar a mano); alternativas libres
+confirmadas: `rfagro.com` (USD 11,25/año), `rfagro.co`, `rfagro.io`. **Hallazgo importante**: la
+búsqueda de Lautaro en INPI (marcas) por "RF AGRO" dio limpia, PERO en AFIP apareció **RF AGRO
+SRL, CUIT 30712631208, activa desde 2013**, rubro "transporte automotor de mercaderías a granel"
+(camiones) — rubro adyacente, no idéntico, al de la consultora. Se le explicó la diferencia entre
+marca registrada (INPI, limpia) y nombre comercial/competencia desleal (no requiere INPI, y ahí sí
+hay una empresa activa con el nombre idéntico). Lautaro preguntó por dar de alta una SRL "R&F
+AGRO" + registrar esa marca — opinión dada (no es asesoramiento legal formal): no recomendado, el
+"&" es una diferencia demasiado fina; mejor separar los trámites (razón social de la SRL puede ser
+cualquier nombre legal, no necesita coincidir con la marca comercial "RF AGRO", a confirmar con un
+gestor/contador si pasa el registro de personas jurídicas de Santa Fe). **Nada de esto se
+ejecutó** — sigue 100% pendiente, ningún dominio comprado, ninguna SRL dada de alta, ninguna marca
+registrada, verificación de Google sin completar. Detalle (con el research completo y las
+opciones consideradas):
+[`sesiones/2026-07-23-mp2-skill-y-alta-srl.md`](sesiones/2026-07-23-mp2-skill-y-alta-srl.md).
+
+*(La base + gráfico de MP2 — `src/lib/informe-semanal.ts`, decisión de usar BCRA A3500 para el
+oficial semanal, plantilla PDF A4 de 5 páginas — se construyeron antes en la rama
+`claude/resolver-pendientes-qnts8j`, PR #63. Detalle completo:
+[`sesiones/2026-07-23-informes-mp2-semanal.md`](sesiones/2026-07-23-informes-mp2-semanal.md). La
+skill que faltaba se hizo en el bloque de arriba.)*
 
 **🔓 LOTE L5 — DEA-SAGyP: destrabar la fuente — HECHO (carga semi-manual) — rama
 `claude/resolver-pendientes-qnts8j`, PR #63.** Incidente abierto desde E5/E6: `datosestimaciones.
