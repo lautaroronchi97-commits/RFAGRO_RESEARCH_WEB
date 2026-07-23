@@ -5,20 +5,34 @@ import { getDolarFuturo } from "@/lib/market";
 import { getMonitorMercados } from "@/lib/monitor-mercados";
 import { getNoticias } from "@/lib/noticias";
 import { getEventos } from "@/lib/calendario";
+import { getNegociado } from "@/lib/compras/negociado";
+import { getMesaEmbarque } from "@/lib/lineup/embarque";
+import { getEmpresas } from "@/lib/lineup/empresas";
 import { hoyCordobaISO } from "@/lib/dates";
 import { sbSelect, sbSelectAll } from "@/lib/supabase";
 import { tokenValido, esFechaValida } from "@/lib/informe-auth";
 import { parseRows, construirCambios, organismosPresentes } from "@/lib/estimaciones";
+import {
+  getVariacionSemanalGranos,
+  getVariacionSemanalChicago,
+  getVariacionSemanalPizarra,
+  getVariacionSemanalDolarOficial,
+  getViewMercadoVigentePorGrano,
+} from "@/lib/informe-semanal";
 
 /**
- * GET /api/informes/datos?fecha=YYYY-MM-DD — auth: header `Authorization: Bearer
- * <INFORME_TOKEN>` (mismo token y patrón timing-safe que /api/views/insumos de MP3).
+ * GET /api/informes/datos?fecha=YYYY-MM-DD[&tipo=diario|semanal] — auth: header
+ * `Authorization: Bearer <INFORME_TOKEN>` (mismo token y patrón timing-safe que
+ * /api/views/insumos de MP3). Nunca se cachea.
  *
- * JSON con TODOS los insumos del informe diario (MP1 de docs/PLAN_INFORMES.md):
- * granos (ajustes A3 con Δ vs rueda anterior + pizarra CAC $/USD), dólar mayorista +
- * curva DDF, Chicago + macro, noticias del día, agenda de informes de hoy/mañana y el
- * "color de la rueda" que Lautaro carga en /admin/datos. Todo reusando las libs
- * existentes — cero lógica nueva de cálculo acá. Nunca se cachea.
+ * `tipo=diario` (default, MP1): granos (ajustes A3 con Δ vs rueda anterior + pizarra CAC
+ * $/USD), dólar mayorista + curva DDF, Chicago + macro, noticias del día, agenda de
+ * hoy/mañana y el "color de la rueda"/BCRA que Lautaro carga en /admin/datos.
+ *
+ * `tipo=semanal` (MP2): variación SEMANAL (último dato real vs el de ~7 días antes, sin
+ * asumir "viernes calendario") de granos/Chicago/pizarra/dólar oficial, negociado SIO de
+ * la semana, comercio exterior (embarques + empresas), view de mercado por grano (MP3, si
+ * ya hay alguno) y agenda de la semana próxima. Todo reusando las libs existentes.
  */
 
 export async function GET(request: Request): Promise<Response> {
@@ -33,7 +47,13 @@ export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
   const fechaParam = searchParams.get("fecha") ?? "";
   const fecha = esFechaValida(fechaParam) ? fechaParam : hoy;
+  const tipo = searchParams.get("tipo") === "semanal" ? "semanal" : "diario";
 
+  const body = tipo === "semanal" ? await datosSemanal(fecha) : await datosDiario(fecha);
+  return Response.json(body, { headers: noCache });
+}
+
+async function datosDiario(fecha: string) {
   const manana = new Date(new Date(`${fecha}T12:00:00Z`).getTime() + 86_400_000)
     .toISOString()
     .slice(0, 10);
@@ -91,23 +111,96 @@ export async function GET(request: Request): Promise<Response> {
     .filter((c) => c.fecha === fecha && c.cambios.length > 0);
   const interpretaciones = interpRes.ok && Array.isArray(interpRes.data) ? interpRes.data : [];
 
-  return Response.json(
-    {
-      generado: new Date().toISOString(),
-      fecha,
-      cierres,
-      arbitrajes,
-      pizarra,
-      dolarFuturo,
-      chicago,
-      noticias: noticiasCompactas,
-      agenda: getEventos(fecha, manana),
-      color,
-      bcra,
-      volumenPorGrano,
-      informesHoy,
-      interpretaciones,
-    },
-    { headers: noCache },
-  );
+  return {
+    generado: new Date().toISOString(),
+    tipo: "diario" as const,
+    fecha,
+    cierres,
+    arbitrajes,
+    pizarra,
+    dolarFuturo,
+    chicago,
+    noticias: noticiasCompactas,
+    agenda: getEventos(fecha, manana),
+    color,
+    bcra,
+    volumenPorGrano,
+    informesHoy,
+    interpretaciones,
+  };
+}
+
+async function datosSemanal(fecha: string) {
+  const semanaProxima = new Date(new Date(`${fecha}T12:00:00Z`).getTime() + 7 * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+  const desdeSemana = new Date(new Date(`${fecha}T12:00:00Z`).getTime() - 6 * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+
+  const [
+    variacionGranos,
+    variacionChicago,
+    variacionPizarra,
+    variacionDolarOficial,
+    viewsMercado,
+    negociado,
+    embarques,
+    empresas,
+    pizarra,
+    dolarFuturo,
+    chicago,
+    noticias,
+    estimRes,
+  ] = await Promise.all([
+    getVariacionSemanalGranos(fecha),
+    getVariacionSemanalChicago(fecha),
+    getVariacionSemanalPizarra(fecha),
+    getVariacionSemanalDolarOficial(fecha),
+    getViewMercadoVigentePorGrano(),
+    getNegociado(),
+    getMesaEmbarque(),
+    getEmpresas(),
+    getPizarra(),
+    getDolarFuturo(),
+    getMonitorMercados(),
+    getNoticias(),
+    sbSelectAll(
+      "estimaciones_produccion?select=organismo,pais,grano,campania,variable,valor,unidad,fecha_publicacion,informe,url&order=fecha_publicacion.asc",
+      3600,
+    ),
+  ]);
+
+  const noticiasCompactas = {
+    destacados: noticias.destacados.slice(0, 8),
+    meta: noticias.meta,
+  };
+
+  // Informes de organismos publicados EN LA SEMANA (no solo hoy) — mismo cálculo que el
+  // diario, ventana más amplia.
+  const estimRows = estimRes.ok ? parseRows(estimRes.data) : [];
+  const informesSemana = organismosPresentes(estimRows)
+    .map((o) => construirCambios(estimRows, o))
+    .filter((c) => c.fecha && c.fecha >= desdeSemana && c.fecha <= fecha && c.cambios.length > 0);
+
+  return {
+    generado: new Date().toISOString(),
+    tipo: "semanal" as const,
+    fecha,
+    desdeSemana,
+    variacionGranos,
+    variacionChicago,
+    variacionPizarra,
+    variacionDolarOficial,
+    viewsMercado,
+    negociado,
+    embarques,
+    empresas,
+    pizarra,
+    dolarFuturo,
+    chicago,
+    noticias: noticiasCompactas,
+    informesSemana,
+    agenda: getEventos(fecha, semanaProxima),
+  };
 }
