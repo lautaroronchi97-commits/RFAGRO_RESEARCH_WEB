@@ -9,11 +9,13 @@ function ddmmaaaa(iso: string): string {
 
 /**
  * "Datos del día" del informe diario (MP1 de PLAN_INFORMES.md): el color de la
- * rueda (texto libre) + las compras netas del BCRA del día (M USD, carga manual —
- * P3 de PLAN_BACKLOG.md sumará la ingesta automática a la misma tabla). Pensado
- * para cargar desde el celular, con la fecha de hoy precargada y lo último
- * guardado como referencia. Si un día no se carga nada, el informe sale igual,
- * solo con los datos automáticos (degrada, nunca traba la Routine).
+ * rueda (texto libre) + las compras netas del BCRA del día (M USD, carga manual).
+ * Desde C4 (PLAN_BACKLOG.md), la ingesta automática (scripts/ingest-bcra-mulc.mjs,
+ * API v4 del BCRA) escribe en la MISMA tabla con ~3-4 días hábiles de rezago — lo
+ * que se carga acá es solo un adelanto para el hueco de los días recientes; se
+ * pisa solo cuando llega el dato oficial. Pensado para cargar desde el celular,
+ * con la fecha de hoy precargada y lo último guardado como referencia. Si un día
+ * no se carga nada, el informe sale igual, solo con los datos automáticos.
  */
 export function DatosDia({
   fechaHoy,
@@ -33,8 +35,9 @@ export function DatosDia({
       <h3 className="admin-preview-h">Datos del día — {ddmmaaaa(fechaHoy)}</h3>
       <p className="admin-sub" style={{ margin: "0 0 10px" }}>
         Lo que viste hoy en la rueda (negocios, sensaciones, precios que te pasaron) y las compras
-        netas del BCRA del día. Alimenta el informe diario junto con los datos automáticos. Si no
-        cargás nada, el informe sale igual.
+        netas del BCRA del día (si las cargás, se pisan solas cuando llega el dato oficial de la
+        API). Alimenta el informe diario y el panel cambiario de /dolar. Si no cargás nada, salen
+        igual con los datos automáticos.
       </p>
       <form action={dispatch}>
         <input type="hidden" name="fecha" value={fechaHoy} />

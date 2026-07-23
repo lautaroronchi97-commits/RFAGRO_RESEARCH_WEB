@@ -7,9 +7,10 @@ import { numDeInput } from "@/lib/format";
 
 /**
  * "Datos del día" del informe diario (MP1 de docs/PLAN_INFORMES.md): el "color de
- * la rueda" (texto libre) + las compras netas del BCRA (carga manual, M USD — P3 de
- * PLAN_BACKLOG.md sumará la ingesta automática a la MISMA tabla más adelante). Van
- * por las RPC SECURITY DEFINER `admin_upsert_mesa_color` / `admin_upsert_compras_bcra`
+ * la rueda" (texto libre) + las compras netas del BCRA (carga manual, M USD — desde
+ * C4/PLAN_BACKLOG.md la ingesta automática de scripts/ingest-bcra-mulc.mjs escribe
+ * en la MISMA tabla y pisa este valor cuando llega el dato oficial). Van por las
+ * RPC SECURITY DEFINER `admin_upsert_mesa_color` / `admin_upsert_compras_bcra`
  * (guard is_admin() adentro, migración 20260722120000) con el cliente SSR + sesión
  * del admin — mismo patrón que admin_upsert_compras. BCRA vacío = no se toca ese día.
  */

@@ -1,0 +1,51 @@
+name: Ingesta compras BCRA MULC (API v4 → Supabase)
+
+# Mantiene al día la tabla compras_bcra con las compras netas de divisas del BCRA en el MULC (C4
+# del backlog maestro, docs/negocio/07_fuente_compras_netas_bcra.md). Fuente: API v4 de
+# estadísticas monetarias del BCRA, variable 78 — llega con ~3-4 días hábiles de rezago, así que
+# un run diario alcanza; la carga manual de /admin/datos cubre el hueco de los días recientes
+# hasta que llega el dato oficial (se pisa sola, ver scripts/ingest-bcra-mulc.mjs).
+# Los `schedule` de GitHub Actions corren desde la rama default del repo.
+
+# El GITHUB_TOKEN no se usa (todo va por secrets de Supabase) → mínimo privilegio (E5 #12d).
+permissions:
+  contents: read
+
+on:
+  schedule:
+    - cron: "0 13 * * 1-5" # 10:00 ART, L-V
+  workflow_dispatch:
+    inputs:
+      backfill:
+        description: "Backfill histórico completo (2003→hoy). Dejar vacío = solo ventana de 30 días."
+        type: boolean
+        default: false
+
+concurrency:
+  group: ingest-bcra-mulc
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: ".nvmrc"
+      - name: Ingesta
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.backfill }}" = "true" ]; then
+            node scripts/ingest-bcra-mulc.mjs --backfill
+          else
+            node scripts/ingest-bcra-mulc.mjs
+          fi
+      - name: Avisar por mail si falló (E5 #7)
+        if: failure()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/alerta-mail.mjs --workflow "${{ github.workflow }}" --run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

@@ -50,7 +50,7 @@
 |---|---|---|---|---|
 | P1 | Merval + EWZ + volumen Matba en el monitor | — | Sonnet | pendiente |
 | P2 | Variación semanal del USD (gráfico en /dolar) | — | Sonnet | pendiente |
-| P3 | Compras netas BCRA + acumulado de rueda USD | build espera OK de Lautaro a [`negocio/07`](negocio/07_fuente_compras_netas_bcra.md) | Fable/Opus (la fase research decide fuente y arquitectura) | **research HECHO (21/07)** — fuente elegida: BCRA API v4 var 78 |
+| P3 | Compras netas BCRA + acumulado de rueda USD | — | Fable/Opus (la fase research decide fuente y arquitectura) | **HECHO (23/07, C4)** — ingesta automática + panel + backfill 2003→hoy. `sesiones/2026-07-23-c4-compras-bcra.md` |
 | P4 | Camiones en puerto (research → ingesta → panel) | build espera OK de Lautaro a [`negocio/08`](negocio/08_fuente_camiones_puerto.md) | Fable/Opus (ídem P3) | **research HECHO (21/07)** — fuente elegida: SAGyP/MAGyP entrada diaria |
 | P5 | Vista por grano | — | Sonnet | pendiente |
 | P6 | Gráficos v2 (paquete) | los ítems «relaciones %» y «serie continua» del plan de GRÁFICOS (llamados P12/P17 en `PLAN_GRAFICOS_SPREADS.md` — no confundir con los P de ESTE tablero) esperan tus ejemplos (paso 1) | Sonnet | pendiente |

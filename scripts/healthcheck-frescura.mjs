@@ -61,6 +61,11 @@ const CHECKS = [
   // promesa de frecuencia; si se atrasa mucho más que eso sí vale la pena que Lautoro se acuerde.
   { nombre: "camiones (Williams Entregas)", tabla: "camiones", col: "fecha", maxDias: 21, cadencia: "irregular (upload manual, sin cron)" },
   { nombre: "noticias", tabla: "noticias", col: "fecha_pub", maxDias: 2, cadencia: "horario" },
+  // Compras netas BCRA / MULC (C4): la API v4 var 78 llega con ~3-4 días hábiles de rezago
+  // (docs/negocio/07) — umbral holgado para no enrojecer por el rezago normal + fin de semana;
+  // la carga manual de /admin/datos también cuenta acá (misma tabla), así que en la práctica
+  // rara vez debería quedar tan atrás.
+  { nombre: "compras_bcra (BCRA MULC)", tabla: "compras_bcra", col: "fecha", maxDias: 12, cadencia: "diario hábil (API, T-3/4) + manual" },
   { nombre: "estimaciones USDA", tabla: "estimaciones_produccion", col: "fecha_publicacion", filtro: "&organismo=eq.USDA", maxDias: 45, cadencia: "mensual (WASDE)" },
   { nombre: "estimaciones CONAB", tabla: "estimaciones_produccion", col: "fecha_publicacion", filtro: "&organismo=eq.CONAB", maxDias: 45, cadencia: "mensual" },
   { nombre: "estimaciones BCR-GEA", tabla: "estimaciones_produccion", col: "fecha_publicacion", filtro: "&organismo=eq.BCR", maxDias: 45, cadencia: "mensual" },
