@@ -1,6 +1,13 @@
 import { ZONA_CLAVES, PRODUCTO_CLAVES, type ZonaCamiones, type ProductoCamiones } from "./config";
 
 /**
+ * ⚠️ NO USADO en el build de C5 (23/07/2026) — decisión de Lautaro: cero dependencia de SAGyP/
+ * MAGyP para camiones, TODO (zona y producto) sale de Williams Entregas vía export manual de
+ * Agrochat (uploader en /admin/datos, ver williams.ts + config.ts:PRODUCTO_SERIE_CLAVES). Este
+ * parser queda commiteado porque ya está escrito, testeado y funciona contra el HTML real — se
+ * deja documentado por si algún día conviene retomar una ingesta automática complementaria (ej.
+ * si Williams deja de estar disponible). NO está wireado a ningún script/cron/healthcheck.
+ *
  * Parser puro del HTML diario de SAGyP/MAGyP — "Entrada diaria de camiones y vagones a puertos,
  * fábricas y molinos (por zona portuaria y por producto)" (negocio/08 y negocio/09, URL real
  * verificada 23/07/2026 con request real). Alimenta la dimensión PRODUCTO (automática, única
