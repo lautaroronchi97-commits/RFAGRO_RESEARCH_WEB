@@ -1,13 +1,17 @@
 /**
  * Claves canónicas del módulo de camiones en puerto (C5 del backlog maestro).
  *
- * Zonas: los 4 nombres EXACTOS del reporte de SAGyP "Entrada diaria de camiones y vagones a
- * puertos, fábricas y molinos" (negocio/09, verificados en HTML y PDFs 2021→2026). Productos:
- * códigos `codigo_interno` YA usados en el resto de la web (config.ts de line-up / compras) —
- * así la señal barcos-vs-camiones no necesita una tabla de mapeo aparte.
+ * Zonas: los 4 nombres EXACTOS del reporte diario de SAGyP que Williams Entregas replica 1:1
+ * (negocio/09, verificados en HTML y PDFs 2021→2026 — la fuente ES Williams, "elaborado en base a
+ * datos de WILLIAMS ENTREGAS" dice el propio pie del reporte de SAGyP). Productos: códigos
+ * `codigo_interno` YA usados en el resto de la web (config.ts de line-up / compras) — así la señal
+ * barcos-vs-camiones no necesita una tabla de mapeo aparte.
  */
 
-export type ZonaCamiones = "ROSARIO_ALEDANOS" | "DARSENA_BSAS_ER" | "NECOCHEA" | "BAHIA_BLANCA";
+// Fuente de verdad del tipo: williams.ts (necesita ser self-contained para correr con Node plano
+// en scripts/cargar-camiones-williams.mjs — ver el comentario ahí). Acá solo se re-exporta.
+export type { ZonaCamiones } from "./williams";
+import type { ZonaCamiones } from "./williams";
 
 export const ZONA_CLAVES: ZonaCamiones[] = [
   "ROSARIO_ALEDANOS",
@@ -37,15 +41,20 @@ export const PRODUCTO_DISPLAY: Record<ProductoCamiones, string> = {
   SFSEED: "Girasol",
 };
 
-/** Panel del HTML/PDF de SAGyP (label crudo, en español) → código canónico. */
-export const PRODUCTO_LABEL_SAGYP: Record<string, ProductoCamiones> = {
-  soja: "SBS",
-  maiz: "MAIZE",
-  maíz: "MAIZE",
-  trigo: "WHEAT",
-  cebada: "BARLEY",
-  sorgo: "SORGHUM",
-  girasol: "SFSEED",
+/**
+ * "Serie" que representa un archivo subido en /admin/datos: TOTAL (todos los productos, el
+ * export sin filtrar) o un grano puntual (el export de Agrochat/Williams no banca los 3 granos
+ * juntos por tamaño — Lautaro sube uno por vez). Enum abierto a los mismos 6 productos de
+ * PRODUCTO_CLAVES; hoy tiene datos reales cargados MAIZE/SBS/WHEAT, girasol/sorgo/cebada quedan
+ * disponibles para cuando Lautaro consiga esos exports.
+ */
+export type ProductoSerie = "TOTAL" | ProductoCamiones;
+
+export const PRODUCTO_SERIE_CLAVES: ProductoSerie[] = ["TOTAL", ...PRODUCTO_CLAVES];
+
+export const PRODUCTO_SERIE_DISPLAY: Record<ProductoSerie, string> = {
+  TOTAL: "Total (todos los productos)",
+  ...PRODUCTO_DISPLAY,
 };
 
 /** Zonas de v1 para la señal barcos-vs-camiones (negocio/09 FASE 3: Necochea/Dársena quedan fuera). */

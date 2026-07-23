@@ -1,5 +1,3 @@
-import { ZONA_CLAVES, type ZonaCamiones } from "./config";
-
 /**
  * Parser puro del backfill de Williams Entregas (data/camiones/williams_camiones_*.csv,
  * 2018-01-02 → 2026-07-22 — coordinado 23/07/2026: es la fuente real que usa Lautaro, "la fuente
@@ -13,7 +11,17 @@ import { ZONA_CLAVES, type ZonaCamiones } from "./config";
  *    (solo 8 tienen match claro contra src/lib/lineup/zonas.ts); se usa acá SOLO como cross-check
  *    de cobertura de "Rosario y Zona"/"Puertos-B.Blanca" contra las localidades que zonas.ts ya
  *    clasifica como Up River Norte/Sur/Bahía Blanca — no se persiste a la tabla `camiones`.
+ *
+ * ⚠️ Este módulo NO importa de `./config` (aunque `ZonaCamiones` conceptualmente "vive" ahí) — a
+ * propósito: `scripts/cargar-camiones-williams.mjs` lo importa y ejecuta con Node PLANO (sin
+ * bundler), y Node exige extensión explícita `.ts` en imports internos TS→TS, algo que el
+ * `moduleResolution:"bundler"` del tsconfig del proyecto no permite en el código de la app. Se
+ * mantiene 100% self-contained para poder correr en los dos mundos; `config.ts` re-exporta el tipo
+ * desde acá (fuente de verdad única, dependencia en el sentido inverso al resto de la carpeta).
  */
+
+export type ZonaCamiones = "ROSARIO_ALEDANOS" | "DARSENA_BSAS_ER" | "NECOCHEA" | "BAHIA_BLANCA";
+const ZONA_CLAVES: ZonaCamiones[] = ["ROSARIO_ALEDANOS", "DARSENA_BSAS_ER", "NECOCHEA", "BAHIA_BLANCA"];
 
 const MESES: Record<string, number> = {
   ene: 1, feb: 2, mar: 3, abr: 4, may: 5, jun: 6,
