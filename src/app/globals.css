@@ -948,6 +948,17 @@ a.estim-inf:hover { color:var(--gold-text); }
 .estim-cam-vals { display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-variant-numeric:tabular-nums; white-space:nowrap; }
 .estim-cam-none { font-size:var(--fs-sm); color:var(--ink-3); }
 
+.estim-lectura { margin-top:10px; padding-top:8px; border-top:1px solid var(--line); }
+.estim-lectura summary { cursor:pointer; list-style:none; font-size:var(--fs-xs); font-weight:700;
+  color:var(--gold-text); display:flex; align-items:center; gap:5px; }
+.estim-lectura summary::-webkit-details-marker { display:none; }
+.estim-lectura summary::before { content:"▸"; font-size:10px; transition:transform var(--t-fast) ease; }
+.estim-lectura[open] summary::before { transform:rotate(90deg); }
+.estim-lectura-body { margin-top:8px; font-size:var(--fs-sm); color:var(--ink-2); line-height:1.6; }
+.estim-lectura-body p { margin:0 0 8px; }
+.estim-lectura-body p:last-child { margin-bottom:0; }
+.estim-lectura-body strong { color:var(--ink); }
+
 /* --- mini-tabla de la home --- */
 .estim-mini-wrap { overflow-x:auto; padding:6px 16px 4px; }
 .estim-mini { width:100%; border-collapse:collapse; font-size:var(--fs-sm); }
@@ -1344,6 +1355,20 @@ a.estim-inf:hover { color:var(--gold-text); }
 .admin-msg { font-size:var(--fs-sm); margin:8px 0 0; }
 .admin-msg-err { color:var(--neg); }
 .admin-msg-ok { color:var(--pos); }
+
+/* Interpretaciones de informes (MP4) — editor de borradores */
+.admin-btn-sm { font-size:var(--fs-xs); font-weight:700; padding:5px 10px; border-radius:var(--r-ctl);
+  border:1px solid var(--line-2); background:transparent; color:var(--ink-3); cursor:pointer; }
+.admin-btn-sm.is-on { color:var(--brand-agro); border-color:var(--brand-agro);
+  background:color-mix(in srgb, var(--brand-agro) 10%, transparent); }
+.interp-card { display:grid; gap:10px; }
+.interp-toggle { display:flex; gap:6px; }
+.interp-textarea { width:100%; font-family:var(--font-mono); font-size:var(--fs-xs); line-height:1.6; resize:vertical; }
+.interp-preview { font-size:var(--fs-sm); line-height:1.6; color:var(--ink-2); min-height:120px;
+  background:var(--panel-2); border:1px solid var(--line-2); border-radius:var(--r-ctl); padding:12px 14px; }
+.interp-preview p { margin:0 0 10px; }
+.interp-preview p:last-child { margin-bottom:0; }
+.interp-preview strong { color:var(--ink); }
 
 .admin-filtros { display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin:0 0 16px;
   padding:14px 16px; background:var(--panel); border:1px solid var(--line); border-radius:var(--r-panel); }

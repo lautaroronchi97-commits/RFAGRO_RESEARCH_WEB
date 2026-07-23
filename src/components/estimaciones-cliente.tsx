@@ -15,7 +15,9 @@ import {
   type EstimRow,
   type Variable,
 } from "@/lib/estimaciones";
+import type { InterpretacionPublica } from "@/lib/interpretaciones";
 import { EvolucionChart } from "./evolucion-chart";
+import { MdLite } from "./md-lite";
 
 const UNIDAD: Record<Variable, string> = { produccion: "Mt", area: "Mha", rinde: "tn/ha" };
 
@@ -34,7 +36,17 @@ function campaniaMasRica(rows: EstimRow[], grano: string, pais: string): string 
   return best;
 }
 
-export function EstimacionesCliente({ rows, granos, organismos }: { rows: EstimRow[]; granos: string[]; organismos: string[] }) {
+export function EstimacionesCliente({
+  rows,
+  granos,
+  organismos,
+  interpretaciones,
+}: {
+  rows: EstimRow[];
+  granos: string[];
+  organismos: string[];
+  interpretaciones: InterpretacionPublica[];
+}) {
   /* ---------- Pizarra (con filtros) ---------- */
   const [granosOff, setGranosOff] = useState<Set<string>>(new Set());
   const pizarra = useMemo(() => construirPizarra(rows), [rows]);
@@ -199,7 +211,11 @@ export function EstimacionesCliente({ rows, granos, organismos }: { rows: EstimR
         <h3 className="estim-h3">Cambios del último informe</h3>
         <div className="estim-cambios">
           {cambiosPorOrg.length === 0 && <div className="cal-empty">Todavía no hay dos publicaciones para comparar.</div>}
-          {cambiosPorOrg.map((c) => (
+          {cambiosPorOrg.map((c) => {
+            const lectura = interpretaciones.find(
+              (i) => i.organismo === c.organismo && i.fecha_publicacion === c.fecha,
+            );
+            return (
             <div className="estim-cam-card" key={c.organismo + c.fecha}>
               <div className="estim-cam-hd">
                 <span className={`cal-org org-${c.organismo}`}>
@@ -232,8 +248,15 @@ export function EstimacionesCliente({ rows, granos, organismos }: { rows: EstimR
                   ))}
                 </ul>
               )}
+              {lectura && (
+                <details className="estim-lectura">
+                  <summary>La lectura de la mesa</summary>
+                  <MdLite md={lectura.publicado_md} className="estim-lectura-body" />
+                </details>
+              )}
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

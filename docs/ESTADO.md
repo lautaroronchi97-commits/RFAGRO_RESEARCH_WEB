@@ -19,12 +19,38 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 23/07/2026 — día grande de backlog maestro, 5 sesiones en paralelo:
+## Ahora (última actualización: 23/07/2026 — día grande de backlog maestro, 6 sesiones en paralelo:
+📝 C3 (interpretación de informes de organismos) HECHO, migración aplicada y probada con un informe real ·
 🧹 LOTE L1 (partir `market.ts`) HECHO · 📄 MP2 informe semanal BASE+gráfico HECHOS (falta la skill) ·
 🔓 LOTE L5 (DEA-SAGyP) HECHO (carga semi-manual) · 📰 MP1 informe diario HECHO (falta la Routine) ·
 🎯 L4 (calibración de cobertura/roster/comisiones) CERRADO · 🌻 B3 (girasol/sorgo) CERRADO ·
 🚚 C5 (camiones en puerto + señal barcos-vs-camiones) CONSTRUIDO con pivote a Williams Entregas ·
 💵 C4 (compras netas BCRA) HECHO, backfill real 2003→hoy cargado)
+
+**📝 C3 — MP4: INTERPRETACIÓN DE INFORMES DE ORGANISMOS (ítem 21) — HECHO, MIGRACIÓN APLICADA Y
+PROBADA — rama `claude/avance-c3-1ra0au`, PR #67 (mergeado).** Ejecutado el PROMPT MP4 de
+`PLAN_INFORMES.md`. Tabla `interpretaciones` (borrador/publicado/descartado) + 3 RPC admin
+(`admin_actualizar/publicar/descartar_interpretacion`) en la migración `20260723170000`,
+**APLICADA** por MCP con el OK de Lautaro. **Detección + generación**: paso nuevo (Paso 9) al
+final de la skill `informe-diario` — reusa `informesHoy` que MP1 ya había dejado preparado como
+"consulta adelantada" en `/api/informes/datos`; genera el borrador con `voz-lautaro` (registro
+"Informe largo") y NUNCA publica sola. **Admin** `/admin/interpretaciones` (editor con vista
+previa + Guardar/Publicar/Descartar, tab nueva con badge). **Web**: "La lectura de la mesa"
+colapsable en `/produccion` (junto a la tarjeta de cambios del organismo, match por
+organismo+fecha) + feed en `/informes`. **Probado con un informe viejo real** (pedido explícito de
+Lautaro antes del merge): tomado el último WASDE ya ingestado (USDA #673, 10/07/2026), calculado
+por SQL el mismo delta que arma `construirCambios` contra el vintage anterior (maíz mundial
+2026/27 -3,29 Mt el más grande, + Argentina maíz 2025/26 y EEUU soja 2026/27), redactado el
+borrador con la voz de Lautaro citando esos números exactos, e **insertado como `borrador` — sin
+publicar** (publicarlo yo mismo por SQL hubiera saltado la regla dura "su firma nunca sale sin su
+OK"; queda en `/admin/interpretaciones` para que Lautaro decida). RLS verificado por SQL en los
+dos sentidos (`anon` no ve el borrador real; con una fila sintética de prueba, borrada al
+terminar, se confirmó que sí ve un `publicado`). `get_advisors` sin hallazgos nuevos (las 3 RPC
+comparten el mismo patrón ya aceptado de todas las `admin_*` del proyecto). **Verificado**:
+lint/tsc/build/tests ✅ (137/137); verificación visual en navegador con sesión admin **no se
+hizo** (preview de Vercel atrás de SSO sin credenciales en este sandbox) — queda para la primera
+vez que alguien entre logueado a `/admin/interpretaciones`. Detalle:
+[`sesiones/2026-07-23-mp4-interpretacion.md`](sesiones/2026-07-23-mp4-interpretacion.md).
 
 **💵 C4 — COMPRAS NETAS BCRA (MULC) — HECHO, PR EN VUELO — rama `claude/avance-c4-rdz586`.**
 Retomado tras el desbloqueo de A5 (22/07) y el merge de MP1 (que ya había creado `compras_bcra`

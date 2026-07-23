@@ -1,6 +1,7 @@
 import { sbSelectAll } from "@/lib/supabase";
 import type { Meta } from "@/lib/market";
 import { parseRows, granosPresentes, organismosPresentes, type EstimRow } from "@/lib/estimaciones";
+import { getInterpretacionesPublicadas } from "@/lib/interpretaciones";
 import { ORG_LABEL, type Organismo } from "@/lib/calendario";
 import { Panel, PanelHead } from "./panel";
 import { SourceStamp } from "./source-stamp";
@@ -58,6 +59,7 @@ export async function EstimacionesPanel() {
 
   const granos = granosPresentes(rows);
   const organismos = organismosPresentes(rows);
+  const interpretaciones = await getInterpretacionesPublicadas();
   const maxFecha = rows.reduce((m, r) => (r.fecha_publicacion > m ? r.fecha_publicacion : m), rows[0].fecha_publicacion);
   const updatedAt = Date.parse(`${maxFecha}T00:00:00-03:00`);
   const meta: Meta = {
@@ -75,7 +77,7 @@ export async function EstimacionesPanel() {
         stamp={<SourceStamp meta={meta} />}
       />
       <div className="estim-wrap">
-        <EstimacionesCliente rows={rows} granos={granos} organismos={organismos} />
+        <EstimacionesCliente rows={rows} granos={granos} organismos={organismos} interpretaciones={interpretaciones} />
       </div>
     </Panel>
   );
