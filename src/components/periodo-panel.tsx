@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import type { SerieCat, SeriePuntos, Fuente } from "@/lib/series-types";
-import { joinFfill, metricaDiaria, posCalendario } from "@/lib/derivadas";
-import { MESES_ES, mesIndice } from "@/lib/dates";
+import { joinFfill, metricaDiaria, mediaMovil, posCalendario } from "@/lib/derivadas";
+import { MESES_ES, mesIndice, hoyCordobaISO } from "@/lib/dates";
+import { nombreArchivo } from "@/lib/chart-export";
 import { SpreadChart, type CampLine } from "./spread-chart";
 
 /**
@@ -12,7 +13,39 @@ import { SpreadChart, type CampLine } from "./spread-chart";
  * es el spread base − posición y corre hasta donde esa posición tiene datos
  * (su vencimiento). Muestra las dos cosechas que cotizan en el período; un filtro
  * permite apagar posiciones. Decisión de Lautaro (11/07): "todas las que cotizan".
+ *
+ * Persistencia en la URL (P6 del backlog maestro): mismo patrón que el modo
+ * Campañas (`graficos-client.tsx`) — cada panel lee/escribe SOLO sus propias
+ * claves (acá `pf/pg/pm/pa/po`), mergeando con lo que ya haya en la querystring
+ * (el modo `mc` y las claves de Campañas viven ahí y no se tocan).
  */
+
+type EstadoPeriodo = { baseFuente: Fuente; grano: string; baseMon: string; anio: number; ocultas: string[] };
+
+function leerURLPeriodo(anioActual: number): EstadoPeriodo {
+  if (typeof window === "undefined") {
+    return { baseFuente: "pizarra", grano: "maiz", baseMon: "JUL", anio: anioActual, ocultas: [] };
+  }
+  const q = new URLSearchParams(window.location.search);
+  const baseFuente: Fuente = q.get("pf") === "a3" ? "a3" : "pizarra";
+  const grano = q.get("pg") || "maiz";
+  const baseMon = q.get("pm") || "JUL";
+  const anioQ = Number(q.get("pa"));
+  const anio = Number.isFinite(anioQ) && anioQ >= 2020 && anioQ <= 2100 ? anioQ : anioActual;
+  const ocultas = (q.get("po") ?? "").split(",").filter(Boolean);
+  return { baseFuente, grano, baseMon, anio, ocultas };
+}
+
+function escribirURLPeriodo(e: EstadoPeriodo) {
+  if (typeof window === "undefined") return;
+  const q = new URLSearchParams(window.location.search);
+  q.set("pf", e.baseFuente);
+  q.set("pg", e.grano);
+  q.set("pm", e.baseMon);
+  q.set("pa", String(e.anio));
+  if (e.ocultas.length) q.set("po", e.ocultas.join(",")); else q.delete("po");
+  window.history.replaceState(null, "", `?${q.toString()}`);
+}
 
 const GRANO_NOMBRE: Record<string, string> = {
   soja: "Soja", maiz: "Maíz", trigo: "Trigo", girasol: "Girasol", sorgo: "Sorgo",
@@ -59,17 +92,28 @@ export function PeriodoPanel({ catalogo, anioActual }: { catalogo: SerieCat[]; a
     [catalogo],
   );
 
-  const [baseFuente, setBaseFuente] = React.useState<Fuente>("pizarra");
-  const [grano, setGrano] = React.useState<string>("maiz");
-  const [baseMon, setBaseMon] = React.useState<string>("JUL"); // solo si base = a3
-  const [anio, setAnio] = React.useState<number>(anioActual);
-  const [ocultas, setOcultas] = React.useState<Set<string>>(new Set());
+  const inicial = React.useMemo(() => leerURLPeriodo(anioActual), [anioActual]);
+  const [baseFuente, setBaseFuente] = React.useState<Fuente>(inicial.baseFuente);
+  const [grano, setGrano] = React.useState<string>(inicial.grano);
+  const [baseMon, setBaseMon] = React.useState<string>(inicial.baseMon); // solo si base = a3
+  const [anio, setAnio] = React.useState<number>(inicial.anio);
+  const [ocultas, setOcultas] = React.useState<Set<string>>(new Set(inicial.ocultas));
 
   const [series, setSeries] = React.useState<Record<string, SeriePuntos>>({});
   const [cargando, setCargando] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  // P6: mismas opciones que el modo Campañas — "en %" y media móvil.
+  const [pct, setPct] = React.useState(false);
+  const [verMA, setVerMA] = React.useState(false);
+  const [ventanaMA, setVentanaMA] = React.useState(5);
+
   const targets = React.useMemo(() => targetsDelAnio(catalogo, grano, anio), [catalogo, grano, anio]);
+
+  // Persistir en la URL (P6: "Período ya lo hace igual que Campañas").
+  React.useEffect(() => {
+    escribirURLPeriodo({ baseFuente, grano, baseMon, anio, ocultas: [...ocultas] });
+  }, [baseFuente, grano, baseMon, anio, ocultas]);
 
   // serieId de la base.
   const baseId = React.useMemo(() => {
@@ -102,6 +146,8 @@ export function PeriodoPanel({ catalogo, anioActual }: { catalogo: SerieCat[]; a
     return () => { cancel = true; };
   }, [baseId, targets, anio]);
 
+  const hoyISO = hoyCordobaISO();
+
   // Líneas: spread base − posición por target, eje calendario real.
   const lines = React.useMemo<CampLine[]>(() => {
     const base = baseId ? series[baseId] : null;
@@ -112,7 +158,7 @@ export function PeriodoPanel({ catalogo, anioActual }: { catalogo: SerieCat[]; a
       const st = series[t.serieId];
       if (!st) return;
       const join = joinFfill(st, base); // va = target, vb = base → spread = base − target
-      const met = metricaDiaria(join, "spread");
+      const met = metricaDiaria(join, "spread", pct);
       const data = met.map((p) => ({ x: posCalendario(p.f), y: p.y, f: p.f }));
       if (data.length === 0) return;
       out.push({
@@ -120,11 +166,38 @@ export function PeriodoPanel({ catalogo, anioActual }: { catalogo: SerieCat[]; a
         label: t.posicion,
         color: POS_COLORS[i % POS_COLORS.length],
         vigente: false,
+        parcial: data[data.length - 1].f === hoyISO,
         data,
       });
     });
     return out;
-  }, [series, baseId, targets, ocultas]);
+  }, [series, baseId, targets, ocultas, pct, hoyISO]);
+
+  // Media móvil (P6): overlay por cada posición visible, sobre el spread ya calculado.
+  const maLines = React.useMemo<CampLine[]>(() => {
+    if (!verMA) return [];
+    const base = baseId ? series[baseId] : null;
+    if (!base) return [];
+    const out: CampLine[] = [];
+    targets.forEach((t, i) => {
+      if (ocultas.has(t.serieId)) return;
+      const st = series[t.serieId];
+      if (!st) return;
+      const met = metricaDiaria(joinFfill(st, base), "spread", pct);
+      const ma = mediaMovil(met, ventanaMA);
+      const data = ma.map((p) => ({ x: posCalendario(p.f), y: p.y, f: p.f }));
+      if (data.length === 0) return;
+      out.push({
+        key: `${t.serieId}-ma`,
+        label: `${t.posicion} · MA${ventanaMA}`,
+        color: POS_COLORS[i % POS_COLORS.length],
+        vigente: false,
+        dash: true,
+        data,
+      });
+    });
+    return out;
+  }, [verMA, series, baseId, targets, ocultas, pct, ventanaMA]);
 
   const aplicarPreset = (p: { grano: string; meses: string[] }) => {
     setBaseFuente("pizarra");
@@ -195,6 +268,25 @@ export function PeriodoPanel({ catalogo, anioActual }: { catalogo: SerieCat[]; a
             {GRANO_NOMBRE[grano] ?? grano} · {targets.length} posiciones
           </span>
         </div>
+
+        <div className="gx-pata">
+          <span className="gx-pata-lbl">Opciones</span>
+          <div className="gx-selrow" style={{ alignItems: "center" }}>
+            <label className="gx-check">
+              <input type="checkbox" checked={pct} onChange={(e) => setPct(e.target.checked)} />
+              En %
+            </label>
+            <label className="gx-check">
+              <input type="checkbox" checked={verMA} onChange={(e) => setVerMA(e.target.checked)} />
+              Media móvil
+            </label>
+            {verMA && (
+              <select value={ventanaMA} onChange={(e) => setVentanaMA(Number(e.target.value))} aria-label="Ventana de la media móvil">
+                {[3, 5, 10, 20].map((v) => <option key={v} value={v}>{v} ruedas</option>)}
+              </select>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="gx-chips">
@@ -224,7 +316,17 @@ export function PeriodoPanel({ catalogo, anioActual }: { catalogo: SerieCat[]; a
         ) : lines.length === 0 ? (
           <div className="gx-empty">{cargando ? "Trayendo datos…" : "Elegí una base y un año con posiciones."}</div>
         ) : (
-          <SpreadChart lines={lines} eje="cal" metric="spread" anchorMes={1} decimals={2} modo="lineas" />
+          <SpreadChart
+            lines={lines}
+            eje="cal"
+            metric="spread"
+            anchorMes={1}
+            decimals={pct ? 1 : 2}
+            modo="lineas"
+            ma={maLines}
+            pct={pct}
+            exportName={nombreArchivo("periodo", grano, anio, baseFuente === "a3" ? baseMon : "pizarra")}
+          />
         )}
       </div>
 

@@ -56,22 +56,31 @@ function toSerie(
   fuente: Fuente,
   res: SbResult,
   valCol: string,
-  estCol?: string,
+  opts?: { estCol?: string; volCol?: string; oiCol?: string },
 ): SeriePuntos | null {
   if (!res.ok || !Array.isArray(res.data)) return null;
   const d: string[] = [];
   const v: number[] = [];
   const e: boolean[] = [];
+  const vol: (number | null)[] = [];
+  const oi: (number | null)[] = [];
   for (const row of res.data as Record<string, unknown>[]) {
     const f = row.fecha;
     const val = num(row[valCol]);
     if (typeof f !== "string" || val === null) continue;
     d.push(f);
     v.push(val);
-    if (estCol) e.push(Boolean(row[estCol]));
+    if (opts?.estCol) e.push(Boolean(row[opts.estCol]));
+    if (opts?.volCol) vol.push(num(row[opts.volCol]));
+    if (opts?.oiCol) oi.push(num(row[opts.oiCol]));
   }
   if (d.length === 0) return null;
-  return estCol ? { id, fuente, d, v, e } : { id, fuente, d, v };
+  return {
+    id, fuente, d, v,
+    ...(opts?.estCol ? { e } : {}),
+    ...(opts?.volCol ? { vol } : {}),
+    ...(opts?.oiCol ? { oi } : {}),
+  };
 }
 
 /**
@@ -95,27 +104,28 @@ export async function fetchSerie(
 
   if (fuente === "a3") {
     const res = await sbSelect(
-      `futuros_cierres?select=fecha,settlement&${symEq(id)}${rango}`,
+      `futuros_cierres?select=fecha,settlement,volume,open_interest&${symEq(id)}${rango}`,
       SERIE_REVALIDATE,
     );
-    return toSerie(id, fuente, res, "settlement");
+    return toSerie(id, fuente, res, "settlement", { volCol: "volume", oiCol: "open_interest" });
   }
 
   if (fuente === "cbot") {
     const res = await sbSelect(
-      `cbot_cierres?select=fecha,settlement_usd_tn&${symEq(id)}${rango}`,
+      `cbot_cierres?select=fecha,settlement_usd_tn,volume,open_interest&${symEq(id)}${rango}`,
       SERIE_REVALIDATE,
     );
-    return toSerie(id, fuente, res, "settlement_usd_tn");
+    return toSerie(id, fuente, res, "settlement_usd_tn", { volCol: "volume", oiCol: "open_interest" });
   }
 
   // Pizarra: serie continua → paginar. El valor sale de precio_usd (default) o
-  // precio_ars (unit=ars). Se marca es_estimativo por punto (P19).
+  // precio_ars (unit=ars). Se marca es_estimativo por punto (P19). Sin volumen
+  // (es una pizarra de referencia, no un contrato operado).
   const grano = id.slice("pizarra:".length);
   const col = unit === "ars" ? "precio_ars" : "precio_usd";
   const res = await sbSelectAll(
     `pizarra_historico?select=fecha,${col},es_estimativo&grano=eq.${encodeURIComponent(grano)}${rango}`,
     SERIE_REVALIDATE,
   );
-  return toSerie(id, fuente, res, col, "es_estimativo");
+  return toSerie(id, fuente, res, col, { estCol: "es_estimativo" });
 }

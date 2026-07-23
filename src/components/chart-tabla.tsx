@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 
 /**
@@ -14,8 +16,10 @@ import * as React from "react";
  *   - Series largas: scroll vertical propio (max-height ~320px) con header
  *     sticky; muchas columnas: scroll horizontal interno (nunca rompe el layout
  *     de la página).
- *
- * Server-safe: sin estado ni handlers, no agrega JS al cliente.
+ *   - `exportCsv` (opt-in, P6 del backlog maestro): agrega un botón "↓ CSV" que
+ *     baja EXACTAMENTE lo que se ve en la tabla (mismos valores ya formateados).
+ *     Sin esta prop la tabla queda 100% igual a como estaba (server-safe en la
+ *     práctica: no agrega UI ni cambia nada en las páginas que no la pasan).
  */
 
 export type ChartTablaColumna = {
@@ -33,13 +37,34 @@ export type ChartTablaProps = {
   filas: ChartTablaFila[];
   /** Nota al pie (fuente, aclaración), opcional. */
   nota?: string;
+  /** Nombre de archivo (sin extensión) para el botón de export CSV. Omitir = sin botón. */
+  exportCsv?: string;
 };
+
+function descargarCsv(columnas: ChartTablaColumna[], filas: ChartTablaFila[], filename: string) {
+  const esc = (v: string | number | null | undefined) => {
+    const s = v === null || v === undefined ? "" : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const lineas = [
+    columnas.map((c) => esc(c.label)).join(","),
+    ...filas.map((fila) => columnas.map((c) => esc(fila[c.key])).join(",")),
+  ];
+  const blob = new Blob(["﻿" + lineas.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${filename}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export function ChartTabla({
   titulo = "Datos del gráfico",
   columnas,
   filas,
   nota,
+  exportCsv,
 }: ChartTablaProps) {
   return (
     <div className="ct">
@@ -49,6 +74,15 @@ export function ChartTabla({
           <span className="ct-n">
             {filas.length} {filas.length === 1 ? "fila" : "filas"}
           </span>
+        )}
+        {exportCsv && filas.length > 0 && (
+          <button
+            type="button"
+            className="ct-csv"
+            onClick={() => descargarCsv(columnas, filas, exportCsv)}
+          >
+            ↓ CSV
+          </button>
         )}
       </div>
       <div className="ct-scroll" tabIndex={0}>

@@ -53,7 +53,7 @@
 | P3 | Compras netas BCRA + acumulado de rueda USD | — | Fable/Opus (la fase research decide fuente y arquitectura) | **HECHO (23/07, C4)** — ingesta automática + panel + backfill 2003→hoy. `sesiones/2026-07-23-c4-compras-bcra.md` |
 | P4 | Camiones en puerto (research → ingesta → panel) | build espera OK de Lautaro a [`negocio/08`](negocio/08_fuente_camiones_puerto.md) | Fable/Opus (ídem P3) | **research HECHO (21/07)** — fuente elegida: SAGyP/MAGyP entrada diaria |
 | P5 | Vista por grano | — | Sonnet | pendiente |
-| P6 | Gráficos v2 (paquete) | los ítems «relaciones %» y «serie continua» del plan de GRÁFICOS (llamados P12/P17 en `PLAN_GRAFICOS_SPREADS.md` — no confundir con los P de ESTE tablero) esperan tus ejemplos (paso 1) | Sonnet | pendiente |
+| P6 | Gráficos v2 (paquete) | — | Sonnet | **HECHO (23/07, C10)** — P12/P17 resueltos con tu respuesta ("pizarra maíz vs soja" = el ratio en %; "son pizarras" = sin serie front-month que construir). `sesiones/2026-07-23-c10-graficos-v2.md` |
 | P7 | Vista productor + PWA | robots→index depende de E3 | Sonnet | pendiente |
 | P8 | Feed A3 Fase 2 — histórico intradiario | — | Sonnet | pendiente |
 | P9 | Sintéticos TIR | tabla IAMC de Lautaro (paso 1) | Fable/Opus (validación de fórmulas financieras) | pendiente |
