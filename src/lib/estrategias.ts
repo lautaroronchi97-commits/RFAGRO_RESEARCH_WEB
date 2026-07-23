@@ -7,7 +7,16 @@
  *   futuro compra: P − entrada        futuro venta: entrada − P
  *   call compra:   max(P−k,0) − prima call venta:   prima − max(P−k,0)
  *   put  compra:   max(k−P,0) − prima put  venta:   prima − max(k−P,0)
+ *
+ * Costos (lote L4, auditoría E7, 23/07/2026 — decisión de Lautoro: reusar el tarifario
+ * A3/Cocos de costos.ts, con un toggle "estrategia pura" vs "con costos"): como acá no
+ * existe (todavía) un tamaño de contrato por mercado — ESTRATEGIAS_CATALOGO.md lo deja
+ * como pendiente —, el "monto" gravable de cada pata es `|prima_o_strike| × cttos`,
+ * consistente con que TODO el motor ya trabaja en USD/tonelada (cttos = toneladas
+ * equivalentes). Es una simplificación explícita: revisar cuando Lautoro traiga un
+ * ejemplo numérico propio de una estrategia con costos (pendiente del prompt L4 original).
  */
+import { ARANCELES, costoFila, type Persona } from "./costos";
 
 export type Tipo = "futuro" | "call" | "put";
 export type Lado = "compra" | "venta";
@@ -22,6 +31,24 @@ export function payoffPata(P: number, pata: Pata): number {
 
 export function payoffTotal(P: number, patas: Pata[]): number {
   return patas.reduce((a, p) => a + payoffPata(P, p), 0);
+}
+
+const ARANCEL_OPCIONES = ARANCELES.find((a) => a.id === "opciones")!;
+const ARANCEL_FUTUROS = ARANCELES.find((a) => a.id === "futuros")!;
+
+/** Costo (comisión + derechos + IVA) de UNA pata, tarifario A3/Cocos — ver nota del módulo. */
+export function costoPata(pata: Pata, persona: Persona, ivaPct: number): number {
+  const cttos = Math.abs(pata.cttos || 0);
+  if (cttos === 0) return 0;
+  const arancel = pata.tipo === "futuro" ? ARANCEL_FUTUROS : ARANCEL_OPCIONES;
+  const monto = (pata.tipo === "futuro" ? Math.abs(pata.strike) : Math.abs(pata.prima)) * cttos;
+  const com = persona === "humana" ? arancel.humana : arancel.juridica;
+  return costoFila(monto, com, arancel.derechosPct, ivaPct, 0).total;
+}
+
+/** Costo total de la estrategia (suma de patas). */
+export function costoEstrategia(patas: Pata[], persona: Persona, ivaPct: number): number {
+  return patas.reduce((a, p) => a + costoPata(p, persona, ivaPct), 0);
 }
 
 /** Prima por defecto según distancia al ATM (decae con la lejanía). Editable luego. */

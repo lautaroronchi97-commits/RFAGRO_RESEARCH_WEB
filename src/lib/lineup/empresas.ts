@@ -6,7 +6,7 @@ import { PRODUCTOS, productoDe, type Familia } from "./config";
 import { zonaCarga, type Zona } from "./zonas";
 import { canonShipper } from "./shippers";
 import { campaniaIniYear, campanaLabel, parseFechaUTC } from "./campanas";
-import { senalDe, ratioCobertura, type Senal } from "./cobertura";
+import { senalDe, ratioCobertura, umbralesPorPercentil, type Senal, type UmbralesCobertura } from "./cobertura";
 
 /**
  * Panel de empresas del comercio exterior (Fase 2). Cruza la DJVE (declarado) con el
@@ -43,10 +43,12 @@ type DjveRow = {
 };
 type OrigRow = { shipper_raw: string | null; cod: string; camp_ini: number; originado_tn: number | null; n_visitas: number };
 type EstacRow = { shipper_raw: string | null; cod: string; k: number; standing_tn: number | null; standing_buques: number | null; n_snaps: number };
+type GapHistRow = { cod: string; declarado_tn: number | null; originado_tn: number | null };
 
 export type ProductoGap = {
   cod: string; display: string; familia: Familia;
   declarado60d: number; originado60d: number; faltaCubrir: number; ratio: number | null; senal: Senal;
+  umbrales: UmbralesCobertura; // percentil histórico del propio producto (lote L4) — semaforo.ts lo reusa
   declaradoNueva: number; declaradoVieja: number; campNueva: string; campVieja: string;
   declaradoDisp: number; declaradoForward: number; // opción 30 vs 360 (campaña en curso)
 };
@@ -64,6 +66,10 @@ export type EmpresasData = {
   productos: ProductoGap[];
   empresas: EmpresaRow[];
   transitoTotal: number;
+  // Umbral de cobertura agregado (P25/P75 del ratio histórico, pooleado entre todos los
+  // productos) — lo usan las filas por empresa (mezclan productos) y semaforo.ts para la
+  // "soja" combinada (SBS+SBM+SBO). Las filas por producto usan su propio `umbrales`.
+  umbralesPool: UmbralesCobertura;
   meta: Meta;
 };
 
@@ -72,8 +78,10 @@ function empresaDisplay(shipper: string | null): { empresa: string; origen: "PY"
   return { empresa: canon !== "OTROS" ? canon : (shipper?.trim() || "OTROS"), origen };
 }
 
+const UMBRALES_FALLBACK = umbralesPorPercentil([]); // sin historia → cae al fijo (cobertura.ts)
+
 const vacia = (problema: string): EmpresasData => ({
-  fecha: null, productos: [], empresas: [], transitoTotal: 0,
+  fecha: null, productos: [], empresas: [], transitoTotal: 0, umbralesPool: UMBRALES_FALLBACK,
   meta: { source: SOURCE, updatedAt: null, status: "parcial", problemas: [problema] },
 });
 
@@ -81,11 +89,12 @@ const vacia = (problema: string): EmpresasData => ({
 function add<K>(m: Map<K, number>, k: K, v: number) { m.set(k, (m.get(k) ?? 0) + v); }
 
 export const getEmpresas = cache(async (): Promise<EmpresasData> => {
-  const [snapRes, djveRes, origRes, estRes] = await Promise.all([
+  const [snapRes, djveRes, origRes, estRes, gapHistRes] = await Promise.all([
     sbSelectAll("lineup_ultimas_ruedas?select=*", 900),
     sbSelectAll("djve_cobertura?select=*", 900),
     sbSelectAll("lineup_originado_campana?select=*", 900),
     sbSelectAll("lineup_estacional?select=*", 900),
+    sbSelectAll("lineup_gap_hist?select=cod,declarado_tn,originado_tn", 900),
   ]);
   if (!snapRes.ok || !djveRes.ok) {
     const unconf = snapRes.ok ? djveRes : snapRes;
@@ -99,6 +108,25 @@ export const getEmpresas = cache(async (): Promise<EmpresasData> => {
   const djve = (djveRes.data as DjveRow[]);
   const orig = (origRes.ok ? (origRes.data as OrigRow[]) : []);
   const est = (estRes.ok ? (estRes.data as EstacRow[]) : []);
+
+  // ---- Umbrales de cobertura por percentil histórico (lote L4, auditoría E7) ----
+  // Ratio originado/declarado de lineup_gap_hist (30d, ~3,5 años reales) por producto,
+  // y un pool de todos los productos para las filas que mezclan varios (empresas, soja
+  // combinada en semaforo.ts). Si la fuente falla, cae sola al fallback fijo de cobertura.ts.
+  const ratiosPorCod = new Map<string, number[]>();
+  const ratiosPool: number[] = [];
+  if (gapHistRes.ok) {
+    for (const r of gapHistRes.data as GapHistRow[]) {
+      const d = Number(r.declarado_tn ?? 0);
+      if (d <= 0) continue;
+      const ratio = Number(r.originado_tn ?? 0) / d;
+      if (!ratiosPorCod.has(r.cod)) ratiosPorCod.set(r.cod, []);
+      ratiosPorCod.get(r.cod)!.push(ratio);
+      ratiosPool.push(ratio);
+    }
+  }
+  const umbralesPool = umbralesPorPercentil(ratiosPool);
+  const umbralesDe = (cod: string): UmbralesCobertura => umbralesPorPercentil(ratiosPorCod.get(cod) ?? []);
 
   const fecha = snaps[0]?.fecha_consulta ?? null;
   if (!fecha) return vacia("Sin line-up reciente");
@@ -234,12 +262,14 @@ export const getEmpresas = cache(async (): Promise<EmpresasData> => {
     const declarado60d = decl60Prod.get(p.codigo) ?? 0;
     const originado60d = orig60Prod.get(p.codigo) ?? 0;
     const campN = campActual.get(p.codigo)!;
+    const umbrales = umbralesDe(p.codigo);
     return {
       cod: p.codigo, display: p.display, familia: p.familia,
       declarado60d, originado60d,
       faltaCubrir: declarado60d - originado60d,
       ratio: ratioCobertura(declarado60d, originado60d),
-      senal: senalDe(declarado60d, originado60d),
+      senal: senalDe(declarado60d, originado60d, umbrales),
+      umbrales,
       declaradoNueva: declNuevaProd.get(p.codigo) ?? 0,
       declaradoVieja: declViejaProd.get(p.codigo) ?? 0,
       campNueva: campanaLabel(campN), campVieja: campanaLabel(campN - 1),
@@ -260,7 +290,8 @@ export const getEmpresas = cache(async (): Promise<EmpresasData> => {
     empresas.push({
       empresa: nombre,
       declarado60d: decl60, originado60d: orig60,
-      faltaCubrir: decl60 - orig60, ratio: ratioCobertura(decl60, orig60), senal: senalDe(decl60, orig60),
+      faltaCubrir: decl60 - orig60, ratio: ratioCobertura(decl60, orig60),
+      senal: senalDe(decl60, orig60, umbralesPool), // mezcla productos → umbral pooleado (L4)
       declaradoCamp: declCampEmp.get(nombre) ?? 0, originadoCamp: origCampEmp.get(nombre) ?? 0,
       buques: a?.buques.size ?? 0, standing: a?.standing ?? 0, transito: a?.transito ?? 0,
       ritmoActual: r.actual, ritmoNormal: r.normal, ritmoRatio: r.ratio, ritmoN: r.n,
@@ -275,9 +306,10 @@ export const getEmpresas = cache(async (): Promise<EmpresasData> => {
   const problemas: string[] = [];
   if (!origRes.ok) problemas.push("Avance de campaña no disponible");
   if (!estRes.ok) problemas.push("Ritmo estacional no disponible");
+  if (!gapHistRes.ok) problemas.push("Umbral de cobertura sin historia — usa el corte fijo de respaldo");
 
   return {
-    fecha, productos, empresas, transitoTotal,
+    fecha, productos, empresas, transitoTotal, umbralesPool,
     meta: { source: SOURCE, updatedAt: null, status, problemas },
   };
 });

@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { canonShipper } from "../src/lib/lineup/shippers.ts";
+
 // Healthcheck de frescura de las bases que alimenta ESTE repo (crons de GitHub Actions).
 //
 // Revisa el último dato de cada tabla propia y lo compara contra su cadencia esperada. Si algo se
@@ -78,6 +80,14 @@ const FUTURO = [
 // refresh-calendario.mjs). Con <60 días de seed restante este check enrojece el healthcheck.
 const ULTIMO_SEED_CALENDARIO = "2026-12-15";
 
+// Erosión del roster de exportadores (lote L4, auditoría E7, 23/07/2026, decisión de Lautaro):
+// `shippers.ts` colapsa ~280 variantes de razón social a un puñado de jugadores estables + "OTROS".
+// Si "OTROS" crece (fusión, jugador nuevo, typo nuevo de ISA) el mapeo pierde representatividad
+// SIN que nada rompa — no es un problema de frescura, así que va aparte. Al 22/07 el share real era
+// 2,6% (sano); umbral de aviso 15% (~6× ese nivel). NO hace fallar el healthcheck (solo ::warning +
+// fila) porque un roster que erosiona no es una fuente caída, es una señal para actualizar shippers.ts.
+const ROSTER_UMBRAL_OTROS_PCT = 15;
+
 // Matviews de mesa: no tienen fecha de "hoy" propia; se controla que su última fila coincida con la de
 // su tabla base (si la base avanzó y la matview no, quedó sin refrescar y muestra datos viejos callada).
 const MATVIEWS = [
@@ -85,6 +95,33 @@ const MATVIEWS = [
   { nombre: "lineup_gap_hist", mv: "lineup_gap_hist", mvCol: "fecha", base: "lineup", baseCol: "fecha_consulta" },
   { nombre: "lineup_densidad_hist", mv: "lineup_densidad_hist", mvCol: "fecha", base: "lineup", baseCol: "fecha_consulta" },
 ];
+
+/** Share de "OTROS" (shippers no reconocidos por shippers.ts) en la última rueda del line-up. */
+async function erosionRoster() {
+  const fechaUrl = `${SUPABASE_URL}/rest/v1/lineup?select=fecha_consulta&es_agro=eq.true&order=fecha_consulta.desc&limit=1`;
+  const fechaRes = await fetch(fechaUrl, { headers: { apikey: KEY, authorization: `Bearer ${KEY}` } });
+  if (!fechaRes.ok) throw new Error(`HTTP ${fechaRes.status} ${(await fechaRes.text()).slice(0, 120)}`);
+  const fecha = (await fechaRes.json())[0]?.fecha_consulta ?? null;
+  if (!fecha) return { fecha: null, pctOtros: null, tnOtros: 0, tnTotal: 0 };
+
+  const rowsUrl =
+    `${SUPABASE_URL}/rest/v1/lineup?select=shipper,quantity` +
+    `&fecha_consulta=eq.${fecha}&es_agro=eq.true&ops=eq.LOAD`;
+  const rowsRes = await fetch(rowsUrl, { headers: { apikey: KEY, authorization: `Bearer ${KEY}` } });
+  if (!rowsRes.ok) throw new Error(`HTTP ${rowsRes.status} ${(await rowsRes.text()).slice(0, 120)}`);
+  const rows = await rowsRes.json();
+
+  let tnTotal = 0;
+  let tnOtros = 0;
+  for (const r of rows) {
+    const q = Number(r.quantity ?? 0);
+    if (!Number.isFinite(q) || q <= 0) continue;
+    tnTotal += q;
+    if (canonShipper(r.shipper).canon === "OTROS") tnOtros += q;
+  }
+  const pctOtros = tnTotal > 0 ? (100 * tnOtros) / tnTotal : null;
+  return { fecha, pctOtros, tnOtros, tnTotal };
+}
 
 async function main() {
   const detalle = [];
@@ -169,6 +206,27 @@ async function main() {
         `(${restantes}d de futuro · mínimo 60d · sembrar el año próximo en src/lib/calendario.ts y actualizar ULTIMO_SEED_CALENDARIO acá)`,
     );
     detalle.push({ nombre: "seed calendario oficial", fecha: ULTIMO_SEED_CALENDARIO, restantes, atrasado: agotado });
+  }
+
+  // Erosión del roster: NO suma a `fallas` (no es una fuente caída) — solo avisa.
+  {
+    let r = { fecha: null, pctOtros: null, tnOtros: 0, tnTotal: 0 };
+    let error = null;
+    try {
+      r = await erosionRoster();
+    } catch (e) {
+      error = e.message;
+    }
+    const erosionado = error == null && r.pctOtros != null && r.pctOtros > ROSTER_UMBRAL_OTROS_PCT;
+    const marca = error ? "✗ ERROR" : r.pctOtros == null ? "· SIN DATOS" : erosionado ? "⚠ EROSIONADO" : "✓";
+    const msg = error
+      ? error
+      : r.pctOtros == null
+        ? "sin rueda reciente"
+        : `OTROS ${r.pctOtros.toFixed(1)}% de la rueda ${r.fecha} (${Math.round(r.tnOtros).toLocaleString("es-AR")} de ${Math.round(r.tnTotal).toLocaleString("es-AR")} t · umbral ${ROSTER_UMBRAL_OTROS_PCT}%)`;
+    console.log(`${marca}  roster de exportadores (shippers.ts): ${msg}`);
+    if (erosionado) console.log(`::warning::Roster de shippers erosionado — OTROS ${r.pctOtros.toFixed(1)}% (umbral ${ROSTER_UMBRAL_OTROS_PCT}%). Revisar src/lib/lineup/shippers.ts.`);
+    detalle.push({ nombre: "roster de exportadores", ...r, atrasado: erosionado, error });
   }
 
   if (JSON_OUT) console.log("\n" + JSON.stringify(detalle, null, 2));
