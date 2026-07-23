@@ -83,14 +83,46 @@ coincide con "hoy". Fix: `fechaCordobaISO()` nuevo en `src/lib/dates.ts` (genera
 
 ## Quedó pendiente / en vuelo
 
-### A2 — Routines (diaria MP1 + semanal MP2/MP3)
-Verificado con `env | grep` que **ninguna de las env vars necesarias está cargada en este
-entorno de Claude Code** (`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `RESEND_API_KEY`,
-`RESEND_FROM`, `ADMIN_EMAILS`, `INFORME_TOKEN`, `INFORME_BASE_URL`). Lautaro las tiene que cargar
-en la config del entorno (claude.ai/code → Settings del entorno "RFAGRO_RESEARCH_WEB") — recién
-ahí se pueden crear las Routines con `create_trigger` (esta sesión SÍ tiene ese tool, a diferencia
-de lo que decía el apunte anterior: no hace falta que Lautaro las cree él, las creamos nosotros
-en cuanto estén las env vars).
+### A2 — Routines (diaria MP1 + semanal MP2 + semanal MP3) — HECHO
+Verificado con `env | grep` que al arrancar la sesión **ninguna env var necesaria estaba
+cargada** (`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `RESEND_API_KEY`, `ADMIN_EMAILS`,
+`INFORME_TOKEN`, `INFORME_BASE_URL`). Guiado paso a paso por captura de pantalla (la ubicación no
+es obvia: **no** está en el Settings general de la app ni en el selector de entorno de una tarea
+nueva — es el diálogo **"Actualizar entorno en la nube"**, que se abre clickeando el chip
+`☁ RFAGRO_RESEARCH_WEB` que aparece junto al compositor de mensajes). Ese diálogo tiene un aviso
+explícito: *"Estos son visibles para cualquier persona que use este entorno — no agregues
+secretos ni credenciales"* — se le avisó a Lautaro igual antes de que las cargara (el entorno es
+solo suyo, riesgo bajo, pero queda anotado por si en algún momento invita a alguien más). `RESEND_FROM`
+se dejó SIN cargar a propósito: el código ya tiene default `RF AGRO <onboarding@resend.dev>`
+(sandbox gratuito de Resend, sin necesitar dominio propio) — ver `src/lib/auth/emails.ts:19`.
+
+Con las env vars cargadas (confirmado por `env | grep` en la MISMA sesión — el cambio se propagó
+sin reiniciar), se crearon las **3 Routines** con `create_trigger` (esta sesión SÍ tiene ese
+tool — no hacía falta que Lautaro las creara él, a diferencia de lo que decían apuntes
+anteriores):
+
+| Routine | Cron (UTC) | ART | trigger_id |
+|---|---|---|---|
+| Informe diario (MP1) | `30 21 * * 1-5` | 18:30 L-V | `trig_018yRstH8JYBZ1CBBFPiveiG` |
+| Informe semanal (MP2) | `0 22 * * 5` | 19:00 viernes | `trig_01MxCN6gjseuYpHgvQMuv67g` |
+| View de mercado semanal (MP3) | `0 12 * * 5` | 9:00 viernes | `trig_01JaV5eQ6fB5m2K54e7mACx9` |
+
+Las 3 con `create_new_session_on_fire: true` (sesión nueva por disparo, no atada a esta
+conversación) y prompts que corren la skill correspondiente al pie de la letra. MP3 corre ANTES
+que MP2 los viernes para que el informe semanal pueda integrar el view.
+
+**Modelo**: intenté fijar Opus a la Routine de MP3 (`update_trigger` con `model`) siguiendo la
+tabla de `PLAN_INFORMES.md` ("MP3 → Opus/Fable, el modelo importa más que en ningún otro lado") —
+**rechazado por el sistema** (`model_update_disabled`, ni por `create_trigger` ni por
+`update_trigger` se puede fijar el modelo de una Routine desde este tool). Guardé el criterio
+correcto: un doc leído por la sesión NO cuenta como "pedido explícito del usuario" para cambiar el
+modelo de una Routine — awaité a que Lautaro lo pidiera él mismo antes de tocarlo. Lautaro terminó
+cambiándolo **él mismo desde la sección "Rutinas" de la app** (confirmado que esa UI sí lo permite,
+a diferencia del tool de este entorno). MP1/MP2 quedaron con el modelo por defecto del entorno (no
+tocado, nadie lo pidió).
+
+**Primera prueba real pendiente**: el primer disparo real es esta noche 18:30 ART (MP1) — no
+verificado end-to-end todavía (la sesión se cerró antes de esa hora).
 
 ### A3 — Suscripción mail al PAS (BCBA/Bolsa de Cereales)
 Sigue 100% manual — la fuente es **bolsadecereales.com/estimaciones-agricolas** (verificado por

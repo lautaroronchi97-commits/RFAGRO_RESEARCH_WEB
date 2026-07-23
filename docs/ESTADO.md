@@ -24,10 +24,11 @@
 🧹 LOTE L1 (partir `market.ts`) HECHO · 📄 MP2 informe semanal HECHO (skill + Novedades del día con
 interpretaciones + páginas legales, PR #68 en vuelo) · 🔓 A1 login Google TRABADO en verificación de
 marca — abrió research de dominio/marca/SRL, PAUSADO a pedido de Lautaro ·
-🔓 LOTE L5 (DEA-SAGyP) HECHO (carga semi-manual) · 📰 MP1 informe diario HECHO (falta la Routine) ·
+🔓 LOTE L5 (DEA-SAGyP) HECHO (carga semi-manual) · 📰 MP1 informe diario HECHO ·
 🎯 L4 (calibración de cobertura/roster/comisiones) CERRADO · 🌻 B3 (girasol/sorgo) CERRADO ·
 🚚 C5 (camiones en puerto + señal barcos-vs-camiones) CONSTRUIDO con pivote a Williams Entregas ·
-💵 C4 (compras netas BCRA) HECHO, backfill real 2003→hoy cargado)
+💵 C4 (compras netas BCRA) HECHO, backfill real 2003→hoy cargado ·
+⏰ A2 (Routines MP1/MP2/MP3) HECHO, las 3 creadas y activas)
 
 **📝 C3 — MP4: INTERPRETACIÓN DE INFORMES DE ORGANISMOS (ítem 21) — HECHO, MIGRACIÓN APLICADA Y
 PROBADA — rama `claude/avance-c3-1ra0au`, PR #67 (mergeado).** Ejecutado el PROMPT MP4 de
@@ -145,7 +146,8 @@ con un bug real encontrado y corregido antes de pushear (el filtro comparaba la 
 original, no la fecha en que Lautaro la publicó — con el bug original, este caso real nunca
 hubiera aparecido). (2) Páginas `/privacidad` y `/terminos` nuevas, a pedido de Lautaro mientras
 intentaba publicar el consent screen de Google (pide URL de política de privacidad pública).
-**Falta**: Routine semanal (depende de A2, ver abajo) y el primer PDF real de punta a punta.
+**Routine semanal creada** (23/07: `create_trigger` cron `0 22 * * 5` = 19:00 ART viernes) —
+**falta**: el primer PDF real de punta a punta (primer disparo real recién el viernes que viene).
 Detalle: [`sesiones/2026-07-23-mp2-skill-y-alta-srl.md`](sesiones/2026-07-23-mp2-skill-y-alta-srl.md).
 
 **🔓 A1 — LOGIN CON GOOGLE: verificación de marca TRABADA, abrió un tema de negocio (nombre/
@@ -201,7 +203,7 @@ escritura real se prueba en la primera carga real de Lautaro. **Healthcheck sigu
 hasta esa primera carga** (correcto: avisa que falta subir el CSV). Detalle:
 [`sesiones/2026-07-23-lote-l5-dea-carga-manual.md`](sesiones/2026-07-23-lote-l5-dea-carga-manual.md).
 
-**📰 MP1 — INFORME DIARIO (placa PNG para WhatsApp) — CÓDIGO HECHO, falta la Routine — rama
+**📰 MP1 — INFORME DIARIO (placa PNG para WhatsApp) — HECHO (falta la Routine) — rama
 `claude/resolver-pendientes-qnts8j`, PR #63.** Primer ítem ejecutado del backlog maestro (C1 de
 `auditoria/E7-sintesis.md` §4), siguiendo el prompt de `PLAN_INFORMES.md`. **Migración APLICADA**
 (`20260722120000_mp1_informe_diario.sql`, por MCP con OK de Lautaro): tablas `mesa_color` (color de
@@ -217,12 +219,13 @@ color de operador guardado como referencia) · página pública `/informes` (his
 en `SECCIONES_META`). **Verificado**: lint/tsc/build ✅ · bocetos claro/oscuro mostrados y elegidos ·
 backend por SQL (guard `is_admin()` rechaza sin sesión, RPC funcionan con JWT admin simulado, RLS de
 `informes_generados` oculta borradores a anon y los muestra al pasar a enviado) · UI en navegador con
-bypass temporal revertido (git diff limpio). **Falta (paso manual de Lautaro, A2 del backlog
-maestro): crear la Routine diaria** (`create_trigger`, cron sugerido `30 21 * * 1-5` = 18:30 ART,
-env vars `SUPABASE_URL/SUPABASE_SERVICE_KEY/RESEND_API_KEY/RESEND_FROM/ADMIN_EMAILS/INFORME_TOKEN/
-INFORME_BASE_URL` en el entorno de Claude Code) — el primer disparo prueba de punta a punta lo que
-el sandbox no pudo (RPC con sesión real, Storage, Resend). Detalle:
-[`sesiones/2026-07-22-informes-mp1-diario.md`](sesiones/2026-07-22-informes-mp1-diario.md).
+bypass temporal revertido (git diff limpio). **Routine diaria creada (23/07, A2 del backlog
+maestro)**: `create_trigger` con cron `30 21 * * 1-5` (18:30 ART L-V), env vars cargadas por
+Lautaro en el entorno de Claude Code — el primer disparo real (18:30 ART de hoy) es la primera
+prueba de punta a punta de lo que el sandbox no pudo (RPC con sesión real, Storage, Resend), sin
+verificar todavía al cierre de esta sesión. Detalle:
+[`sesiones/2026-07-22-informes-mp1-diario.md`](sesiones/2026-07-22-informes-mp1-diario.md) (base) y
+[`sesiones/2026-07-23-mp2-skill-y-alta-srl.md`](sesiones/2026-07-23-mp2-skill-y-alta-srl.md) (Routine).
 
 ## Anterior (22/07/2026 — 🏁 AUDITORÍA INTEGRAL COMPLETA: E7 síntesis CERRADA → BACKLOG MAESTRO ÚNICO en `auditoria/E7-sintesis.md` §4 · encendido del login Parte A/B HECHAS, Parte C EN CURSO · E1–E6 cerradas · MP3 view de mercado MERGEADO · research P3/P4 HECHO)
 
@@ -377,14 +380,13 @@ sin pérdida) y el protocolo de sesión se sostuvo con disciplina real. **Pendie
 abierto**: si Lautaro ya probó el uploader de `/admin/datos` logueado (sin confirmar). Informe:
 [`auditoria/E6-historia.md`](auditoria/E6-historia.md).
 
-**🔮 MP3 — VIEW DE MERCADO POR GRANO (PLAN_INFORMES) — CÓDIGO EN `main`, PENDIENTE 1 PASO MANUAL DE
-LAUTARO: crear la Routine semanal.** Lautaro validó el primer view en `/granos/view` y se mergeó el
-PR #53 (rama `claude/mp3-lee-prompt-th37ix`). **Único pendiente que queda: crear la Routine semanal**
-(cron `0 12 * * 5` = 9:00 ART viernes, modelo Opus/Fable) desde su sesión de Claude, con las env vars
-`INFORME_BASE_URL`/`INFORME_TOKEN` (mismo valor en Vercel)/`SUPABASE_URL`/`SUPABASE_SERVICE_KEY`
-configuradas en el entorno — **prompt exacto listo** en
-[`sesiones/2026-07-21-informes-mp3-view-mercado.md`](sesiones/2026-07-21-informes-mp3-view-mercado.md#quedó-pendiente--en-vuelo).
-Sin la Routine, el view no se regenera solo — hay que dispararla a mano o esperar a que Lautaro la cree.
+**🔮 MP3 — VIEW DE MERCADO POR GRANO (PLAN_INFORMES) — CÓDIGO EN `main`, ROUTINE CREADA (23/07).**
+Lautaro validó el primer view en `/granos/view` y se mergeó el PR #53 (rama
+`claude/mp3-lee-prompt-th37ix`). **Routine semanal creada** (cron `0 12 * * 5` = 9:00 ART viernes;
+Lautaro le puso modelo Opus a mano desde la sección "Rutinas" de la app — `update_trigger` con
+`model` lo rechazó desde este entorno, `model_update_disabled`) — detalle en
+[`sesiones/2026-07-23-mp2-skill-y-alta-srl.md`](sesiones/2026-07-23-mp2-skill-y-alta-srl.md). El
+primer disparo real es el viernes que viene, sin verificar todavía.
 
 Se ejecutó el PROMPT MP3 **antes
 que MP1** (pedido explícito; la dependencia era blanda — MP3 solo reusa el patrón). **Base**: tabla
