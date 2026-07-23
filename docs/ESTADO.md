@@ -19,7 +19,31 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 23/07/2026 — 🔓 LOTE L5 (DEA-SAGyP) HECHO: fuente bloqueada por IP → carga semi-manual · 📰 MP1 informe diario (placa PNG) HECHO, falta la Routine (paso manual de Lautaro) · 🏁 AUDITORÍA INTEGRAL COMPLETA: E7 síntesis CERRADA → BACKLOG MAESTRO ÚNICO en `auditoria/E7-sintesis.md` §4 · encendido del login Parte A/B HECHAS, Parte C EN CURSO · E1–E6 cerradas · MP3 view de mercado MERGEADO · research P3/P4 HECHO)
+## Ahora (última actualización: 23/07/2026 — 📄 MP2 informe semanal: BASE + gráfico PDF HECHOS, falta la skill (a pedido de Lautaro, cortado para seguir con otros pendientes) · 🔓 LOTE L5 (DEA-SAGyP) HECHO: fuente bloqueada por IP → carga semi-manual · 📰 MP1 informe diario (placa PNG) HECHO, falta la Routine (paso manual de Lautaro) · 🏁 AUDITORÍA INTEGRAL COMPLETA: E7 síntesis CERRADA → BACKLOG MAESTRO ÚNICO en `auditoria/E7-sintesis.md` §4 · encendido del login Parte A/B HECHAS, Parte C EN CURSO · E1–E6 cerradas · MP3 view de mercado MERGEADO · research P3/P4 HECHO)
+
+**📄 MP2 — INFORME SEMANAL (PDF research) — BASE + GRÁFICO HECHOS, falta la skill — rama
+`claude/resolver-pendientes-qnts8j`, PR #63.** Segundo informe automatizado de
+`docs/PLAN_INFORMES.md`. **Hallazgo antes de construir**: el spot `UST$T` de MAE (el que usa
+el resto de la web para "oficial mayorista") **no tiene historial en ningún lado** —
+verificado con request real a la API de MAE (`?fecha=` no tiene efecto, siempre devuelve hoy).
+Única fuente con historial real: **BCRA A3500** (API v4 variable 5) — decisión de Lautaro:
+usarla igual, aclarando la fuente en toda la UI/PDF (trae el spread bancario implícito).
+**Código**: `src/lib/informe-semanal.ts` (variación semanal de granos/Chicago/pizarra/dólar
+oficial, última fecha real vs la más cercana a 7 días antes, sin asumir "viernes calendario";
+filtro `esReciente` para contratos que dejaron de operar aunque su mes siga "vigente" por
+nombre) · `/api/informes/datos?tipo=semanal` (nueva rama, reusa libs existentes) · plantilla
+`/informes/plantilla/semanal` (PDF A4 de 5 páginas, CSS de impresión nuevo en `globals.css`,
+tema siempre claro) · `VariacionBarras` (gráfico de barras reusable) · `DolarOficialChart` +
+`DolarOficialPanel`, sumados también a **`/dolar` en vivo — cierra de paso el ítem 13 del
+backlog viejo (P2 de `PLAN_BACKLOG.md`)**. **Verificado**: datos reales contra la base (fechas
+exactas 7 días apart) · PDF real generado con Playwright (`page.pdf()`, confirmado 5 páginas
+exactas) · bug encontrado y corregido en navegador (el gráfico de dólar renderizaba con
+relleno negro sólido — faltaba la clase `.evo-serie` junto a `.org-DOLAR`; de paso se sacó un
+Δ% inconsistente que la leyenda calculaba sola) · lint/tsc/build ✅. **Falta (a pedido
+explícito de Lautaro, 23/07: "no necesito que arme el skill ahora, dejalo programado como
+tarea")**: la skill `.claude/skills/informe-semanal/` (prosa "informe largo" + el criterio de
+**qué destacar cada semana**, que Lautaro quiere pensar con calma) y la Routine (depende de la
+skill). Detalle: [`sesiones/2026-07-23-informes-mp2-semanal.md`](sesiones/2026-07-23-informes-mp2-semanal.md).
 
 **🔓 LOTE L5 — DEA-SAGyP: destrabar la fuente — HECHO (carga semi-manual) — rama
 `claude/resolver-pendientes-qnts8j`, PR #63.** Incidente abierto desde E5/E6: `datosestimaciones.

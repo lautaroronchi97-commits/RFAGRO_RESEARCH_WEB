@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { nfmt, pfmt } from "@/lib/format";
+import { nfmt } from "@/lib/format";
 import { ChartMarca } from "./chart-marca";
 import { ChartTabla, type ChartTablaColumna, type ChartTablaFila } from "./chart-tabla";
 
@@ -63,9 +63,7 @@ export function DolarOficialChart({ serie }: { serie: PuntoDolar[] }) {
     setHi(best);
   }
 
-  const primero = serie[0].valor;
   const ultimo = serie[serie.length - 1].valor;
-  const deltaPct = primero ? ((ultimo - primero) / primero) * 100 : null;
 
   const columnas: ChartTablaColumna[] = [
     { key: "fecha", label: "Fecha", align: "left" },
@@ -91,11 +89,13 @@ export function DolarOficialChart({ serie }: { serie: PuntoDolar[] }) {
               {fmtFecha(p.fecha)}
             </text>
           ))}
-          <path d={d} className="evo-line" />
-          {serie.map((p, i) => (
-            <circle key={i} cx={X(i)} cy={Y(p.valor)} r={2.6} className="evo-dot" />
-          ))}
-          <circle cx={X(serie.length - 1)} cy={Y(ultimo)} r={4} className="evo-end" />
+          <g className="evo-serie org-DOLAR">
+            <path d={d} className="evo-line" />
+            {serie.map((p, i) => (
+              <circle key={i} cx={X(i)} cy={Y(p.valor)} r={2.6} className="evo-dot" />
+            ))}
+            <circle cx={X(serie.length - 1)} cy={Y(ultimo)} r={4} className="evo-end" />
+          </g>
           {hi !== null && (
             <>
               <line className="cv-cross" x1={X(hi)} y1={pad.t} x2={X(hi)} y2={pad.t + ih} />
@@ -119,12 +119,10 @@ export function DolarOficialChart({ serie }: { serie: PuntoDolar[] }) {
           </div>
         )}
         <div className="cv-legend">
-          <span className="lk">
+          <span className="lk org-DOLAR">
             <span className="sw evo-sw" />
             Oficial mayorista (BCRA A3500)
-            <span className="lk-val">
-              $ {nfmt(ultimo, 2)} {deltaPct != null && <span className={deltaPct >= 0 ? "up" : "down"}>({pfmt(deltaPct, 2)})</span>}
-            </span>
+            <span className="lk-val">$ {nfmt(ultimo, 2)}</span>
           </span>
         </div>
       </div>

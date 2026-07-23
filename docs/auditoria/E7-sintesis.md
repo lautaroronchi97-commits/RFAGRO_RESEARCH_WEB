@@ -214,8 +214,11 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 - [x] **C1. MP1 — informe diario** — ✅ código hecho 22/07, PR #63 (rama
   `claude/resolver-pendientes-qnts8j`). Falta el paso manual A2 (crear la Routine) para que
   corra sola; el primer disparo real termina de verificar RPC/Storage/mail.
-- [ ] **C2. MP2 — informe semanal PDF** (tras MP1; cierra también el remanente "reporte" del ítem 5
-  viejo: metales/petróleo/Merval/SPY/EWZ al informe).
+- [~] **C2. MP2 — informe semanal PDF** — base + gráfico HECHOS 23/07, PR #63 (datos
+  semanales, plantilla A4 de 5 páginas verificada con PDF real, dólar oficial BCRA A3500
+  sumado también a `/dolar` en vivo). **Falta la skill** (a pedido de Lautaro: quiere pensar
+  con calma qué destacar cada semana antes de automatizarlo) + la Routine. Detalle:
+  [`sesiones/2026-07-23-informes-mp2-semanal.md`](../sesiones/2026-07-23-informes-mp2-semanal.md).
 - [ ] **C3. MP4 — interpretación de informes de organismos** (tras MP1; borrador → OK en /admin →
   publica en /produccion).
 - [ ] **C4. P3 build — compras netas BCRA** (fuente: API v4 var 78 para la historia/rezago +
