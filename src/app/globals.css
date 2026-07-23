@@ -743,6 +743,18 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
 .org-EIA   { --org-c:#7E8C74; }
 .org-NOPA  { --org-c:#7E8C74; }
 
+/* color por zona/producto — panel de camiones en puerto (C5) */
+.cam-ROSARIO_ALEDANOS { --org-c:#4E9C3A; }
+.cam-DARSENA_BSAS_ER  { --org-c:#3E86A0; }
+.cam-NECOCHEA         { --org-c:#C08A2E; }
+.cam-BAHIA_BLANCA     { --org-c:#8A6D9E; }
+.cam-SBS              { --org-c:#4E9C3A; }
+.cam-MAIZE            { --org-c:#EFBF2E; }
+.cam-WHEAT            { --org-c:#C08A2E; }
+.cam-BARLEY           { --org-c:#8A6D9E; }
+.cam-SORGHUM          { --org-c:#B06A4A; }
+.cam-SFSEED           { --org-c:#3E86A0; }
+
 .cal-org { font-family:var(--font-mono); font-weight:700; font-size:var(--fs-2xs); letter-spacing:.04em;
   text-transform:uppercase; white-space:nowrap; padding:2.5px 7px; border-radius:var(--r-chip);
   color:var(--org-c); background:color-mix(in srgb, var(--org-c) 12%, transparent);
