@@ -54,6 +54,12 @@ const CHECKS = [
   { nombre: "lineup (buques ISA)", tabla: "lineup", col: "fecha_consulta", maxDias: 7, cadencia: "diario hábil (ISA tiene huecos)" },
   { nombre: "djve (MAGyP)", tabla: "djve", col: "fecha_registro", maxDias: 5, cadencia: "diario" },
   { nombre: "compras (SIO Granos)", tabla: "compras", col: "fecha", maxDias: 14, cadencia: "semanal (upload manual Agrochat)" },
+  // Camiones (C5): carga 100% MANUAL (Williams Entregas es un servicio pago sin API — Lautoro sube
+  // el CSV de /admin/datos cuando le queda cómodo, sin cadencia fija comprometida). El check acá
+  // NO significa "¿corrió el cron anoche?" (no hay cron) sino "¿hace cuánto que no sube un CSV
+  // nuevo?" — umbral laxo (3 semanas) a propósito, para no generar ruido de un proceso manual sin
+  // promesa de frecuencia; si se atrasa mucho más que eso sí vale la pena que Lautoro se acuerde.
+  { nombre: "camiones (Williams Entregas)", tabla: "camiones", col: "fecha", maxDias: 21, cadencia: "irregular (upload manual, sin cron)" },
   { nombre: "noticias", tabla: "noticias", col: "fecha_pub", maxDias: 2, cadencia: "horario" },
   { nombre: "estimaciones USDA", tabla: "estimaciones_produccion", col: "fecha_publicacion", filtro: "&organismo=eq.USDA", maxDias: 45, cadencia: "mensual (WASDE)" },
   { nombre: "estimaciones CONAB", tabla: "estimaciones_produccion", col: "fecha_publicacion", filtro: "&organismo=eq.CONAB", maxDias: 45, cadencia: "mensual" },
