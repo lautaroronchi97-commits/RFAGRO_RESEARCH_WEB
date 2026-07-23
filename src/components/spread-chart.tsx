@@ -2,13 +2,15 @@
 
 import * as React from "react";
 import {
-  ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer,
+  ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ReferenceDot,
+  ResponsiveContainer,
 } from "recharts";
 import { nfmt } from "@/lib/format";
 import {
   etiquetaCalendario, mesDeFecha, mesEnRuedasAlVto,
   type BandaPunto, type Eje, type Metric, type PuntoXY,
 } from "@/lib/derivadas";
+import { exportarSvgComoPng } from "@/lib/chart-export";
 import { ChartMarca } from "./chart-marca";
 import { ChartTabla, type ChartTablaColumna, type ChartTablaFila } from "./chart-tabla";
 
@@ -19,6 +21,11 @@ import { ChartTabla, type ChartTablaColumna, type ChartTablaFila } from "./chart
  *    y la campaña vigente va gruesa encima (P13). Mata el spaghetti.
  * En el eje días-al-vto se muestra, además del nº de ruedas, el MES calendario
  * de la campaña vigente (pedido de Lautaro: orientarse por mes, no solo ruedas).
+ *
+ * `ma` (P6, media móvil): líneas overlay adicionales, ya calculadas por el
+ * caller — se dibujan siempre (no participan de la banda histórica ni del KPI).
+ * `pct` (P6, "ratio/base en %"): formatea los valores como porcentaje.
+ * `exportName` (P6, export PNG/CSV): si viene, agrega los botones de descarga.
  */
 
 export type CampLine = {
@@ -27,6 +34,8 @@ export type CampLine = {
   color: string;
   vigente: boolean;
   dash?: boolean;
+  /** Último punto de la serie es HOY (Córdoba): dato del día, puede cambiar (guard "parcial"). */
+  parcial?: boolean;
   data: PuntoXY[];
 };
 
@@ -56,6 +65,7 @@ function mergeRows(lines: CampLine[], banda: BandaPunto[]): Row[] {
 
 export function SpreadChart({
   lines, eje, metric, anchorMes, decimals = 2, modo = "lineas", banda = [], refVto,
+  ma, pct = false, exportName,
 }: {
   lines: CampLine[];
   eje: Eje;
@@ -65,11 +75,37 @@ export function SpreadChart({
   modo?: "lineas" | "banda";
   banda?: BandaPunto[];
   refVto?: string; // vto de la campaña vigente, para rotular los meses del eje días-al-vto
+  /** Líneas de media móvil (P6), ya calculadas por el caller — se dibujan siempre, sin pasar por la banda. */
+  ma?: CampLine[];
+  /** Formatea los valores como porcentaje (P6, "ratio/base en %"). */
+  pct?: boolean;
+  /** Si viene, muestra los botones de export PNG/CSV con este nombre de archivo. */
+  exportName?: string;
 }) {
-  // En modo banda solo se dibuja la vigente como línea (la historia es la sombra).
-  const drawn = modo === "banda" ? lines.filter((l) => l.vigente) : lines;
+  const wrapRef = React.useRef<HTMLDivElement>(null);
+  // En modo banda solo se dibuja la vigente como línea (la historia es la sombra);
+  // la media móvil se agrega siempre encima (overlay), no participa de la banda.
+  const drawnBase = modo === "banda" ? lines.filter((l) => l.vigente) : lines;
+  const drawn = React.useMemo(() => [...drawnBase, ...(ma ?? [])], [drawnBase, ma]);
   const usaBanda = modo === "banda" && banda.length > 0;
   const rows = React.useMemo(() => mergeRows(drawn, usaBanda ? banda : []), [drawn, usaBanda, banda]);
+  const fmtValor = React.useCallback(
+    (v: number) => (pct ? `${nfmt(v, decimals)}%` : nfmt(v, decimals)),
+    [pct, decimals],
+  );
+  // Marcadores "parcial" (guard, P6): último punto de las líneas cuyo dato final
+  // es de HOY — puede seguir cambiando (rueda sin cerrar / pizarra sin la última
+  // actualización del día). Círculo hueco en el punto + nota al pie.
+  const puntosParciales = React.useMemo(
+    () =>
+      drawnBase
+        .filter((ln) => ln.parcial && ln.data.length > 0)
+        .map((ln) => {
+          const ult = ln.data.reduce((m, p) => (p.x > m.x ? p : m), ln.data[0]);
+          return { key: ln.key, color: ln.color, x: ult.x, y: ult.y };
+        }),
+    [drawnBase],
+  );
   if (rows.length === 0) return null;
 
   // Mes en cada x del eje días-al-vto: proyectado desde el vencimiento de la
@@ -111,25 +147,40 @@ export function SpreadChart({
     }
     for (const ln of drawn) {
       const y = r[`y${ln.key}`];
-      fila[`y${ln.key}`] = typeof y === "number" ? nfmt(y, decimals) : null;
+      fila[`y${ln.key}`] = typeof y === "number" ? fmtValor(y) : null;
     }
     if (usaBanda) {
       const br = r.brange as [number, number] | undefined;
-      fila.bmin = br ? nfmt(br[0], decimals) : null;
-      fila.bmax = br ? nfmt(br[1], decimals) : null;
-      fila.bmed = typeof r.bmed === "number" ? nfmt(r.bmed, decimals) : null;
+      fila.bmin = br ? fmtValor(br[0]) : null;
+      fila.bmax = br ? fmtValor(br[1]) : null;
+      fila.bmed = typeof r.bmed === "number" ? fmtValor(r.bmed) : null;
     }
     return fila;
   });
+  const hayParcial = puntosParciales.length > 0;
   const notaTabla =
-    eje === "vto"
+    (eje === "vto"
       ? "Los mismos puntos que dibuja el gráfico, por rueda hábil al vencimiento (con el mes de referencia de la campaña vigente). «—» = sin dato a esa altura."
-      : "Los mismos puntos que dibuja el gráfico, en eje calendario. Con varias campañas superpuestas la fila se rotula por mes. «—» = sin dato a esa altura.";
+      : "Los mismos puntos que dibuja el gráfico, en eje calendario. Con varias campañas superpuestas la fila se rotula por mes. «—» = sin dato a esa altura.") +
+    (hayParcial ? " El punto marcado con ⊚ es el dato de HOY: provisorio, puede cambiar." : "");
+
+  const axisDecimals = pct ? 1 : metric === "ratio" ? 3 : 0;
 
   return (
     <>
+      {exportName && (
+        <div className="gx-chart-toolbar">
+          <button
+            type="button"
+            className="gx-preset"
+            onClick={() => exportarSvgComoPng(wrapRef.current, `${exportName}.png`)}
+          >
+            ↓ PNG
+          </button>
+        </div>
+      )}
       {/* El wrapper relativo ancla la marca de agua al área del chart. */}
-      <div style={{ position: "relative" }}>
+      <div style={{ position: "relative" }} ref={wrapRef}>
         <ChartMarca />
         <ResponsiveContainer width="100%" height={param(400)}>
           <ComposedChart data={rows} margin={{ top: 8, right: 16, bottom: 30, left: 4 }}>
@@ -143,14 +194,14 @@ export function SpreadChart({
               stroke="var(--line-2)"
             />
             <YAxis
-              tickFormatter={(v: number) => nfmt(v, metric === "ratio" ? 3 : 0)}
+              tickFormatter={(v: number) => `${nfmt(v, axisDecimals)}${pct ? "%" : ""}`}
               tick={{ fill: "var(--ink-3)", fontSize: 11 }}
               stroke="var(--line-2)"
               width={52}
             />
             {metric !== "ratio" && <ReferenceLine y={0} stroke="var(--line-2)" />}
             <Tooltip
-              content={<GxTooltip lines={drawn} eje={eje} anchorMes={anchorMes} decimals={decimals} usaBanda={usaBanda} mesEnX={mesEnX} />}
+              content={<GxTooltip lines={drawn} eje={eje} anchorMes={anchorMes} fmtValor={fmtValor} usaBanda={usaBanda} mesEnX={mesEnX} />}
               isAnimationActive={false}
             />
             {usaBanda && (
@@ -192,10 +243,23 @@ export function SpreadChart({
                 isAnimationActive={false}
               />
             ))}
+            {puntosParciales.map((p) => (
+              <ReferenceDot
+                key={`parcial-${p.key}`}
+                x={p.x}
+                y={p.y}
+                r={5}
+                fill="none"
+                stroke={p.color}
+                strokeWidth={1.6}
+                strokeDasharray="2 2"
+                ifOverflow="visible"
+              />
+            ))}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
-      <ChartTabla columnas={columnas} filas={filas} nota={notaTabla} />
+      <ChartTabla columnas={columnas} filas={filas} nota={notaTabla} exportCsv={exportName} />
     </>
   );
 }
@@ -244,13 +308,13 @@ type TipProps = {
   lines: CampLine[];
   eje: Eje;
   anchorMes: number;
-  decimals: number;
+  fmtValor: (v: number) => string;
   usaBanda: boolean;
   mesEnX: (x: number) => string;
   payload?: Array<{ payload: Row }>;
 };
 
-function GxTooltip({ active, payload, lines, eje, anchorMes, decimals, usaBanda, mesEnX }: TipProps) {
+function GxTooltip({ active, payload, lines, eje, anchorMes, fmtValor, usaBanda, mesEnX }: TipProps) {
   if (!active || !payload || payload.length === 0) return null;
   const row = payload[0].payload;
   const x = Number(row.x);
@@ -272,15 +336,15 @@ function GxTooltip({ active, payload, lines, eje, anchorMes, decimals, usaBanda,
         <div className="gx-tip-row" key={it.ln.key}>
           <span className="sw" style={{ background: it.ln.color }} />
           <b>{it.ln.label}</b>
-          <span>{nfmt(it.y as number, decimals)}</span>
+          <span>{fmtValor(it.y as number)}</span>
           {typeof it.f === "string" && <span style={{ color: "var(--ink-3)" }}>· {it.f}</span>}
         </div>
       ))}
       {usaBanda && brange && (
         <div className="gx-tip-row" style={{ color: "var(--ink-3)" }}>
           <span className="sw" style={{ background: "var(--ink-3)" }} />
-          historia {nfmt(brange[0], decimals)}–{nfmt(brange[1], decimals)}
-          {typeof bmed === "number" ? ` · med ${nfmt(bmed, decimals)}` : ""}
+          historia {fmtValor(brange[0])}–{fmtValor(brange[1])}
+          {typeof bmed === "number" ? ` · med ${fmtValor(bmed)}` : ""}
         </div>
       )}
     </div>

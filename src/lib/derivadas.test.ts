@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { percentil, mediana, mesDePosicion, joinFfill, metricaDiaria, mesDeFecha, posCalendario } from "./derivadas";
+import {
+  percentil, mediana, mesDePosicion, joinFfill, metricaDiaria, mesDeFecha, posCalendario,
+  mediaMovil, alinear,
+} from "./derivadas";
 import type { SeriePuntos } from "./series-types";
 
 // Fixtures: docs/auditoria/E2-formulas-fichas.md, ficha 6.4 y ficha transversal "6 parsers".
@@ -68,6 +71,43 @@ describe("derivadas.ts — ficha E2 6.4", () => {
       { f: "2026-01-02", y: -50 },
     ]);
     expect(metricaDiaria(join, "ratio")).toEqual([{ f: "2026-01-01", y: 100 / 150 }]);
+  });
+
+  it("metricaDiaria pct (P6): ratio×100, spread → (vb/va − 1)×100", () => {
+    const join = [
+      { f: "2026-01-01", va: 200, vb: 116 }, // ratio 200/116 ; base (116/200−1)×100
+      { f: "2026-01-02", va: 0, vb: 100 },
+    ];
+    const ratio = metricaDiaria(join, "ratio", true);
+    expect(ratio).toEqual([
+      { f: "2026-01-01", y: (200 / 116) * 100 },
+      { f: "2026-01-02", y: 0 }, // va=0 → ratio 0, no se omite (solo vb=0 se omite)
+    ]);
+    const base = metricaDiaria(join, "spread", true);
+    // fila 2 (va=0) se omite: (vb/va − 1) no está definido con va=0.
+    expect(base).toEqual([{ f: "2026-01-01", y: (116 / 200 - 1) * 100 }]);
+  });
+
+  it("mediaMovil: ventana de N ruedas, sin promedios parciales al arranque", () => {
+    const serie = [1, 2, 3, 4, 5].map((y, i) => ({ f: `2026-01-0${i + 1}`, y }));
+    const ma3 = mediaMovil(serie, 3);
+    expect(ma3).toEqual([
+      { f: "2026-01-03", y: 2 }, // (1+2+3)/3
+      { f: "2026-01-04", y: 3 }, // (2+3+4)/3
+      { f: "2026-01-05", y: 4 }, // (3+4+5)/3
+    ]);
+  });
+
+  it("alinear: genérico, preserva campos extra (ej. volumen) junto con x", () => {
+    const serie = [
+      { f: "2026-01-01", y: 10, vol: 100 },
+      { f: "2026-01-02", y: 11, vol: 200 },
+    ];
+    const out = alinear(serie, "2026-01-02", "vto", 30);
+    expect(out).toEqual([
+      { f: "2026-01-01", y: 10, vol: 100, x: -1 },
+      { f: "2026-01-02", y: 11, vol: 200, x: 0 },
+    ]);
   });
 });
 

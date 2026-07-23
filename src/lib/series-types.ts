@@ -28,6 +28,8 @@ export type SeriePuntos = {
   d: string[]; // fechas YYYY-MM-DD ascendentes
   v: number[]; // valores (USD/tn; ARS si unit=ars en pizarra)
   e?: boolean[]; // estimativo por punto (solo pizarra)
+  vol?: (number | null)[]; // volumen operado (solo a3/cbot; pizarra no tiene)
+  oi?: (number | null)[]; // open interest (solo a3/cbot)
 };
 
 /** Deriva la fuente a partir del serieId (self-describing, sin tabla extra). */

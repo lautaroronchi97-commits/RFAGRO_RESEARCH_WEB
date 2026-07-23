@@ -19,7 +19,9 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 23/07/2026 — día grande de backlog maestro, 6 sesiones en paralelo:
+## Ahora (última actualización: 23/07/2026 — día grande de backlog maestro, 7 sesiones en paralelo:
+📊 C10 (gráficos v2, P6) HECHO, paquete completo (URL Período, %, media móvil, volumen/OI, export
+PNG/CSV, guard parcial) ·
 📝 C3 (interpretación de informes de organismos) HECHO, migración aplicada y probada con un informe real ·
 🧹 LOTE L1 (partir `market.ts`) HECHO · 📄 MP2 informe semanal HECHO (skill + Novedades del día con
 interpretaciones + páginas legales, PR #68 en vuelo) · 🔓 A1 login Google TRABADO en verificación de
@@ -57,6 +59,29 @@ lint/tsc/build/tests (137/137) ✅ · navegador con Playwright + datos reales (e
 `/comercio/negociado` y `/comercio/empresas` con datos reales (el filtro de empresas bajó de
 ~209 a 12 al elegir "Maíz"). Detalle:
 [`sesiones/2026-07-23-c8-filtro-por-grano.md`](sesiones/2026-07-23-c8-filtro-por-grano.md).
+
+**📊 C10 — P6: GRÁFICOS V2 (paquete) — HECHO — rama `claude/c10-avance-33kwa5`, PR #_.** Ejecutado
+el PROMPT P6 de `PLAN_BACKLOG.md` sobre el panel `/graficos` (PR #17 en producción). **Paso 1
+(insumos de Lautaro) por `AskUserQuestion`**: P12 ("relación % contra referencia") resultó ser la
+misma métrica ratio ya existente (maíz/soja) mostrada en % — Lautaro contestó "pizarra de maíz vs
+soja"; P17 ("empalme front-month") quedó resuelto porque "son pizarras" — la pizarra ya es una
+serie continua sin vencimiento de contrato, no hace falta construir el empalme. Alcance completo
+en una sesión (pedido explícito). **Los 6 ítems**: (1) modo Período persistido en la URL (mismo
+patrón merge que Campañas, claves propias `pf/pg/pm/pa/po` + `mc` del modo); (2) métrica en %
+(`metricaDiaria(...,pct)` — ratio×100 y spread `(vb/va−1)×100`); (3) export PNG (serializa el SVG
+de Recharts resolviendo las `var(--...)` del tema a valor concreto + pie de marca) y CSV (botón en
+`ChartTabla`, opt-in); (4) media móvil (5 ruedas default, ventana elegible, overlay de la campaña
+vigente en Campañas / de cada posición visible en Período); (5) subpanel de volumen/OI (`futuros_
+cierres`/`cbot_cierres` ya traían las columnas, `series.ts` no las pedía — ahora sí; solo pata A,
+solo A3/CBOT, la pizarra no tiene volumen); (6) guard "parcial" (círculo hueco + nota si el último
+punto es HOY). **Bug real encontrado de paso** (bloqueaba `npm run dev` en TODAS las páginas, no
+solo `/graficos`): un comentario de `globals.css` con `.evo-*/.vb-*` cerraba el bloque de comentario
+antes de tiempo (la secuencia `*/` accidental) — toleraba en build de producción pero tiraba 500 en
+Turbopack dev; fix de una línea. **Verificado**: 140/140 tests (33 nuevos) · lint/tsc/build ✅ ·
+navegador real con datos de Supabase (claro/oscuro/mobile, los 6 ítems probados con screenshots,
+export PNG/CSV descargados y verificados, URL persistente confirmada con reload real, números
+cotejados 1:1 contra `/api/series`). Detalle:
+[`sesiones/2026-07-23-c10-graficos-v2.md`](sesiones/2026-07-23-c10-graficos-v2.md).
 
 **📝 C3 — MP4: INTERPRETACIÓN DE INFORMES DE ORGANISMOS (ítem 21) — HECHO, MIGRACIÓN APLICADA Y
 PROBADA — rama `claude/avance-c3-1ra0au`, PR #67 (mergeado).** Ejecutado el PROMPT MP4 de

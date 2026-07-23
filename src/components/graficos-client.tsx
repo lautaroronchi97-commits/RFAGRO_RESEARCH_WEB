@@ -3,13 +3,15 @@
 import * as React from "react";
 import { fuenteDeId, type SerieCat, type SeriePuntos, type Fuente } from "@/lib/series-types";
 import {
-  joinFfill, metricaDiaria, alinear, mesDePosicion, mediana, percentil,
+  joinFfill, metricaDiaria, mediaMovil, alinear, mesDePosicion, mediana, percentil,
   type Metric, type Eje, type BandaPunto, type PuntoXY,
 } from "@/lib/derivadas";
-import { mesIndice } from "@/lib/dates";
+import { mesIndice, hoyCordobaISO } from "@/lib/dates";
 import { nfmt } from "@/lib/format";
+import { nombreArchivo } from "@/lib/chart-export";
 import { SpreadChart, type CampLine } from "./spread-chart";
 import { PeriodoPanel } from "./periodo-panel";
+import { VolumenPanel, type VolPunto } from "./volumen-panel";
 
 /**
  * Panel de gráficos de spreads entre cosechas (/graficos). Motor genérico:
@@ -100,6 +102,7 @@ function pataFromStr(s: string | null): Pata | null {
 }
 
 type Vista = "lineas" | "banda";
+type ModoComp = "campanias" | "periodo";
 type Estado = {
   a: Pata; b: Pata | null; metric: Metric; eje: Eje; ventanaMeses: number; years: number[]; vista: Vista;
 };
@@ -125,11 +128,28 @@ function leerURL(): Partial<Estado> {
   return out;
 }
 
+/** Modo de comparación (Campañas | Período) leído/escrito en la URL (P6: persistir Período). */
+function leerModo(): ModoComp {
+  if (typeof window === "undefined") return "campanias";
+  const q = new URLSearchParams(window.location.search);
+  return q.get("mc") === "periodo" ? "periodo" : "campanias";
+}
+
+function escribirModo(modo: ModoComp) {
+  if (typeof window === "undefined") return;
+  const q = new URLSearchParams(window.location.search);
+  q.set("mc", modo);
+  window.history.replaceState(null, "", `?${q.toString()}`);
+}
+
+// Los dos escribirURL (Campañas acá, Período en periodo-panel.tsx) SOLO tocan
+// sus propias claves — leen la querystring actual y la reescriben mergeada,
+// para no pisarse entre sí ni pisar el modo (`mc`, que vive en este archivo).
 function escribirURL(e: Estado) {
   if (typeof window === "undefined") return;
-  const q = new URLSearchParams();
+  const q = new URLSearchParams(window.location.search);
   q.set("a", pataToStr(e.a));
-  if (e.b) q.set("b", pataToStr(e.b));
+  if (e.b) q.set("b", pataToStr(e.b)); else q.delete("b");
   q.set("m", e.metric);
   q.set("eje", e.eje);
   q.set("vista", e.vista);
@@ -241,10 +261,23 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
   const [series, setSeries] = React.useState<Record<string, SeriePuntos>>({});
   const [cargando, setCargando] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [modoComp, setModoComp] = React.useState<"campanias" | "periodo">("campanias");
+  const [modoComp, setModoCompState] = React.useState<ModoComp>("campanias");
+
+  // P6: métrica en % (ratio×100 / base "pizarra÷futuro−1"), media móvil (ventana
+  // elegible, default 5 ruedas — P15) y subpanel de volumen/OI (solo si la pata A
+  // tiene contrato operado, no pizarra). Ninguno de los tres se persiste en la URL.
+  const [pct, setPct] = React.useState(false);
+  const [verMA, setVerMA] = React.useState(false);
+  const [ventanaMA, setVentanaMA] = React.useState(5);
+  const [verVolumen, setVerVolumen] = React.useState(false);
+
+  const setModoComp = React.useCallback((m: ModoComp) => {
+    setModoCompState(m);
+    escribirModo(m);
+  }, []);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  React.useEffect(() => setMounted(true), []);
+  React.useEffect(() => { setMounted(true); setModoCompState(leerModo()); }, []);
 
   // Años disponibles = donde resuelven AMBAS patas (B con su offset de campaña).
   const aniosDisponibles = React.useMemo(() => {
@@ -326,6 +359,16 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
   const colors = useCampColors(aniosDisponibles);
   const vigenteYear = effectiveYears.length ? Math.max(...effectiveYears) : null;
 
+  // % solo tiene sentido para spread/ratio (no para crudas, que son 2 series
+  // separadas); media móvil ídem (deriva de la métrica ya calculada).
+  const pctEfectivo = pct && metric !== "crudo";
+  const maEfectivo = verMA && metric !== "crudo";
+
+  // Guard "parcial" (P6): el último punto de una línea cuya fecha es HOY puede
+  // seguir cambiando (rueda sin cerrar / pizarra sin la actualización del día).
+  const hoyISO = hoyCordobaISO();
+  const esParcial = (puntos: PuntoXY[]): boolean => puntos.length > 0 && puntos[puntos.length - 1].f === hoyISO;
+
   // Calcular las líneas del chart a partir de las series traídas.
   const lines = React.useMemo<CampLine[]>(() => {
     const ventanaDias = Math.round(ventanaMeses * 30.4375);
@@ -345,7 +388,7 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
       // Una sola pata → serie cruda alineada.
       if (!b || !rb) {
         const puntos = alinear(sa.d.map((f, i) => ({ f, y: sa.v[i] })), vto, eje, ventanaDias);
-        if (puntos.length) out.push({ key: String(year), label: String(year), color, vigente, data: puntos });
+        if (puntos.length) out.push({ key: String(year), label: String(year), color, vigente, parcial: esParcial(puntos), data: puntos });
         continue;
       }
       const sb = series[rb.serieId];
@@ -354,20 +397,68 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
       if (metric === "crudo") {
         const pa = alinear(sa.d.map((f, i) => ({ f, y: sa.v[i] })), vto, eje, ventanaDias);
         const pb = alinear(sb.d.map((f, i) => ({ f, y: sb.v[i] })), vto, eje, ventanaDias);
-        if (pa.length) out.push({ key: `${year}A`, label: `${year} · A`, color, vigente, data: pa });
-        if (pb.length) out.push({ key: `${year}B`, label: `${year} · B`, color, vigente, dash: true, data: pb });
+        if (pa.length) out.push({ key: `${year}A`, label: `${year} · A`, color, vigente, parcial: esParcial(pa), data: pa });
+        if (pb.length) out.push({ key: `${year}B`, label: `${year} · B`, color, vigente, dash: true, parcial: esParcial(pb), data: pb });
         continue;
       }
 
       // spread / ratio → ordenar patas y calcular métrica diaria + alinear.
       const [near, far] = ordenarPatas(sa, ra, sb, rb);
       const join = joinFfill(near, far);
-      const met = metricaDiaria(join, metric); // spread = far − near ; ratio = near/far
+      const met = metricaDiaria(join, metric, pctEfectivo); // spread = far − near ; ratio = near/far
       const puntos = alinear(met, vto, eje, ventanaDias);
-      if (puntos.length) out.push({ key: String(year), label: String(year), color, vigente, data: puntos });
+      if (puntos.length) out.push({ key: String(year), label: String(year), color, vigente, parcial: esParcial(puntos), data: puntos });
     }
     return out;
-  }, [series, effectiveYears, idx, a, b, metric, eje, ventanaMeses, colors, vigenteYear]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [series, effectiveYears, idx, a, b, metric, eje, ventanaMeses, colors, vigenteYear, pctEfectivo, hoyISO]);
+
+  // Media móvil (P6, P15): overlay SOLO de la campaña vigente, sobre la métrica
+  // ya calculada (5 ruedas por default). No participa de la banda ni del KPI.
+  const maLines = React.useMemo<CampLine[]>(() => {
+    if (!maEfectivo || vigenteYear == null) return [];
+    const ventanaDias = Math.round(ventanaMeses * 30.4375);
+    const off = offsetB(a, b);
+    const ra = idx.resolver(a, vigenteYear);
+    const rb = b ? idx.resolver(b, vigenteYear + off) : null;
+    if (!ra) return [];
+    const sa = series[ra.serieId];
+    if (!sa) return [];
+    const vtos = [ra.vto, rb?.vto].filter((v): v is string => !!v);
+    const vto = vtos.length ? vtos.reduce((m, v) => (v < m ? v : m)) : `${vigenteYear}-12-31`;
+    const color = colors[vigenteYear] ?? FALLBACK_COLORS[vigenteYear % FALLBACK_COLORS.length];
+
+    let serieDiaria: { f: string; y: number }[];
+    if (!b || !rb) {
+      serieDiaria = sa.d.map((f, i) => ({ f, y: sa.v[i] }));
+    } else {
+      const sb = series[rb.serieId];
+      if (!sb) return [];
+      const [near, far] = ordenarPatas(sa, ra, sb, rb);
+      serieDiaria = metricaDiaria(joinFfill(near, far), metric, pctEfectivo);
+    }
+    const ma = mediaMovil(serieDiaria, ventanaMA);
+    const puntos = alinear(ma, vto, eje, ventanaDias);
+    if (puntos.length === 0) return [];
+    return [{ key: "ma", label: `MA${ventanaMA}`, color, vigente: false, dash: true, data: puntos }];
+  }, [maEfectivo, metric, vigenteYear, ventanaMeses, ventanaMA, a, b, idx, series, eje, colors, pctEfectivo]);
+
+  // Volumen/OI (P6): subpanel de la pata A de la campaña vigente. Solo A3/CBOT
+  // tienen volumen (la pizarra es una referencia de precio, no un contrato operado).
+  const volumenDisponible = a.fuente === "a3" || a.fuente === "cbot";
+  const volumenPuntos = React.useMemo<VolPunto[]>(() => {
+    if (!verVolumen || !volumenDisponible || vigenteYear == null) return [];
+    const ventanaDias = Math.round(ventanaMeses * 30.4375);
+    const ra = idx.resolver(a, vigenteYear);
+    if (!ra) return [];
+    const sa = series[ra.serieId];
+    if (!sa || (!sa.vol && !sa.oi)) return [];
+    const rb = b ? idx.resolver(b, vigenteYear + offsetB(a, b)) : null;
+    const vtos = [ra.vto, rb?.vto].filter((v): v is string => !!v);
+    const vto = vtos.length ? vtos.reduce((m, v) => (v < m ? v : m)) : `${vigenteYear}-12-31`;
+    const raw = sa.d.map((f, i) => ({ f, y: sa.v[i], vol: sa.vol?.[i] ?? null, oi: sa.oi?.[i] ?? null }));
+    return alinear(raw, vto, eje, ventanaDias);
+  }, [verVolumen, volumenDisponible, vigenteYear, ventanaMeses, idx, a, b, series, eje]);
 
   const anchorMes = React.useMemo(() => {
     // Mes ancla del eje calendario = mes del vto de la pata A + 1 (aprox).
@@ -384,7 +475,11 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
     return vtos.length ? vtos.reduce((m, v) => (v < m ? v : m)) : undefined;
   }, [idx, a, b, vigenteYear]);
 
-  const decimals = metric === "ratio" ? 3 : 2;
+  const decimals = pctEfectivo ? 1 : metric === "ratio" ? 3 : 2;
+  const fmtKpi = React.useCallback(
+    (v: number) => (pctEfectivo ? `${nfmt(v, decimals)}%` : nfmt(v, decimals)),
+    [pctEfectivo, decimals],
+  );
 
   // Banda histórica (P13): a cada altura x, min–máx + mediana de las campañas
   // históricas (todas las seleccionadas MENOS la vigente). Se agrupan por x.
@@ -550,6 +645,44 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
             </button>
           </div>
         </div>
+
+        <div className="gx-pata">
+          <span className="gx-pata-lbl">Opciones</span>
+          <div className="gx-selrow" style={{ alignItems: "center" }}>
+            <label className="gx-check">
+              <input
+                type="checkbox"
+                checked={pct}
+                disabled={metric === "crudo"}
+                onChange={(e) => setPct(e.target.checked)}
+              />
+              En %
+            </label>
+            <label className="gx-check">
+              <input
+                type="checkbox"
+                checked={verMA}
+                disabled={metric === "crudo"}
+                onChange={(e) => setVerMA(e.target.checked)}
+              />
+              Media móvil
+            </label>
+            {verMA && metric !== "crudo" && (
+              <select value={ventanaMA} onChange={(e) => setVentanaMA(Number(e.target.value))} aria-label="Ventana de la media móvil">
+                {[3, 5, 10, 20].map((v) => <option key={v} value={v}>{v} ruedas</option>)}
+              </select>
+            )}
+            <label className="gx-check" title={volumenDisponible ? undefined : "Solo disponible para futuros A3/Chicago (la pizarra no opera contratos)"}>
+              <input
+                type="checkbox"
+                checked={verVolumen}
+                disabled={!volumenDisponible}
+                onChange={(e) => setVerVolumen(e.target.checked)}
+              />
+              Volumen/OI
+            </label>
+          </div>
+        </div>
       </div>
 
       <div className="gx-chips">
@@ -592,15 +725,38 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
             {cargando ? "Trayendo datos…" : "Elegí dos patas y al menos una campaña para ver el spread."}
           </div>
         ) : (
-          <SpreadChart lines={lines} eje={eje} metric={metric} anchorMes={anchorMes} decimals={decimals} modo={modo} banda={banda} refVto={refVto} />
+          <SpreadChart
+            lines={lines}
+            eje={eje}
+            metric={metric}
+            anchorMes={anchorMes}
+            decimals={decimals}
+            modo={modo}
+            banda={banda}
+            refVto={refVto}
+            ma={maLines}
+            pct={pctEfectivo}
+            exportName={nombreArchivo(a.grano, a.mon, b?.grano, b?.mon, metric, pctEfectivo ? "pct" : null)}
+          />
         )}
       </div>
 
+      {verVolumen && volumenDisponible && (
+        <VolumenPanel
+          puntos={volumenPuntos}
+          eje={eje}
+          anchorMes={anchorMes}
+          refVto={refVto}
+          label={`${GRANO_NOMBRE[a.grano] ?? a.grano}${a.mon ? ` ${a.mon}` : ""} (pata A)`}
+          exportName={nombreArchivo(a.grano, a.mon, "volumen")}
+        />
+      )}
+
       {kpi && (
         <div className="gx-kpis">
-          <div className="gx-kpi"><span className="k">Campaña {kpi.label} · última</span><span className="v">{nfmt(kpi.hoy, decimals)}</span></div>
-          <div className="gx-kpi"><span className="k">Mín ventana</span><span className="v">{nfmt(kpi.min, decimals)}</span></div>
-          <div className="gx-kpi"><span className="k">Máx ventana</span><span className="v">{nfmt(kpi.max, decimals)}</span></div>
+          <div className="gx-kpi"><span className="k">Campaña {kpi.label} · última</span><span className="v">{fmtKpi(kpi.hoy)}</span></div>
+          <div className="gx-kpi"><span className="k">Mín ventana</span><span className="v">{fmtKpi(kpi.min)}</span></div>
+          <div className="gx-kpi"><span className="k">Máx ventana</span><span className="v">{fmtKpi(kpi.max)}</span></div>
           {kpi.pct !== null && (
             <div className="gx-kpi">
               <span className="k">Percentil hoy vs {kpi.nHist} campañas</span>

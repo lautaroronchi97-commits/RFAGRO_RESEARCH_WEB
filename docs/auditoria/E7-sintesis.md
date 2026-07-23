@@ -254,9 +254,10 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   `sesiones/2026-07-23-c8-filtro-por-grano.md`.
 - [ ] **C9. Extras de spec de puertos** (matriz por mes/zonas · "qué cambió" ampliado — lo que quedó
   fuera de las Fases 1-4).
-- [ ] **C10. P6 — gráficos v2** (URL modo Período · ratio % · export PNG/CSV · media móvil ·
-  vol/OI · guard parcial; P12/P17 del plan de gráficos esperan tus ejemplos; presets de usuario
-  esperan login ON).
+- [x] **C10. P6 — gráficos v2** — hecho 23/07 (URL modo Período · ratio/base % · export PNG/CSV ·
+  media móvil · vol/OI · guard parcial). P12/P17 resueltos con la respuesta de Lautaro (la relación
+  % es el ratio existente pizarra maíz/soja; "son pizarras" → sin serie front-month que construir).
+  Presets de usuario siguen esperando login ON (A1). `sesiones/2026-07-23-c10-graficos-v2.md`.
 - [ ] **C11. P7 — vista productor + PWA** (mejor con login encendido: es para clientes reales).
 - [ ] **C12. P8 — feed A3 histórico intradiario** (paso manual previo: secrets A3 en GitHub Actions).
 - [ ] **C13. P9 — sintéticos TIR** 🔒 (tabla IAMC + fórmula tuya como paso 1).

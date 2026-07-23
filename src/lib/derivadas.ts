@@ -58,18 +58,46 @@ export function joinFfill(a: SeriePuntos, b: SeriePuntos, maxGap = 3): Join[] {
  *    (vto más lejano; en empate, la más cara). Ej. soja − maíz (P7).
  *  - ratio = va / vb   → el cliente ordena para que arranque maíz/soja (P8).
  *  - crudo: no aplica acá (se grafican las dos series por separado).
+ *
+ * `pct` (P6 del backlog maestro, "ratio/base en %"): en vez del valor absoluto,
+ * expresa la métrica como porcentaje — ratio×100 (ej. "58%" en vez de "0,58") o,
+ * para spread, (vb/va − 1)×100 (ej. base pizarra/futuro − 1, la misma fórmula que
+ * ya se usa para "capacidad de pago" y afines). Nunca cambia el signo/orden ya
+ * decidido, solo la unidad de salida.
  */
-export function metricaDiaria(join: Join[], metric: Metric): { f: string; y: number }[] {
+export function metricaDiaria(join: Join[], metric: Metric, pct = false): { f: string; y: number }[] {
   const out: { f: string; y: number }[] = [];
   for (const j of join) {
     let y: number;
     if (metric === "ratio") {
       if (j.vb === 0) continue;
       y = j.va / j.vb;
+      if (pct) y *= 100;
+    } else if (pct) {
+      if (j.va === 0) continue;
+      y = (j.vb / j.va - 1) * 100; // base en % (ej. pizarra/futuro − 1)
     } else {
       y = j.vb - j.va; // spread
     }
     out.push({ f: j.f, y });
+  }
+  return out;
+}
+
+/**
+ * Media móvil simple sobre una serie diaria YA calculada (spread/ratio), en
+ * cantidad de RUEDAS (no días calendario) — decisión de Lautaro (P15): "sobre
+ * el spread ya calculado, 5 ruedas" (ventana elegible en el panel, default 5).
+ * Solo emite un punto una vez que hay `ventana` observaciones previas completas
+ * (sin promedios parciales al arranque de la serie).
+ */
+export function mediaMovil(serie: { f: string; y: number }[], ventana: number): { f: string; y: number }[] {
+  if (ventana < 2) return serie.map((p) => ({ ...p }));
+  const out: { f: string; y: number }[] = [];
+  for (let i = ventana - 1; i < serie.length; i++) {
+    let suma = 0;
+    for (let k = i - ventana + 1; k <= i; k++) suma += serie[k].y;
+    out.push({ f: serie[i].f, y: suma / ventana });
   }
   return out;
 }
@@ -81,12 +109,12 @@ export function metricaDiaria(join: Join[], metric: Metric): { f: string; y: num
  *  - eje "cal": x = día dentro de la temporada, anclado al mes siguiente al vto
  *    (P2), para que ventanas que cruzan el año no se partan.
  */
-export function alinear(
-  serie: { f: string; y: number }[],
+export function alinear<T extends { f: string; y: number }>(
+  serie: T[],
   vtoISO: string,
   eje: Eje,
   ventanaDias = 365,
-): PuntoXY[] {
+): (T & { x: number })[] {
   const desde = restarDias(vtoISO, ventanaDias);
   const win = serie.filter((p) => p.f >= desde && p.f <= vtoISO);
   if (win.length === 0) return [];
@@ -99,12 +127,12 @@ export function alinear(
     // que las históricas a esa distancia del vencimiento.
     const n = win.length;
     const offset = ruedasHasta(win[n - 1].f, vtoISO);
-    return win.map((p, i) => ({ x: i - (n - 1) - offset, y: p.y, f: p.f }));
+    return win.map((p, i) => ({ ...p, x: i - (n - 1) - offset }));
   }
 
   // Calendario: mes ancla = mes del vto + 1 (la temporada arranca ahí).
   const anchor = ((mesDeISO(vtoISO) % 12) + 1); // 1..12, mes siguiente al vto
-  return win.map((p) => ({ x: diaDeTemporada(p.f, anchor), y: p.y, f: p.f }));
+  return win.map((p) => ({ ...p, x: diaDeTemporada(p.f, anchor) }));
 }
 
 /**

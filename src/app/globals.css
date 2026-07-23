@@ -746,6 +746,20 @@ svg.ic { width:100%; height:auto; display:block; touch-action:pan-y; }
 .gx-modo-hint { font-size:var(--fs-2xs); color:var(--ink-3); }
 .gx-modo .gx-seg button { padding:6px 14px; font-size:var(--fs-sm); }
 
+/* P6 (backlog maestro): checkbox de opciones (%, media móvil, volumen) + toolbar de export */
+.gx-check { display:inline-flex; align-items:center; gap:6px; font-family:var(--font-ui);
+  font-size:var(--fs-xs); font-weight:700; color:var(--ink-2); cursor:pointer; }
+.gx-check input { accent-color:var(--gold); cursor:pointer; }
+.gx-check:has(input:disabled) { color:var(--ink-3); opacity:.5; cursor:not-allowed; }
+.gx-chart-toolbar { display:flex; justify-content:flex-end; margin-bottom:6px; }
+.gx-volpanel { margin-top:14px; background:var(--panel); border:1px solid var(--line); border-radius:10px;
+  padding:12px 10px 8px; box-shadow:var(--shadow); }
+.gx-volpanel .gx-preset-glabel { margin-bottom:6px; }
+.ct-csv { font-family:var(--font-ui); font-size:var(--fs-2xs); font-weight:700; cursor:pointer;
+  padding:3px 9px; border-radius:999px; border:1px solid var(--line-2); background:var(--panel);
+  color:var(--ink-2); }
+.ct-csv:hover { color:var(--gold-text); border-color:var(--gold-hair); }
+
 /* ============================================================
    Calendario de informes + estimaciones de producción
    ============================================================ */
