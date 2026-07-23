@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { getPizarra } from "../pizarra";
+import { getPizarra, GRANOS_REQUERIDOS } from "../pizarra";
 import type { Meta } from "./types";
 import { getDolarApi, getCriptoya, getMaeResumen, getMaeOficial, type MaeResumenRow } from "./fuentes";
 import { parseDdf } from "./tickers";
@@ -32,7 +32,7 @@ export const getCintaData = cache(async (): Promise<CintaData> => {
   if (!dolar) problemas.push("dolarapi caído (MEP/CCL)");
   if (mae.valor === null) problemas.push("MAE caído (mayorista)");
   if (!ddf) problemas.push("MAE caído (dólar futuro)");
-  if (Object.keys(pizarra.granos).length < 3) problemas.push("CAC caído (pizarra)");
+  if (!GRANOS_REQUERIDOS.every((u) => pizarra.granos[u] != null)) problemas.push("CAC caído (pizarra)");
 
   const byCasa = (casa: string) => dolar?.find((d) => d.casa === casa) ?? null;
 

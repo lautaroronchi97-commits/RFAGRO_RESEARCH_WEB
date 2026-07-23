@@ -9,11 +9,13 @@ import {
   payoffTotal,
   serieEscenarios,
   breakevens,
+  costoEstrategia,
   type Pata,
   type Tipo,
   type Lado,
   type Escenario,
 } from "@/lib/estrategias";
+import type { Persona } from "@/lib/costos";
 
 function IconStrat() {
   return (
@@ -76,6 +78,9 @@ export function CalcEstrategias() {
   const [paso, setPaso] = React.useState("15");
   const [estId, setEstId] = React.useState(PRESET0.id);
   const [patas, setPatas] = React.useState<PataStr[]>(() => PRESET0.patas(320, 15).map(toStr));
+  const [conCostos, setConCostos] = React.useState(false);
+  const [persona, setPersona] = React.useState<Persona>("juridica");
+  const [iva, setIva] = React.useState("21");
 
   const B = num(base), S = num(paso);
   const preset = PRESETS.find((p) => p.id === estId);
@@ -95,7 +100,12 @@ export function CalcEstrategias() {
 
   const patasNum = patas.map(toNum).filter((p) => Number.isFinite(p.strike));
   const okRange = Number.isFinite(B) && Number.isFinite(S) && S > 0;
-  const serie = okRange && patasNum.length ? serieEscenarios(patasNum, B, S) : [];
+  const ivaPct = num(iva);
+  const costos = conCostos && Number.isFinite(ivaPct) ? costoEstrategia(patasNum, persona, ivaPct) : 0;
+  const serieBruta = okRange && patasNum.length ? serieEscenarios(patasNum, B, S) : [];
+  // Los costos son un cargo fijo (se pagan al operar, no dependen del precio final) — se
+  // restan por igual a cada punto, mismo tratamiento que ya recibía la prima neta.
+  const serie: Escenario[] = costos > 0 ? serieBruta.map((s) => ({ P: s.P, resultado: s.resultado - costos })) : serieBruta;
   const bes = breakevens(serie);
   const ys = serie.map((s) => s.resultado);
   // Extremos REALES, no los del borde del rango graficado (auditoría E2, 21/07/2026):
@@ -104,7 +114,7 @@ export function CalcEstrategias() {
   const EPS = 1e-9;
   const pendienteSup =
     ys.length >= 2 ? (ys[ys.length - 1] ?? 0) - (ys[ys.length - 2] ?? 0) : 0;
-  const candidatos = ys.length ? [...ys, payoffTotal(0, patasNum)] : [];
+  const candidatos = ys.length ? [...ys, payoffTotal(0, patasNum) - costos] : [];
   const gananciaIlimitada = pendienteSup > EPS;
   const perdidaIlimitada = pendienteSup < -EPS;
   const maxG = candidatos.length ? Math.max(...candidatos) : NaN;
@@ -146,6 +156,36 @@ export function CalcEstrategias() {
           la distancia al ATM) para poder jugar rápido — cargá las primas reales de la cadena antes de cotizar.
         </div>
 
+        <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+          <input type="checkbox" checked={conCostos} onChange={(e) => setConCostos(e.target.checked)} />
+          <span>Incluir costos (A3/Cocos)</span>
+        </label>
+        <div className="calc-grid">
+          {conCostos && (
+            <>
+              <label className="calc-field">
+                <span>Tipo de cuenta</span>
+                <select value={persona} onChange={(e) => setPersona(e.target.value as Persona)}>
+                  <option value="humana">Persona humana</option>
+                  <option value="juridica">Persona jurídica</option>
+                </select>
+              </label>
+              <label className="calc-field">
+                <span>IVA (%)</span>
+                <input inputMode="decimal" value={iva} onChange={(e) => setIva(e.target.value)} />
+              </label>
+            </>
+          )}
+        </div>
+        {conCostos && (
+          <div className="strat-exp">
+            <span className="k">Costos</span> Tarifario A3/Cocos (comisión + derechos + IVA, panel &quot;Costos de
+            operar&quot;) sobre prima × cttos en opciones, strike × cttos en futuro — no hay tamaño de contrato por
+            mercado todavía, así que se toma cttos como toneladas equivalentes, igual que el resto de esta calc. Se
+            resta una sola vez (como la prima neta), no por cada punto del vencimiento.
+          </div>
+        )}
+
         <PayoffChart serie={serie} B={B} bes={bes} />
 
         <div className="calc-out">
@@ -153,6 +193,7 @@ export function CalcEstrategias() {
             <span>Máx. ganancia: <b className="pos">{gananciaIlimitada ? "ilimitada" : Number.isFinite(maxG) ? sfmt(maxG, 1) : "—"}</b></span>
             <span>Máx. pérdida: <b className="neg">{perdidaIlimitada ? "ilimitada" : Number.isFinite(maxP) ? sfmt(maxP, 1) : "—"}</b></span>
             <span>Prima neta: <b>{sfmt(neta, 1)} USD</b> {neta > 0 ? "(costo)" : neta < 0 ? "(ingreso)" : ""}</span>
+            {conCostos && <span>Costos (A3/Cocos): <b>{nfmt(costos, 1)} USD</b></span>}
             <span>Breakeven(s): <b>{bes.length ? bes.map((b) => nfmt(b, 1)).join(" · ") : "—"}</b></span>
           </div>
         </div>
@@ -201,7 +242,7 @@ export function CalcEstrategias() {
             <thead><tr><th className="l" scope="col">Precio final</th><th scope="col">Resultado</th></tr></thead>
             <tbody>
               {claves.map((P) => {
-                const r = payoffTotal(P, patasNum);
+                const r = payoffTotal(P, patasNum) - costos;
                 return (
                   <tr key={P}>
                     <td className="l sym">{nfmt(P, 1)}</td>

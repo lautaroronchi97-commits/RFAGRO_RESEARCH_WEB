@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   description: "Declaraciones juradas de venta al exterior (DJVE) de granos y subproductos.",
 };
 
+// Datos públicos (como la DJVE, decisión de Lautoro 22/07): visibles siempre, sin gate de admin.
+const PUBLICO = [
+  { href: "/comercio/camiones", nombre: "Camiones en puerto", desc: "Entrada diaria de camiones a puertos, fábricas y molinos, por zona y producto (Williams Entregas)." },
+];
+
 // Análisis de mesa (protegidos SIEMPRE, decisión 1 del plan de puertos): las tarjetas
 // solo se muestran a admins; las páginas están gateadas con requireAdmin igual.
 const ANALISIS = [
@@ -35,6 +40,16 @@ export default async function ComercioPage() {
       <main className="wrap">
         <div className="col">
           <h2 className="sec-title">Comercio exterior</h2>
+
+          <nav className="hub-grid" aria-label="Datos públicos" style={{ marginBottom: 18 }}>
+            {PUBLICO.map((a) => (
+              <Link key={a.href} href={a.href} className="hub-card">
+                <span className="hub-card-name">{a.nombre}</span>
+                <span className="hub-card-desc">{a.desc}</span>
+                <span className="hub-card-go" aria-hidden="true">→</span>
+              </Link>
+            ))}
+          </nav>
 
           {esAdmin && (
             <nav className="hub-grid" aria-label="Análisis de mesa" style={{ marginBottom: 18 }}>
