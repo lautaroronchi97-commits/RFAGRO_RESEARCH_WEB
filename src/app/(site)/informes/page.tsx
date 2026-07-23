@@ -19,6 +19,13 @@ type Informe = {
   path_png: string | null;
 };
 
+type InformeSemanal = {
+  id: string;
+  fecha: string;
+  titulo: string | null;
+  path_pdf: string | null;
+};
+
 async function signedUrl(path: string): Promise<string | null> {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_KEY;
@@ -52,13 +59,23 @@ function ddmmaaaa(iso: string): string {
 export default async function InformesPage() {
   await requireSeccion("informes");
 
-  const res = await sbSelect(
-    "informes_generados?tipo=eq.diario&select=id,fecha,titulo,path_png&order=fecha.desc&limit=20",
-    0,
-  );
+  const [res, resSemanal] = await Promise.all([
+    sbSelect(
+      "informes_generados?tipo=eq.diario&select=id,fecha,titulo,path_png&order=fecha.desc&limit=20",
+      0,
+    ),
+    sbSelect(
+      "informes_generados?tipo=eq.semanal&select=id,fecha,titulo,path_pdf&order=fecha.desc&limit=12",
+      0,
+    ),
+  ]);
   const filas = res.ok ? (res.data as Informe[]) : [];
   const [destacado, ...resto] = filas;
   const urlDestacado = destacado?.path_png ? await signedUrl(destacado.path_png) : null;
+  const filasSemanal = resSemanal.ok ? (resSemanal.data as InformeSemanal[]) : [];
+  const semanales = await Promise.all(
+    filasSemanal.map(async (f) => ({ ...f, url: f.path_pdf ? await signedUrl(f.path_pdf) : null })),
+  );
   const lecturas = (await getInterpretacionesPublicadas()).slice(0, 8);
 
   return (
@@ -136,6 +153,55 @@ export default async function InformesPage() {
               </div>
             )}
           </Panel>
+
+          {semanales.length > 0 && (
+            <Panel id="informe-semanal">
+              <PanelHead title="Informe semanal" sub="research de la semana · mesa RF AGRO" />
+              <QueEsEsto
+                paraQue={
+                  <>
+                    El resumen de research de la semana en PDF: la semana en números (granos,
+                    dólar, Chicago, comercio exterior) más una interpretación larga, con la
+                    misma marca de la web.
+                  </>
+                }
+                comoSeCalcula={
+                  <>
+                    Se genera solo, los viernes post-cierre, con los mismos datos que ya ves en{" "}
+                    <code>/granos</code>, <code>/dolar</code> y <code>/comercio</code>.
+                  </>
+                }
+              />
+              <div className="tbl-wrap">
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      <th className="l">Semana</th>
+                      <th className="l">Título</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {semanales.map((f) => (
+                      <tr key={f.id}>
+                        <td className="num">{ddmmaaaa(f.fecha)}</td>
+                        <td className="l">{f.titulo ?? "Informe semanal"}</td>
+                        <td className="l">
+                          {f.url ? (
+                            <a href={f.url} target="_blank" rel="noopener noreferrer">
+                              Descargar PDF
+                            </a>
+                          ) : (
+                            <span className="dim">No disponible</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+          )}
 
           {lecturas.length > 0 && (
             <Panel id="lectura-mesa">

@@ -21,11 +21,16 @@
 
 ## Ahora (última actualización: 23/07/2026 — día grande de backlog maestro, 6 sesiones en paralelo:
 📝 C3 (interpretación de informes de organismos) HECHO, migración aplicada y probada con un informe real ·
-🧹 LOTE L1 (partir `market.ts`) HECHO · 📄 MP2 informe semanal BASE+gráfico HECHOS (falta la skill) ·
-🔓 LOTE L5 (DEA-SAGyP) HECHO (carga semi-manual) · 📰 MP1 informe diario HECHO (falta la Routine) ·
+🧹 LOTE L1 (partir `market.ts`) HECHO · 📄 MP2 informe semanal HECHO (skill + Novedades del día con
+interpretaciones + páginas legales, PR #68 en vuelo) · 🔓 A1 login Google TRABADO en verificación de
+marca — abrió research de dominio/marca/SRL, PAUSADO a pedido de Lautaro ·
+🔓 LOTE L5 (DEA-SAGyP) HECHO (carga semi-manual) · 📰 MP1 informe diario HECHO ·
 🎯 L4 (calibración de cobertura/roster/comisiones) CERRADO · 🌻 B3 (girasol/sorgo) CERRADO ·
 🚚 C5 (camiones en puerto + señal barcos-vs-camiones) CONSTRUIDO con pivote a Williams Entregas ·
-💵 C4 (compras netas BCRA) HECHO, backfill real 2003→hoy cargado)
+💵 C4 (compras netas BCRA) HECHO, backfill real 2003→hoy cargado ·
+⏰ A2 (Routines MP1/MP2/MP3) HECHO, las 3 creadas y activas ·
+📈 A3 (BCBA-PAS) suscripción HECHA + producción histórica cargada (26 campañas), condición de
+cultivos fasada para después)
 
 **📝 C3 — MP4: INTERPRETACIÓN DE INFORMES DE ORGANISMOS (ítem 21) — HECHO, MIGRACIÓN APLICADA Y
 PROBADA — rama `claude/avance-c3-1ra0au`, PR #67 (mergeado).** Ejecutado el PROMPT MP4 de
@@ -129,29 +134,76 @@ diferencia, también varía en ese mismo campo). Habilita L3 (`noUncheckedIndexe
 archivos para sanear) y despeja el camino de P2/P6 (que tocaban el mismo código). Detalle:
 [`sesiones/2026-07-23-lote-l1-market.md`](sesiones/2026-07-23-lote-l1-market.md).
 
-**📄 MP2 — INFORME SEMANAL (PDF research) — BASE + GRÁFICO HECHOS, falta la skill — rama
-`claude/resolver-pendientes-qnts8j`, PR #63.** Segundo informe automatizado de
-`docs/PLAN_INFORMES.md`. **Hallazgo antes de construir**: el spot `UST$T` de MAE (el que usa
-el resto de la web para "oficial mayorista") **no tiene historial en ningún lado** —
-verificado con request real a la API de MAE (`?fecha=` no tiene efecto, siempre devuelve hoy).
-Única fuente con historial real: **BCRA A3500** (API v4 variable 5) — decisión de Lautaro:
-usarla igual, aclarando la fuente en toda la UI/PDF (trae el spread bancario implícito).
-**Código**: `src/lib/informe-semanal.ts` (variación semanal de granos/Chicago/pizarra/dólar
-oficial, última fecha real vs la más cercana a 7 días antes, sin asumir "viernes calendario";
-filtro `esReciente` para contratos que dejaron de operar aunque su mes siga "vigente" por
-nombre) · `/api/informes/datos?tipo=semanal` (nueva rama, reusa libs existentes) · plantilla
-`/informes/plantilla/semanal` (PDF A4 de 5 páginas, CSS de impresión nuevo en `globals.css`,
-tema siempre claro) · `VariacionBarras` (gráfico de barras reusable) · `DolarOficialChart` +
-`DolarOficialPanel`, sumados también a **`/dolar` en vivo — cierra de paso el ítem 13 del
-backlog viejo (P2 de `PLAN_BACKLOG.md`)**. **Verificado**: datos reales contra la base (fechas
-exactas 7 días apart) · PDF real generado con Playwright (`page.pdf()`, confirmado 5 páginas
-exactas) · bug encontrado y corregido en navegador (el gráfico de dólar renderizaba con
-relleno negro sólido — faltaba la clase `.evo-serie` junto a `.org-DOLAR`; de paso se sacó un
-Δ% inconsistente que la leyenda calculaba sola) · lint/tsc/build ✅. **Falta (a pedido
-explícito de Lautaro, 23/07: "no necesito que arme el skill ahora, dejalo programado como
-tarea")**: la skill `.claude/skills/informe-semanal/` (prosa "informe largo" + el criterio de
-**qué destacar cada semana**, que Lautaro quiere pensar con calma) y la Routine (depende de la
-skill). Detalle: [`sesiones/2026-07-23-informes-mp2-semanal.md`](sesiones/2026-07-23-informes-mp2-semanal.md).
+**📄 MP2 — INFORME SEMANAL (PDF research) — HECHO, PR EN VUELO — rama
+`claude/pending-tasks-mp2-writing-6kfbrp`, PR #68.** La skill `.claude/skills/informe-semanal/`
+se construyó en esta sesión (23/07, misma tarde): Lautaro contestó "definilo vos" cuando se le
+preguntó si quería retomar el criterio de "qué destacar cada semana" que había pedido pensar con
+calma — quedó como Paso 2 de la skill, marcado explícitamente como borrador a validar con el
+primer envío real (prioridad: informes de organismos de la semana → mayor movimiento de precio →
+cambios de régimen → resto como contexto). Se sumó también la sección "Informe semanal" a
+`/informes` (antes solo listaba el diario). **De paso, en la misma sesión**: (1) Lautaro aprobó y
+publicó el borrador de interpretación del WASDE #673 (MP4) y pidió que toda interpretación
+publicada aparezca en la cabecera "Novedades del día" del home hasta el día siguiente — hecho,
+con un bug real encontrado y corregido antes de pushear (el filtro comparaba la fecha del INFORME
+original, no la fecha en que Lautaro la publicó — con el bug original, este caso real nunca
+hubiera aparecido). (2) Páginas `/privacidad` y `/terminos` nuevas, a pedido de Lautaro mientras
+intentaba publicar el consent screen de Google (pide URL de política de privacidad pública).
+**Routine semanal creada** (23/07: `create_trigger` cron `0 22 * * 5` = 19:00 ART viernes) —
+**falta**: el primer PDF real de punta a punta (primer disparo real recién el viernes que viene).
+Detalle: [`sesiones/2026-07-23-mp2-skill-y-alta-srl.md`](sesiones/2026-07-23-mp2-skill-y-alta-srl.md).
+
+**📈 A3 — SUSCRIPCIÓN PAS (BCBA) HECHA + producción histórica cargada a la base.** Lautaro se
+suscribió al Panorama Agrícola Semanal por WhatsApp (la automatización sigue descartada,
+Cloudflare 403 confirmado 2/2) y pasó el PDF del informe de hoy + 5 exports descargables de
+`bolsadecereales.com/estimaciones-agricolas`. De esos 5, **`historico_pas_datasets.csv`** (26
+campañas 2000/01→2025/26, los 6 granos) resultó ser el dato correcto — verificado 1:1 contra
+cifras reales conocidas (soja 2024/25 = 50,3 Mt, maíz 2024/25 = 49,0 Mt) — mientras que
+`reporte_1.xlsx` (solo la campaña en curso) quedó descartado por no poder confirmar si su columna
+"Producción(**MTn**)" son millones o no (nunca trajo un valor >0 para verificar). Los otros 4
+reportes (`reporte_2-5`: condición semanal + avance fenológico por grano, dato que la web no
+modela en ningún lado hoy) quedan **fasados a propósito** — Lautaro eligió "los dos, pero fasado"
+cuando se le preguntó el alcance: arrancar con lo chico (producción → comparador existente) y
+diseñar con calma un panel de "condición de cultivos" más adelante. **Construido**: `src/lib/
+parse-pas.ts` (reusa la RPC `admin_upsert_estimaciones` de L5, CERO migración nueva) con dos
+defensas reales encontradas en los datos (fila de trigo 2025/26 duplicada byte-a-byte de 2024/25
+→ descartada; rinde de girasol 2024/25 corrupto en el origen → recalculado siempre desde
+producción/cosechado, nunca se confía en la columna del origen) + sección nueva en `/admin/datos`
+(mismo patrón 2 pasos que DEA, descartes siempre visibles en la previsualización). **Backfill real
+cargado**: 400 filas verificadas con Node pelado contra el CSV real antes de tocar la base, subidas
+por REST con la service key (mismo patrón que los scripts de ingesta) — BCBA sumado al comparador
+de `/produccion` junto a USDA/CONAB/BCR/DEA, 2000/01→2025/26. Detalle:
+[`sesiones/2026-07-23-mp2-skill-y-alta-srl.md`](sesiones/2026-07-23-mp2-skill-y-alta-srl.md).
+
+**🔓 A1 — LOGIN CON GOOGLE: verificación de marca TRABADA, abrió un tema de negocio (nombre/
+dominio/SRL) — PAUSADO a pedido explícito de Lautaro ("documentan todo lo que hablamos y lo
+dejamos para otro momento").** Al intentar publicar el consent screen (Google Auth Platform, UI
+nueva), Google rechazó la verificación de marca por 4 motivos, todos con la misma raíz: la web
+vive en un subdominio de Vercel (`rfagro-research-web.vercel.app`, no verificable como propiedad
+de Lautaro), la URL de página principal cargada no explica el propósito (probablemente `/` en vez
+de `/bienvenida`), el nombre "RF AGRO WEB" no coincide con la marca del sitio ("RF AGRO"), y el
+logo (probablemente el isotipo solo) no identifica la marca de forma inequívoca. **Investigado en
+el camino**: `rfagro.com.ar` (la primera opción de Lautaro) está tomado — Vercel no puede
+consultar ni vender `.ar`/`.com.ar` (hay que ir a nic.ar a mano); alternativas libres
+confirmadas: `rfagro.com` (USD 11,25/año), `rfagro.co`, `rfagro.io`. **Hallazgo importante**: la
+búsqueda de Lautaro en INPI (marcas) por "RF AGRO" dio limpia, PERO en AFIP apareció **RF AGRO
+SRL, CUIT 30712631208, activa desde 2013**, rubro "transporte automotor de mercaderías a granel"
+(camiones) — rubro adyacente, no idéntico, al de la consultora. Se le explicó la diferencia entre
+marca registrada (INPI, limpia) y nombre comercial/competencia desleal (no requiere INPI, y ahí sí
+hay una empresa activa con el nombre idéntico). Lautaro preguntó por dar de alta una SRL "R&F
+AGRO" + registrar esa marca — opinión dada (no es asesoramiento legal formal): no recomendado, el
+"&" es una diferencia demasiado fina; mejor separar los trámites (razón social de la SRL puede ser
+cualquier nombre legal, no necesita coincidir con la marca comercial "RF AGRO", a confirmar con un
+gestor/contador si pasa el registro de personas jurídicas de Santa Fe). **Nada de esto se
+ejecutó** — sigue 100% pendiente, ningún dominio comprado, ninguna SRL dada de alta, ninguna marca
+registrada, verificación de Google sin completar. Detalle (con el research completo y las
+opciones consideradas):
+[`sesiones/2026-07-23-mp2-skill-y-alta-srl.md`](sesiones/2026-07-23-mp2-skill-y-alta-srl.md).
+
+*(La base + gráfico de MP2 — `src/lib/informe-semanal.ts`, decisión de usar BCRA A3500 para el
+oficial semanal, plantilla PDF A4 de 5 páginas — se construyeron antes en la rama
+`claude/resolver-pendientes-qnts8j`, PR #63. Detalle completo:
+[`sesiones/2026-07-23-informes-mp2-semanal.md`](sesiones/2026-07-23-informes-mp2-semanal.md). La
+skill que faltaba se hizo en el bloque de arriba.)*
 
 **🔓 LOTE L5 — DEA-SAGyP: destrabar la fuente — HECHO (carga semi-manual) — rama
 `claude/resolver-pendientes-qnts8j`, PR #63.** Incidente abierto desde E5/E6: `datosestimaciones.
@@ -175,7 +227,7 @@ escritura real se prueba en la primera carga real de Lautaro. **Healthcheck sigu
 hasta esa primera carga** (correcto: avisa que falta subir el CSV). Detalle:
 [`sesiones/2026-07-23-lote-l5-dea-carga-manual.md`](sesiones/2026-07-23-lote-l5-dea-carga-manual.md).
 
-**📰 MP1 — INFORME DIARIO (placa PNG para WhatsApp) — CÓDIGO HECHO, falta la Routine — rama
+**📰 MP1 — INFORME DIARIO (placa PNG para WhatsApp) — HECHO (falta la Routine) — rama
 `claude/resolver-pendientes-qnts8j`, PR #63.** Primer ítem ejecutado del backlog maestro (C1 de
 `auditoria/E7-sintesis.md` §4), siguiendo el prompt de `PLAN_INFORMES.md`. **Migración APLICADA**
 (`20260722120000_mp1_informe_diario.sql`, por MCP con OK de Lautaro): tablas `mesa_color` (color de
@@ -191,12 +243,13 @@ color de operador guardado como referencia) · página pública `/informes` (his
 en `SECCIONES_META`). **Verificado**: lint/tsc/build ✅ · bocetos claro/oscuro mostrados y elegidos ·
 backend por SQL (guard `is_admin()` rechaza sin sesión, RPC funcionan con JWT admin simulado, RLS de
 `informes_generados` oculta borradores a anon y los muestra al pasar a enviado) · UI en navegador con
-bypass temporal revertido (git diff limpio). **Falta (paso manual de Lautaro, A2 del backlog
-maestro): crear la Routine diaria** (`create_trigger`, cron sugerido `30 21 * * 1-5` = 18:30 ART,
-env vars `SUPABASE_URL/SUPABASE_SERVICE_KEY/RESEND_API_KEY/RESEND_FROM/ADMIN_EMAILS/INFORME_TOKEN/
-INFORME_BASE_URL` en el entorno de Claude Code) — el primer disparo prueba de punta a punta lo que
-el sandbox no pudo (RPC con sesión real, Storage, Resend). Detalle:
-[`sesiones/2026-07-22-informes-mp1-diario.md`](sesiones/2026-07-22-informes-mp1-diario.md).
+bypass temporal revertido (git diff limpio). **Routine diaria creada (23/07, A2 del backlog
+maestro)**: `create_trigger` con cron `30 21 * * 1-5` (18:30 ART L-V), env vars cargadas por
+Lautaro en el entorno de Claude Code — el primer disparo real (18:30 ART de hoy) es la primera
+prueba de punta a punta de lo que el sandbox no pudo (RPC con sesión real, Storage, Resend), sin
+verificar todavía al cierre de esta sesión. Detalle:
+[`sesiones/2026-07-22-informes-mp1-diario.md`](sesiones/2026-07-22-informes-mp1-diario.md) (base) y
+[`sesiones/2026-07-23-mp2-skill-y-alta-srl.md`](sesiones/2026-07-23-mp2-skill-y-alta-srl.md) (Routine).
 
 ## Anterior (22/07/2026 — 🏁 AUDITORÍA INTEGRAL COMPLETA: E7 síntesis CERRADA → BACKLOG MAESTRO ÚNICO en `auditoria/E7-sintesis.md` §4 · encendido del login Parte A/B HECHAS, Parte C EN CURSO · E1–E6 cerradas · MP3 view de mercado MERGEADO · research P3/P4 HECHO)
 
@@ -351,14 +404,13 @@ sin pérdida) y el protocolo de sesión se sostuvo con disciplina real. **Pendie
 abierto**: si Lautaro ya probó el uploader de `/admin/datos` logueado (sin confirmar). Informe:
 [`auditoria/E6-historia.md`](auditoria/E6-historia.md).
 
-**🔮 MP3 — VIEW DE MERCADO POR GRANO (PLAN_INFORMES) — CÓDIGO EN `main`, PENDIENTE 1 PASO MANUAL DE
-LAUTARO: crear la Routine semanal.** Lautaro validó el primer view en `/granos/view` y se mergeó el
-PR #53 (rama `claude/mp3-lee-prompt-th37ix`). **Único pendiente que queda: crear la Routine semanal**
-(cron `0 12 * * 5` = 9:00 ART viernes, modelo Opus/Fable) desde su sesión de Claude, con las env vars
-`INFORME_BASE_URL`/`INFORME_TOKEN` (mismo valor en Vercel)/`SUPABASE_URL`/`SUPABASE_SERVICE_KEY`
-configuradas en el entorno — **prompt exacto listo** en
-[`sesiones/2026-07-21-informes-mp3-view-mercado.md`](sesiones/2026-07-21-informes-mp3-view-mercado.md#quedó-pendiente--en-vuelo).
-Sin la Routine, el view no se regenera solo — hay que dispararla a mano o esperar a que Lautaro la cree.
+**🔮 MP3 — VIEW DE MERCADO POR GRANO (PLAN_INFORMES) — CÓDIGO EN `main`, ROUTINE CREADA (23/07).**
+Lautaro validó el primer view en `/granos/view` y se mergeó el PR #53 (rama
+`claude/mp3-lee-prompt-th37ix`). **Routine semanal creada** (cron `0 12 * * 5` = 9:00 ART viernes;
+Lautaro le puso modelo Opus a mano desde la sección "Rutinas" de la app — `update_trigger` con
+`model` lo rechazó desde este entorno, `model_update_disabled`) — detalle en
+[`sesiones/2026-07-23-mp2-skill-y-alta-srl.md`](sesiones/2026-07-23-mp2-skill-y-alta-srl.md). El
+primer disparo real es el viernes que viene, sin verificar todavía.
 
 Se ejecutó el PROMPT MP3 **antes
 que MP1** (pedido explícito; la dependencia era blanda — MP3 solo reusa el patrón). **Base**: tabla

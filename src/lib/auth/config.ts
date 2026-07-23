@@ -60,7 +60,9 @@ export function seccionDeRuta(pathname: string): SeccionKey | null {
 /**
  * Prefijos de ruta que NUNCA exigen login (aunque el flag esté prendido): las
  * propias pantallas de auth, el callback de OAuth, la landing pública mínima
- * (`/bienvenida`) y la pantalla de "sesión cerrada en otro dispositivo". La raíz
+ * (`/bienvenida`), la pantalla de "sesión cerrada en otro dispositivo" y las
+ * páginas legales (`/privacidad`, `/terminos` — Google exige que el link de
+ * política de privacidad de la marca OAuth sea accesible sin login). La raíz
  * `/` NO va acá: con el flag prendido, un visitante sin sesión se redirige a la
  * landing (ver `session.ts`); con sesión, `/` es el tablero.
  */
@@ -73,6 +75,8 @@ export const RUTAS_PUBLICAS = [
   "/auth",
   "/bienvenida",
   "/sesion-cerrada",
+  "/privacidad",
+  "/terminos",
 ];
 
 /** ¿La ruta es una de las públicas de auth? (match por prefijo de segmento). */

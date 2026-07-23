@@ -1,12 +1,19 @@
 import Link from "next/link";
 import { getCintaData } from "@/lib/market";
-import { getNoticias } from "@/lib/noticias";
+import { getNoticias, type NoticiaItem } from "@/lib/noticias";
+import { getInterpretacionesPublicadas } from "@/lib/interpretaciones";
+import { ORG_LABEL, type Organismo } from "@/lib/calendario";
+import { hoyCordobaISO, fechaCordobaISO } from "@/lib/dates";
 import { Cinta } from "@/components/cinta";
 import { MercadoHoy } from "@/components/mercado-hoy";
 import { InformesPanel } from "@/components/informes-panel";
 import { EstimacionesMini } from "@/components/estimaciones-mini";
 import { AUTH_ENFORCED } from "@/lib/auth/config";
 import { getAcceso } from "@/lib/auth/dal";
+
+/** Titular sintético de una interpretación publicada hoy (MP4) — se suma a las
+ * novedades del día como CUALQUIER otra noticia, pero apunta adentro del Sitio. */
+type Titular = NoticiaItem & { interno?: true };
 
 // Revalida la cinta, los titulares y "el mercado hoy" cada 60s (caché corto).
 export const revalidate = 60;
@@ -25,8 +32,27 @@ const SECCIONES: { key: string; href: string; nombre: string; desc: string }[] =
 
 export default async function Home() {
   const cinta = await getCintaData();
-  const noticias = await getNoticias();
-  const titulares = noticias.destacados.slice(0, 8);
+  const [noticias, interpretaciones] = await Promise.all([getNoticias(), getInterpretacionesPublicadas()]);
+
+  // Toda interpretación de informe (MP4) que Lautaro PUBLICÓ hoy (no la fecha del informe
+  // original — un WASDE del 10/07 puede aprobarse recién el 23/07) va a la cabecera de
+  // "Novedades del día", antes que las noticias — es contenido propio de la mesa, más
+  // relevante que un titular externo. Al día siguiente `editado_en` ya no es hoy y
+  // desaparece sola (mismo criterio "day-scoped" que `mesa_color`/`informesHoy`).
+  const hoy = hoyCordobaISO();
+  const interpHoy: Titular[] = interpretaciones
+    .filter((i) => fechaCordobaISO(i.editado_en) === hoy)
+    .map((i) => ({
+      titulo: `La lectura de la mesa: ${i.informe} (${ORG_LABEL[i.organismo as Organismo] ?? i.organismo})`,
+      fuente: "RF AGRO",
+      link: "/informes#lectura-mesa",
+      fechaMs: null,
+      nMedios: 1,
+      sinFecha: true,
+      interno: true,
+    }));
+
+  const titulares: Titular[] = [...interpHoy, ...noticias.destacados].slice(0, 8);
   const [destacado, ...resto] = titulares;
 
   // Con el login prendido la home filtra por permisos: la grilla del tablero
@@ -60,26 +86,44 @@ export default async function Home() {
                 </Link>
               </div>
 
-              <a className="ht-feature" href={destacado.link} target="_blank" rel="noopener noreferrer">
-                <span className="ht-feature-titulo">{destacado.titulo}</span>
-                <span className="ht-feature-meta">
-                  <span className="ht-fuente">{destacado.fuente}</span>
-                  {destacado.nMedios > 1 && (
-                    <span className="ht-medios">{destacado.nMedios} medios</span>
-                  )}
-                </span>
-              </a>
+              {destacado.interno ? (
+                <Link className="ht-feature" href={destacado.link}>
+                  <span className="ht-feature-titulo">{destacado.titulo}</span>
+                  <span className="ht-feature-meta">
+                    <span className="ht-fuente">{destacado.fuente}</span>
+                  </span>
+                </Link>
+              ) : (
+                <a className="ht-feature" href={destacado.link} target="_blank" rel="noopener noreferrer">
+                  <span className="ht-feature-titulo">{destacado.titulo}</span>
+                  <span className="ht-feature-meta">
+                    <span className="ht-fuente">{destacado.fuente}</span>
+                    {destacado.nMedios > 1 && (
+                      <span className="ht-medios">{destacado.nMedios} medios</span>
+                    )}
+                  </span>
+                </a>
+              )}
 
               {resto.length > 0 && (
                 <ul className="hub-titulares">
-                  {resto.map((t) => (
-                    <li key={t.link}>
-                      <a href={t.link} target="_blank" rel="noopener noreferrer">
-                        <span className="ht-titulo">{t.titulo}</span>
-                        <span className="ht-fuente">{t.fuente}</span>
-                      </a>
-                    </li>
-                  ))}
+                  {resto.map((t, i) =>
+                    t.interno ? (
+                      <li key={`${t.link}-${i}`}>
+                        <Link href={t.link}>
+                          <span className="ht-titulo">{t.titulo}</span>
+                          <span className="ht-fuente">{t.fuente}</span>
+                        </Link>
+                      </li>
+                    ) : (
+                      <li key={t.link}>
+                        <a href={t.link} target="_blank" rel="noopener noreferrer">
+                          <span className="ht-titulo">{t.titulo}</span>
+                          <span className="ht-fuente">{t.fuente}</span>
+                        </a>
+                      </li>
+                    ),
+                  )}
                 </ul>
               )}
             </section>

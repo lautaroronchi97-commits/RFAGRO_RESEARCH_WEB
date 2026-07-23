@@ -23,6 +23,11 @@ export function SiteFooter() {
         Información de mercado con fines informativos. No constituye recomendación ni
         asesoramiento de inversión. Las decisiones y su resultado son responsabilidad del usuario.
       </p>
+      <p className="foot-legal">
+        <Link href="/privacidad">Política de privacidad</Link>
+        <span aria-hidden="true"> · </span>
+        <Link href="/terminos">Condiciones de servicio</Link>
+      </p>
     </footer>
   );
 }

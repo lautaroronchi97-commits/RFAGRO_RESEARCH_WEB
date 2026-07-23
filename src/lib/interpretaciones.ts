@@ -54,15 +54,19 @@ export type InterpretacionPublica = {
   fecha_publicacion: string;
   granos: string[];
   publicado_md: string;
+  /** Cuándo se publicó ESTA interpretación (puede ser mucho después de `fecha_publicacion`,
+   * que es la fecha del informe original) — es lo que scopea "Novedades del día" en la home. */
+  editado_en: string;
 };
 
 /**
  * Interpretaciones YA publicadas (lectura pública/cliente vía RLS `estado=publicado`,
- * anon key — mismo patrón que el resto de /produccion). Para "La lectura de la mesa".
+ * anon key — mismo patrón que el resto de /produccion). Para "La lectura de la mesa" y para
+ * la cabecera de Novedades del día (home).
  */
 export async function getInterpretacionesPublicadas(): Promise<InterpretacionPublica[]> {
   const res = await sbSelect(
-    "interpretaciones?estado=eq.publicado&select=organismo,informe,fecha_publicacion,granos,publicado_md&order=fecha_publicacion.desc&limit=100",
+    "interpretaciones?estado=eq.publicado&select=organismo,informe,fecha_publicacion,granos,publicado_md,editado_en&order=fecha_publicacion.desc&limit=100",
     300,
   );
   if (!res.ok || !Array.isArray(res.data)) return [];
