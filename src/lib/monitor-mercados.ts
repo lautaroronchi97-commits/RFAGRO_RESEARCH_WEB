@@ -11,11 +11,16 @@ import type { Meta } from "./market";
  * sin cron, sin backfill. Si la fuente falla, cada instrumento degrada a "—"
  * y la página sigue entera.
  *
- * Fuente: endpoint batch `spark` de Yahoo Finance — 1 request trae los 11
+ * Fuente: endpoint batch `spark` de Yahoo Finance — 1 request trae los 13
  * instrumentos sin auth (requiere User-Agent de navegador, si no da 429/403).
  * Delay medido con mercado abierto (20/07/2026): futuros CBOT/NYMEX/COMEX +
  * DXY = 10 min exactos (piso de licencia CME/ICE para feeds gratis, ninguna
  * fuente gratis lo baja); SPY y USD/BRL en tiempo real. El sello lo dice.
+ * MERVAL (^MERV) y EWZ agregados el 23/07/2026: el endpoint responde bien para
+ * los dos (probado fuera de horario de rueda porteña), pero su delay exacto en
+ * rueda abierta de Buenos Aires queda sin medir todavía (a diferencia de los
+ * de arriba, verificados con mercado abierto real) — igual degrada solo si el
+ * dato viene viejo o falta.
  *
  * Regla del repo "institución sí, puente no": el sello nombra el mercado de
  * origen (CBOT·NYMEX·COMEX·ICE), nunca el proveedor técnico.
@@ -67,6 +72,8 @@ const INSTRUMENTOS: Instr[] = [
   { yahoo: "DX-Y.NYB", grupo: "macro", nombre: "Dólar (DXY)", glyph: null, factorTn: null, unidad: "índice", unidadDec: 2, mercado: "ICE", esFuturo: false },
   { yahoo: "BRL=X", grupo: "macro", nombre: "Real (USD/BRL)", glyph: null, factorTn: null, unidad: "R$", unidadDec: 4, mercado: "FX", esFuturo: false },
   { yahoo: "SPY", grupo: "macro", nombre: "S&P 500 (SPY)", glyph: null, factorTn: null, unidad: "USD", unidadDec: 2, mercado: "NYSE", esFuturo: false },
+  { yahoo: "^MERV", grupo: "macro", nombre: "Merval", glyph: null, factorTn: null, unidad: "índice", unidadDec: 0, mercado: "BYMA", esFuturo: false },
+  { yahoo: "EWZ", grupo: "macro", nombre: "Brasil (EWZ)", glyph: null, factorTn: null, unidad: "USD", unidadDec: 2, mercado: "NYSE", esFuturo: false },
 ];
 
 export type MonitorRow = {
