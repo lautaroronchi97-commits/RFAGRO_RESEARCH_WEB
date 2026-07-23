@@ -242,7 +242,16 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   la fuente cambió a una con más historia disponible). `sesiones/2026-07-23-l4-c5-camiones.md`.
 - [ ] **C6. P1 — Merval + EWZ + volumen Matba** en el monitor de `/granos`.
 - [ ] **C7. P2 — variación semanal del USD** (gráfico en /dolar; *conviene después de L1/L2*).
-- [ ] **C8. P5 — vista por grano** (compone libs existentes, cero lógica nueva).
+- [x] **C8. P5 — filtro por grano** — hecho 23/07. Lautaro aclaró que NO quería
+  una página nueva por grano (como proponía el prompt original): quería un
+  **filtro por grano dentro de los paneles ya existentes**. Chips
+  Todos/Soja/Maíz/Trigo (nuevo `filtro-grano.tsx`) en Arbitrajes/Pases/Monitor
+  de mercados (`/granos`) y Temperatura (`/comercio/temperatura`); select
+  "Producto" en Negociado y Empresas (`/comercio/*`, ya tenían selects para
+  otros filtros). Deliberadamente sin filtro: "Mejor para hacer caja" (el
+  ranking ES la comparación cross-grano) y "Capacidad de pago" (3 filas, no
+  aporta). Verificado con Playwright + datos reales.
+  `sesiones/2026-07-23-c8-filtro-por-grano.md`.
 - [ ] **C9. Extras de spec de puertos** (matriz por mes/zonas · "qué cambió" ampliado — lo que quedó
   fuera de las Fases 1-4).
 - [ ] **C10. P6 — gráficos v2** (URL modo Período · ratio % · export PNG/CSV · media móvil ·

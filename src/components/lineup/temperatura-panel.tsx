@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { getTemperatura, type ProductoCalor } from "@/lib/lineup/temperatura";
-import { nfmt } from "@/lib/format";
+import { getTemperatura } from "@/lib/lineup/temperatura";
 import { Panel, PanelHead } from "../panel";
 import { SourceStamp } from "../source-stamp";
 import { QueEsEsto } from "../que-es-esto";
-import { BANDA_EMOJI, DIRECCION_GLIFO, DIRECCION_LABEL, type Banda } from "@/lib/lineup/mesa_calor";
+import { TemperaturaGrid } from "./temperatura-grid";
 
 /**
  * Semáforo MESA — "calor de mercadería": qué producto está CALIENTE (la exportación/industria necesita
@@ -18,51 +17,6 @@ function IconCalor() {
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.3} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M8 1.5c1.5 2.5 3.5 4 3.5 6.5a3.5 3.5 0 0 1-7 0c0-1 .5-2 1.2-2.8C6.2 6 7.2 5 8 1.5Z" />
     </svg>
-  );
-}
-
-// Acento por banda (frío→caliente). CALIENTE = demanda física fuerte.
-const BANDA_COLOR: Record<Banda, string> = {
-  CALIENTE: "#DC2626",
-  FIRME: "#EA9A16",
-  NEUTRO: "var(--dim, #8a8f83)",
-  PESADO: "#38BDF8",
-  "MUY PESADO": "#2563EB",
-  "SIN HISTORIA": "var(--dim, #8a8f83)",
-};
-const BANDA_LABEL: Record<Banda, string> = {
-  CALIENTE: "CALIENTE", FIRME: "FIRME", NEUTRO: "NEUTRO", PESADO: "PESADO",
-  "MUY PESADO": "MUY PESADO", "SIN HISTORIA": "SIN HISTORIA",
-};
-
-/** Toneladas → miles de t ("2.817"). */
-const kt = (v: number | null | undefined) => (v == null ? "—" : nfmt(Math.round(v / 1000), 0));
-const pct = (v: number | null) => (v == null ? "—" : `${v}`);
-
-function CalorCard({ p }: { p: ProductoCalor }) {
-  const color = BANDA_COLOR[p.banda];
-  const glifo = DIRECCION_GLIFO[p.direccion];
-  return (
-    <div className="calor-card" style={{ borderTopColor: color }}>
-      <div className="calor-card-top">
-        <span className="calor-card-name">{p.display}</span>
-        <span className="calor-card-dir" title={DIRECCION_LABEL[p.direccion]}>{glifo}</span>
-      </div>
-      <div className="calor-card-num" style={{ color }}>
-        {BANDA_EMOJI[p.banda]}
-        {p.calor == null ? "—" : nfmt(p.calor, 0)}
-      </div>
-      <div className="calor-card-band" style={{ color }}>{BANDA_LABEL[p.banda]}</div>
-      <div className="calor-card-accion">{p.accion}</div>
-      <div className="calor-card-expl dim">{p.explicacion}</div>
-      <dl className="calor-card-meta">
-        <div><dt>pctl gap</dt><dd>{pct(p.pctlGap)}</dd></div>
-        <div><dt>pctl line-up</dt><dd>{pct(p.pctlDensidad)}</dd></div>
-        {p.pctlFarmer != null && <div><dt>pctl farmer</dt><dd>{pct(p.pctlFarmer)}</dd></div>}
-        <div><dt>gap</dt><dd>{kt(p.gapHoy)} kt</dd></div>
-        <div><dt>line-up 30d</dt><dd>{kt(p.densidadHoy)} kt</dd></div>
-      </dl>
-    </div>
   );
 }
 
@@ -87,9 +41,7 @@ export async function TemperaturaPanel() {
         stamp={<SourceStamp meta={data.meta} />}
       />
 
-      <div className="calor-grid">
-        {data.productos.map((p) => <CalorCard key={p.cod} p={p} />)}
-      </div>
+      <TemperaturaGrid productos={data.productos} />
 
       {!data.farmerDisponible && (
         <p className="dim" style={{ marginTop: 10, fontSize: ".82rem" }}>

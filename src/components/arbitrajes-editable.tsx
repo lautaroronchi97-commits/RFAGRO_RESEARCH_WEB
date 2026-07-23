@@ -4,6 +4,7 @@ import * as React from "react";
 import { nfmt, sfmt, pfmt, dirOf, arrowOf } from "@/lib/format";
 import { GlyphSoja, GlyphMaiz, GlyphTrigo } from "./icons";
 import { InfoTip } from "./infotip";
+import { FiltroGrano, type GranoFiltroValue, type GranoKey } from "./filtro-grano";
 
 /**
  * Tabla de arbitrajes con la pizarra (disponible USD) EDITABLE por grano.
@@ -51,15 +52,20 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
       granos.map((g) => [g.underlying, g.pizarraDefault != null ? String(g.pizarraDefault) : ""]),
     ),
   );
+  const [filtro, setFiltro] = React.useState<GranoFiltroValue>("todos");
 
   const setOne = (u: string, v: string) => setPz((prev) => ({ ...prev, [u]: v }));
+
+  const visibles = filtro === "todos" ? granos : granos.filter((g) => g.underlying === filtro);
 
   // Durante la rueda la 1ª columna muestra el último operado; fuera de rueda, el ajuste.
   const hayOperado = granos.some((g) => g.rows.some((r) => r.refMode === "operado"));
   const hayVivo = granos.some((g) => g.rows.some((r) => r.vivo));
 
   return (
-    <div className="table-scroll">
+    <div>
+      <FiltroGrano value={filtro} onChange={setFiltro} presentes={granos.map((g) => g.underlying as GranoKey)} />
+      <div className="table-scroll">
       <table className="tbl" style={{ minWidth: 760 }}>
         <thead>
           <tr>
@@ -111,7 +117,7 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
           </tr>
         </thead>
         <tbody>
-          {granos.map((g) => {
+          {visibles.map((g) => {
             const raw = pz[g.underlying];
             const n = Number(raw);
             const pizarra = raw !== "" && Number.isFinite(n) ? n : null;
@@ -198,15 +204,18 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
               </React.Fragment>
             );
           })}
-          {granos.length === 0 && (
+          {visibles.length === 0 && (
             <tr>
               <td className="l dim" colSpan={9}>
-                Sin datos de arbitrajes todavía (faltan cierres o pizarra).
+                {granos.length === 0
+                  ? "Sin datos de arbitrajes todavía (faltan cierres o pizarra)."
+                  : "Sin datos para este grano."}
               </td>
             </tr>
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

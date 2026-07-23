@@ -30,7 +30,33 @@ marca — abrió research de dominio/marca/SRL, PAUSADO a pedido de Lautaro ·
 💵 C4 (compras netas BCRA) HECHO, backfill real 2003→hoy cargado ·
 ⏰ A2 (Routines MP1/MP2/MP3) HECHO, las 3 creadas y activas ·
 📈 A3 (BCBA-PAS) suscripción HECHA + producción histórica cargada (26 campañas), condición de
-cultivos fasada para después)
+cultivos fasada para después ·
+🎛️ C8 (filtro por grano) HECHO, pivote de "página nueva" a "filtro dentro de los paneles" a
+pedido de Lautaro)
+
+**🎛️ C8 — P5: FILTRO POR GRANO (no página nueva) — HECHO — misma rama
+`claude/backlog-pending-tasks-cfcjy6`.** El prompt original de `PLAN_BACKLOG.md` proponía una
+página nueva por grano (`/granos/soja`, etc.); Lautaro aclaró en el chat que NO la quería —
+prefería que **los paneles transversales ya existentes** tuvieran un filtro por grano encima,
+"para hacerlo más fácil", con el criterio de dónde vale la pena filtrar y dónde no. Componente
+compartido `filtro-grano.tsx` (chips Todos/Soja/Maíz/Trigo, mismo lenguaje que el filtro de
+Noticias) cableado con **estado independiente por panel** (sin sincronizar entre secciones) en
+Arbitrajes/Pases/Monitor de mercados (`/granos`) y Temperatura-índice MESA
+(`/comercio/temperatura`, mapeo cod→grano: crush+poroto bajo "Soja"); select "Producto" (ya
+existía ese patrón) en Negociado y Empresas (`/comercio/*`). **Deliberadamente sin filtro**:
+"Mejor para hacer caja" (el ranking de 3 filas ES la comparación entre granos) y "Capacidad de
+pago" (3 filas, no aporta); Noticias quedó afuera (requeriría clasificación nueva por keyword,
+fuera de "componer lo que ya existe"). De paso, **fix de un bug pre-existente no relacionado**:
+un comentario mal cerrado en `globals.css` (`.evo-*/.vb-*` contenía un `*/` literal que cerraba
+el comentario antes de tiempo) rompía el parseo de CSS en `npm run dev` (500 en TODAS las
+páginas) — encontrado al intentar levantar el server para verificar este lote. **Verificado**:
+lint/tsc/build/tests (137/137) ✅ · navegador con Playwright + datos reales (el entorno tenía
+`SUPABASE_URL`/`SUPABASE_SERVICE_KEY` reales como env vars del proceso, no en `.env.local`):
+`/granos` claro/oscuro con el filtro de Arbitrajes funcionando independiente de Pases/Monitor ·
+`/comercio/temperatura` con bypass temporal de `requireAdmin()` (revertido, git diff limpio) ·
+`/comercio/negociado` y `/comercio/empresas` con datos reales (el filtro de empresas bajó de
+~209 a 12 al elegir "Maíz"). Detalle:
+[`sesiones/2026-07-23-c8-filtro-por-grano.md`](sesiones/2026-07-23-c8-filtro-por-grano.md).
 
 **📝 C3 — MP4: INTERPRETACIÓN DE INFORMES DE ORGANISMOS (ítem 21) — HECHO, MIGRACIÓN APLICADA Y
 PROBADA — rama `claude/avance-c3-1ra0au`, PR #67 (mergeado).** Ejecutado el PROMPT MP4 de
