@@ -1,9 +1,12 @@
 import * as React from "react";
+import Link from "next/link";
 import { getVolumenCambiario } from "@/lib/market";
+import { getComprasBcra } from "@/lib/bcra-mulc";
 import { nfmt, pfmt, dirOf, arrowOf } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
 import { SourceStamp } from "./source-stamp";
 import { QueEsEsto } from "./que-es-esto";
+import { BcraMulcChart } from "./bcra-mulc-chart";
 
 function IconFx() {
   return (
@@ -17,8 +20,19 @@ function IconFx() {
 const GRUPOS = ["Monedas", "Contado", "Tasas"];
 const barColor = (grupo: string) => (grupo === "Monedas" ? "var(--gold)" : "var(--brand-deep)");
 
+function ddmm(iso: string | null): string {
+  if (!iso) return "—";
+  return `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
+}
+
+function fmtMusd(v: number | null): string {
+  if (v == null) return "—";
+  const s = v >= 0 ? "+" : "";
+  return `${s}${nfmt(v, 1)}`;
+}
+
 export async function PanelCambiario() {
-  const data = await getVolumenCambiario();
+  const [data, bcra] = await Promise.all([getVolumenCambiario(), getComprasBcra()]);
   const d = data.oficialVarPct == null ? null : dirOf(data.oficialVarPct);
   const byGrupo = GRUPOS.map((g) => ({
     grupo: g,
@@ -89,9 +103,52 @@ export async function PanelCambiario() {
           </tbody>
         </table>
       </div>
+
+      <h3 className="lu-h3">Compras netas BCRA (MULC)</h3>
+      {bcra.ultimo === null ? (
+        <p className="dim" style={{ padding: "8px 2px" }}>
+          Sin datos todavía. {bcra.meta.problemas[0] ?? ""}
+        </p>
+      ) : (
+        <>
+          <div className="lu-kpis">
+            <div className="lu-kpi">
+              <span className="lu-kpi-v">{fmtMusd(bcra.ultimo.montoMusd)}</span>
+              <span className="lu-kpi-l">
+                M USD el {ddmm(bcra.ultimo.fecha)}{bcra.ultimo.fuente === "manual" ? " (manual)" : ""}
+              </span>
+            </div>
+            <div className="lu-kpi">
+              <span className="lu-kpi-v">{fmtMusd(bcra.acumuladoMes)}</span>
+              <span className="lu-kpi-l">acumulado del mes ({bcra.filasMes} {bcra.filasMes === 1 ? "día" : "días"})</span>
+            </div>
+            <div className="lu-kpi">
+              <span className="lu-kpi-v">{fmtMusd(bcra.acumuladoAnio)}</span>
+              <span className="lu-kpi-l">acumulado del año ({bcra.filasAnio} {bcra.filasAnio === 1 ? "día" : "días"})</span>
+            </div>
+          </div>
+          <BcraMulcChart serie={bcra.serie} />
+        </>
+      )}
+
       <QueEsEsto
-        paraQue="Muestra el volumen operado en el mercado de cambios: cuánto se movió en el contado y en el dólar futuro."
-        comoSeCalcula="Toma el volumen de la rueda en dólares, separando el contado de cambios del dólar futuro. Las compras netas del Banco Central quedan pendientes."
+        paraQue={
+          <>
+            Muestra el volumen operado en el mercado de cambios (cuánto se movió en el contado y en
+            el dólar futuro) y las <strong>compras netas de divisas del Banco Central</strong> en el
+            MULC (mercado de cambios): cuánto compró (o vendió) el BCRA al sector privado cada día.
+          </>
+        }
+        comoSeCalcula={
+          <>
+            El volumen sale del contado de cambios y el dólar futuro de MAE. Las compras netas BCRA
+            salen de la <strong>API v4 de estadísticas del BCRA</strong> (variable 78, &quot;Variación
+            de reservas internacionales por compra de divisas&quot;) — el dato oficial llega con
+            ~3-4 días hábiles de rezago, así que el día más reciente suele completarse con una{" "}
+            <strong>carga manual</strong> desde <Link href="/admin/datos">/admin/datos</Link> hasta
+            que llega la cifra oficial (se pisa sola). El acumulado es por mes/año calendario.
+          </>
+        }
       />
     </Panel>
   );

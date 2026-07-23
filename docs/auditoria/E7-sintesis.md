@@ -222,10 +222,12 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   [`sesiones/2026-07-23-informes-mp2-semanal.md`](../sesiones/2026-07-23-informes-mp2-semanal.md).
 - [ ] **C3. MP4 — interpretación de informes de organismos** (tras MP1; borrador → OK en /admin →
   publica en /produccion).
-- [ ] **C4. P3 build — compras netas BCRA** (fuente: API v4 var 78 para la historia/rezago +
-  **carga manual del día** en /admin — decidido 22/07, §7). Desbloqueado — **verificado 23/07 que la
-  API sigue viva, pero diferido**: la sesión de MP1 ya creó en la base real la tabla `compras_bcra`
-  pensada para esto (fuente manual/api); esperar a que esa rama mergee antes de construir encima.
+- [x] **C4. P3 build — compras netas BCRA** — hecho 23/07 (fuente: API v4 var 78 para la
+  historia/rezago + carga manual del día en /admin, decidido 22/07, §7): ingesta automática
+  `ingest-bcra-mulc.mjs` + workflow + healthcheck, panel nuevo en `panel-cambiario.tsx`
+  ("Compras netas BCRA (MULC)", KPIs + gráfico de barras), backfill real 5.770 filas 2003→hoy
+  cargado a la base (verificado 1:1 contra la API), `compras_bcra` pasó a pública (mismo criterio
+  que camiones/DJVE). `sesiones/2026-07-23-c4-compras-bcra.md`.
 - [x] **C5. P4 build — camiones en puerto** — hecho 23/07, **pivotó de fuente**: en vez de SAGyP
   diario automático, Williams Entregas (vía Agrochat) por carga manual — zona Y producto, cero
   dependencia de SAGyP (Williams confirmado como servicio pago sin API). Panel público + señal

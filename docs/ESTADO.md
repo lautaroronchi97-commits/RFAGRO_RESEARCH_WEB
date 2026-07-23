@@ -19,11 +19,34 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 23/07/2026 — día grande de backlog maestro, 4 sesiones en paralelo:
+## Ahora (última actualización: 23/07/2026 — día grande de backlog maestro, 5 sesiones en paralelo:
 🧹 LOTE L1 (partir `market.ts`) HECHO · 📄 MP2 informe semanal BASE+gráfico HECHOS (falta la skill) ·
 🔓 LOTE L5 (DEA-SAGyP) HECHO (carga semi-manual) · 📰 MP1 informe diario HECHO (falta la Routine) ·
 🎯 L4 (calibración de cobertura/roster/comisiones) CERRADO · 🌻 B3 (girasol/sorgo) CERRADO ·
-🚚 C5 (camiones en puerto + señal barcos-vs-camiones) CONSTRUIDO con pivote a Williams Entregas)
+🚚 C5 (camiones en puerto + señal barcos-vs-camiones) CONSTRUIDO con pivote a Williams Entregas ·
+💵 C4 (compras netas BCRA) HECHO, backfill real 2003→hoy cargado)
+
+**💵 C4 — COMPRAS NETAS BCRA (MULC) — HECHO, PR EN VUELO — rama `claude/avance-c4-rdz586`.**
+Retomado tras el desbloqueo de A5 (22/07) y el merge de MP1 (que ya había creado `compras_bcra`
+solo-admin como insumo del informe diario). **Ingesta automática** `scripts/ingest-bcra-mulc.mjs`
+(API v4 de monetarias del BCRA, variable 78 "Variación de reservas internacionales por compra de
+divisas" — la misma que eligió el research de `negocio/07`, verificada de nuevo en vivo) + workflow
+`ingest-bcra-mulc.yml` (cron 10:00 ART L-V + dispatch con backfill) + check nuevo en
+`healthcheck-frescura.mjs` (umbral 12 días, holgado por el rezago ~3-4 hábiles). **Panel** nuevo en
+`panel-cambiario.tsx` ("Compras netas BCRA (MULC)": último dato + acumulado mes/año calendario +
+gráfico de barras verde/rojo con `bcra-mulc-chart.tsx`, las cargas manuales más tenues para
+distinguirlas). **`compras_bcra` pasó a pública** (migración `20260723160000`, RLS SELECT abierto a
+anon — mismo criterio que camiones/DJVE, decidido junto con Lautaro tras una primera migración
+rechazada por `AskUserQuestion`: la tabla queda pública, `mesa_color` sigue admin-only). **Backfill
+real cargado**: 5.770 filas (2003-01-02→17/07/2026) insertadas por SQL vía MCP (el sandbox no tenía
+`SUPABASE_SERVICE_KEY` para correr el script de backfill localmente) — **verificado 1:1 contra la
+API real** (últimos valores de julio exactos: 13/07 +280 · 14/07 +532 · 15/07 +73 · 16/07 +230 ·
+17/07 +39, coinciden con `negocio/07`) y contra `count()`/`min()`/`max()` de la tabla. RLS verificado
+por SQL (`set local role anon` → 5.770 filas visibles). **Decisión propia (research P3 dejó
+abierto)**: acumulado por mes/año CALENDARIO, no año agrícola (es un flujo monetario, no de cosecha).
+**Falta**: verificación visual en navegador (no se pudo en este sandbox, sin claves) — revisar
+`/dolar` en el Preview del PR; y el primer `workflow_dispatch` real del cron post-merge. Detalle:
+[`sesiones/2026-07-23-c4-compras-bcra.md`](sesiones/2026-07-23-c4-compras-bcra.md).
 
 **🚚 C5 — CAMIONES EN PUERTO + SEÑAL BARCOS-VS-CAMIONES — CONSTRUIDO, PR EN VUELO — rama
 `claude/pendientes-restantes-n4x9b5`.** Arrancó como el P4 del backlog (research 21/07: SAGyP/MAGyP
