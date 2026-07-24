@@ -85,12 +85,19 @@ function isoDeMs(ms: number | null): string | null {
   return new Date(ms).toISOString().slice(0, 10);
 }
 
+/** aaaamm local de un epoch (para emparejar por mes calendario). */
+function anioMesDeMs(ms: number): number {
+  const d = new Date(ms);
+  return d.getFullYear() * 100 + (d.getMonth() + 1);
+}
+
 /**
- * Empareja cada letra (que tiene vencimiento) con la posición de dólar futuro cuyo vencimiento
- * cae en la misma fecha o la más cercana, dentro de `toleranciaDias`. Criterio del Excel de
- * Lautaro: la letra se compara contra la posición de DLR de su mismo mes de vencimiento
- * (S31L6 ↔ DLR/JUL26, ambas 31/07). Sin match dentro de la tolerancia, la letra no tiene un
- * dólar futuro con el cual armar el sintético → se excluye.
+ * Empareja cada letra (que tiene vencimiento) con la posición de dólar futuro de su MISMO mes
+ * calendario de vencimiento (criterio del Excel de Lautaro: S31L6 ↔ DLR/JUL26, S14G6 y S31G6 ↔
+ * DLR/AGO26). Un mes puede tener 2+ letras contra la misma posición DLR. Si la letra no tiene una
+ * posición de dólar futuro de su mismo mes, no hay un sintético limpio que armar (cruzar meses
+ * mezclaría vencimientos distintos) → se excluye. No se usa un "más cercano en días" a propósito:
+ * daría emparejamientos de meses distintos (ej. una letra de fin de julio con el DLR de agosto).
  *
  * Devuelve las filas ordenadas por vencimiento de la letra (orden natural de curva). El pago
  * final se toma de `pagoFinalPorTicker`; si falta, la fila igual se muestra pero con el
@@ -101,25 +108,25 @@ export function emparejarSinteticos(
   letras: LetraIn[],
   posiciones: PosicionIn[],
   pagoFinalPorTicker: Record<string, number>,
-  toleranciaDias = 31,
 ): SinteticoRow[] {
-  const tolMs = toleranciaDias * 86_400_000;
   const rows: SinteticoRow[] = [];
 
   for (const l of letras) {
     if (l.vencMs === null) continue;
 
-    // posición de dólar futuro más cercana por vencimiento
+    // posición de dólar futuro del MISMO mes calendario que la letra (criterio del Excel).
+    const mesLetra = anioMesDeMs(l.vencMs);
     let mejor: PosicionIn | null = null;
     let mejorDiff = Infinity;
     for (const p of posiciones) {
+      if (anioMesDeMs(p.vencMs) !== mesLetra) continue;
       const diff = Math.abs(p.vencMs - l.vencMs);
       if (diff < mejorDiff) {
         mejorDiff = diff;
         mejor = p;
       }
     }
-    if (!mejor || mejorDiff > tolMs) continue; // sin dólar futuro emparejable
+    if (!mejor) continue; // sin dólar futuro del mismo mes → sin sintético limpio
 
     const pagoFinal = pagoFinalPorTicker[l.symbol] ?? null;
 
