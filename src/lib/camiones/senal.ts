@@ -70,7 +70,7 @@ export function mediaMovil(serie: Punto[], n = 7): Punto[] {
     const desde = Math.max(0, i - n + 1);
     const ventana = serie.slice(desde, i + 1);
     const valor = ventana.reduce((acc, p) => acc + p.valor, 0) / ventana.length;
-    out.push({ fecha: serie[i].fecha, valor });
+    out.push({ fecha: serie[i]!.fecha, valor }); // i < serie.length por el for
   }
   return out;
 }

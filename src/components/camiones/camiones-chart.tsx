@@ -101,6 +101,9 @@ export function CamionesChart({ series, colorClassPrefix, tituloAria }: { series
   }
 
   const tabla = tablaDeSeries(series);
+  // `hi` es un índice guardado en state; si `series` cambia entre renders `flat` puede achicarse
+  // y dejarlo apuntando afuera — guard real (no `!`), no es un invariante de un solo render.
+  const hiFlat = hi !== null ? flat[hi] : undefined;
 
   return (
     <>
@@ -126,22 +129,22 @@ export function CamionesChart({ series, colorClassPrefix, tituloAria }: { series
                 {pts.map((p, i) => (
                   <circle key={i} cx={X(epoch(p.fecha))} cy={Y(p.cantidad)} r={2.2} className="evo-dot" />
                 ))}
-                <circle cx={X(epoch(pts[pts.length - 1].fecha))} cy={Y(pts[pts.length - 1].cantidad)} r={4} className="evo-end" />
+                <circle cx={X(epoch(pts[pts.length - 1]!.fecha))} cy={Y(pts[pts.length - 1]!.cantidad)} r={4} className="evo-end" />
               </g>
             );
           })}
-          {hi !== null && (
-            <g className={`${colorClassPrefix}${flat[hi].key}`}>
-              <line className="cv-cross" x1={X(flat[hi].ms)} y1={pad.t} x2={X(flat[hi].ms)} y2={pad.t + ih} />
-              <circle className="evo-focus" cx={X(flat[hi].ms)} cy={Y(flat[hi].valor)} r={5} />
+          {hiFlat && (
+            <g className={`${colorClassPrefix}${hiFlat.key}`}>
+              <line className="cv-cross" x1={X(hiFlat.ms)} y1={pad.t} x2={X(hiFlat.ms)} y2={pad.t + ih} />
+              <circle className="evo-focus" cx={X(hiFlat.ms)} cy={Y(hiFlat.valor)} r={5} />
             </g>
           )}
           <rect x={pad.l} y={pad.t} width={iw} height={ih} fill="transparent" style={{ cursor: "crosshair" }} onPointerMove={onMove} onPointerLeave={() => setHi(null)} />
         </svg>
-        {hi !== null && (
-          <div className="cv-tip" style={{ left: `${(X(flat[hi].ms) / W) * 100}%`, top: `${(Y(flat[hi].valor) / H) * 100}%` }}>
-            <span className="tt-x">{flat[hi].display}</span> · {nfmt(flat[hi].valor, 0)} camiones
-            <span className="cv-tip-sub">{fmtFecha(flat[hi].fecha)}</span>
+        {hiFlat && (
+          <div className="cv-tip" style={{ left: `${(X(hiFlat.ms) / W) * 100}%`, top: `${(Y(hiFlat.valor) / H) * 100}%` }}>
+            <span className="tt-x">{hiFlat.display}</span> · {nfmt(hiFlat.valor, 0)} camiones
+            <span className="cv-tip-sub">{fmtFecha(hiFlat.fecha)}</span>
           </div>
         )}
         <div className="cv-legend">
@@ -149,7 +152,7 @@ export function CamionesChart({ series, colorClassPrefix, tituloAria }: { series
             <span className={`lk ${colorClassPrefix}${s.key}`} key={s.key}>
               <span className="sw evo-sw" />
               {s.display}
-              <span className="lk-val">{s.puntos.length ? nfmt(s.puntos[s.puntos.length - 1].cantidad, 0) : "—"}</span>
+              <span className="lk-val">{s.puntos.length ? nfmt(s.puntos[s.puntos.length - 1]!.cantidad, 0) : "—"}</span>
             </span>
           ))}
         </div>
