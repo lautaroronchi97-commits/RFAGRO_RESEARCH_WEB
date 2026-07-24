@@ -77,7 +77,7 @@ async function fetchDia(iso: string): Promise<PostFob[] | null> {
     const res = await fetch(url, {
       next: { revalidate: 1800 },
       signal: AbortSignal.timeout(8000),
-      headers: { "user-agent": "Mozilla/5.0 (RFAGRO research)" },
+      headers: { "user-agent": "Mozilla/5.0 (ROFOAGRO research)" },
     });
     if (!res.ok) return null;
     const json = (await res.json()) as { posts?: PostFob[] };

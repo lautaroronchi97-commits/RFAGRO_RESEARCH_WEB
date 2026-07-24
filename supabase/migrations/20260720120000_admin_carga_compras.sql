@@ -1,4 +1,4 @@
--- RF AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
+-- ROFO AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
 -- Uploader admin de la serie de comercialización (tabla `compras`) + fix de seguridad.
 --
 -- Nota (auditoría E6, 21/07/2026): se aplicó por `execute_sql` (workaround del canal de aprobación

@@ -170,7 +170,7 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 
 ## 4. BACKLOG MAESTRO ÚNICO
 
-> **Desde el 22/07/2026 esta es LA lista donde se prioriza.** Reemplaza el checklist «Plan RF AGRO»
+> **Desde el 22/07/2026 esta es LA lista donde se prioriza.** Reemplaza el checklist «Plan ROFO AGRO»
 > de `ESTADO.md` (queda como histórico), los «Pendientes» de `CONTEXTO.md` (ya retirados por E6) y
 > el tablero de `PLAN_BACKLOG.md` (absorbido — sus prompts P1–P12 siguen siendo los prompts de
 > ejecución). Cada sesión que complete un ítem lo tacha ACÁ y anota el PR.
@@ -208,7 +208,7 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
     todavía que el fix funciona** — Lautoro no llegó a reintentar.
   - ⛔ **Sesión cortada por un problema de acceso, no de la web**: Lautoro quedó con
     `localhost:3000` en la barra de direcciones (autocompletado de una prueba vieja, no es un sitio
-    real) en vez de `rfagro-research-web.vercel.app` — confirmado por los logs de Supabase Auth
+    real) en vez de `rofoagro-research-web.vercel.app` — confirmado por los logs de Supabase Auth
     (login exitoso del lado de Google, pero el navegador redirige a una dirección que no existe).
   - **Quedan sin probar**: comercialización (Agrochat), camiones (Williams), BCBA-PAS, compras BCRA
     manual, pago final de LECAP — y confirmar el fix de DEA. Checklist + links/filtros exactos de
@@ -684,7 +684,7 @@ ahora que MP1 ya mergeó.
 | Pedido nuevo: historial editable hasta que el informe lo toma | Construido (14 días, guard también server-side) | Sin migración nueva, PR #77 |
 | Lautoro probó DEA-SAGyP con el CSV real (~11,5 MB) | `ERR_CONNECTION_REFUSED` en "1 · Previsualizar" | Bug real: límite de payload de Server Actions en Vercel (~4,5 MB). Arreglado moviendo el parseo al navegador (PR #77) — **falta confirmar el fix con un reintento real** |
 | Lautoro no podía loguearse, pidió la contraseña de su cuenta | No existe (Google OAuth, sin password propia) | Se le explicó el flujo; no era eso |
-| Reintentó Google, tiraba conexión rechazada en `localhost:3000` | Diagnosticado por logs de Supabase Auth: navegador apuntando a una dirección de desarrollo que no existe, no un bug del sitio | Se le indicó escribir `rfagro-research-web.vercel.app` a mano; sesión cortada sin confirmar si entró |
+| Reintentó Google, tiraba conexión rechazada en `localhost:3000` | Diagnosticado por logs de Supabase Auth: navegador apuntando a una dirección de desarrollo que no existe, no un bug del sitio | Se le indicó escribir `rofoagro-research-web.vercel.app` a mano; sesión cortada sin confirmar si entró |
 
 **A6 sigue en curso**: 1/7 secciones confirmadas (Datos del día), el fix de DEA sin confirmar, 5
 secciones sin probar todavía. PR #77 mergeado (docs + historial + fix de DEA). Checklist completo

@@ -1,4 +1,4 @@
--- RF AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
+-- ROFO AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
 -- ETAPA 3 del login (ver docs/PLAN_LOGIN.md §3.4 y §5.3): hardening.
 --
 -- Agrega la SESIÓN ÚNICA por usuario (anti-préstamo, decisión 2) + duración de 7

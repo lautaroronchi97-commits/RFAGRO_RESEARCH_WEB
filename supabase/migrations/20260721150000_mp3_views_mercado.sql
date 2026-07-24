@@ -1,4 +1,4 @@
--- RF AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
+-- ROFO AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
 -- MP3 (PLAN_INFORMES.md): view de mercado por grano — research direccional semanal.
 --
 -- La sesión semanal de research (Routine de Claude Code) escribe UNA fila por grano y

@@ -1,5 +1,5 @@
 /**
- * Marca de agua RF AGRO para gráficos: el logo completo (isotipo + wordmark),
+ * Marca de agua ROFO AGRO para gráficos: el logo completo (isotipo + wordmark),
  * centrado y muy tenue, DENTRO del contenedor de cada chart.
  *
  * Uso (integradores):
@@ -8,7 +8,7 @@
  *     wrapper, agregarle `position:relative`).
  *   - No lleva props: tamaño (~55% del ancho) y opacidad (.06 claro / .07 oscuro)
  *     salen de `.cm-marca` en globals.css, para que TODOS los charts queden iguales.
- *   - Asset: `public/rfagro-logo-marca.svg` — derivado del logo real sin los halos
+ *   - Asset: `public/rofoagro-logo-marca.svg` — derivado del logo real sin los halos
  *     pálidos del auto-trace (se veían como bordes raros sobre el tema oscuro).
  *   - Queda debajo de tooltips/crosshairs (z-index:0 vs. `.cv-tip` z-index:5) y no
  *     intercepta el mouse (`pointer-events:none`).
@@ -20,7 +20,7 @@ export function ChartMarca() {
   return (
     <div className="cm-marca" aria-hidden="true">
       {/* eslint-disable-next-line @next/next/no-img-element -- SVG de marca estático, no imagen de contenido */}
-      <img src="/rfagro-logo-marca.svg" alt="" loading="lazy" decoding="async" />
+      <img src="/rofoagro-logo-marca.svg" alt="" loading="lazy" decoding="async" />
     </div>
   );
 }

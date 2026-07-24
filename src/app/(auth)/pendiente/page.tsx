@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { cerrarSesion } from "@/app/auth/actions";
 
-export const metadata: Metadata = { title: "Cuenta pendiente · RF AGRO" };
+export const metadata: Metadata = { title: "Cuenta pendiente · ROFO AGRO" };
 
 export default async function PendientePage({
   searchParams,
@@ -16,12 +16,12 @@ export default async function PendientePage({
       <h1 className="auth-title">Cuenta pendiente de aprobación</h1>
       {nuevo ? (
         <p className="auth-sub">
-          ¡Listo! Recibimos tu registro. El equipo de RF AGRO va a revisar tu cuenta y habilitarte el acceso.
+          ¡Listo! Recibimos tu registro. El equipo de ROFO AGRO va a revisar tu cuenta y habilitarte el acceso.
           Si te registraste con email, revisá tu casilla para confirmar la dirección.
         </p>
       ) : (
         <p className="auth-sub">
-          Tu cuenta todavía no está habilitada. En cuanto el equipo de RF AGRO la apruebe vas a poder ver el research.
+          Tu cuenta todavía no está habilitada. En cuanto el equipo de ROFO AGRO la apruebe vas a poder ver el research.
         </p>
       )}
 

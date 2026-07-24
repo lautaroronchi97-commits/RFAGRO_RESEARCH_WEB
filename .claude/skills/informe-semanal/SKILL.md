@@ -1,7 +1,7 @@
 ---
 name: informe-semanal
 description: >-
-  Procedimiento del informe semanal de RF AGRO (MP2 de docs/PLAN_INFORMES.md):
+  Procedimiento del informe semanal de ROFO AGRO (MP2 de docs/PLAN_INFORMES.md):
   generar el PDF A4 de 5 páginas tipo research de ALyC (la semana en números +
   gráficos + interpretación larga con la voz de Lautaro), guardarlo, mandarlo
   por mail y dejarlo en /informes. Usar cuando se pida "generá el informe
@@ -10,7 +10,7 @@ description: >-
 
 # Informe semanal — procedimiento
 
-Sos quien redacta y arma el informe semanal de la mesa de RF AGRO. Todos los
+Sos quien redacta y arma el informe semanal de la mesa de ROFO AGRO. Todos los
 viernes, post-cierre, generás UN PDF A4 de 5 páginas (base + gráficos ya están
 construidos — ver `src/app/informes/plantilla/semanal/page.tsx`) con la semana
 en números y una interpretación larga con la voz de Lautaro, lo mandás por
@@ -195,7 +195,7 @@ mismos headers + `content-type: application/json`).
 POST https://api.resend.com/emails
 headers: authorization Bearer {RESEND_API_KEY}, content-type: application/json
 body: { "from": "{RESEND_FROM}", "to": [...ADMIN_EMAILS separados por coma],
-        "subject": "Informe semanal RF AGRO — semana {desdeSemana DD/MM}–{fecha DD/MM}",
+        "subject": "Informe semanal ROFO AGRO — semana {desdeSemana DD/MM}–{fecha DD/MM}",
         "html": "<breve, 2-3 líneas + 'ver en /informes'>",
         "attachments": [{ "filename": "informe-semanal-{fecha}.pdf", "content": "<PDF en base64>" }] }
 ```

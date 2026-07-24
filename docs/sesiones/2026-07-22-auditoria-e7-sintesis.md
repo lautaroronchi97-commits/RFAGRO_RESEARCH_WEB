@@ -30,7 +30,7 @@
     NASS + erosión del roster, E5→E7).
 - **`PLAN_AUDITORIA.md`**: fila E7 → cerrada + banner "AUDITORÍA INTEGRAL COMPLETA" con link al
   backlog maestro.
-- **`ESTADO.md`**: bloque «Ahora» de E7 + el checklist «Plan RF AGRO» marcado como histórico
+- **`ESTADO.md`**: bloque «Ahora» de E7 + el checklist «Plan ROFO AGRO» marcado como histórico
   apuntando al maestro.
 - **`CONTEXTO.md`**: el pointer de «Pendientes» actualizado (backlog maestro = E7-sintesis §4).
 - **`PLAN_BACKLOG.md`**: banner "tablero absorbido — este archivo queda como biblioteca de prompts

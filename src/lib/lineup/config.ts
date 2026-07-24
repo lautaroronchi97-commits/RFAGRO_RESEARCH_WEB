@@ -1,5 +1,5 @@
 /**
- * Productos prioritarios del line-up para RF AGRO (decisión 8 del plan de puertos):
+ * Productos prioritarios del line-up para ROFO AGRO (decisión 8 del plan de puertos):
  * complejo soja + maíz + trigo + cebada forrajera + sorgo + complejo girasol.
  * Fertilizantes y malta (cebada cervecera) quedan afuera. Código de cargo en la DB
  * → nombre display + familia (para agrupar los complejos).

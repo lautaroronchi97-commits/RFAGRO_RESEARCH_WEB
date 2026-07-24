@@ -166,7 +166,7 @@ en el PR #59 (mismo día, mergeado):**
 - Google OAuth configurado: credenciales creadas en Google Cloud Console, cargadas en Supabase
   (Authentication → Providers → Google), redirect URLs configuradas. **Login con Google probado
   y funciona** (Lautoro entró con su cuenta, quedó admin auto-aprobado).
-- App name "RF AGRO" + logo (isotipo convertido a PNG 512×512 con `sharp`, mandado por
+- App name "ROFO AGRO" + logo (isotipo convertido a PNG 512×512 con `sharp`, mandado por
   `SendUserFile`) cargados en el consent screen de Google.
 - **Pendiente, anotado para retomar**: publicar la app de Google a producción (para que cualquiera
   pueda loguearse, no solo el dueño del proyecto de Google) — chocó con un paso nuevo de Google

@@ -1,4 +1,4 @@
--- RF AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
+-- ROFO AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
 -- C4 (docs/auditoria/E7-sintesis.md §4 / PROMPT P3 de PLAN_BACKLOG.md): compras netas del BCRA
 -- en el MULC, ahora con ingesta automática (API v4 var 78) + el panel cambiario público en /dolar.
 --

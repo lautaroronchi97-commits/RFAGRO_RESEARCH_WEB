@@ -49,7 +49,7 @@ const PAGE_BARE =
   "www.magyp.gob.ar/sitio/areas/ss_mercados_agropecuarios/areas/granos/_archivos/" +
   "000058_Estadísticas/000020_Compras y DJVE de Granos.php";
 
-const UA = "Mozilla/5.0 (RFAGRO research)";
+const UA = "Mozilla/5.0 (ROFOAGRO research)";
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 

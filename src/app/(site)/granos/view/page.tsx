@@ -21,7 +21,7 @@ import { ViewFeedback } from "./view-feedback";
  * cuando la calidad convenza.
  */
 export const metadata: Metadata = {
-  title: "View de mesa · Granos · RF AGRO",
+  title: "View de mesa · Granos · ROFO AGRO",
   description: "Research direccional semanal por grano: dirección, argumentos con datos y qué invalidaría la tesis.",
   robots: { index: false, follow: false },
 };
@@ -129,7 +129,7 @@ export default async function ViewMesaPage() {
 
   return (
     <>
-      <h1 className="sr">RF AGRO — View de mesa por grano</h1>
+      <h1 className="sr">ROFO AGRO — View de mesa por grano</h1>
       <main className="wrap">
         <div className="col">
           <h2 className="sec-title">Granos · View de mesa</h2>

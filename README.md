@@ -1,10 +1,10 @@
-# RF AGRO — Pizarra electrónica de granos
+# ROFO AGRO — Pizarra electrónica de granos
 
-Web de research de mercado de granos (Argentina) para **RF AGRO — Consultora de granos**.
+Web de research de mercado de granos (Argentina) para **ROFO AGRO — Consultora de granos**.
 Doble uso: tablero para la mesa (datos varias veces por día, no realtime) + datos de cierre
 para clientes (productores y acopios).
 
-**Producción:** https://rfagro-research-web.vercel.app
+**Producción:** https://rofoagro-research-web.vercel.app
 
 > El contexto completo del proyecto (fuentes de datos, metodología de fórmulas, estado de
 > módulos y pendientes) vive en [`docs/CONTEXTO.md`](docs/CONTEXTO.md).

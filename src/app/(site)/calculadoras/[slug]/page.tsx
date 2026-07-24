@@ -29,8 +29,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const calc = getCalc(slug);
-  if (!calc) return { title: "Calculadora · RF AGRO" };
-  return { title: `${calc.nombre} · RF AGRO`, description: calc.desc };
+  if (!calc) return { title: "Calculadora · ROFO AGRO" };
+  return { title: `${calc.nombre} · ROFO AGRO`, description: calc.desc };
 }
 
 export default async function CalculadoraPage({
@@ -88,7 +88,7 @@ export default async function CalculadoraPage({
 
   return (
     <>
-      <h1 className="sr">RF AGRO — {calc.nombre}</h1>
+      <h1 className="sr">ROFO AGRO — {calc.nombre}</h1>
       <main className="wrap">
         <div className="col">
           {/* Sin back-link acá: el breadcrumb del layout (Inicio › Calculadoras › …) ya cumple (E3 H11). */}

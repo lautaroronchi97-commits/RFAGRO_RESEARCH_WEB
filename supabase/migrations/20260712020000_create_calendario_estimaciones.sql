@@ -1,4 +1,4 @@
--- RF AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
+-- ROFO AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
 -- Módulo "Calendario de informes + estimaciones de producción" (docs/PLAN_CALENDARIO_PRODUCCION.md).
 -- Dos tablas base. En v1 el calendario se genera en código (src/lib/calendario.ts); estas tablas son
 -- la fundación de las ingestas de las sesiones B (USDA/CONAB) y C (Argentina). Aplicada vía MCP

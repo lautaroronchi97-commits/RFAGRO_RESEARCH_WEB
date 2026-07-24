@@ -1,11 +1,11 @@
-# RF AGRO — Contexto del proyecto (handoff para sesiones nuevas)
+# ROFO AGRO — Contexto del proyecto (handoff para sesiones nuevas)
 
-> Web de research de mercado de granos (Argentina) para la consultora **RF AGRO** (Lautaro + Mauro).
+> Web de research de mercado de granos (Argentina) para la consultora **ROFO AGRO** (Lautaro + Mauro).
 > Doble uso: panel para Lautaro (datos varias veces por día) + datos de cierre para clientes
 > (productores / acopios). El tiempo real tick-a-tick lo maneja Lautaro aparte (Excel + eTrader);
 > esta web es **demorado / varias veces por día**, no realtime.
 >
-> **Deploy:** https://rfagro-research-web.vercel.app · **Rama de integración: `main`** (todo entra por PR a `main`).
+> **Deploy:** https://rofoagro-research-web.vercel.app · **Rama de integración: `main`** (todo entra por PR a `main`).
 > Cada sesión trabaja en su rama `claude/*` creada DESDE `main`.
 >
 > ⚠️ **ANTES de empezar cualquier sesión: leé [`docs/ESTADO.md`](ESTADO.md)** (tablero vivo: qué hay en
@@ -43,7 +43,7 @@ TZ America/Argentina/Cordoba.
 Tokens en `src/app/globals.css`. Paleta del logo: verdes (RF `#2F6E34` / AGRO `#4E9C3A`) + trigo `#EFBF2E`;
 fondo claro `#EDF2E3`. Semáforo vivo: pos `#16A34A`/`#37D982`, neg `#DC2626`/`#FF5C5C`. Dos temas:
 claro (clientes) / oscuro "rueda" (trader). Fuentes Inter + JetBrains Mono (números tabulares).
-Marca: **RF AGRO** (nunca "CONSULTAR"). Glifos trigo/soja/maíz, cinta tipo pizarrón.
+Marca: **ROFO AGRO** (nunca "CONSULTAR"). Glifos trigo/soja/maíz, cinta tipo pizarrón.
 **Rediseño premium (solo presentación, cero cambios de datos/fórmulas):** oscuro = carbón verde profundo
 (`#060A07`, paneles `#0C130D`–`#152017`) con atmósfera radial sutil; claro = papel crema tipo informe de
 banca privada. Oro `#EFBF2E` SOLO como acento (hairlines, filos, glow) — mantener esa avaricia. Bordes
@@ -153,7 +153,7 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
 > BACKLOG MAESTRO de [`auditoria/E7-sintesis.md`](auditoria/E7-sintesis.md) §4** (con matriz impacto ×
 > esfuerzo y dependencias). Los prompts de ejecución viven donde siempre: P1–P12 en
 > [`PLAN_BACKLOG.md`](PLAN_BACKLOG.md), MP1–MP4 en [`PLAN_INFORMES.md`](PLAN_INFORMES.md), lotes
-> L1–L6 en el propio `E7-sintesis.md` §6. El checklist «Plan RF AGRO» de `ESTADO.md` quedó como
+> L1–L6 en el propio `E7-sintesis.md` §6. El checklist «Plan ROFO AGRO» de `ESTADO.md` quedó como
 > registro histórico. **Regla: ni `CONTEXTO.md` ni ninguna otra lista paralela — todo pendiente nuevo
 > se agrega directo al backlog maestro.**
 
@@ -170,7 +170,7 @@ favicon de marca. **Cero credenciales en historial de git (verificado).**
 
 ### Supabase — CONECTADO
 - Proyecto **`lineup-argentina`** · ref **`gbpfgfeksqmzmsxnxiwg`** · región sa-east-1 (São Paulo).
-  Org `chona97`. Se consolidó RF AGRO sobre este proyecto (no se creó uno nuevo).
+  Org `chona97`. Se consolidó ROFO AGRO sobre este proyecto (no se creó uno nuevo).
 - Tablas: `lineup` (~494k, scraper ISA Agents **frenado** desde ~jun), `djve` (MAGyP, **al día**),
   `compras` (% cosecha/priceado, **frenado**), **`futuros_cierres`** (cierres A3 granos).
 - Vistas (lectura anon): `djve_resumen`, `futuros_cierres_ultimo` (curva = último cierre por posición).

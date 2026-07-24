@@ -1,7 +1,7 @@
 # EL CORREACOPIO — Contexto de negocio
 
 > Base de conocimiento de una mesa de trading de granos en Argentina.
-> Referencia permanente de expertise para RF AGRO: cómo funciona la mesa, los
+> Referencia permanente de expertise para ROFO AGRO: cómo funciona la mesa, los
 > instrumentos, las lógicas de decisión y la jerga. Los ejemplos numéricos son
 > **siempre didácticos** (no reflejan mercado ni posición vigente).
 > Los datos reales (exposición de pesos, view de TC, posición A3, caja) los

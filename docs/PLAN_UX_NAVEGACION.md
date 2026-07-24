@@ -4,7 +4,7 @@
 > **navegable por secciones**: una portada tipo tablero donde clickeás un tópico y **entrás a esa parte**
 > (con su propia dirección, compartible por link). Cada calculadora y cada reporte queda **explicado**
 > (para qué sirve + cómo se hacen las cuentas) en lenguaje simple, sin revelar cómo se construyó la web ni
-> por dónde se traen los datos. Se presenta como **producto propio de RF AGRO**.
+> por dónde se traen los datos. Se presenta como **producto propio de ROFO AGRO**.
 >
 > Este documento es SOLO el plan. No cambia código. La construcción va en sesiones siguientes, por fases.
 
@@ -67,7 +67,7 @@ src/app/
   solo pone SUS paneles. Hoy cada `page.tsx` repite ese andamiaje a mano — esto lo elimina.
 - **Navegación** con `<Link>` (ya se usa). El menú del header pasa a tener los **destinos reales** (Granos ·
   Dólar y tasas · Comercio exterior · Calculadoras · Gráficos · Producción · Noticias) — se termina la mezcla
-  anclas/links. El **logo "RF AGRO" siempre lleva al Inicio** (estándar) y cada página muestra **migas de
+  anclas/links. El **logo "ROFO AGRO" siempre lleva al Inicio** (estándar) y cada página muestra **migas de
   pan** (`Inicio › Sección › Subpágina`) para ubicarse y volver con un click.
 - **Rendimiento**: cada página trae **solo lo suyo** (hoy la home regenera 31 componentes juntos). Cada
   ruta con su propio `revalidate`. Se puede bajar la cadencia de las páginas pesadas.
@@ -142,7 +142,7 @@ puede estar demorado" pero con texto genérico.
 **Focos a tocar (todos chicos y aislados):**
 1. `src/components/source-stamp.tsx` — sacar el string técnico y dejar `[origen] · Actualizado HH:MM`.
    Cubre de una a todos los paneles porque todos rutean su origen por ahí.
-2. `src/components/site-footer.tsx` — sacar los chips técnicos; dejar "Elaboración propia RF AGRO ·
+2. `src/components/site-footer.tsx` — sacar los chips técnicos; dejar "Elaboración propia ROFO AGRO ·
    datos de mercado" + el disclaimer que ya está.
 3. Textos sueltos — cinta (`title` con nombre de fuente) y textos de `/produccion` que hoy nombran
    endpoints/siglas técnicas → reescribir genérico.

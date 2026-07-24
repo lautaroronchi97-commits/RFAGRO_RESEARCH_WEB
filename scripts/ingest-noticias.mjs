@@ -4,7 +4,7 @@
  *
  * Corre cada hora por GitHub Actions (.github/workflows/ingest-noticias.yml).
  * Recorre TODAS las fuentes (RSS + scrapes), clasifica cada titular con las
- * reglas propias de `src/lib/noticias-reglas.json` (categorización RF AGRO,
+ * reglas propias de `src/lib/noticias-reglas.json` (categorización ROFO AGRO,
  * no la de BCR) y upserta por link. Guarda SOLO titular+fuente+link (link-out,
  * nunca el cuerpo de la nota).
  *
@@ -31,7 +31,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const DRY_RUN = process.argv.includes("--dry-run");
 
-const UA = "Mozilla/5.0 (compatible; RFAGROresearch/1.0; noticias)";
+const UA = "Mozilla/5.0 (compatible; ROFOAGROresearch/1.0; noticias)";
 const MAX_POR_FUENTE = 25;
 const MAX_EDAD_DIAS = 14; // ignora ítems viejos que algunos feeds arrastran
 const BCR_URL =

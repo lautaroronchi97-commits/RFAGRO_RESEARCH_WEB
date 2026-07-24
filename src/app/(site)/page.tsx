@@ -44,7 +44,7 @@ export default async function Home() {
     .filter((i) => fechaCordobaISO(i.editado_en) === hoy)
     .map((i) => ({
       titulo: `La lectura de la mesa: ${i.informe} (${ORG_LABEL[i.organismo as Organismo] ?? i.organismo})`,
-      fuente: "RF AGRO",
+      fuente: "ROFO AGRO",
       link: "/informes#lectura-mesa",
       fechaMs: null,
       nMedios: 1,
@@ -73,7 +73,7 @@ export default async function Home() {
 
   return (
     <>
-      <h1 className="sr">RF AGRO — Pizarra electrónica de granos</h1>
+      <h1 className="sr">ROFO AGRO — Pizarra electrónica de granos</h1>
       <Cinta data={cinta} />
       <main className="wrap">
         <div className="col">

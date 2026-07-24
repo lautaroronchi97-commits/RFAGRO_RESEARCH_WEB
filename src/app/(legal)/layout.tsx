@@ -13,17 +13,17 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
     <div className="lp-shell">
       <header className="lp-nav">
         <div className="lp-nav-in">
-          <Link href="/" className="brand" aria-label="RF AGRO — Inicio">
+          <Link href="/" className="brand" aria-label="ROFO AGRO — Inicio">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/rfagro-isotipo.svg" alt="" className="brand-iso" width={58} height={32} />
+            <img src="/rofoagro-isotipo.svg" alt="" className="brand-iso" width={58} height={32} />
             <span className="wordmark">
-              <span className="rf">RF</span>
+              <span className="rf">ROFO</span>
               <span className="agro">AGRO</span>
             </span>
           </Link>
           <div className="lp-nav-tools">
             <Link href="/bienvenida" className="lp-nav-ingresar">
-              ← Volver a RF AGRO
+              ← Volver a ROFO AGRO
             </Link>
             <ThemeToggle />
           </div>

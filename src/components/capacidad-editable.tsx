@@ -155,7 +155,7 @@ export function CapacidadEditable({ granos, industria }: { granos: CapGranoClien
               </th>
               <th scope="col">
                 <InfoTip term="Nuestro">
-                  FAS teórico RF AGRO: mismo FOB oficial (fuente independiente, SAGyP/MAGyP) con
+                  FAS teórico ROFO AGRO: mismo FOB oficial (fuente independiente, SAGyP/MAGyP) con
                   supuestos de gastos EDITABLES (desplegá &quot;Ajustar supuestos&quot; abajo).
                 </InfoTip>
               </th>

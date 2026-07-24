@@ -19,7 +19,7 @@ import { diasEntre } from "../dates";
  * y no solo el último movimiento.
  */
 
-const SOURCE = "Elaboración propia RF AGRO";
+const SOURCE = "Elaboración propia ROFO AGRO";
 const UMBRAL_BUQUE_NUEVO_TN = 30_000; // materialidad de "buque nuevo/salido" (mesa_diff.py)
 const DIAS_REFERENCIA = 7; // objetivo: comparar contra la rueda de hace ~1 semana
 const TOLERANCIA_DIAS = 3; // si no hay rueda a ±3 días del objetivo, no se muestra (feriados/huecos de ISA)

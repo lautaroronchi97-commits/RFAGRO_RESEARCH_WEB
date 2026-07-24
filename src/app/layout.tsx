@@ -16,9 +16,9 @@ const jbMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RF AGRO · Pizarra electrónica de granos",
+  title: "ROFO AGRO · Pizarra electrónica de granos",
   description:
-    "Research de mercado de granos de Argentina: arbitrajes pizarra vs A3, dólar futuro, tasas implícitas. RF AGRO — Consultora de granos.",
+    "Research de mercado de granos de Argentina: arbitrajes pizarra vs A3, dólar futuro, tasas implícitas. ROFO AGRO — Consultora de granos.",
   // El noindex global se sacó en E3 (fase 2) al conectar la pizarra real de CAC y quitar las
   // implícitas de granos de ejemplo (ya no queda dato falso a la vista). Las páginas de mesa
   // (admin, comercio/*, produccion, granos/view) mantienen su `robots: index:false` propio.

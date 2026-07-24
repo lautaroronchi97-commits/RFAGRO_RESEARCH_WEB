@@ -2,7 +2,7 @@
 
 > Metodología propia de scoring de clientes vendedores de granos.
 > **Estado:** especificación funcional completa. Diseñado para un correacopio;
-> es un potencial **producto/metodología** ofrecible por RF AGRO a acopios y
+> es un potencial **producto/metodología** ofrecible por ROFO AGRO a acopios y
 > corredoras. Pendientes: prompt de implementación para IT + primer ángulo
 > analítico a testear con datos reales.
 >

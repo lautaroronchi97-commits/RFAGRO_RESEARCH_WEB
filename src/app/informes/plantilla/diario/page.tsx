@@ -152,7 +152,7 @@ export default async function PlantillaDiarioPage({
       <div className="plc" data-tema={tema}>
         <header className="plc-hd">
           {/* eslint-disable-next-line @next/next/no-img-element -- SVG estático de /public, no contenido para <Image>. */}
-          <img src="/rfagro-isotipo.svg" alt="" width={52} height={30} />
+          <img src="/rofoagro-isotipo.svg" alt="" width={52} height={30} />
           <div className="plc-hd-wm">
             <span className="plc-hd-tit">Mesa de operaciones Agro 🚜👨‍🌾</span>
             <span className="plc-hd-fecha">{fechaLegible}</span>
@@ -270,7 +270,7 @@ export default async function PlantillaDiarioPage({
             </>
           )}
           <p className="plc-disclaimer">
-            Research informativo de RF AGRO, no constituye recomendación de inversión. Datos de
+            Research informativo de ROFO AGRO, no constituye recomendación de inversión. Datos de
             fuentes públicas y de mercado, sujetos a revisión.
           </p>
           <p className="plc-sello">datos al {horaCordoba(new Date(), false)}</p>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ContactoForm } from "@/components/landing/contacto-form";
 
 /**
- * Landing institucional de RF AGRO (ítem 3 del backlog) — página de VENTA.
+ * Landing institucional de ROFO AGRO (ítem 3 del backlog) — página de VENTA.
  * Estructura tipo producto: hero (promesa) → problema → cómo funciona (01·02·03) →
  * servicios → vistazo al tablero (llamador) → por qué → para acopios → equipo (sin
  * nombres) → FAQ → contacto (formulario). Los mockups son ilustrativos: sin datos
@@ -218,10 +218,10 @@ export default function BienvenidaPage() {
         </div>
       </section>
 
-      {/* ===== POR QUÉ RF AGRO ===== */}
+      {/* ===== POR QUÉ ROFO AGRO ===== */}
       <section id="por-que" className="lp-section">
         <div className="lp-wrap">
-          <h2 className="lp-h2 lp-center">Por qué RF AGRO</h2>
+          <h2 className="lp-h2 lp-center">Por qué ROFO AGRO</h2>
           <div className="lp-why">
             {DIFERENCIALES.map((d) => (
               <article key={d.titulo} className="lp-why-item">
@@ -254,7 +254,7 @@ export default function BienvenidaPage() {
         <div className="lp-wrap lp-narrow lp-center">
           <h2 className="lp-h2">Quiénes estamos detrás</h2>
           <p className="lp-p lp-quote">
-            Detrás de RF AGRO hay un equipo con <strong>más de 10 años</strong> manejando una mesa
+            Detrás de ROFO AGRO hay un equipo con <strong>más de 10 años</strong> manejando una mesa
             de granos especializada en originación y rentabilidad. Gran formación técnica y
             experiencia real de mercado y, sobre todo, ambas cosas conviviendo en el mismo equipo,
             que es lo más difícil de encontrar.

@@ -1,5 +1,5 @@
 /**
- * FAS Teórico RF AGRO — el cálculo PROPIO de capacidad de pago (paralelo al de BCR).
+ * FAS Teórico ROFO AGRO — el cálculo PROPIO de capacidad de pago (paralelo al de BCR).
  *
  * Sigue la misma estructura que la metodología de BCR ("Metodología de FAS teórico
  * EXPORTACIÓN y FAS Teórico INDUSTRIA", Dirección de Informaciones y Estudios Económicos,
@@ -96,7 +96,7 @@ export function cfgSembrada(underlying: string, filaBcr: FilaBcrGastos | undefin
 }
 
 /**
- * FAS Teórico RF AGRO = FOB oficial × (1 − alícuota DEX + reintegro − % comerciales)
+ * FAS Teórico ROFO AGRO = FOB oficial × (1 − alícuota DEX + reintegro − % comerciales)
  *                        − gastos portuarios − margen de riesgo
  * `null` si falta el FOB oficial (no inventa un valor).
  */

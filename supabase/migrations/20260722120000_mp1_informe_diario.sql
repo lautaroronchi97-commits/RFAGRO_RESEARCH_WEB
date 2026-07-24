@@ -1,4 +1,4 @@
--- RF AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
+-- ROFO AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
 -- MP1 (docs/PLAN_INFORMES.md): informe diario (placa PNG para WhatsApp).
 --
 -- Dos tablas nuevas + un bucket privado de Storage:

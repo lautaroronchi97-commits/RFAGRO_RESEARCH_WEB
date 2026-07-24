@@ -10,7 +10,7 @@ import { requireSeccion } from "@/lib/auth/dal";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Dólar y tasas · RF AGRO",
+  title: "Dólar y tasas · ROFO AGRO",
   description:
     "Dólar futuro, dólar linked, tasas implícitas, sintéticos y el panel cambiario del día.",
 };
@@ -19,7 +19,7 @@ export default async function DolarPage() {
   await requireSeccion("dolar");
   return (
     <>
-      <h1 className="sr">RF AGRO — Dólar y tasas</h1>
+      <h1 className="sr">ROFO AGRO — Dólar y tasas</h1>
       <main className="wrap">
         <div className="col">
           <h2 className="sec-title">Dólar y tasas</h2>

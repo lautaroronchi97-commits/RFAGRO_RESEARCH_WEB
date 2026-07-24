@@ -242,7 +242,7 @@ ALCANCE DE ESTA ETAPA:
    las páginas de datos del route group protegido. Server component, ambos temas, sin arruinar la
    estética premium (validar visualmente con screenshots claro/oscuro).
 4. LANDING MÍNIMA pública (decisión 7): con AUTH_ENFORCED prendido, el visitante sin sesión que llega a
-   la raíz ve una página institucional simple — marca RF AGRO (glifos/design system existente), una
+   la raíz ve una página institucional simple — marca ROFO AGRO (glifos/design system existente), una
    línea de qué es el servicio, botones Ingresar y Registrarse. Sin datos de mercado. Con flag apagado
    la home actual no cambia. (La landing completa con contenido comercial es otra sesión del backlog.)
 5. REVISIÓN DE SEGURIDAD final de todo el módulo (con AUTH_ENFORCED=true local):
