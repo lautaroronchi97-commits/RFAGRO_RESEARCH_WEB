@@ -278,12 +278,14 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   Presets de usuario siguen esperando login ON (A1). `sesiones/2026-07-23-c10-graficos-v2.md`.
 - [x] ~~**C11. P7 — vista productor + PWA**~~ → **DESCARTADO 24/07** (Lautaro: "ninguno de los
   dos desarrollos me interesa" — ni la vista simplificada ni la PWA instalable). Ver §5.
-- [ ] **C12. P8 — feed A3 histórico intradiario** (paso manual previo: secrets A3 en GitHub Actions).
+- [x] ~~**C12. P8 — feed A3 histórico intradiario**~~ → **DESCARTADO 24/07** (Lautaro lo descartó
+  directamente). Ver §5.
 - [ ] **C13. P9 — sintéticos TIR** 🔒 (tabla IAMC + fórmula tuya como paso 1).
 - [ ] **C14. P10 — estrategias avanzadas** 🔒 (primas reales/costos: tus decisiones como paso 1).
 - [ ] **C15. P11 — modelo propio de capacidad de pago** 🔒 (tu fórmula como paso 1).
 - [ ] **C16. P12 — scoring de clientes** 🔒 (datos de fijaciones como paso 1; producto nuevo, por fases).
-- [ ] **C17. Gráficos intradía** (consume la tabla `snapshots` de C12 — anotado al cerrar P8).
+- [x] ~~**C17. Gráficos intradía**~~ → **DESCARTADO 24/07** (cae con C12: consumía la tabla
+  `snapshots` que C12 iba a crear, sin C12 no tiene insumo). Ver §5.
 
 ### D. Lotes técnicos aprobados (refactors/calibración/robustez — prompts en §6)
 
@@ -336,7 +338,7 @@ A2 ──→ /granos/view se regenera solo
 A5 ──→ C4 y C5
 A7 ──→ B1 y B3
 C1 (MP1) ──→ C2 (MP2) y C3 (MP4)
-C12 (P8) ──→ C17 (gráficos intradía);  C12 espera secrets A3 en Actions (manual)
+C12 (P8) y C17 (gráficos intradía) — cayeron ambos, descartados (§5)
 D4 (L1) ──→ D5 (L3 más barato) · conviene antes de C7/C10
 D6 (L2) ──→ conviene antes de C7 (chart nuevo del USD semanal)
 D2 (L4) 🔒 valores de Lautaro;  C13–C16 🔒 insumos de Lautaro
@@ -375,6 +377,7 @@ HECHOS, ver §4. Esta sección "Orden decidido" queda como registro histórico d
 | `cierres-panel.tsx` huérfano | E4 | **Intencional**, documentado — no tocar |
 | Leaked password protection ya | E5 #13c → sesión 22/07 | **Diferido a propósito** (requiere Supabase Pro $25/mes; plan Free confirmado) — solo vive como A8 |
 | C11/P7 — vista productor + PWA | Sesión 24/07 | **Descartado** — Lautaro: "ninguno de los dos desarrollos me interesa" (ni la vista simplificada ni la PWA instalable) |
+| C12/P8 — feed A3 histórico intradiario (+ C17, gráficos intradía que dependían de esto) | Sesión 24/07 | **Descartado** — Lautaro: "lo descarto" |
 
 ## 6. Prompts de corrección por lote (autocontenidos, estilo PLAN_AUDITORIA)
 
