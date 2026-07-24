@@ -56,10 +56,10 @@ describe("camiones/senal.ts — mediaMovil", () => {
     }));
     const ma = mediaMovil(serie, 7);
     // primeras filas: ventana chica (ensancha desde el arranque)
-    expect(ma[0].valor).toBe(1);
-    expect(ma[1].valor).toBe(1.5);
+    expect(ma[0]!.valor).toBe(1);
+    expect(ma[1]!.valor).toBe(1.5);
     // fila 8 (índice 7): promedio de valores 2..8 (últimos 7)
-    expect(ma[7].valor).toBeCloseTo((2 + 3 + 4 + 5 + 6 + 7 + 8) / 7, 9);
+    expect(ma[7]!.valor).toBeCloseTo((2 + 3 + 4 + 5 + 6 + 7 + 8) / 7, 9);
   });
 
   it("serie vacía → []", () => {
