@@ -69,15 +69,17 @@ function textoCelda(html: string): string {
 /** Encuentra el bloque de la tabla principal (class="tabla", no "tabla2") dentro del HTML. */
 function extraerTablaPrincipal(html: string): string | null {
   const m = html.match(/<table[^>]*class="tabla"[^>]*>([\s\S]*?)<\/table>/i);
-  return m ? m[1] : null;
+  // El grupo captura es obligatorio (sin `?`) en el regex — si `m` matcheó, m[1] existe siempre;
+  // el `?? null` solo satisface el tipo sin asumir con `!` (nunca se ejercita esa rama en la práctica).
+  return m ? (m[1] ?? null) : null;
 }
 
 /** "JULIO 2026" (dentro del th rowspan=2 de cabecera) → { mes, anio }. */
 function mesAnioDeCabecera(tabla: string): { mes: number; anio: number } | null {
   const m = tabla.match(/<th[^>]*rowspan=["']?2["']?[^>]*>\s*([A-ZÁÉÍÓÚÑ]+)\s+(\d{4})\s*</i);
   if (!m) return null;
-  const mes = MESES_LARGO[m[1].toUpperCase()];
-  const anio = Number(m[2]);
+  const mes = MESES_LARGO[(m[1] ?? "").toUpperCase()];
+  const anio = Number(m[2] ?? "");
   if (!mes || !Number.isFinite(anio)) return null;
   return { mes, anio };
 }
@@ -88,8 +90,8 @@ function diaDeFila(raw: string): { dia: number; mesAbrev: number | null } | null
     .toLowerCase()
     .match(/^(\d{1,2})-([a-zé]{3})$/);
   if (!m) return null;
-  const dia = Number(m[1]);
-  const mesAbrev = MESES_ABREV[m[2]] ?? null;
+  const dia = Number(m[1] ?? "");
+  const mesAbrev = MESES_ABREV[m[2] ?? ""] ?? null;
   if (!Number.isFinite(dia) || dia < 1 || dia > 31) return null;
   return { dia, mesAbrev };
 }
@@ -115,10 +117,12 @@ export function parseTablaDiariaSagyp(html: string): ParseSagypResult {
   let identidadesRotas = 0;
 
   for (const tr of trs) {
-    const celdas = [...tr.matchAll(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/gi)].map((m) => m[1]);
+    // Grupo obligatorio del regex (sin `?`) → cada match SIEMPRE trae el grupo 1; el `?? ""`
+    // satisface el tipo (celdas queda string[], no (string|undefined)[]) sin cambiar el dato real.
+    const celdas = [...tr.matchAll(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/gi)].map((m) => m[1] ?? "");
     if (celdas.length < 14) continue; // filas de encabezado/nota (colspan) no tienen 14 celdas
 
-    const fechaTxt = textoCelda(celdas[0]);
+    const fechaTxt = textoCelda(celdas[0] ?? "");
     const d = diaDeFila(fechaTxt);
     if (!d) continue; // "Acumulados" u otra fila especial
 
@@ -127,23 +131,28 @@ export function parseTablaDiariaSagyp(html: string): ParseSagypResult {
     const fecha = `${cab.anio}-${String(mes).padStart(2, "0")}-${String(d.dia).padStart(2, "0")}`;
 
     const v = celdas.slice(1, 14).map(numSagyp);
+    // v SIEMPRE tiene 13 elementos acá (celdas.length>=14, confirmado arriba) → el `?? 0` de más
+    // abajo nunca se ejercita en la práctica; se usa en vez de `!` porque 0 YA es la convención de
+    // "sin dato" de `numSagyp` (celda vacía/"-" → 0), así que no introduce un valor ajeno al dominio.
     const [ros, dar, nec, bb, totZona, trigo, maiz, sorgo, cebada, soja, girasol, totProd, vagones] = v;
 
     // Fila 100% en cero (domingo/feriado sin actividad) → se descarta, no se persiste.
     if (v.every((x) => x === 0)) continue;
 
     const zona: Record<ZonaCamiones, number> = {
-      ROSARIO_ALEDANOS: ros, DARSENA_BSAS_ER: dar, NECOCHEA: nec, BAHIA_BLANCA: bb,
+      ROSARIO_ALEDANOS: ros ?? 0, DARSENA_BSAS_ER: dar ?? 0, NECOCHEA: nec ?? 0, BAHIA_BLANCA: bb ?? 0,
     };
     const producto: Record<ProductoCamiones, number> = {
-      WHEAT: trigo, MAIZE: maiz, SORGHUM: sorgo, BARLEY: cebada, SBS: soja, SFSEED: girasol,
+      WHEAT: trigo ?? 0, MAIZE: maiz ?? 0, SORGHUM: sorgo ?? 0, BARLEY: cebada ?? 0, SBS: soja ?? 0, SFSEED: girasol ?? 0,
     };
 
     const sumaZona = ZONA_CLAVES.reduce((acc, k) => acc + zona[k], 0);
     const sumaProd = PRODUCTO_CLAVES.reduce((acc, k) => acc + producto[k], 0);
-    if (Math.abs(sumaZona - totZona) > 1 || Math.abs(sumaProd - totProd) > 1) identidadesRotas++;
+    const totZonaN = totZona ?? 0;
+    const totProdN = totProd ?? 0;
+    if (Math.abs(sumaZona - totZonaN) > 1 || Math.abs(sumaProd - totProdN) > 1) identidadesRotas++;
 
-    filas.push({ fecha, zona, totalZona: totZona, producto, totalProducto: totProd, vagonesPlaya: vagones });
+    filas.push({ fecha, zona, totalZona: totZonaN, producto, totalProducto: totProdN, vagonesPlaya: vagones ?? 0 });
   }
 
   return {

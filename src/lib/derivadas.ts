@@ -23,6 +23,23 @@ export function mesDePosicion(pos: string | null | undefined): number {
   return parsePosicion(pos)?.mes ?? 0;
 }
 
+/**
+ * Empareja `s.d[i]`/`s.v[i]` (arrays paralelos por contrato de `SeriePuntos` — la API siempre
+ * los manda del mismo largo) en `{f,y}[]`. Defensivo por diseño: si algún día llegaran
+ * desalineados, el punto sin `y` se DESCARTA en vez de colar un `y` corrupto al chart (mismo
+ * criterio "nunca un número inventado" del resto del repo) — nunca se ejercita hoy, verificado
+ * con los datos reales de /api/series.
+ */
+export function zipSerie(s: SeriePuntos): { f: string; y: number }[] {
+  const out: { f: string; y: number }[] = [];
+  for (let i = 0; i < s.d.length; i++) {
+    const f = s.d[i];
+    const y = s.v[i];
+    if (f !== undefined && y !== undefined) out.push({ f, y });
+  }
+  return out;
+}
+
 type Join = { f: string; va: number; vb: number };
 
 /**
@@ -32,8 +49,8 @@ type Join = { f: string; va: number; vb: number };
  * Con dos patas del mismo mercado (A3 vs A3) las fechas coinciden → sin relleno.
  */
 export function joinFfill(a: SeriePuntos, b: SeriePuntos, maxGap = 3): Join[] {
-  const mapA = new Map(a.d.map((f, i) => [f, a.v[i]]));
-  const mapB = new Map(b.d.map((f, i) => [f, b.v[i]]));
+  const mapA = new Map(zipSerie(a).map((p) => [p.f, p.y]));
+  const mapB = new Map(zipSerie(b).map((p) => [p.f, p.y]));
   const fechas = [...new Set([...a.d, ...b.d])].sort();
 
   const out: Join[] = [];
@@ -96,8 +113,10 @@ export function mediaMovil(serie: { f: string; y: number }[], ventana: number): 
   const out: { f: string; y: number }[] = [];
   for (let i = ventana - 1; i < serie.length; i++) {
     let suma = 0;
-    for (let k = i - ventana + 1; k <= i; k++) suma += serie[k].y;
-    out.push({ f: serie[i].f, y: suma / ventana });
+    // Invariante del propio for: k va de (i-ventana+1) a i, con i<serie.length e i-ventana+1>=0
+    // (i arranca en ventana-1) → k SIEMPRE es un índice válido de `serie`.
+    for (let k = i - ventana + 1; k <= i; k++) suma += serie[k]!.y;
+    out.push({ f: serie[i]!.f, y: suma / ventana });
   }
   return out;
 }
@@ -126,7 +145,8 @@ export function alinear<T extends { f: string; y: number }>(
     // las ruedas hábiles que faltan para el vto, para que quede a la misma altura
     // que las históricas a esa distancia del vencimiento.
     const n = win.length;
-    const offset = ruedasHasta(win[n - 1].f, vtoISO);
+    // win.length===0 ya devolvió [] arriba → n>=1, win[n-1] siempre existe.
+    const offset = ruedasHasta(win[n - 1]!.f, vtoISO);
     return win.map((p, i) => ({ ...p, x: i - (n - 1) - offset }));
   }
 
@@ -211,7 +231,9 @@ export function mediana(xs: number[]): number {
   if (xs.length === 0) return NaN;
   const s = [...xs].sort((a, b) => a - b);
   const m = Math.floor(s.length / 2);
-  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+  // s.length>=1 (guard arriba) → m está en [0, length-1]; en el caso par, m-1>=0 también
+  // (length par y >=1 implica length>=2, así que m>=1).
+  return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2;
 }
 
 /**
