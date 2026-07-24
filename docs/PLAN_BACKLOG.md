@@ -54,7 +54,7 @@
 | P4 | Camiones en puerto (research → ingesta → panel) | build espera OK de Lautaro a [`negocio/08`](negocio/08_fuente_camiones_puerto.md) | Fable/Opus (ídem P3) | **research HECHO (21/07)** — fuente elegida: SAGyP/MAGyP entrada diaria |
 | P5 | Vista por grano | — | Sonnet | pendiente |
 | P6 | Gráficos v2 (paquete) | — | Sonnet | **HECHO (23/07, C10)** — P12/P17 resueltos con tu respuesta ("pizarra maíz vs soja" = el ratio en %; "son pizarras" = sin serie front-month que construir). `sesiones/2026-07-23-c10-graficos-v2.md` |
-| P7 | Vista productor + PWA | robots→index depende de E3 | Sonnet | pendiente |
+| P7 | Vista productor + PWA | robots→index depende de E3 | Sonnet | **DESCARTADO (24/07)** — Lautaro: "ninguno de los dos desarrollos me interesa" (ni la vista simplificada ni la PWA). Ver `auditoria/E7-sintesis.md` §5 |
 | P8 | Feed A3 Fase 2 — histórico intradiario | — | Sonnet | pendiente |
 | P9 | Sintéticos TIR | tabla IAMC de Lautaro (paso 1) | Fable/Opus (validación de fórmulas financieras) | pendiente |
 | P10 | Estrategias avanzadas | primas/decisiones de Lautaro (paso 1) | Fable/Opus (ídem P9) | pendiente |
@@ -66,7 +66,7 @@
 > verificaciones (cotejos contra fuentes, navegación); las decisiones y el código, la sesión principal.
 
 **Orden sugerido** (Lautaro elige libremente; son independientes salvo lo anotado): P1→P2 (chicos,
-valor inmediato) → P8 (habilita intradía) → P5 → P3/P4 (research) → P6 → P7 → P9/P10/P11 cuando estén
+valor inmediato) → P8 (habilita intradía) → P5 → P3/P4 (research) → P6 → P9/P10/P11 cuando estén
 los insumos → P12 al final (producto nuevo).
 
 ## Reglas transversales (cada prompt las asume)
@@ -232,6 +232,10 @@ main; doc de sesión + ESTADO (lista v2 actualizada ítem por ítem).
 ---
 
 # PROMPT P7 — Vista productor + PWA
+
+> ⚠️ **DESCARTADO 24/07/2026** — Lautaro: "ninguno de los dos desarrollos me interesa" (ni la
+> vista simplificada ni la PWA instalable). Prompt dejado como registro histórico — **NO
+> ejecutar** salvo que Lautaro lo pida de nuevo explícitamente.
 
 ```text
 Ejecutá el pendiente P7 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md,

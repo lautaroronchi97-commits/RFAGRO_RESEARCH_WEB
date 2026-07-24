@@ -276,7 +276,8 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   media móvil · vol/OI · guard parcial). P12/P17 resueltos con la respuesta de Lautaro (la relación
   % es el ratio existente pizarra maíz/soja; "son pizarras" → sin serie front-month que construir).
   Presets de usuario siguen esperando login ON (A1). `sesiones/2026-07-23-c10-graficos-v2.md`.
-- [ ] **C11. P7 — vista productor + PWA** (mejor con login encendido: es para clientes reales).
+- [x] ~~**C11. P7 — vista productor + PWA**~~ → **DESCARTADO 24/07** (Lautaro: "ninguno de los
+  dos desarrollos me interesa" — ni la vista simplificada ni la PWA instalable). Ver §5.
 - [ ] **C12. P8 — feed A3 histórico intradiario** (paso manual previo: secrets A3 en GitHub Actions).
 - [ ] **C13. P9 — sintéticos TIR** 🔒 (tabla IAMC + fórmula tuya como paso 1).
 - [ ] **C14. P10 — estrategias avanzadas** 🔒 (primas reales/costos: tus decisiones como paso 1).
@@ -330,7 +331,7 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 ### Dependencias explícitas (grafo corto)
 
 ```
-A1 (login ON) ──→ C11 (vista productor) · presets de usuario de C10 · marca de agua activa
+A1 (login ON) ──→ presets de usuario de C10 · marca de agua activa (C11 cayó — descartado, §5)
 A2 ──→ /granos/view se regenera solo
 A5 ──→ C4 y C5
 A7 ──→ B1 y B3
@@ -373,6 +374,7 @@ HECHOS, ver §4. Esta sección "Orden decidido" queda como registro histórico d
 | Borrar `calendario_informes` (0 filas) | E1 Duda 3 | **No** — se conserva como base del ítem 21/MP4 |
 | `cierres-panel.tsx` huérfano | E4 | **Intencional**, documentado — no tocar |
 | Leaked password protection ya | E5 #13c → sesión 22/07 | **Diferido a propósito** (requiere Supabase Pro $25/mes; plan Free confirmado) — solo vive como A8 |
+| C11/P7 — vista productor + PWA | Sesión 24/07 | **Descartado** — Lautaro: "ninguno de los dos desarrollos me interesa" (ni la vista simplificada ni la PWA instalable) |
 
 ## 6. Prompts de corrección por lote (autocontenidos, estilo PLAN_AUDITORIA)
 
