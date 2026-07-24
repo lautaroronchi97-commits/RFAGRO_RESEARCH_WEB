@@ -47,6 +47,11 @@ type RawRow = {
 
 const NOMBRES: Record<string, string> = { SOJ: "Soja", MAI: "Maíz", TRI: "Trigo" };
 
+// Tamaño del contrato de granos en Matba Rofex: 100 tn. Verificado 23/07/2026
+// contra el CEM (apicem.matbarofex.com.ar/api/v1/totals): unitsVolume / volume
+// = 100 para SOJ/MAI/TRI Dolar MATba en varios días reales.
+export const CONTRATO_GRANO_TN = 100;
+
 // JUL26 → 202607 ; DISPO (no matchea la regex) → 0, disponible primero. Ojo: un
 // "DIS24" SÍ matchea → 202400 (comportamiento heredado, ver dates.ts#parsePosicion).
 const vencKey = vencKeyDePosicion;

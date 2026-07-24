@@ -29,6 +29,7 @@ export type ArbRow = {
   dias: number | null; // días hasta el vencimiento
   tna: number | null; // directa anualizada (365/días), en %
   volume: number | null; // volumen operado en el día (contratos)
+  openInterest: number | null; // interés abierto de cierre (contratos)
 };
 
 export type ArbGrano = {
@@ -66,7 +67,17 @@ export const getArbitrajes = cache(async (): Promise<ArbData> => {
       const dias = vto ? diasHasta(vto) : null;
       const tna =
         directa != null && dias != null && dias > 0 ? round2((directa * 365) / dias) : null;
-      return { pos: p.posicion, symbol: p.symbol, ajuste, spread, directa, dias, tna, volume: p.volume ?? null };
+      return {
+        pos: p.posicion,
+        symbol: p.symbol,
+        ajuste,
+        spread,
+        directa,
+        dias,
+        tna,
+        volume: p.volume ?? null,
+        openInterest: p.openInterest ?? null,
+      };
     });
     if (rows.length > 0) {
       granos.push({

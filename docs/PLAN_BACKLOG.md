@@ -48,8 +48,8 @@
 
 | P | Tema | Bloqueado por | Modelo sugerido | Estado |
 |---|---|---|---|---|
-| P1 | Merval + EWZ + volumen Matba en el monitor | — | Sonnet | pendiente |
-| P2 | Variación semanal del USD (gráfico en /dolar) | — | Sonnet | pendiente |
+| P1 | Merval + EWZ + volumen Matba en el monitor | — | Sonnet | **HECHO (23/07)** — Merval/EWZ en el Monitor de mercados; volumen+interés abierto por grano sumados al panel de Arbitrajes (ya conectado al feed en vivo de A3), no como fuente externa nueva. `sesiones/2026-07-23-p1-p2-monitor-dolar.md` |
+| P2 | Variación semanal del USD (gráfico en /dolar) | — | Sonnet | **HECHO (23/07)** — ya existía un panel chico (~13 días) construido de paso con MP2, sin tocar; se sumó serie semanal larga (26 sem., combo nivel+variación) + gráfico de volatilidad (desvío rolling 12 sem., anualizado), fuente BCRA API v4 var. 5 en vivo cacheada, sin tabla nueva. `sesiones/2026-07-23-p1-p2-monitor-dolar.md` |
 | P3 | Compras netas BCRA + acumulado de rueda USD | — | Fable/Opus (la fase research decide fuente y arquitectura) | **HECHO (23/07, C4)** — ingesta automática + panel + backfill 2003→hoy. `sesiones/2026-07-23-c4-compras-bcra.md` |
 | P4 | Camiones en puerto (research → ingesta → panel) | build espera OK de Lautaro a [`negocio/08`](negocio/08_fuente_camiones_puerto.md) | Fable/Opus (ídem P3) | **research HECHO (21/07)** — fuente elegida: SAGyP/MAGyP entrada diaria |
 | P5 | Vista por grano | — | Sonnet | pendiente |

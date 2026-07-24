@@ -29,6 +29,9 @@ export type ArbGranoClient = {
   pizarraDefault: number | null;
   pizarraArs: number | null;
   pizarraEstimativa?: boolean;
+  volTotalTn: number | null; // suma de todas las posiciones vivas, en tn (vivo si operó hoy, cierre si no)
+  volTotalEsVivo: boolean;
+  oiTotalTn: number | null; // interés abierto total, en tn (siempre de cierre)
   rows: Row[];
 };
 
@@ -160,6 +163,17 @@ export function ArbitrajesEditable({ granos }: { granos: ArbGranoClient[] }) {
                             ↺
                           </button>
                         )}
+                      </span>
+                      <span className="gmeta gvol">
+                        <InfoTip term={`Vol. ${g.volTotalEsVivo ? "en vivo" : "cierre"} ${g.volTotalTn != null ? nfmt(g.volTotalTn, 0) : "—"} t`}>
+                          Volumen operado de todas las posiciones vivas, sumado. En rueda es en vivo (A3);
+                          fuera de rueda, el del último cierre (Matba Rofex).
+                        </InfoTip>
+                        {" · "}
+                        <InfoTip term={`Int. abierto ${g.oiTotalTn != null ? nfmt(g.oiTotalTn, 0) : "—"} t`}>
+                          Interés abierto total (contratos vigentes sin cerrar), del último cierre — Matba
+                          Rofex no lo publica en vivo.
+                        </InfoTip>
                       </span>
                     </span>
                   </td>
