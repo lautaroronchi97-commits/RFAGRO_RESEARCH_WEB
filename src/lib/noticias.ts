@@ -276,7 +276,7 @@ function decode(s: string): string {
 
 function dominio(url: string): string {
   const m = url.match(/^https?:\/\/(?:www\.)?([^/]+)/i);
-  return m ? m[1] : url;
+  return m ? (m[1] ?? url) : url; // grupo obligatorio del regex; `?? url` solo satisface el tipo
 }
 
 /** Titulares planos del "Resumen de diarios" de BCR (fuente = medio original). */

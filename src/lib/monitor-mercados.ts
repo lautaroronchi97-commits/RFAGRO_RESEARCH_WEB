@@ -113,16 +113,17 @@ function parsePos(shortName: string | null): string | null {
   if (!shortName) return null;
   const m = /(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[- ]?(\d{2,4})?/.exec(shortName);
   if (!m) return null;
-  const mon = m[1];
+  const mon = m[1]!; // grupo obligatorio del regex
   const raw = m[2];
   let yy: number;
   if (raw && raw.length >= 2) {
     yy = raw.length === 4 ? Number(raw) % 100 : Number(raw);
   } else {
     const now = new Date();
-    yy = (EN_IDX[mon] < now.getMonth() ? now.getFullYear() + 1 : now.getFullYear()) % 100;
+    // mon es uno de los 12 literales del regex de arriba → siempre está en EN_IDX/EN2ES.
+    yy = (EN_IDX[mon]! < now.getMonth() ? now.getFullYear() + 1 : now.getFullYear()) % 100;
   }
-  return `${EN2ES[mon]}${String(yy).padStart(2, "0")}`;
+  return `${EN2ES[mon]!}${String(yy).padStart(2, "0")}`;
 }
 
 /* ---------------- fetch batch (Result, degrada solo) ---------------- */

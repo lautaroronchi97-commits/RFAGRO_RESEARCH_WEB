@@ -26,7 +26,10 @@ function normalizar(s: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .trim()} `;
-  for (const [buscar, reemplazo] of REGLAS.siglas) plano = plano.split(buscar).join(reemplazo);
+  for (const [buscar, reemplazo] of REGLAS.siglas) {
+    if (buscar === undefined || reemplazo === undefined) continue; // par [buscar,reemplazar] mal formado en el JSON
+    plano = plano.split(buscar).join(reemplazo);
+  }
   return plano;
 }
 

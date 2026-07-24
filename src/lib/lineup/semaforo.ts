@@ -71,7 +71,7 @@ export const getSemaforo = cache(async (): Promise<SemaforoData> => {
     const ratio = ratioCobertura(declarado, originado);
     // Umbral por percentil histórico (lote L4): un solo cod (maíz/trigo) usa el suyo
     // propio; soja combina 3 (SBS+SBM+SBO en equiv. poroto) → usa el pool de empresas.ts.
-    const umbrales = g.cods.length === 1 ? (porCod.get(g.cods[0])?.umbrales ?? empresas.umbralesPool) : empresas.umbralesPool;
+    const umbrales = g.cods.length === 1 ? (porCod.get(g.cods[0]!)?.umbrales ?? empresas.umbralesPool) : empresas.umbralesPool; // length===1 recién chequeado
     const fisico = senalDe(declarado, originado, umbrales).tag;
     const price = fasDe.get(g.precio);
     const fas = price?.fas ?? null;

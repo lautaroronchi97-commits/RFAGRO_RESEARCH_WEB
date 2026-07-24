@@ -186,7 +186,7 @@ export const getFotoOperativa = cache(async (): Promise<FotoOperativa> => {
   const previa = relevantes.filter((x) => x.r.rueda_rank === 2);
   if (ultima.length === 0) return vacia("Sin line-up reciente");
 
-  const fecha = ultima[0].r.fecha_consulta;
+  const fecha = ultima[0]!.r.fecha_consulta; // ultima.length===0 ya salió arriba
   const fechaPrev = previa[0]?.r.fecha_consulta ?? null;
 
   // Tabla de buques (una fila por registro de la última rueda).

@@ -52,31 +52,54 @@ function tzOffsetMin(date: Date, tz: string): number {
     minute: "2-digit",
     second: "2-digit",
   });
-  const p: Record<string, number> = {};
-  for (const part of dtf.formatToParts(date)) {
-    if (part.type !== "literal") p[part.type] = Number(part.value);
-  }
+  const parts = dtf.formatToParts(date);
+  // `formatToParts` con estas `options` SIEMPRE trae las 6 partes numéricas — buscarlas por tipo
+  // (en vez de un Record<string,number> indexado) evita el "| undefined" genérico y deja un error
+  // claro si algún motor JS alguna vez cambia el shape.
+  const parte = (tipo: string): number => {
+    const p = parts.find((x) => x.type === tipo);
+    if (!p) throw new Error(`calendario: Intl.DateTimeFormat no devolvió la parte "${tipo}" (¿cambió el motor JS?)`);
+    return Number(p.value);
+  };
   // hour '24' aparece a medianoche en algunas plataformas → normalizar a 0
-  const hour = p.hour === 24 ? 0 : p.hour;
-  const asUTC = Date.UTC(p.year, p.month - 1, p.day, hour, p.minute, p.second);
+  const hour = parte("hour") % 24;
+  const asUTC = Date.UTC(parte("year"), parte("month") - 1, parte("day"), hour, parte("minute"), parte("second"));
   return (asUTC - date.getTime()) / 60000;
+}
+
+/** "YYYY-MM-DD" -> [año, mes 1-12, día]. Formato interno del módulo (invariante, nunca llega
+ *  otra cosa) — valida igual y falla claro si algún caller externo lo rompe. */
+function partesISO(fechaISO: string): [number, number, number] {
+  const m = fechaISO.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) throw new Error(`calendario: fecha ISO inválida "${fechaISO}"`);
+  // Los 3 grupos son obligatorios en el regex (sin `?`) → si `m` matcheó, los 3 existen.
+  return [Number(m[1]!), Number(m[2]!), Number(m[3]!)];
+}
+
+/** "HH:MM" -> [hora, minuto]. Mismo criterio que `partesISO`. */
+function partesHora(hora: string): [number, number] {
+  const m = hora.match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) throw new Error(`calendario: hora inválida "${hora}"`);
+  return [Number(m[1]!), Number(m[2]!)];
 }
 
 /** Hora de pared "YYYY-MM-DD HH:MM" en zona `tz` → epoch ms (UTC). */
 function zonedToUtcMs(fechaISO: string, hora: string, tz: string): number {
-  const [y, mo, d] = fechaISO.split("-").map(Number);
-  const [h, mi] = hora.split(":").map(Number);
+  const [y, mo, d] = partesISO(fechaISO);
+  const [h, mi] = partesHora(hora);
   const guess = Date.UTC(y, mo - 1, d, h, mi);
   // una iteración alcanza salvo en el salto de DST (no aplica a publicaciones al mediodía)
   const off = tzOffsetMin(new Date(guess), tz);
   return guess - off * 60000;
 }
 
-const TZ: Record<string, string> = {
+// Claves literales (no Record<string,string>): con noUncheckedIndexedAccess, un índice genérico
+// agrega "| undefined" incluso en acceso por punto (TZ.ET) — acotar las claves lo evita sin `!`.
+const TZ = {
   ET: "America/New_York", // USDA, CFTC, EIA, NOPA (con DST)
   BR: "America/Sao_Paulo", // CONAB (= AR todo el año, sin DST desde 2019)
   AR: "America/Argentina/Cordoba",
-};
+} as const;
 
 /** Hora Argentina "HH:MM" de un instante. */
 function horaArgDe(ms: number): string {
@@ -471,8 +494,8 @@ export function getEventos(desdeISO: string, hastaISO: string): EventoCalendario
 
 /** Lista [año, mes(1-12)] que toca el rango. */
 function mesesEnRango(desde: string, hasta: string): Array<[number, number]> {
-  const [y0, m0] = desde.split("-").map(Number);
-  const [y1, m1] = hasta.split("-").map(Number);
+  const [y0, m0] = partesISO(desde);
+  const [y1, m1] = partesISO(hasta);
   const out: Array<[number, number]> = [];
   let y = y0;
   let m = m0;

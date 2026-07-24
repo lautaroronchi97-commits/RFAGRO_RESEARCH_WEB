@@ -30,7 +30,8 @@ export function vencFromTicker(sym: string): number | null {
   if (!m) return null;
   const day = Number(m[1]);
   if (day < 1 || day > 31) return null;
-  const month = MONTH_LETTER[m[2]];
+  // m[2] matcheó la clase [EFMAYJLGSOND] del regex → siempre es una clave válida de MONTH_LETTER.
+  const month = MONTH_LETTER[m[2]!]!;
   const year = 2020 + Number(m[3]);
   return new Date(year, month, day).getTime();
 }
