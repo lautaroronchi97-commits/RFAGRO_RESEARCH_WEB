@@ -93,12 +93,19 @@
    `"ROFO AGRO <onboarding@resend.dev>"`; si Lautaro tiene un dominio propio verificado en Resend
    con un remitente tipo "RF AGRO <...>" cargado como env var en Vercel, esa env var se actualiza
    a mano (no vive en el repo).
-4. **`public/Sleek Corporate Identity for RF AGRO.png`** quedó en `main` (subido directo por
-   Lautaro, fuera de esta rama) — es el PNG de referencia del logo, con el nombre de archivo
-   desactualizado; no se usa en ningún lado del código (solo el SVG). Se puede renombrar o borrar
-   sin impacto cuando Lautaro quiera — no se tocó en esta rama porque vive en `main`, no acá.
-5. **Supabase — sin acción**: confirmado que el proyecto no usa el nombre de marca, no hace falta
+4. **Supabase — sin acción**: confirmado que el proyecto no usa el nombre de marca, no hace falta
    nada ahí.
+
+## Merge con `main` (al cerrar)
+Al mergear el PR, `main` había avanzado con la sesión A6 (PR #77/#79) — incluye el commit "Add
+files via upload" con los 2 archivos que Lautaro subió directo por GitHub
+(`public/ROFO SVG.svg` + `public/Sleek Corporate Identity for RF AGRO.png`, este último con "RF
+AGRO" en el nombre). **Conflicto real en `docs/ESTADO.md`** (las dos ramas agregaron su propia
+sección «Ahora»): resuelto a mano, dejando el rebrand como «Ahora» (más reciente) y demoviendo la
+entrada de A6 a «Anterior». **Aprovechado para terminar de cerrar el rebrand**: los 2 archivos
+subidos por GitHub quedaban en `public/` (servidos como estáticos del sitio, y uno con "RF AGRO"
+literal en el nombre) — movidos a `docs/marca/rofoagro-{fuente.svg,referencia.png}` (nombre
+limpio, ya no público; son solo referencia de diseño, ningún componente los importa).
 
 ## Trampas descubiertas (para la próxima sesión)
 - El sandbox arrancó sin `node_modules` (hubo que correr `npm install` antes de lint/tsc/build).

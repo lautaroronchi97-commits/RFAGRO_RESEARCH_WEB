@@ -194,22 +194,40 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   con el flujo habitual de PR). Nada que borrar.
 - [x] **A5. Responder las preguntas de P3 y P4** — ✅ respondido 22/07 (§7): P3 = automático +
   carga manual del día · P4 = público, backfill 2020→hoy. C4 y C5 desbloqueados.
-- [ ] **A6. Confirmar si ya probaste el uploader de `/admin/datos` logueado**: OJO, esto creció desde
-  el PR #44 — hoy `/admin/datos` tiene **7 secciones** de carga manual, cada una con su propio
-  procedimiento (previsualizar → confirmar, nunca escribe en el primer paso). Ninguna fue probada
-  todavía con tu sesión real logueada (solo con bypass temporal de admin en el sandbox). Lo que hay
-  que probar, sección por sección:
+- [ ] **A6. Probar el uploader de `/admin/datos` logueado — EN CURSO 24/07, 1/7 confirmado + 1 bug
+  real encontrado y arreglado (PR #77, mergeado).** Lautaro arrancó a probarlas en vivo, guiado
+  paso a paso:
+  - ✅ **Datos del día** (color de la rueda) — probado y confirmado, guarda bien. De paso se sumó
+    un **historial editable de los últimos 14 días** (pedido nuevo de Lautoro en el momento), con
+    cada fila bloqueándose sola apenas el informe diario ya la tomó (`informes_generados`).
+  - 🐛 **DEA-SAGyP — bug real encontrado**: el CSV oficial (~11,5 MB) hacía fallar "1 ·
+    Previsualizar" con `ERR_CONNECTION_REFUSED`/"This page couldn't load" — las Server Actions de
+    Next en Vercel tienen un límite de payload de ~4,5 MB por función (no configurable, distinto
+    del `bodySizeLimit` de Next). **Arreglado**: el parseo ahora corre en el navegador de Lautoro
+    (`parseDea` es un módulo puro), solo el resumen agregado viaja al servidor. **Sin confirmar
+    todavía que el fix funciona** — Lautoro no llegó a reintentar.
+  - ⛔ **Sesión cortada por un problema de acceso, no de la web**: Lautoro quedó con
+    `localhost:3000` en la barra de direcciones (autocompletado de una prueba vieja, no es un sitio
+    real) en vez de `rofoagro-research-web.vercel.app` — confirmado por los logs de Supabase Auth
+    (login exitoso del lado de Google, pero el navegador redirige a una dirección que no existe).
+  - **Quedan sin probar**: comercialización (Agrochat), camiones (Williams), BCBA-PAS, compras BCRA
+    manual, pago final de LECAP — y confirmar el fix de DEA. Checklist + links/filtros exactos de
+    cada fuente: `ESTADO.md` «Ahora» de esta fecha.
   1. **Comercialización (Agrochat)** — copiá el prompt de la tarjeta, pedíselo a Agrochat, subí el
      CSV/xlsx → Previsualizar → Confirmar. Se ve reflejado en `/comercio/negociado`.
   2. **Camiones en puerto (Williams)** — mismo patrón con el prompt de camiones, elegís la serie
      (total o un grano) → `/comercio/camiones`.
-  3. **Datos del día** — color de la rueda (texto libre) para el informe diario (MP1).
+  3. **Datos del día** — ✅ probado. Historial nuevo sin probar todavía.
   4. **Compras BCRA (MULC) — carga manual** — elegís una fecha hábil reciente y cargás el monto en
-     M USD (tapa el hueco de rezago hasta que el cron automático la pise) → `/dolar`.
-  5. **Estimaciones DEA-SAGyP** — descargá el CSV desde datosestimaciones.magyp.gob.ar (con tu
-     navegador, no bloqueado) y subilo → `/produccion`. Esta es la que más urge probar: mientras no
-     se cargue una vez real, el healthcheck de DEA sigue en rojo.
-  6. **Estimaciones BCBA-PAS** — CSV de bolsadecereales.com/estimaciones-agricolas → `/produccion`.
+     M USD (tapa el hueco de rezago hasta que el cron automático la pise) → `/dolar`. No hay fuente
+     fija para el dato del día — se carga el que Lautoro ya conoce de su fuente habitual (research
+     `negocio/07` descartó automatizarlo).
+  5. **Estimaciones DEA-SAGyP** — descargá el CSV desde datosestimaciones.magyp.gob.ar (botón de
+     descarga del reporte "Estimaciones", dataset completo sin filtrar) y subilo → `/produccion`.
+     Sigue siendo la que más urge: mientras no se cargue una vez real, el healthcheck de DEA sigue
+     en rojo. Ahora con el fix del límite de payload aplicado — falta el reintento real.
+  6. **Estimaciones BCBA-PAS** — específicamente `historico_pas_datasets.csv` (NO `reporte_1.xlsx`)
+     de bolsadecereales.com/estimaciones-agricolas → `/produccion`.
   7. **Pago final de letras (sintéticos)** — pegás `TICKER PAGO_FINAL [VENCIMIENTO]` por línea (lo
      sacás de tu Excel, IAMC o BYMA) → `/dolar` (panel Sintéticos).
   Con que confirmes cuáles ya probaste (y cuáles fallaron, si alguna) alcanza para tachar esto.
@@ -657,6 +675,20 @@ ahora que MP1 ya mergeó.
 | **A1** — estado del login/dominio | **"Se está validando por Vercel el dominio"** | Sigue abierto (no depende de una sesión de código) — anotado como en curso, un paso más cerca de retomar la verificación de marca de Google |
 | **A6** — qué probar del uploader | **"Más específico qué debo probar"** | A6 detallado en el ítem de arriba: son 7 secciones hoy (creció desde el PR #44), con el paso a paso de cada una |
 | **A8** — leaked password protection | **"Descartalo por ahora"** | Cerrado sin acción — se retoma solo si algún día se upgradea Supabase a Pro |
+
+### Bloque 7 — A6 probado en vivo: 1 bug real + feature nueva + bloqueo de acceso (24/07/2026)
+
+| Qué pasó | Resultado | Efecto en el backlog |
+|---|---|---|
+| Lautoro probó "Datos del día" con un texto real | Guardó bien | Confirmado — ver checklist de A6 |
+| Pedido nuevo: historial editable hasta que el informe lo toma | Construido (14 días, guard también server-side) | Sin migración nueva, PR #77 |
+| Lautoro probó DEA-SAGyP con el CSV real (~11,5 MB) | `ERR_CONNECTION_REFUSED` en "1 · Previsualizar" | Bug real: límite de payload de Server Actions en Vercel (~4,5 MB). Arreglado moviendo el parseo al navegador (PR #77) — **falta confirmar el fix con un reintento real** |
+| Lautoro no podía loguearse, pidió la contraseña de su cuenta | No existe (Google OAuth, sin password propia) | Se le explicó el flujo; no era eso |
+| Reintentó Google, tiraba conexión rechazada en `localhost:3000` | Diagnosticado por logs de Supabase Auth: navegador apuntando a una dirección de desarrollo que no existe, no un bug del sitio | Se le indicó escribir `rofoagro-research-web.vercel.app` a mano; sesión cortada sin confirmar si entró |
+
+**A6 sigue en curso**: 1/7 secciones confirmadas (Datos del día), el fix de DEA sin confirmar, 5
+secciones sin probar todavía. PR #77 mergeado (docs + historial + fix de DEA). Checklist completo
+de qué falta y cómo probar cada fuente: `ESTADO.md` «Ahora» del 24/07 (esta sesión).
 
 ---
 
