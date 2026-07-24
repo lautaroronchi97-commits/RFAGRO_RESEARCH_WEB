@@ -20,7 +20,7 @@ export function sessionIdDeToken(accessToken: string | null | undefined): string
   const parts = accessToken.split(".");
   if (parts.length < 2) return null;
   try {
-    const b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const b64 = parts[1]!.replace(/-/g, "+").replace(/_/g, "/"); // parts.length<2 ya salió arriba
     const binary = atob(b64);
     const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
     const json = new TextDecoder("utf-8").decode(bytes);

@@ -55,7 +55,7 @@ export const getComprasBcra = cache(async (): Promise<BcraMulcData> => {
   }
 
   const puntos: PuntoBcraMulc[] = rows.map((r) => ({ fecha: r.fecha, montoMusd: r.monto_musd, fuente: r.fuente }));
-  const ultimo = puntos[puntos.length - 1];
+  const ultimo = puntos[puntos.length - 1]!; // rows.length===0 ya salió arriba
 
   // Acumulado por mes/año CALENDARIO de hoy (no del último dato: así el acumulado del mes en curso
   // arranca en 0 el día 1, aunque la última fila cargada sea de unos días atrás por el rezago).

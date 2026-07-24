@@ -103,7 +103,7 @@ export const getNegociado = cache(async (): Promise<NegociadoData> => {
   const fechasSet = new Set<string>();
   for (const r of rows) fechasSet.add(r.fecha);
   const fechas = [...fechasSet].sort();
-  const fechaGlobal = fechas[fechas.length - 1];
+  const fechaGlobal = fechas[fechas.length - 1]!; // rows.length===0 ya salió arriba → fechas no vacío
 
   // --- Última fecha y fecha previa POR PRODUCTO (un grano puede venir más atrasado) ---
   const fechasPorCod = new Map<string, string[]>();
@@ -211,7 +211,7 @@ export const getNegociado = cache(async (): Promise<NegociadoData> => {
   }
 
   // --- Serie del histograma: semanal por (fecha, cod, sector) sumando campañas ---
-  const desdeHisto = fechas[Math.max(0, fechas.length - SEMANAS_HISTO)];
+  const desdeHisto = fechas[Math.max(0, fechas.length - SEMANAS_HISTO)]!; // fechas no vacío (idem)
   const serieMap = new Map<string, number>();
   for (const r of rows) {
     if (r.fecha < desdeHisto || r.semanal_tn == null) continue;
@@ -219,7 +219,9 @@ export const getNegociado = cache(async (): Promise<NegociadoData> => {
     serieMap.set(k, (serieMap.get(k) ?? 0) + Number(r.semanal_tn));
   }
   const serie: PuntoHisto[] = [...serieMap.entries()].map(([k, tn]) => {
-    const [fecha, cod, sector] = k.split("|");
+    // k = `${r.fecha}|${r.codigo_interno}|${r.sector}` (armado arriba, ninguno trae "|") → split
+    // siempre da los 3.
+    const [fecha, cod, sector] = k.split("|") as [string, string, string];
     return { fecha, cod, sector, tn };
   });
   serie.sort((a, b) => a.fecha.localeCompare(b.fecha));
