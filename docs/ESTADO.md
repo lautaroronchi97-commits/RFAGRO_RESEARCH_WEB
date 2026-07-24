@@ -19,7 +19,32 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 24/07/2026 — 🔧 L6+L3+L2 (3 lotes técnicos del backlog maestro) HECHOS)
+## Ahora (última actualización: 24/07/2026 — 🔎 verificación panel Compras BCRA + primer cron real + carga manual por fecha)
+
+**🔎 VERIFICACIÓN PANEL COMPRAS BCRA + PRIMER CRON REAL + CARGA MANUAL POR FECHA — HECHO — rama
+`claude/pending-tasks-no-deps-ahvewt`, PR #_.** Lautaro pidió avanzar con algo que no necesitara
+prender el login ni nada de su parte; repasado el backlog maestro (`auditoria/E7-sintesis.md`
+§4) no quedaba ninguna feature nueva 100% autónoma (C11-C16 necesitan login o un insumo suyo) →
+se eligió (por `AskUserQuestion`) verificar en navegador paneles recientes sin chequeo visual
+real. Verificado el panel **"Compras netas BCRA (MULC)"** de `/dolar` (C4, 23/07) con datos reales
+(este entorno sí tenía las claves de Supabase), claro/oscuro, con Playwright. **Hallazgo de
+paso**: el cron `ingest-bcra-mulc.yml` (10:00 ART L-V) mergeó el 23/07 a la tarde → su primera
+ventana programada recién caía hoy, nunca había corrido (0 runs) — no era bug, solo faltaba
+tiempo. Se disparó el primer `workflow_dispatch` manual (`success`, 13s), cargó 2026-07-20 (+32,0
+M USD), verificado 1:1 contra la API oficial del BCRA. Cierra el "falta el primer
+`workflow_dispatch` real" que había quedado anotado en la sesión de C4.
+**Pedido nuevo de Lautaro en el medio de la sesión**: botón de carga manual de compras BCRA para
+tapar el hueco de rezago (hoy 24/07, sin dato hasta el 20/07) — ya existía carga manual en
+"Datos del día" pero fija a la fecha de HOY. Separada en tarjeta propia **"Compras BCRA (MULC) —
+carga manual"** (`bcra-manual.tsx` + `bcra-actions.ts`, misma RPC `admin_upsert_compras_bcra` sin
+migración nueva) con fecha elegible (precargada en el hueco hábil más reciente, hoy 23/07) +
+lista de últimos días cargados y huecos detectados. Aclarado que el cron diario (no semanal, más
+seguido de lo que pensaba) ya pisa cualquier carga manual con el dato oficial en cuanto llega — no
+hizo falta un cron nuevo. Verificado con bypass temporal (`LOCAL_AUDIT_BYPASS`, revertido, `git
+diff` limpio) + backend por SQL con rollback + lint/tsc/build. Detalle:
+[`sesiones/2026-07-24-verificacion-panel-bcra.md`](sesiones/2026-07-24-verificacion-panel-bcra.md).
+
+## Anterior (24/07/2026 — 🔧 L6+L3+L2 (3 lotes técnicos del backlog maestro) HECHOS)
 
 **🔧 L6 + L3 + L2 — 3 LOTES TÉCNICOS DEL BACKLOG MAESTRO, EN ORDEN, PR ACUMULADO — HECHOS — rama
 `claude/pending-tasks-no-login-dawaha`, PR #_.** Los 3 refactors/robustez que quedaban de
