@@ -5,8 +5,13 @@
 // por ISA, a diferencia de los runners de GitHub Actions (que devuelven la tabla
 // vacía → el "falso verde" que congeló el scraper). Es lo ÚNICO que toca ISA.
 //
-// El cron (GitHub Actions, `ingest-lineup.yml`) simplemente la invoca 2×/día;
-// el guard anti "falso verde" y la frescura se chequean acá y en el healthcheck.
+// El cron (GitHub Actions, `ingest-lineup.yml`) simplemente la invoca 2×/día, una fecha por
+// request (`?date=`); el guard anti "falso verde" vive en `ingest-lineup.mjs` (el caller sabe
+// si la corrida es diaria o backfill — acá cada invocación es "una fecha" sin ese contexto,
+// así que esta función se limita a reportar `ok`/`error` por fecha) y la frescura en el
+// healthcheck. (L6, Anexo A camino 20: esta función tenía su PROPIO guard "daily" que nunca se
+// activaba — `ingest-lineup.mjs` siempre llama con `?date=`, nunca sin parámetros — se retiró
+// por capa redundante muerta; el guard real es 100% del caller.)
 //
 // Puerto fiel de `scraper.py` del proyecto LineUps_Code de Lautaro:
 //   warm-up de cookie (PHPSESSID) · validación de headers · parseo de Quantity y
@@ -228,7 +233,6 @@ Deno.serve(async (req: Request) => {
 
   // Lista de fechas a scrapear.
   let fechas: string[];
-  const daily = !dateParam && !from;
   if (dateParam) {
     fechas = [dateParam];
   } else if (from && to) {
@@ -265,10 +269,11 @@ Deno.serve(async (req: Request) => {
     await new Promise((r) => setTimeout(r, 1200)); // cortesía con ISA
   }
 
-  // Guard anti "falso verde": en modo cron diario, ventana entera vacía = sospechoso
-  // (bloqueo/estructura), no un feriado suelto. Falla ruidoso.
+  // Sin guard de "0 filas" acá: esta función procesa UNA lista de fechas por invocación sin
+  // saber si el caller está en modo diario o backfill (ese guard vive en `ingest-lineup.mjs`,
+  // que sí tiene ese contexto — ver comment de arriba). Acá solo reportamos error real de
+  // fetch/parseo por fecha.
   const anyErr = results.some((r) => !(r as { ok: boolean }).ok);
-  const guardFail = daily && total === 0;
-  const ok = !anyErr && !guardFail;
-  return Response.json({ ok, daily, dry, total, guardFail, results }, { status: ok ? 200 : 500 });
+  const ok = !anyErr;
+  return Response.json({ ok, dry, total, results }, { status: ok ? 200 : 500 });
 });

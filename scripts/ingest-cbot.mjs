@@ -257,10 +257,12 @@ async function main() {
     seen.add(k);
     return true;
   });
-  // Guard anti "falso verde": en el diario 0 filas = todos los contratos fallaron (429/403) o
-  // cambió Barchart → no dejar pasar en verde. En backfill un 0 puede ser legítimo.
-  if (dedup.length === 0 && !backfill) {
-    console.error("ERROR: 0 filas CBOT en modo diario (todos los contratos fallaron o cambió Barchart). No se da por bueno.");
+  // Guard anti "falso verde": 0 filas totales = todos los contratos fallaron (429/403) o cambió
+  // Barchart → no dejar pasar en verde, ni en diario ni en backfill (un contrato SUELTO sin datos
+  // en una ventana vieja puede ser legítimo — el universo COMPLETO en 0 nunca lo es).
+  // (L6, Anexo A camino 5: antes el backfill quedaba exento de este guard.)
+  if (dedup.length === 0) {
+    console.error(`ERROR: 0 filas CBOT en modo ${backfill ? "backfill" : "diario"} (todos los contratos fallaron o cambió Barchart). No se da por bueno.`);
     process.exit(1);
   }
   // E5 #6 (camino 4): antes con 1 contrato vivo de 35 el run quedaba verde — los catch por

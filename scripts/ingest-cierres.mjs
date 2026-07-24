@@ -62,7 +62,13 @@ async function fetchWindow(product, from, to) {
     const res = await fetch(url, { headers: { accept: "application/json" } });
     if (!res.ok) throw new Error(`CEM ${product} ${from}..${to} p${page}: HTTP ${res.status}`);
     const json = await res.json();
-    const data = Array.isArray(json?.data) ? json.data : [];
+    // L6 (Anexo A camino 3): antes `json?.data` no-array degradaba mudo a []. Una página
+    // vacía real SIEMPRE trae `data: []` (verificado); si falta el campo o cambia de tipo es
+    // shape roto, no "sin datos" — hay que enterarse, no seguir en verde.
+    if (json == null || typeof json !== "object" || !Array.isArray(json.data)) {
+      throw new Error(`CEM ${product} ${from}..${to} p${page}: shape inesperado (falta o cambió "data")`);
+    }
+    const data = json.data;
     rows.push(...data);
     if (data.length < PAGE_SIZE) break; // última página de la ventana
   }
@@ -157,10 +163,11 @@ async function main() {
     return true;
   });
 
-  // Guard anti "falso verde": en modo diario (sin --from) 0 filas = el CEM no devolvió nada para
-  // una ventana de varios días → cambió el formato o cayó la fuente. Falla ruidoso, no pasa en verde.
-  if (all.length === 0 && !process.argv.includes("--from")) {
-    console.error("ERROR: 0 filas en la ventana diaria del CEM. No se da por bueno (probable cambio de formato / fuente caída).");
+  // Guard anti "falso verde": 0 filas totales (diario O backfill) = el CEM no devolvió nada para
+  // el rango pedido → cambió el formato o cayó la fuente. Falla ruidoso, no pasa en verde.
+  // (L6, Anexo A camino 1: antes el backfill con --from quedaba exento de este guard.)
+  if (all.length === 0) {
+    console.error("ERROR: 0 filas en la ventana del CEM. No se da por bueno (probable cambio de formato / fuente caída).");
     process.exit(1);
   }
   console.log(`Upsert de ${all.length} filas...`);

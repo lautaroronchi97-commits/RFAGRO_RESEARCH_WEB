@@ -159,10 +159,13 @@ async function main() {
     console.log(`  ${grano}: ${rows.length} filas`);
     all.push(...rows);
   }
-  // Guard anti "falso verde": en modo diario (ventana de 10 días, sin --from) 0 filas = CAC no trae
-  // la serie (cambió el JSON de Drupal o cayó la fuente) → falla ruidoso en vez de verde vacío.
-  if (all.length === 0 && !process.argv.includes("--from")) {
-    console.error("ERROR: 0 filas de pizarra CAC en la ventana de 10 días. No se da por bueno (probable cambio de estructura / fuente caída).");
+  // Guard anti "falso verde": 0 filas totales (diario O backfill) = CAC no trae la serie (cambió
+  // el JSON de Drupal o cayó la fuente) → falla ruidoso en vez de verde vacío.
+  // (L6, Anexo A camino 6: antes el backfill con --from quedaba exento de este guard; la
+  // estructura rota YA fallaba en los dos modos vía `fetchSerie`, esto cubre "estructura OK
+  // pero 0 filas" en backfill.)
+  if (all.length === 0) {
+    console.error("ERROR: 0 filas de pizarra CAC en el rango pedido. No se da por bueno (probable cambio de estructura / fuente caída).");
     process.exit(1);
   }
   if (!process.argv.includes("--from")) {
