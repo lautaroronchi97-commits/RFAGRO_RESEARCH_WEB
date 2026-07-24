@@ -282,8 +282,11 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   directamente). Ver §5.
 - [ ] **C13. P9 — sintéticos TIR** 🔒 (tabla IAMC + fórmula tuya como paso 1).
 - [ ] **C14. P10 — estrategias avanzadas** 🔒 (primas reales/costos: tus decisiones como paso 1).
+  **Sin prioridad por ahora (24/07)**: Lautaro no quiere sumar estrategias con costos por el
+  momento — sigue pendiente, no descartado, se retoma cuando él lo pida.
 - [ ] **C15. P11 — modelo propio de capacidad de pago** 🔒 (tu fórmula como paso 1).
-- [ ] **C16. P12 — scoring de clientes** 🔒 (datos de fijaciones como paso 1; producto nuevo, por fases).
+- [x] ~~**C16. P12 — scoring de clientes**~~ → **DESCARTADO 24/07** (Lautaro: "tampoco me
+  interesa, descartalo"). Ver §5.
 - [x] ~~**C17. Gráficos intradía**~~ → **DESCARTADO 24/07** (cae con C12: consumía la tabla
   `snapshots` que C12 iba a crear, sin C12 no tiene insumo). Ver §5.
 
@@ -341,7 +344,8 @@ C1 (MP1) ──→ C2 (MP2) y C3 (MP4)
 C12 (P8) y C17 (gráficos intradía) — cayeron ambos, descartados (§5)
 D4 (L1) ──→ D5 (L3 más barato) · conviene antes de C7/C10
 D6 (L2) ──→ conviene antes de C7 (chart nuevo del USD semanal)
-D2 (L4) 🔒 valores de Lautaro;  C13–C16 🔒 insumos de Lautaro
+D2 (L4) 🔒 valores de Lautaro;  C13 hecho (PR #75) · C14 sin prioridad (pendiente) · C15 🔒
+insumo de Lautaro · C16 cayó, descartado (§5)
 noindex→index: ✅ YA RESUELTO (E3/E4) — la dependencia que citaba PLAN_BACKLOG quedó caída
 ```
 
@@ -378,6 +382,7 @@ HECHOS, ver §4. Esta sección "Orden decidido" queda como registro histórico d
 | Leaked password protection ya | E5 #13c → sesión 22/07 | **Diferido a propósito** (requiere Supabase Pro $25/mes; plan Free confirmado) — solo vive como A8 |
 | C11/P7 — vista productor + PWA | Sesión 24/07 | **Descartado** — Lautaro: "ninguno de los dos desarrollos me interesa" (ni la vista simplificada ni la PWA instalable) |
 | C12/P8 — feed A3 histórico intradiario (+ C17, gráficos intradía que dependían de esto) | Sesión 24/07 | **Descartado** — Lautaro: "lo descarto" |
+| C16/P12 — scoring de clientes | Sesión 24/07 | **Descartado** — Lautaro: "tampoco me interesa, descartalo" |
 
 ## 6. Prompts de corrección por lote (autocontenidos, estilo PLAN_AUDITORIA)
 

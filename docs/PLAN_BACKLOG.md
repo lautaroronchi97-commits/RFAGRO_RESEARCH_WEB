@@ -57,9 +57,9 @@
 | P7 | Vista productor + PWA | robots→index depende de E3 | Sonnet | **DESCARTADO (24/07)** — Lautaro: "ninguno de los dos desarrollos me interesa" (ni la vista simplificada ni la PWA). Ver `auditoria/E7-sintesis.md` §5 |
 | P8 | Feed A3 Fase 2 — histórico intradiario | — | Sonnet | **DESCARTADO (24/07)** — Lautaro lo descartó directamente. Ver `auditoria/E7-sintesis.md` §5 |
 | P9 | Sintéticos TIR | tabla IAMC de Lautaro (paso 1) | Fable/Opus (validación de fórmulas financieras) | pendiente |
-| P10 | Estrategias avanzadas | primas/decisiones de Lautaro (paso 1) | Fable/Opus (ídem P9) | pendiente |
+| P10 | Estrategias avanzadas | primas/decisiones de Lautaro (paso 1) | Fable/Opus (ídem P9) | **sin prioridad por ahora (24/07)** — Lautaro no quiere sumar estrategias con costos por el momento; sigue pendiente, no descartado |
 | P11 | Modelo propio de capacidad de pago | fórmula de Lautaro (paso 1) | Fable/Opus (ídem P9) | pendiente |
-| P12 | Scoring de clientes | datos de fijaciones (paso 1) | Fable/Opus (diseño de producto + modelo AHP + privacidad) | pendiente |
+| P12 | Scoring de clientes | datos de fijaciones (paso 1) | Fable/Opus (diseño de producto + modelo AHP + privacidad) | **DESCARTADO (24/07)** — Lautaro: "tampoco me interesa, descartalo". Ver `auditoria/E7-sintesis.md` §5 |
 
 > Regla de modelos (igual que en los otros planes): **juicio → Fable mientras dure, después Opus;
 > build con patrón claro → Sonnet**. Dentro de la sesión, subagentes de solo lectura para paralelizar
@@ -369,6 +369,9 @@ de CONTEXTO hecho).
 ---
 
 # PROMPT P12 — Módulo scoring de clientes
+
+> ⚠️ **DESCARTADO 24/07/2026** — Lautaro: "tampoco me interesa, descartalo". Prompt dejado como
+> registro histórico — **NO ejecutar** salvo que lo pida de nuevo explícitamente.
 
 ```text
 Ejecutá el pendiente P12 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md y
