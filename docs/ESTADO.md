@@ -19,7 +19,33 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 24/07/2026 — 🔧 L6+L3+L2 (3 lotes técnicos del backlog maestro) HECHOS)
+## Ahora (última actualización: 24/07/2026 — 🧮 C13 (P9) sintéticos LECAP + dólar futuro con TIR HECHO)
+
+**🧮 C13 / P9 — SINTÉTICOS LECAP + DÓLAR FUTURO CON TIR — HECHO — rama `claude/backlog-p9-sinteticos`,
+PR #_.** Cierra el ítem del backlog maestro (`auditoria/E7-sintesis.md` §4 / PROMPT P9 de
+`PLAN_BACKLOG.md`). La **fórmula ya estaba validada** por Lautaro (chat + su Excel "REAL_TIME v2.5",
+hoja "DOLAR SINTETICO", reproducida 1:1): `sint = spot × (pagoFinal/px)` · `directa = sint/fut − 1` ·
+`TNA = directa × 365/días` (act/365). Lo que faltaba era la fuente del **"pago final por letra"**.
+**Investigado con requests reales:** BYMA es la fuente última (verificado: los "Pago Final" del Excel
+coinciden 1:1 con lo que publica BYMA) pero su open-data es un feed de precios, no expone el importe al
+vencimiento; IAMC (informeslecap) es un PDF diario frágil (SSL/502 en el sandbox); MECON es letra por
+letra. Como el pago final **casi no cambia** (se fija en la emisión, se actualiza cada 1-2 meses cuando
+el Tesoro licita) y el precio diario ya lo trae data912 → **carga semi-manual** (mismo patrón que
+DEA-SAGyP y camiones/Williams). **Construido:** lib pura testeada `src/lib/sinteticos.ts`
+(`calcularSintetico` + `emparejarSinteticos` por **mismo mes calendario**, criterio del Excel — S31L6↔JUL26,
+S14G6/S31G6↔AGO26); fetcher `src/lib/market/sinteticos.ts` (junta data912 + MAE + Supabase, degrada
+honesto); panel `/dolar` **Sintéticos** completo (sintético/TNA + comparación vs futuro directo + mejor
+destacado, "—" si falta el pago final); tabla pública `lecap_pago_final` + RPC admin + uploader en
+`/admin/datos` (pegar `TICKER PAGO_FINAL [VENC]`, preview/confirm). Migración
+`20260724140000` **aplicada** por MCP (seed con los 3 valores del Excel; anon SELECT verificado).
+**Verificado:** fixture del Excel EXACTO (sint 1.503,678626, TNA 5,4843%) · lint/tsc/**154 tests**/build ✅ ·
+live end-to-end con datos reales en `/dolar` (spot 1491, S31L6→JUL26 TNA +16,6% vs futuro +8,2% =
+ventaja +8,4%, emparejamiento 100% mismo-mes, degradación honesta donde falta el pago final) · backend
+por SQL (guard rechaza no-admin, parseo jsonb OK). **Follow-up chico:** BONCAPs (T) — la tabla/uploader
+los soportan, falta wirear su precio en vivo (`getLecaps` filtra solo S). Detalle:
+[`sesiones/2026-07-24-c13-sinteticos-tir.md`](sesiones/2026-07-24-c13-sinteticos-tir.md).
+
+## Anterior (24/07/2026 — 🔧 L6+L3+L2 (3 lotes técnicos del backlog maestro) HECHOS)
 
 **🔧 L6 + L3 + L2 — 3 LOTES TÉCNICOS DEL BACKLOG MAESTRO, EN ORDEN, PR ACUMULADO — HECHOS — rama
 `claude/pending-tasks-no-login-dawaha`, PR #_.** Los 3 refactors/robustez que quedaban de

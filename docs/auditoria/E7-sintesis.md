@@ -275,7 +275,10 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   Presets de usuario siguen esperando login ON (A1). `sesiones/2026-07-23-c10-graficos-v2.md`.
 - [ ] **C11. P7 — vista productor + PWA** (mejor con login encendido: es para clientes reales).
 - [ ] **C12. P8 — feed A3 histórico intradiario** (paso manual previo: secrets A3 en GitHub Actions).
-- [ ] **C13. P9 — sintéticos TIR** 🔒 (tabla IAMC + fórmula tuya como paso 1).
+- [x] **C13. P9 — sintéticos TIR** — HECHO (24/07). Fórmula validada contra el Excel de Lautaro
+  (sint = spot×(pagoFinal/px); directa = sint/fut−1; TNA act/365), panel `/dolar` Sintéticos con
+  TIR + comparación vs futuro directo. "Pago final por letra" por carga semi-manual en `/admin/datos`
+  (fuente última BYMA, no expone endpoint parseable; casi estático). Ver `sesiones/2026-07-24-c13-sinteticos-tir.md`.
 - [ ] **C14. P10 — estrategias avanzadas** 🔒 (primas reales/costos: tus decisiones como paso 1).
 - [ ] **C15. P11 — modelo propio de capacidad de pago** 🔒 (tu fórmula como paso 1).
 - [ ] **C16. P12 — scoring de clientes** 🔒 (datos de fijaciones como paso 1; producto nuevo, por fases).
