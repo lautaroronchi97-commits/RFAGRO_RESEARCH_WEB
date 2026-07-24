@@ -1,6 +1,6 @@
 # Sesión 2026-07-24 — Rebrand RF AGRO → ROFO AGRO
 
-- **Rama:** `claude/rf-agro-rofo-agro-rebrand-gb7syg` · **PR:** #_ (base `main`)
+- **Rama:** `claude/rf-agro-rofo-agro-rebrand-gb7syg` · **PR:** #80 (base `main`)
 - **Objetivo pedido por Lautaro:** cambiar la marca "RF AGRO" por "ROFO AGRO" en TODO el sitio,
   sin dejar ninguna mención vieja en ningún archivo ni plataforma (GitHub/Vercel/Supabase/Resend).
   Es el pendiente que había quedado anotado en `ESTADO.md` desde la sesión del 23/07 (dominio
@@ -20,68 +20,101 @@
   ingesta, workflows, `package.json`/`package-lock.json` (`name`), `.env.local.example`, y toda
   `docs/` (incluidos `docs/sesiones/*` históricos — Lautaro pidió explícitamente "en ningún lugar
   bajo ningún punto de vista", así que no se dejó la marca vieja ni en las bitácoras pasadas).
-- **Assets renombrados**: `public/rfagro-{isotipo,logo,logo-marca}.svg` →
-  `public/rofoagro-{isotipo,logo,logo-marca}.svg` (`git mv`); las referencias en código ya
-  quedaron apuntando al nuevo nombre porque el mismo script de texto reescribió los `src="..."`.
-  `src/proxy.ts` (matcher de rutas públicas) actualizado también.
-- **`localStorage`/dedup key** de `seccion-beacon.tsx` (`rfagro:vis:${seccion}` →
-  `rofoagro:vis:${seccion}`) — solo resetea el throttle de "visita reciente", sin efecto de datos.
+- **2ª pasada — texto partido que el grep de "RF AGRO" (con espacio) no detectaba**: el header/
+  footer/auth/admin/legal/landing/404 arman el wordmark con **dos `<span>` de color distinto**
+  (`<span className="rf">RF</span><span className="agro">AGRO</span>`), y el email de Resend usaba
+  `RF&nbsp;AGRO` (entidad HTML, no espacio literal) — ninguno de los dos matcheaba el patrón con
+  espacio simple. Encontrados con un segundo barrido (`\bRF\b` y `RF(&nbsp;|<tag>)AGRO`) en **7
+  componentes** (`site-header`, `site-footer`, `landing-topbar`, `not-found`, `admin/layout`,
+  `(auth)/layout`, `(legal)/layout`) + `auth/emails.ts` (cabecera de los mails transaccionales) +
+  un comentario en `globals.css`. Corregidos todos (el span queda `<span className="rf">ROFO</span>`
+  — el className interno `rf`/`agro` y la variable CSS `--brand-rf` NO se tocan, son identificadores
+  técnicos, no texto visible).
+- **Logo real conseguido**: Lautaro había subido los archivos por el chat pero **nunca llegaron al
+  filesystem de esta sesión** (2 intentos, confirmado con `find`). Preguntó "¿los buscaste donde te
+  dije, dentro de GitHub?" — es que los había subido directo por la **web de GitHub** ("Add files
+  via upload") a `main`, commit `ffd73d7e2084` (`public/ROFO SVG.svg` + `public/Sleek Corporate
+  Identity for RF AGRO.png`, el nombre del PNG quedó viejo pero el contenido ya es la marca nueva).
+  Se trajeron con `git show origin/main:"public/ROFO SVG.svg"` (confirmado byte a byte contra el
+  adjunto que después sí llegó como `/root/.claude/uploads/.../ROFO_SVG.txt`).
+- **Extracción de los 3 assets desde el SVG completo** (2000×2000, auto-trace de 285 `<path>` sin
+  `<text>` — incluye fondo blanco + los 3 íconos + wordmark "ROFO AGRO" + bajada "Consultora de
+  agronegocios"): render con Chromium headless para verificar visualmente en cada paso, bucketing
+  de los paths por centro Y de su bounding box (fondo por tamaño ≈ todo el canvas; íconos cy<950;
+  wordmark 950≤cy<1150; bajada cy≥1150 — el primer intento con un solo corte en 1150 metía las
+  letras del wordmark adentro del isotipo, corregido con 3 buckets) → `rofoagro-isotipo.svg`
+  (solo íconos, transparente, viewBox recortado) y `rofoagro-logo.svg` (íconos+wordmark+bajada,
+  transparente, recortado); `rofoagro-logo-marca.svg` = copia del logo completo (no hizo falta
+  limpiar halos esta vez, la traza nueva no los tiene — verificado renderizando sobre fondo oscuro).
+  **Optimizado con `svgo`** (68% menos peso: isotipo 157KB→**50KB**, logo 204KB→**66KB** — sigue
+  siendo más pesado que el logo viejo por ser un auto-trace con cientos de paths de degradé, pero
+  ya no es descabellado para servir en cada página). Favicon (`src/app/icon.svg`) no tocado: es un
+  glifo genérico dibujado a mano, sin texto de marca.
 
 ## Decisiones tomadas (y por qué)
 - **Se incluyeron los `docs/sesiones/*` históricos** en el barrido, apartándose del criterio
   habitual de "no reescribir bitácoras pasadas" — es solo texto (nombre de marca), no cambia
   ninguna conclusión ni decisión registrada, y Lautaro fue explícito ("no quiero que dejes en
   ningún lugar bajo ningún punto de vista RF AGRO").
-- **El wordmark vectorizado dentro de `rofoagro-logo.svg`/`rofoagro-logo-marca.svg` sigue siendo
-  el viejo** (los archivos son un auto-trace de una imagen: el texto "RF AGRO" está dibujado como
-  paths, no como `<text>` — solo el `aria-label` se pudo corregir por texto). Lautaro dijo haber
-  subido "el nuevo logo" (mostró un screenshot con 2 archivos: `ROFO SVG.svg` y `Sleek Corporate
-  Identity for RF AGRO.png`) pero **los bytes nunca llegaron al filesystem de esta sesión**
-  (verificado con `find` en todo el disco, dos veces, con minutos de diferencia) — ver pendientes.
+- **`rofoagro-logo.svg` y `rofoagro-logo-marca.svg` quedaron con el mismo contenido** (antes eran
+  distintos porque el logo viejo tenía halos que solo se limpiaban en la versión marca de agua) —
+  al no haber halos en la traza nueva, no hay razón para divergir; si en el futuro hace falta una
+  versión distinta para el watermark, se resuelve ahí.
 - **Sin tocar identificadores técnicos que no son marca visible**: nombres de tablas/columnas de
-  Supabase, nombres de RPC, claves de env vars (`SUPABASE_*`, `A3_*`, etc.) — ninguno usa "rfagro"
-  como substring, así que no hubo nada que decidir ahí.
+  Supabase, nombres de RPC, claves de env vars (`SUPABASE_*`, `A3_*`), `className="rf"`/`"agro"` y
+  la variable CSS `--brand-rf` — ninguno es texto que el usuario lea, así que no hubo nada que
+  decidir ahí (siguen llamándose así aunque la marca visible ya diga "ROFO").
 - **Proyecto de Supabase NO se toca**: se llama `lineup-argentina` (ref `gbpfgfeksqmzmsxnxiwg`),
   nunca tuvo el nombre de la marca — no hace falta ningún rename ahí.
 
 ## Verificado
 - `npm run lint` ✅ (0 warnings) · `npx tsc --noEmit` ✅ · `npm run test` ✅ (201/201) ·
-  `npm run build` ✅ (46 rutas, Turbopack).
-- **Cero ocurrencias remanentes**: `grep -rli "rfagro|RF AGRO|RFAGRO" -i .` (excluyendo
-  `node_modules`/`.git`/`.next`) da vacío tras el reemplazo.
-- **Verificado en el HTML compilado** (`.next/server/app/*.html`): `<title>Condiciones de
-  servicio · ROFO AGRO</title>`, referencia de imagen `/rofoagro-isotipo.svg` — el build generado
-  no tiene ninguna mención vieja.
+  `npm run build` ✅ (46 rutas, Turbopack) — corrido de nuevo después de cada tanda de fixes.
+- **Cero ocurrencias remanentes** tanto del patrón con espacio como de los partidos
+  (`RF(&nbsp;|<tag>)AGRO`, `\bRF\b` suelto) en `src/` — verificado con varias pasadas de grep.
+- **Verificado en el HTML compilado y en el server real** (`npm run start` + Chromium headless,
+  screenshots de `/terminos` y `/bienvenida`): header, footer y landing muestran "ROFO AGRO" con
+  los íconos nuevos (trigo amarillo, trigo+hoja verde, gota de soja) — antes de este fix el header
+  seguía mostrando "RF AGRO" pese al primer barrido, por los spans partidos.
+- **Assets nuevos verificados visualmente** (renders con y sin fondo, claro/oscuro) antes de
+  reemplazar los archivos de producción: isotipo solo, logo completo con bajada, sobre blanco y
+  sobre `#0C130D` (panel oscuro) — sin halos ni recortes raros.
 
 ## Quedó pendiente / en vuelo
-1. **Logo nuevo (artwork real)**: Lautaro mandó por chat 2 archivos (`ROFO SVG.svg` y "Sleek
-   Corporate Identity for RF AGRO.png") pero no llegaron al disco de esta sesión — solo se vio un
-   screenshot con sus nombres en la UI de adjuntos. **Falta que los reenvíe** (o confirme una URL
-   descargable) para reemplazar el contenido real de `public/rofoagro-{isotipo,logo,logo-marca}.svg`
-   — hoy esos 3 archivos tienen el nombre nuevo pero **el dibujo del wordmark sigue diciendo
-   visualmente "RF AGRO"** (son paths vectorizados de un auto-trace viejo, no texto editable).
-2. **GitHub — nombre del repo** (`lautaroronchi97-commits/RFAGRO_RESEARCH_WEB`): **no hay
-   herramienta disponible en esta sesión para renombrar el repositorio** (se revisó el set
-   completo de tools de GitHub MCP — hay `create_repository`/`fork_repository`/`update_pull_request`
-   pero ningún "rename/update repository settings"). Además, renombrarlo a mitad de sesión
-   rompería el remote configurado por el proxy de este entorno. **Queda como paso manual de
-   Lautaro**: GitHub → repo → Settings → Repository name.
-3. **Vercel — nombre del proyecto**: mismo caso, no hay tool de rename en el set de Vercel MCP
-   disponible (`list_projects`/`get_project`/`deploy_to_vercel`/etc., sin "update project"). No es
-   bloqueante funcional (el dominio productivo ya es `rofoagro.com.ar`, conectado el 23/07) pero
-   el subdominio `*.vercel.app` de fallback seguiría diciendo `rfagro-research-web` hasta que
-   Lautaro lo renombre a mano en Vercel → Project Settings → General → Project Name.
-4. **Resend — remitente verificado**: el código default (`RESEND_FROM`) ya dice
+1. **GitHub — nombre del repo** (`lautaroronchi97-commits/RFAGRO_RESEARCH_WEB`): sin herramienta
+   disponible en esta sesión para renombrarlo (repasado todo el set de GitHub MCP). Queda como paso
+   manual de Lautaro (Settings → Repository name) — hacerlo DESPUÉS de mergear este PR para no
+   romper el remote de la sesión en curso.
+2. **Vercel — nombre del proyecto**: mismo caso, sin tool de rename en el set de Vercel MCP
+   disponible. No bloquea nada (el dominio productivo ya es `rofoagro.com.ar`) pero el subdominio
+   `*.vercel.app` de fallback sigue diciendo `rfagro-research-web` hasta que Lautaro lo cambie a
+   mano en Vercel → Project Settings → General → Project Name.
+3. **Resend — remitente verificado**: el código default (`RESEND_FROM`) ya dice
    `"ROFO AGRO <onboarding@resend.dev>"`; si Lautaro tiene un dominio propio verificado en Resend
-   con un remitente tipo "RF AGRO <...>" cargado como env var en Vercel, hay que actualizar esa
-   env var a mano (no vive en el repo).
+   con un remitente tipo "RF AGRO <...>" cargado como env var en Vercel, esa env var se actualiza
+   a mano (no vive en el repo).
+4. **`public/Sleek Corporate Identity for RF AGRO.png`** quedó en `main` (subido directo por
+   Lautaro, fuera de esta rama) — es el PNG de referencia del logo, con el nombre de archivo
+   desactualizado; no se usa en ningún lado del código (solo el SVG). Se puede renombrar o borrar
+   sin impacto cuando Lautaro quiera — no se tocó en esta rama porque vive en `main`, no acá.
 5. **Supabase — sin acción**: confirmado que el proyecto no usa el nombre de marca, no hace falta
    nada ahí.
 
 ## Trampas descubiertas (para la próxima sesión)
 - El sandbox arrancó sin `node_modules` (hubo que correr `npm install` antes de lint/tsc/build).
-- Los adjuntos de imagen que el usuario "sube" durante una sesión remota de Claude Code **no
-  necesariamente aparecen en el filesystem** — un screenshot mostrando nombres de archivo en la UI
-  no es lo mismo que el archivo real llegando al disco. Si una sesión futura necesita un asset
-  binario (logo, imagen), verificar con `find` que el archivo realmente esté antes de asumir que
-  se puede usar.
+- Los adjuntos de imagen que el usuario "sube" por el chat durante una sesión remota de Claude Code
+  **no llegan al filesystem de la sesión** (probado 2 veces, con y sin abrir el archivo de nuevo).
+  Si el usuario dice "ya lo subí" y no aparece, preguntarle **cómo** lo subió — en este caso lo hizo
+  directo por la web de GitHub (**"Add files via upload"** a `main`), que sí es recuperable con
+  `git show origin/<rama>:"<path>"` una vez que se hace `git fetch`. Buscar también commits
+  recientes en otras ramas con `list_commits`/`list_branches` del MCP de GitHub, no solo el
+  filesystem local.
+- Un SVG "auto-trace" (cientos de `<path>` de degradé, sin `<text>`) se puede partir en sub-assets
+  (ícono solo / logo completo) agrupando los paths por el centro Y de su `transform="translate()"`
+  + bounding box del atributo `d` — más simple y confiable que intentar parsear la geometría real
+  de las curvas. Conviene imprimir el histograma de centros Y antes de fijar los cortes: un solo
+  corte puede partir mal un bloque de texto si dos líneas (título + bajada) quedan cerca en Y.
+- El wordmark de esta web nunca fue un solo string de texto: siempre fueron dos `<span>` con clases
+  `rf`/`agro` para pintarlos de colores distintos. Un grep por `"RF AGRO"` (con espacio) nunca iba
+  a encontrar esto — para una búsqueda exhaustiva de una marca con wordmark bicolor, sumar un grep
+  por la palabra suelta (`\bRF\b`) y por el patrón con posibles tags/entidades HTML en el medio.

@@ -17,7 +17,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/rofoagro-isotipo.svg" alt="" className="brand-iso" width={58} height={32} />
             <span className="wordmark">
-              <span className="rf">RF</span>
+              <span className="rf">ROFO</span>
               <span className="agro">AGRO</span>
             </span>
           </Link>

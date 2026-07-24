@@ -61,7 +61,7 @@ async function enviar(to: string[], subject: string, html: string): Promise<bool
 function plantilla(titulo: string, cuerpo: string): string {
   return `<!doctype html><html><body style="margin:0;background:#EDF2E3;padding:24px;font-family:Arial,Helvetica,sans-serif;color:#1a2b1a">
   <div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid #d8e2c8;border-radius:14px;overflow:hidden">
-    <div style="background:#2F6E34;padding:16px 22px;color:#fff;font-weight:bold;letter-spacing:.5px">RF&nbsp;AGRO<span style="opacity:.7;font-weight:normal"> · Research de granos</span></div>
+    <div style="background:#2F6E34;padding:16px 22px;color:#fff;font-weight:bold;letter-spacing:.5px">ROFO&nbsp;AGRO<span style="opacity:.7;font-weight:normal"> · Research de granos</span></div>
     <div style="padding:22px">
       <h1 style="margin:0 0 12px;font-size:19px;color:#2F6E34">${titulo}</h1>
       ${cuerpo}

@@ -19,9 +19,9 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 24/07/2026 — 🏷️ REBRANDING RF AGRO → ROFO AGRO, texto completo; logo y platform renames EN VUELO)
+## Ahora (última actualización: 24/07/2026 — 🏷️ REBRANDING RF AGRO → ROFO AGRO, texto + logo real HECHO; solo renames de plataforma EN VUELO)
 
-**🏷️ REBRANDING RF AGRO → ROFO AGRO — rama `claude/rf-agro-rofo-agro-rebrand-gb7syg`, PR #_.**
+**🏷️ REBRANDING RF AGRO → ROFO AGRO — rama `claude/rf-agro-rofo-agro-rebrand-gb7syg`, PR #80.**
 Retoma el pendiente anotado el 23/07 (dominio `rofoagro.com.ar` ya conectado y verificado ese día;
 faltaba "el rebranding del sitio"). Lautaro pidió, explícitamente y varias veces, que no quede
 "RF AGRO" en NINGÚN lugar bajo ningún punto de vista — código, docs, ni plataformas externas.
@@ -33,23 +33,32 @@ placas de informes, marca de agua de gráficos, user-agents de los scrapers, mig
 Edge Function `dea-fetch`, scripts de ingesta, workflows, `package.json`, `.env.local.example` y
 TODA `docs/` (incluidos los `sesiones/*` históricos — a propósito, por el pedido explícito de no
 dejar ninguna mención vieja, apartándose del criterio habitual de "no reescribir bitácoras").
-Assets renombrados `public/rfagro-*.svg` → `public/rofoagro-*.svg` (`git mv` + referencias
-reescritas). Verificado: lint/tsc/tests(201/201)/build ✅ · cero ocurrencias remanentes en el repo
-y en el HTML compilado.
+**2ª pasada** encontró texto partido que ese grep no veía: el wordmark del header/footer/auth/
+admin/legal/landing/404 se arma con 2 `<span>` de color (`RF`+`AGRO` sin espacio entre tags) y el
+email de Resend usaba `RF&nbsp;AGRO` (entidad HTML) — corregidos los 7 componentes + el email +
+un comentario de `globals.css`; verificado con Chromium headless contra el server real (`npm run
+start`) que el header ya dice "ROFO AGRO" de verdad, no solo en el `<title>`.
+**Logo real HECHO**: Lautaro lo había subido por el chat pero nunca llegó al filesystem de la
+sesión — resultó que lo subió directo por la web de GitHub ("Add files via upload" a `main`,
+`public/ROFO SVG.svg` + un PNG de referencia); recuperado con `git show origin/main:"..."`.
+Del SVG completo (2000×2000, auto-trace de 285 paths sin `<text>`, con los 3 íconos + wordmark +
+bajada "Consultora de agronegocios") se extrajeron por bucketing de posición **los 3 assets reales**
+(`rofoagro-isotipo.svg` solo íconos, `rofoagro-logo.svg`/`rofoagro-logo-marca.svg` logo completo,
+ambos transparentes y recortados) y se optimizaron con `svgo` (-68% de peso). Verificado
+renderizando sobre fondo claro/oscuro antes de reemplazar los archivos de producción.
+Assets renombrados `public/rfagro-*.svg` → `public/rofoagro-*.svg`. Verificado: lint/tsc/
+tests(201/201)/build ✅ · cero ocurrencias remanentes (incluidas las partidas) en el repo, en el
+HTML compilado y en el server corriendo de verdad.
 
-**Quedó pendiente (3 cosas, ver detalle en la sesión)**: (1) **el logo real** — Lautaro subió por
-chat "ROFO SVG.svg" + un PNG, pero los bytes nunca llegaron al filesystem de esta sesión (se buscó
-2 veces con `find` en todo el disco); hoy `rofoagro-logo.svg`/`rofoagro-logo-marca.svg` tienen el
-nombre nuevo pero el wordmark sigue siendo el dibujo viejo "RF AGRO" (auto-trace vectorizado, no es
-texto editable) — **falta que reenvíe el archivo y llegue de verdad al disco** para poder
-reemplazarlo. (2) **Nombre del repo en GitHub** — no hay tool disponible en esta sesión para
-renombrarlo (se revisó todo el set de GitHub MCP); queda como paso manual de Lautaro (Settings →
-Repository name) — ojo, si lo hace, hacerlo DESPUÉS de mergear este PR para no romper el remote de
-la sesión en curso. (3) **Nombre del proyecto en Vercel** — mismo caso, sin tool de rename
-disponible; no bloquea nada (el dominio productivo ya es `rofoagro.com.ar`) pero el subdominio
-`*.vercel.app` de fallback seguirá diciendo `rfagro-research-web` hasta que lo cambie a mano.
-**Sin acción en Supabase** (el proyecto se llama `lineup-argentina`, nunca tuvo el nombre de
-marca). Detalle completo:
+**Quedó pendiente (solo renames de plataforma, sin tool disponible para hacerlos desde acá, ver
+detalle en la sesión)**: (1) **Nombre del repo en GitHub** — queda como paso manual de Lautaro
+(Settings → Repository name) — ojo, hacerlo DESPUÉS de mergear este PR para no romper el remote de
+la sesión en curso. (2) **Nombre del proyecto en Vercel** — no bloquea nada (el dominio productivo
+ya es `rofoagro.com.ar`) pero el subdominio `*.vercel.app` de fallback seguirá diciendo
+`rfagro-research-web` hasta que lo cambie a mano. (3) **Resend** — si hay un remitente propio
+cargado como env var en Vercel con el nombre viejo, actualizarlo a mano (el default del código ya
+dice ROFO AGRO). **Sin acción en Supabase** (el proyecto se llama `lineup-argentina`, nunca tuvo
+el nombre de marca). Detalle completo:
 [`sesiones/2026-07-24-rebrand-rofo-agro.md`](sesiones/2026-07-24-rebrand-rofo-agro.md).
 
 ## Anterior (24/07/2026 — 🧹 repaso del bloque A de manuales del backlog maestro)
