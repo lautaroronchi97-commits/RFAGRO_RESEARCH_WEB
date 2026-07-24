@@ -32,10 +32,10 @@ const MESES: Record<string, number> = {
 export function fechaWilliams(raw: string): string | null {
   const m = raw.trim().match(/^([a-zé]{3})\s+(\d{1,2}),\s*(\d{4})$/i);
   if (!m) return null;
-  const mes = MESES[m[1].toLowerCase()];
+  const mes = MESES[(m[1] ?? "").toLowerCase()];
   if (!mes) return null;
-  const dia = Number(m[2]);
-  const anio = Number(m[3]);
+  const dia = Number(m[2] ?? "");
+  const anio = Number(m[3] ?? "");
   if (!Number.isFinite(dia) || !Number.isFinite(anio) || dia < 1 || dia > 31) return null;
   return `${anio}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
 }
@@ -74,7 +74,7 @@ export function parseCsvLine(line: string): string[] {
 export function parseCsv(text: string): { header: string[]; rows: string[][] } {
   const lines = text.split(/\r?\n/).filter((l) => l.trim() !== "");
   if (lines.length === 0) return { header: [], rows: [] };
-  const header = parseCsvLine(lines[0]).map((h) => h.trim());
+  const header = parseCsvLine(lines[0]!).map((h) => h.trim()); // lines.length===0 ya salió arriba
   const rows = lines.slice(1).map(parseCsvLine);
   return { header, rows };
 }
