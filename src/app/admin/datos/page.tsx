@@ -7,27 +7,46 @@ import { PromptAgrochat } from "./prompt-agrochat";
 import { UploaderCamiones } from "./uploader-camiones";
 import { PromptCamiones } from "./prompt-camiones";
 import { DatosDia } from "./datos-dia";
+import { BcraManual, type PuntoReciente } from "./bcra-manual";
 import { DeaUploader } from "./dea-uploader";
 import { PasUploader } from "./pas-uploader";
 import { LecapUploader } from "./lecap-uploader";
 
+function isoMenosDias(iso: string, dias: number): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - dias);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Lunes a viernes (getUTCDay: 0=domingo..6=sábado). */
+function esHabil(iso: string): boolean {
+  const dia = new Date(`${iso}T00:00:00Z`).getUTCDay();
+  return dia >= 1 && dia <= 5;
+}
+
 /**
  * Pestaña DATOS del panel admin: actualizar series que se cargan a mano (sin cron), subiendo
  * exports de Agrochat/Williams — comercialización de granos (tabla `compras`), camiones en
- * puerto (tabla `camiones`, Williams Entregas), "datos del día" del informe diario (MP1: color
- * de la rueda + compras BCRA), y estimaciones DEA-SAGyP + BCBA-PAS (lotes L5/A3 — fuentes
- * bloqueadas por IP/Cloudflare). Protegida como las páginas hermanas: requireAdmin acá mismo
- * (además del layout), y cada server action vuelve a exigir admin en su primera línea; la
- * escritura va por RPC con guard is_admin() (sin service key en la web).
+ * puerto (tabla `camiones`, Williams Entregas), "color de la rueda" del informe diario (MP1),
+ * compras BCRA (MULC) para cualquier fecha reciente (tapa el rezago de la ingesta automática),
+ * y estimaciones DEA-SAGyP + BCBA-PAS (lotes L5/A3 — fuentes bloqueadas por IP/Cloudflare).
+ * Protegida como las páginas hermanas: requireAdmin acá mismo (además del layout), y cada
+ * server action vuelve a exigir admin en su primera línea; la escritura va por RPC con guard
+ * is_admin() (sin service key en la web).
  */
 export default async function DatosPage() {
   await requireAdmin();
 
   const fechaHoy = hoyCordobaISO();
+  const desde14 = isoMenosDias(fechaHoy, 14);
   const supabase = await createSupabaseServerClient();
-  const [{ data: colorRows }, { data: bcraRow }, { data: lecapRows }] = await Promise.all([
+  const [{ data: colorRows }, { data: bcraRows }, { data: lecapRows }] = await Promise.all([
     supabase.from("mesa_color").select("fecha,texto").order("fecha", { ascending: false }).limit(6),
-    supabase.from("compras_bcra").select("monto_musd").eq("fecha", fechaHoy).maybeSingle(),
+    supabase
+      .from("compras_bcra")
+      .select("fecha,monto_musd,fuente")
+      .gte("fecha", desde14)
+      .order("fecha", { ascending: false }),
     supabase
       .from("lecap_pago_final")
       .select("ticker,pago_final,fecha_vencimiento")
@@ -36,7 +55,15 @@ export default async function DatosPage() {
   const filas = (colorRows ?? []) as { fecha: string; texto: string }[];
   const deHoy = filas.find((f) => f.fecha === fechaHoy);
   const recientes = filas.filter((f) => f.fecha !== fechaHoy).slice(0, 3);
-  const bcraHoy = (bcraRow as { monto_musd: number } | null)?.monto_musd ?? null;
+
+  const bcraRecientes = (bcraRows ?? []) as { fecha: string; monto_musd: number; fuente: "manual" | "api" }[];
+  const bcraPuntos: PuntoReciente[] = bcraRecientes.map((r) => ({ fecha: r.fecha, montoMusd: r.monto_musd, fuente: r.fuente }));
+  const bcraFechas = new Set(bcraPuntos.map((p) => p.fecha));
+  const bcraFaltantes: string[] = [];
+  for (let d = isoMenosDias(fechaHoy, 1); d >= desde14; d = isoMenosDias(d, 1)) {
+    if (esHabil(d) && !bcraFechas.has(d)) bcraFaltantes.unshift(d);
+  }
+  const bcraFechaDefault = bcraFaltantes.length > 0 ? bcraFaltantes[bcraFaltantes.length - 1]! : isoMenosDias(fechaHoy, 1);
   const lecapActuales = (lecapRows ?? []) as { ticker: string; pago_final: number; fecha_vencimiento: string | null }[];
 
   return (
@@ -65,7 +92,8 @@ export default async function DatosPage() {
       <PromptCamiones />
       <UploaderCamiones />
 
-      <DatosDia fechaHoy={fechaHoy} colorHoy={deHoy?.texto ?? ""} bcraHoy={bcraHoy} recientes={recientes} />
+      <DatosDia fechaHoy={fechaHoy} colorHoy={deHoy?.texto ?? ""} recientes={recientes} />
+      <BcraManual fechaDefault={bcraFechaDefault} recientes={bcraPuntos.slice(0, 8)} faltantes={bcraFaltantes} />
       <DeaUploader hoy={fechaHoy} />
       <PasUploader hoy={fechaHoy} />
 

@@ -54,19 +54,19 @@
 | P4 | Camiones en puerto (research → ingesta → panel) | build espera OK de Lautaro a [`negocio/08`](negocio/08_fuente_camiones_puerto.md) | Fable/Opus (ídem P3) | **research HECHO (21/07)** — fuente elegida: SAGyP/MAGyP entrada diaria |
 | P5 | Vista por grano | — | Sonnet | pendiente |
 | P6 | Gráficos v2 (paquete) | — | Sonnet | **HECHO (23/07, C10)** — P12/P17 resueltos con tu respuesta ("pizarra maíz vs soja" = el ratio en %; "son pizarras" = sin serie front-month que construir). `sesiones/2026-07-23-c10-graficos-v2.md` |
-| P7 | Vista productor + PWA | robots→index depende de E3 | Sonnet | pendiente |
-| P8 | Feed A3 Fase 2 — histórico intradiario | — | Sonnet | pendiente |
-| P9 | Sintéticos TIR | tabla IAMC de Lautaro (paso 1) | Fable/Opus (validación de fórmulas financieras) | **HECHO (24/07)** — fórmula validada vs Excel, panel /dolar + carga manual de pago final (BYMA) en /admin/datos |
-| P10 | Estrategias avanzadas | primas/decisiones de Lautaro (paso 1) | Fable/Opus (ídem P9) | pendiente |
+| P7 | Vista productor + PWA | robots→index depende de E3 | Sonnet | **DESCARTADO (24/07)** — Lautaro: "ninguno de los dos desarrollos me interesa" (ni la vista simplificada ni la PWA). Ver `auditoria/E7-sintesis.md` §5 |
+| P8 | Feed A3 Fase 2 — histórico intradiario | — | Sonnet | **DESCARTADO (24/07)** — Lautaro lo descartó directamente. Ver `auditoria/E7-sintesis.md` §5 |
+| P9 | Sintéticos TIR | tabla IAMC de Lautaro (paso 1) | Fable/Opus (validación de fórmulas financieras) | **HECHO (24/07, PR #75)** — fórmula validada vs Excel, panel /dolar + carga manual de pago final (BYMA) en /admin/datos |
+| P10 | Estrategias avanzadas | primas/decisiones de Lautaro (paso 1) | Fable/Opus (ídem P9) | **sin prioridad por ahora (24/07)** — Lautaro no quiere sumar estrategias con costos por el momento; sigue pendiente, no descartado |
 | P11 | Modelo propio de capacidad de pago | fórmula de Lautaro (paso 1) | Fable/Opus (ídem P9) | pendiente |
-| P12 | Scoring de clientes | datos de fijaciones (paso 1) | Fable/Opus (diseño de producto + modelo AHP + privacidad) | pendiente |
+| P12 | Scoring de clientes | datos de fijaciones (paso 1) | Fable/Opus (diseño de producto + modelo AHP + privacidad) | **DESCARTADO (24/07)** — Lautaro: "tampoco me interesa, descartalo". Ver `auditoria/E7-sintesis.md` §5 |
 
 > Regla de modelos (igual que en los otros planes): **juicio → Fable mientras dure, después Opus;
 > build con patrón claro → Sonnet**. Dentro de la sesión, subagentes de solo lectura para paralelizar
 > verificaciones (cotejos contra fuentes, navegación); las decisiones y el código, la sesión principal.
 
 **Orden sugerido** (Lautaro elige libremente; son independientes salvo lo anotado): P1→P2 (chicos,
-valor inmediato) → P8 (habilita intradía) → P5 → P3/P4 (research) → P6 → P7 → P9/P10/P11 cuando estén
+valor inmediato) → P5 → P3/P4 (research) → P6 → P9/P10/P11 cuando estén
 los insumos → P12 al final (producto nuevo).
 
 ## Reglas transversales (cada prompt las asume)
@@ -233,6 +233,10 @@ main; doc de sesión + ESTADO (lista v2 actualizada ítem por ítem).
 
 # PROMPT P7 — Vista productor + PWA
 
+> ⚠️ **DESCARTADO 24/07/2026** — Lautaro: "ninguno de los dos desarrollos me interesa" (ni la
+> vista simplificada ni la PWA instalable). Prompt dejado como registro histórico — **NO
+> ejecutar** salvo que Lautaro lo pida de nuevo explícitamente.
+
 ```text
 Ejecutá el pendiente P7 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md,
 docs/CONTEXTO.md §C4 y docs/PLAN_LOGIN.md — el modelo de secciones por empresa ya existe). Rama
@@ -256,6 +260,10 @@ mobile, lint/tsc/build. PR draft base main; doc de sesión + ESTADO.
 ---
 
 # PROMPT P8 — Feed A3 Fase 2: histórico intradiario
+
+> ⚠️ **DESCARTADO 24/07/2026** — Lautaro lo descartó directamente. Prompt dejado como registro
+> histórico — **NO ejecutar** salvo que lo pida de nuevo explícitamente. Cae con esto también el
+> ítem "gráficos intradía" (C17 del backlog maestro), que consumía la tabla `snapshots` de acá.
 
 ```text
 Ejecutá el pendiente P8 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md,
@@ -361,6 +369,9 @@ de CONTEXTO hecho).
 ---
 
 # PROMPT P12 — Módulo scoring de clientes
+
+> ⚠️ **DESCARTADO 24/07/2026** — Lautaro: "tampoco me interesa, descartalo". Prompt dejado como
+> registro histórico — **NO ejecutar** salvo que lo pida de nuevo explícitamente.
 
 ```text
 Ejecutá el pendiente P12 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md y
