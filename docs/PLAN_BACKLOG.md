@@ -56,7 +56,7 @@
 | P6 | Gráficos v2 (paquete) | — | Sonnet | **HECHO (23/07, C10)** — P12/P17 resueltos con tu respuesta ("pizarra maíz vs soja" = el ratio en %; "son pizarras" = sin serie front-month que construir). `sesiones/2026-07-23-c10-graficos-v2.md` |
 | P7 | Vista productor + PWA | robots→index depende de E3 | Sonnet | **DESCARTADO (24/07)** — Lautaro: "ninguno de los dos desarrollos me interesa" (ni la vista simplificada ni la PWA). Ver `auditoria/E7-sintesis.md` §5 |
 | P8 | Feed A3 Fase 2 — histórico intradiario | — | Sonnet | **DESCARTADO (24/07)** — Lautaro lo descartó directamente. Ver `auditoria/E7-sintesis.md` §5 |
-| P9 | Sintéticos TIR | tabla IAMC de Lautaro (paso 1) | Fable/Opus (validación de fórmulas financieras) | pendiente |
+| P9 | Sintéticos TIR | tabla IAMC de Lautaro (paso 1) | Fable/Opus (validación de fórmulas financieras) | **HECHO (24/07, PR #75)** — fórmula validada vs Excel, panel /dolar + carga manual de pago final (BYMA) en /admin/datos |
 | P10 | Estrategias avanzadas | primas/decisiones de Lautaro (paso 1) | Fable/Opus (ídem P9) | **sin prioridad por ahora (24/07)** — Lautaro no quiere sumar estrategias con costos por el momento; sigue pendiente, no descartado |
 | P11 | Modelo propio de capacidad de pago | fórmula de Lautaro (paso 1) | Fable/Opus (ídem P9) | pendiente |
 | P12 | Scoring de clientes | datos de fijaciones (paso 1) | Fable/Opus (diseño de producto + modelo AHP + privacidad) | **DESCARTADO (24/07)** — Lautaro: "tampoco me interesa, descartalo". Ver `auditoria/E7-sintesis.md` §5 |

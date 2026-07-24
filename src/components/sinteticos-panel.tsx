@@ -1,7 +1,8 @@
-import { getLecaps } from "@/lib/market";
-import { nfmt, pfmt, dirOf, arrowOf } from "@/lib/format";
+import { getSinteticos } from "@/lib/market";
+import { nfmt, pfmt } from "@/lib/format";
 import { Panel, PanelHead } from "./panel";
 import { SourceStamp } from "./source-stamp";
+import { InfoTip } from "./infotip";
 import { QueEsEsto } from "./que-es-esto";
 
 function IconSint() {
@@ -16,7 +17,14 @@ function IconSint() {
 const cls = (v: number | null) => (v == null ? "neu2" : v > 0 ? "pos" : v < 0 ? "neg" : "neu2");
 
 export async function SinteticosPanel() {
-  const { lecaps, meta } = await getLecaps();
+  const { rows, meta } = await getSinteticos();
+
+  // "Ranking": el mejor sintético = mayor TNA (destacado arriba, además de la curva ordenada por vto).
+  const conTna = rows.filter((r) => r.tnaPct !== null);
+  const mejor = conTna.reduce<typeof conTna[number] | null>(
+    (best, r) => (best === null || (r.tnaPct as number) > (best.tnaPct as number) ? r : best),
+    null,
+  );
 
   return (
     <Panel id="sinteticos">
@@ -26,43 +34,79 @@ export async function SinteticosPanel() {
         sub="LECAP + dólar futuro vs futuro directo"
         stamp={<SourceStamp meta={meta} />}
       />
+
+      {mejor && (
+        <p className="dim" style={{ margin: "0 0 8px", fontSize: ".85rem" }}>
+          Mejor sintético: <b className="sym">{mejor.letra}</b> (↔ {mejor.posicion}) —{" "}
+          <span className={cls(mejor.tnaPct)}>TNA {pfmt(mejor.tnaPct, 1)}</span>
+          {mejor.ventajaPct !== null && (
+            <> · {mejor.ventajaPct >= 0 ? "gana" : "pierde"} <span className={cls(mejor.ventajaPct)}>{pfmt(Math.abs(mejor.ventajaPct), 1).replace("+", "")}</span> vs futuro directo</>
+          )}
+        </p>
+      )}
+
       <div className="table-scroll">
-        <table className="tbl" style={{ minWidth: 420 }}>
+        <table className="tbl" style={{ minWidth: 620 }}>
           <thead>
             <tr>
               <th className="l" scope="col">Letra</th>
+              <th scope="col">
+                <InfoTip term="DLR">Posición de dólar futuro con el mismo vencimiento que la letra.</InfoTip>
+              </th>
               <th scope="col">Precio</th>
-              <th scope="col">Días</th>
-              <th scope="col">Var</th>
+              <th scope="col">
+                <InfoTip term="Pago final">Importe que paga la letra al vencimiento (VN 100). Se fija en la emisión.</InfoTip>
+              </th>
+              <th scope="col">
+                <InfoTip term="Sintético">
+                  Dólar a término armado con la letra: spot × (pago final / precio). Es el tipo de cambio que
+                  te queda si comprás la letra y la cobrás al vencimiento.
+                </InfoTip>
+              </th>
+              <th scope="col">
+                <InfoTip term="TNA sint.">TNA en USD del sintético vs el dólar futuro de esa posición (act/365).</InfoTip>
+              </th>
+              <th scope="col">
+                <InfoTip term="TNA fut.">TNA en USD del dólar futuro directo (Fut/Spot − 1, anualizada).</InfoTip>
+              </th>
+              <th scope="col">
+                <InfoTip term="Ventaja">
+                  Diferencia de TNA sintético − futuro directo. Positiva = conviene el sintético.
+                </InfoTip>
+              </th>
             </tr>
           </thead>
           <tbody>
-            {lecaps.map((l) => {
-              const d = dirOf(l.varPct);
-              return (
-                <tr key={l.symbol}>
-                  <td className="l sym">{l.symbol}</td>
-                  <td>{nfmt(l.px, 2)}</td>
-                  <td className="dim">{l.dias ?? "—"}</td>
-                  <td className={cls(l.varPct)}>
-                    {arrowOf(d)} {pfmt(l.varPct, 2)}
-                  </td>
-                </tr>
-              );
-            })}
-            {lecaps.length === 0 && (
+            {rows.map((r) => (
+              <tr
+                key={r.letra}
+                style={mejor && r.letra === mejor.letra ? { background: "color-mix(in oklab, var(--gold-text, #efbf2e) 12%, transparent)" } : undefined}
+              >
+                <td className="l sym">{r.letra}</td>
+                <td className="sym dim">{r.posicion ?? "—"}</td>
+                <td>{nfmt(r.letraPx, 2)}</td>
+                <td>{r.pagoFinal != null ? nfmt(r.pagoFinal, 3) : "—"}</td>
+                <td>{r.sinteticoAFinish != null ? nfmt(r.sinteticoAFinish, 2) : "—"}</td>
+                <td className={cls(r.tnaPct)}>{r.tnaPct != null ? pfmt(r.tnaPct, 1) : "—"}</td>
+                <td className={cls(r.futTnaPct)}>{r.futTnaPct != null ? pfmt(r.futTnaPct, 1) : "—"}</td>
+                <td className={cls(r.ventajaPct)}>{r.ventajaPct != null ? pfmt(r.ventajaPct, 1) : "—"}</td>
+              </tr>
+            ))}
+            {rows.length === 0 && (
               <tr>
-                <td className="l dim" colSpan={4}>
-                  Sin LECAPs disponibles en este momento.
+                <td className="l dim" colSpan={8}>
+                  Sin sintéticos para mostrar — falta el precio de las letras o el dólar futuro, o el pago
+                  final no está cargado (se carga en <code>/admin/datos</code>).
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+
       <QueEsEsto
-        paraQue="Muestra los precios de las letras del Tesoro (LECAPs). El cálculo de la tasa efectiva y del sintético todavía está en preparación."
-        comoSeCalcula="Por ahora se listan los precios de las letras. La tasa efectiva (TIR) y la comparación sintética contra el dólar futuro se agregan más adelante."
+        paraQue="Compara armar un dólar a término con una LECAP (comprarla hoy y cobrarla al vencimiento) contra vender el dólar futuro de la misma posición. Sirve para ver cuál de los dos rinde más en dólares."
+        comoSeCalcula="Sintético = dólar spot × (pago final de la letra / precio de hoy). Tasa directa = sintético / dólar futuro − 1. TNA = directa × 365 / días al vencimiento. El pago final (importe al vencimiento) se carga a mano; el precio de la letra y el dólar futuro se actualizan solos."
       />
     </Panel>
   );

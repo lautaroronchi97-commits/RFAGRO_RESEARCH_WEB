@@ -10,6 +10,7 @@ import { DatosDia } from "./datos-dia";
 import { BcraManual, type PuntoReciente } from "./bcra-manual";
 import { DeaUploader } from "./dea-uploader";
 import { PasUploader } from "./pas-uploader";
+import { LecapUploader } from "./lecap-uploader";
 
 function isoMenosDias(iso: string, dias: number): string {
   const d = new Date(`${iso}T00:00:00Z`);
@@ -39,13 +40,17 @@ export default async function DatosPage() {
   const fechaHoy = hoyCordobaISO();
   const desde14 = isoMenosDias(fechaHoy, 14);
   const supabase = await createSupabaseServerClient();
-  const [{ data: colorRows }, { data: bcraRows }] = await Promise.all([
+  const [{ data: colorRows }, { data: bcraRows }, { data: lecapRows }] = await Promise.all([
     supabase.from("mesa_color").select("fecha,texto").order("fecha", { ascending: false }).limit(6),
     supabase
       .from("compras_bcra")
       .select("fecha,monto_musd,fuente")
       .gte("fecha", desde14)
       .order("fecha", { ascending: false }),
+    supabase
+      .from("lecap_pago_final")
+      .select("ticker,pago_final,fecha_vencimiento")
+      .order("fecha_vencimiento", { ascending: true, nullsFirst: false }),
   ]);
   const filas = (colorRows ?? []) as { fecha: string; texto: string }[];
   const deHoy = filas.find((f) => f.fecha === fechaHoy);
@@ -59,6 +64,7 @@ export default async function DatosPage() {
     if (esHabil(d) && !bcraFechas.has(d)) bcraFaltantes.unshift(d);
   }
   const bcraFechaDefault = bcraFaltantes.length > 0 ? bcraFaltantes[bcraFaltantes.length - 1]! : isoMenosDias(fechaHoy, 1);
+  const lecapActuales = (lecapRows ?? []) as { ticker: string; pago_final: number; fecha_vencimiento: string | null }[];
 
   return (
     <section>
@@ -90,6 +96,16 @@ export default async function DatosPage() {
       <BcraManual fechaDefault={bcraFechaDefault} recientes={bcraPuntos.slice(0, 8)} faltantes={bcraFaltantes} />
       <DeaUploader hoy={fechaHoy} />
       <PasUploader hoy={fechaHoy} />
+
+      <div className="admin-hd" style={{ marginTop: 32 }}>
+        <h2 className="admin-h1" style={{ fontSize: "1.3rem" }}>Datos · Pago final de letras (sintéticos)</h2>
+        <p className="admin-sub">
+          Cargá el pago final (importe al vencimiento) de cada LECAP/BONCAP para el panel{" "}
+          <Link href="/dolar">Sintéticos</Link>. Es un dato casi estático: solo se actualiza cuando el Tesoro
+          emite letras nuevas.
+        </p>
+      </div>
+      <LecapUploader actuales={lecapActuales} />
     </section>
   );
 }

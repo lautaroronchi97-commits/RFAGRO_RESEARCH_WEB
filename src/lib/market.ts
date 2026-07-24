@@ -18,3 +18,5 @@ export { getDolarFuturo } from "./market/dolar-futuro";
 export { getDolarLinked } from "./market/dolar-linked";
 export { getVolumenCambiario } from "./market/volumen";
 export { getLecaps } from "./market/lecaps";
+export { getSinteticos } from "./market/sinteticos";
+export type { SinteticosData, SinteticoRow } from "./market/sinteticos";
