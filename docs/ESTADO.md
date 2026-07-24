@@ -19,7 +19,75 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 24/07/2026 — 🧹 repaso del bloque A de manuales del backlog maestro)
+## Ahora (última actualización: 24/07/2026 — 🧪 A6: probando el uploader real → 1 bug encontrado y arreglado + feature nueva, TRABADO en el login)
+
+**🧪 A6 EN VIVO CON LAUTARO — historial editable de "Datos del día" + bug real de la DEA
+encontrado y arreglado — PR #77 (mergeado).** Arrancó como el repaso conversacional del bloque A
+(abajo, en «Anterior») pero Lautaro pidió ir probando el uploader de `/admin/datos` **uno por uno,
+en vivo**, guiado paso a paso con link + filtros exactos de cada fuente. Lo que pasó:
+
+1. **"Datos del día" (color de la rueda) — PROBADO, funciona.** Lautaro cargó un texto real
+   ("Rueda floja con pocos negocios de todo.") y confirmó el guardado.
+2. **Pedido nuevo en el momento**: que el historial de "Datos del día" sea **visible y editable**
+   hasta que el informe diario ya lo haya tomado, y de ahí en más quede fijo. Construido en la
+   misma rama: `/admin/datos` ahora muestra los **últimos 14 días con dato**, cada uno con su
+   propio "Editar"/"Cargar", y la fila pasa a solo-lectura (🔒) apenas existe un registro en
+   `informes_generados` (tipo=diario) para esa fecha — guard también en la server action, no solo
+   en la UI. Cero migración nueva.
+3. **DEA-SAGyP — bug real encontrado y arreglado.** Al probar con el CSV real (~11,5 MB, descargado
+   de `datosestimaciones.magyp.gob.ar`), "1 · Previsualizar" tiraba **"This page couldn't load"**
+   en el navegador de Lautaro. Causa raíz confirmada por los logs de Supabase Auth + el código: las
+   Server Actions de Next en Vercel tienen un límite de payload de **~4,5 MB por función** (no
+   configurable vía `next.config`, distinto del `bodySizeLimit: 16mb` que ya estaba seteado ahí —
+   ese es un límite de Next, no de la plataforma). **Fix**: `parseDea`/`resumenFilas`
+   (`src/lib/parse-dea.ts`) son módulos puros sin `server-only` → el parseo/agregado a nacional
+   ahora corre **en el navegador** al clickear "Previsualizar" (sin red); solo el resumen ya
+   agregado (unas pocas decenas de filas) viaja al servidor en "Confirmar y cargar". Misma UI/UX de
+   siempre. **Sin confirmar todavía que el fix funciona de punta a punta** (ver bloqueo abajo).
+4. **BLOQUEADO en el login**: Lautaro pidió la contraseña de su cuenta (no existe — el sitio no
+   guarda contraseñas propias, es Google OAuth + un form de email/contraseña separado que
+   probablemente nunca tuvo contraseña seteada). Al reintentar con Google, el navegador tiraba
+   `ERR_CONNECTION_REFUSED` en `localhost:3000/?code=...`. **Diagnosticado por los logs de Supabase
+   Auth** (`referer: http://localhost:3000` en los eventos `/authorize` y `/callback`, login
+   exitoso del lado de Google/Supabase): el navegador de Lautaro tiene `localhost:3000` en la barra
+   de direcciones (probablemente autocompletado de una prueba vieja), que no es un sitio real —
+   nada que ver con nuestro código ni con Supabase. Se le indicó escribir a mano
+   `rfagro-research-web.vercel.app` en vez de `localhost:3000`. **Sesión cortada en este punto sin
+   confirmar si pudo volver a entrar.**
+
+**Verificado del lado del código**: lint/tsc ✅ · `npx vitest run` 201/201 (sin tocar expects) ·
+`npm run build` ✅ (2 veces, antes y después del fix de DEA) · PR #77 con CI verde, mergeado.
+**Verificado con Lautoro en vivo**: solo el punto 1 (Datos del día). El resto —el historial nuevo,
+el fix de DEA, y las 5 secciones que nunca se probaron (comercialización Agrochat, camiones
+Williams, BCBA-PAS, compras BCRA manual, pago final LECAP)— **sigue sin confirmar**.
+
+### Qué falta probar de la parte de Datos (para la próxima vez que Lautoro tenga tiempo)
+
+Con acceso real a `/admin/datos` (usando `rfagro-research-web.vercel.app`, no `localhost:3000`):
+
+- [ ] **Historial de "Datos del día"** (nuevo): editar un día viejo del historial y guardar; y
+  confirmar que un día que ya tiene informe diario generado aparece bloqueado (🔒).
+- [ ] **DEA-SAGyP**: reintentar con el mismo CSV que falló — bajarlo de
+  `datosestimaciones.magyp.gob.ar` (botón de descarga del reporte "Estimaciones", dataset completo
+  sin filtrar) y subirlo. Es la más urgente: mientras no se cargue una vez real, el healthcheck de
+  DEA sigue en rojo.
+- [ ] **Comercialización (Agrochat)**: copiar el prompt de la tarjeta, pedírselo a Agrochat, subir
+  el CSV/xlsx que devuelva.
+- [ ] **Camiones en puerto (Williams)**: mismo patrón, prompt de camiones (elegir serie: total o un
+  grano puntual).
+- [ ] **BCBA-PAS**: bajar específicamente `historico_pas_datasets.csv` de
+  `bolsadecereales.com/estimaciones-agricolas` (NO `reporte_1.xlsx`, formato distinto que el
+  uploader rechaza a propósito) y subirlo.
+- [ ] **Compras BCRA (carga manual)**: cargar el monto del día que él ya conoce de su fuente
+  habitual (no hay un link fijo — está documentado como decisión, no como fuente automatizable).
+- [ ] **Pago final de LECAP**: pegar `TICKER PAGO_FINAL VENCIMIENTO` (de su Excel, IAMC o BYMA).
+
+Detalle completo con los links y filtros exactos de cada fuente: este mismo chat (o repetir el
+pedido "guiame paso a paso" en la próxima sesión, que ahora ya tiene la info más precisa
+registrada acá). Nada de este bloqueo es un problema de la web — es acceso (el tema del
+`localhost:3000`) y disponibilidad de tiempo de Lautoro para bajar los archivos reales.
+
+## Anterior (24/07/2026 — 🧹 repaso del bloque A de manuales del backlog maestro)
 
 **🧹 REPASO DEL BLOQUE A (pasos manuales) — sesión conversacional, sin rama de código, solo
 `docs/auditoria/E7-sintesis.md` §4/§7.** Lautaro contestó en bloque 4 pendientes del bloque A:
