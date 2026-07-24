@@ -1,4 +1,4 @@
-# PLAN DE INFORMES AUTOMATIZADOS + INTERPRETACIÓN — RF AGRO
+# PLAN DE INFORMES AUTOMATIZADOS + INTERPRETACIÓN — ROFO AGRO
 
 > **Qué es esto.** El plan de ejecución del **ítem 11 del backlog** (informe diario/semanal en
 > imagen/PDF para WhatsApp) y de dos proyectos hermanos definidos con Lautaro el 21/07/2026: el
@@ -45,7 +45,7 @@
    los datos automáticos (degrada, nunca se traba).
 6. **Formato: diario = placa PNG vertical (se lee entera en WhatsApp) · semanal = PDF de 3-5 páginas**
    tipo research de ALyC/banco (gráficos + interpretación). Branding = el de la web: tokens de
-   `src/app/globals.css` + `public/rfagro-logo.svg`/`rfagro-isotipo.svg`.
+   `src/app/globals.css` + `public/rofoagro-logo.svg`/`rofoagro-isotipo.svg`.
 7. **View de mercado: semanal, soja/maíz/trigo, interno mesa primero** (se abre a clientes cuando
    Lautaro valide la calidad); alimenta el informe semanal.
 8. **Interpretaciones de organismos: borrador → OK de Lautaro en /admin → publicar.** Su firma nunca
@@ -100,7 +100,7 @@
 # PROMPT MP1 — Informe diario (placa PNG para WhatsApp)
 
 ```text
-Sos el ejecutor del mini-proyecto MP1 (informe diario) de RF AGRO. Leé primero docs/PLAN_INFORMES.md
+Sos el ejecutor del mini-proyecto MP1 (informe diario) de ROFO AGRO. Leé primero docs/PLAN_INFORMES.md
 COMPLETO (decisiones de Lautaro y arquitectura común — este encargo las asume), docs/ESTADO.md,
 docs/CONTEXTO.md, la skill .claude/skills/voz-lautaro/SKILL.md Y sus references/ejemplos.md (los
 posteos reales "Mesa de operaciones" son EL modelo del informe); y si ya existe
@@ -153,7 +153,7 @@ CONSTRUIR (en este orden):
    {titulo, comentario, lineas_por_grano} en informes_generados (service key de env, estado borrador);
    (d) screenshotear la plantilla (misma URL base) con Playwright a PNG; (e) subir el PNG al bucket
    informes; (f) mandar el mail por Resend a ADMIN_EMAILS con el PNG adjunto y asunto "Informe diario
-   RF AGRO — [fecha]"; (g) marcar estado='enviado'. Incluir modo de prueba (--fecha) y qué hacer si
+   ROFO AGRO — [fecha]"; (g) marcar estado='enviado'. Incluir modo de prueba (--fecha) y qué hacer si
    una fuente falla (generar igual, anotar la degradación en el mail).
 6. PÁGINA /informes: lista del histórico (placa del día grande + archivo por fecha), signed URLs del
    bucket. Sección nueva "informes" en SECCIONES_META de src/lib/auth/config.ts (verificá que el
@@ -162,7 +162,7 @@ CONSTRUIR (en este orden):
 7. ROUTINE (paso manual de Lautaro, dejalo documentado en el PR y guialo): crear el trigger desde su
    sesión de Claude con create_trigger: cron "30 21 * * 1-5" (18:30 ART post cierre agro y pizarra —
    él ajusta), sesión nueva por disparo, prompt: "Corré la skill informe-diario del repo
-   RFAGRO_RESEARCH_WEB y generá el informe diario de hoy siguiendo su procedimiento al pie de la
+   ROFOAGRO_RESEARCH_WEB y generá el informe diario de hoy siguiendo su procedimiento al pie de la
    letra. Si algo falla, avisá por mail a ADMIN_EMAILS con el error en vez de quedarte en silencio."
    Antes: configurar en el entorno de Claude Code las env vars SUPABASE_URL, SUPABASE_SERVICE_KEY,
    RESEND_API_KEY, RESEND_FROM, ADMIN_EMAILS, INFORME_TOKEN.
@@ -189,7 +189,7 @@ el mail). Cerrá con doc de sesión + ESTADO.md («Ahora» + marcar avance del �
 # PROMPT MP2 — Informe semanal (PDF research)
 
 ```text
-Sos el ejecutor del mini-proyecto MP2 (informe semanal) de RF AGRO. Requisito: MP1 mergeado y la
+Sos el ejecutor del mini-proyecto MP2 (informe semanal) de ROFO AGRO. Requisito: MP1 mergeado y la
 Routine diaria funcionando (si no, frená y avisale a Lautaro). Leé docs/PLAN_INFORMES.md COMPLETO,
 docs/ESTADO.md, docs/CONTEXTO.md, la skill voz-lautaro (SKILL.md + references/ejemplos.md) y la skill
 informe-diario ya creada (reusá su pipeline: datos → prosa → render → Storage → Resend → registro).
@@ -232,7 +232,7 @@ el avance del ítem 13).
 # PROMPT MP3 — View de mercado por grano (research direccional)
 
 ```text
-Sos el ejecutor del mini-proyecto MP3 (view de mercado por grano) de RF AGRO. Requisito: MP1 mergeado
+Sos el ejecutor del mini-proyecto MP3 (view de mercado por grano) de ROFO AGRO. Requisito: MP1 mergeado
 (reusa patrón de skill + Routine + tablas). Leé docs/PLAN_INFORMES.md COMPLETO, docs/ESTADO.md,
 docs/CONTEXTO.md, docs/negocio/ (01 y 02 enteros — ahí está cómo piensa la mesa) y la skill
 voz-lautaro. Rama claude/informes-mp3-view desde main. Misma preparación de entorno que MP1.
@@ -285,7 +285,7 @@ PR draft hasta el OK del primer view. Cerrá con doc de sesión + ESTADO.md.
 # PROMPT MP4 — Interpretación automática de informes de organismos (ítem 21)
 
 ```text
-Sos el ejecutor del mini-proyecto MP4 (interpretación de informes de organismos) de RF AGRO.
+Sos el ejecutor del mini-proyecto MP4 (interpretación de informes de organismos) de ROFO AGRO.
 Requisito: MP1 mergeado (reusa Routine diaria, Resend, patrón admin). Leé docs/PLAN_INFORMES.md
 COMPLETO, docs/ESTADO.md, docs/CONTEXTO.md, la skill voz-lautaro y src/lib/estimaciones.ts (ya
 computa deltas entre vintages — es tu insumo principal). Rama claude/informes-mp4-interpretacion

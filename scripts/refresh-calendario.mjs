@@ -21,7 +21,7 @@
  */
 import { extraerSeedNass } from "../src/lib/calendario-nass.ts";
 
-const UA = "Mozilla/5.0 (RFAGRO research)";
+const UA = "Mozilla/5.0 (ROFOAGRO research)";
 // El último año con seed NASS versionado en src/lib/calendario-seed-nass.json.
 const SEED_ACTUAL = 2026;
 

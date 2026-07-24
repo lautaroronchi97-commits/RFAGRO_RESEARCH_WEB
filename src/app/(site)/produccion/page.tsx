@@ -9,7 +9,7 @@ import { ProduccionTabs } from "@/components/produccion-tabs";
 import { requireSeccion } from "@/lib/auth/dal";
 
 export const metadata: Metadata = {
-  title: "Producción · Calendario de informes — RF AGRO",
+  title: "Producción · Calendario de informes — ROFO AGRO",
   description:
     "Calendario cronológico de los informes de estimación de producción de granos (USDA, CONAB, BCR, BCBA, SAGyP) y sus últimas estimaciones por país y grano.",
   robots: { index: false, follow: false },
@@ -30,7 +30,7 @@ export default async function ProduccionPage() {
 
   return (
     <>
-      <h1 className="sr">RF AGRO — Calendario de informes y estimaciones de producción</h1>
+      <h1 className="sr">ROFO AGRO — Calendario de informes y estimaciones de producción</h1>
       <main className="wrap">
         <div className="col">
           <div className="prod-intro">

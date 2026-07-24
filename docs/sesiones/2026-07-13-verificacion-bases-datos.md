@@ -1,14 +1,14 @@
 # Sesión 2026-07-13 — Verificación de bases de datos + resiliencia de ingestas
 
 - **Rama:** `claude/rf-agro-project-tasks-0vlpkz` · **PR:** #25 (base `main`)
-- **Objetivo pedido por Lautaro:** registrar el plan RF AGRO hasta 31/7 en el proyecto, y arrancar por
+- **Objetivo pedido por Lautaro:** registrar el plan ROFO AGRO hasta 31/7 en el proyecto, y arrancar por
   la Tarea 1 — verificar las bases de datos actuales (detalle, cómo se actualizan, si corren los crons) y
   definir un plan de mejora + horarios de actualización.
 
 ## Hecho
 
 ### Registro del plan (Tarea 0)
-- Se agregó a `docs/ESTADO.md` la sección **«Plan RF AGRO (backlog priorizado)»** con las 20 tareas en 4
+- Se agregó a `docs/ESTADO.md` la sección **«Plan ROFO AGRO (backlog priorizado)»** con las 20 tareas en 4
   bloques (las semanas son solo orden, no deadlines). Checklist vivo para las próximas sesiones.
 
 ### Verificación de bases (Tarea 1) — auditoría en vivo

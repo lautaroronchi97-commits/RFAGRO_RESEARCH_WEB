@@ -1,6 +1,6 @@
 # Relevamiento de fuentes — Información y noticias del agro
 
-> **RF AGRO · 06/07/2026** (relevamiento de Lautaro).
+> **ROFO AGRO · 06/07/2026** (relevamiento de Lautaro).
 > Cobertura: trigo, soja, maíz, sorgo, cebada, girasol. ⭐ = imprescindible para el research diario/semanal.
 > Este directorio alimenta el módulo **Noticias** (fuentes propias que BCR no tiene) y el futuro
 > **Calendario de informes** (Fase 3), además de la lista de fuentes a scrapear.

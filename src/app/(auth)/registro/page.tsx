@@ -3,14 +3,14 @@ import type { Metadata } from "next";
 import { GoogleButton } from "../google-button";
 import { RegistroForm } from "./registro-form";
 
-export const metadata: Metadata = { title: "Crear cuenta · RF AGRO" };
+export const metadata: Metadata = { title: "Crear cuenta · ROFO AGRO" };
 
 export default function RegistroPage() {
   return (
     <div className="auth-card">
       <h1 className="auth-title">Crear cuenta</h1>
       <p className="auth-sub">
-        Registrate para acceder al research. Tu cuenta queda pendiente hasta que el equipo de RF AGRO la aprueba.
+        Registrate para acceder al research. Tu cuenta queda pendiente hasta que el equipo de ROFO AGRO la aprueba.
       </p>
 
       <GoogleButton />

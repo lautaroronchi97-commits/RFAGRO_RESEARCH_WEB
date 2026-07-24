@@ -1,4 +1,4 @@
-# RF AGRO — Análisis de infraestructura (actual y a escala)
+# ROFO AGRO — Análisis de infraestructura (actual y a escala)
 
 > ⚠️ **DOC HISTÓRICO (07-08/07/2026)** — anterior a casi toda la infraestructura real de hoy
 > (13 workflows, Edge Functions, healthcheck, login, hosting decidido). La foto vigente de
@@ -59,7 +59,7 @@ scrapers externos (`lineup-dashboard`, `update_djve.py`). Tablas con datos reale
 | `compras` | 715 | 2026-06-16 (⏸ scraper frenado) | Compras por grano/campaña/sector: toneladas, a fijar, precio prom. USD, **% cosecha**. |
 
 Las tres tablas tienen **RLS con lectura anónima** (pensadas para exponer a un frontend).
-**Decisión tomada:** consolidar RF AGRO sobre este proyecto (no crear uno nuevo).
+**Decisión tomada:** consolidar ROFO AGRO sobre este proyecto (no crear uno nuevo).
 
 **Primer paso ya hecho:** la web lee `djve` (vía la vista `djve_resumen`, ver
 `supabase/migrations/`) y la muestra en el panel **DJVE — Ventas al exterior** con datos

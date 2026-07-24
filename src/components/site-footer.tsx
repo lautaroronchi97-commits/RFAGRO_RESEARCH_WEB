@@ -5,15 +5,15 @@ export function SiteFooter() {
     <footer className="foot">
       <div className="foot-brand">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/rfagro-isotipo.svg" alt="" className="foot-iso" width={36} height={20} aria-hidden="true" />
+        <img src="/rofoagro-isotipo.svg" alt="" className="foot-iso" width={36} height={20} aria-hidden="true" />
         <span className="fb-name" aria-hidden="true">
           <span className="rf">RF</span> <span className="agro">AGRO</span>
         </span>
         <span className="fb-sub" aria-hidden="true">Research de granos</span>
-        <Link href="/bienvenida" className="foot-inst">Conocé RF AGRO →</Link>
+        <Link href="/bienvenida" className="foot-inst">Conocé ROFO AGRO →</Link>
       </div>
       <div className="src">
-        <b>RF AGRO</b>
+        <b>ROFO AGRO</b>
         <span className="src-chip">Elaboración propia · datos de mercado</span>
       </div>
       <span className="maqueta">

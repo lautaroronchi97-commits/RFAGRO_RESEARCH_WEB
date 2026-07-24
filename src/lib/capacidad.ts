@@ -19,7 +19,7 @@ import type { Meta } from "./market";
  *     FOB oficial − impuestos − gastos portuarios − gastos comerciales; es la MISMA base FOB
  *     que usa nuestro cálculo, así el diferencial entre BCR y Nuestro aísla la diferencia de
  *     SUPUESTOS de gastos, no de fuente de precio).
- *  2. **Nuestro** (RF AGRO, `capacidad-modelo.ts`): mismo FOB oficial (`fob-oficial.ts`, fuente
+ *  2. **Nuestro** (ROFO AGRO, `capacidad-modelo.ts`): mismo FOB oficial (`fob-oficial.ts`, fuente
  *     independiente — la API pública de SAGyP/MAGyP, no un scrape de BCR) con derechos de
  *     exportación vigentes + gastos EDITABLES (sembrados desde los propios b)/c) de BCR el
  *     primer render, ajustables por Lautaro en el panel).
@@ -53,7 +53,7 @@ export type CapGrano = {
   underlying: string;
   nombre: string;
   fasBcr: number | null; // FAS teórico BCR (SAGyP), USD/tn
-  fasNuestro: number | null; // FAS teórico RF AGRO, USD/tn
+  fasNuestro: number | null; // FAS teórico ROFO AGRO, USD/tn
   pizarra: number | null; // disponible USD (CAC) — lo que paga hoy el mercado
   fobOficial: number | null; // FOB oficial (SAGyP/MAGyP) usado en "Nuestro"
   diffBcrUsd: number | null; // pizarra − FAS BCR
@@ -104,7 +104,7 @@ export const getCapacidad = cache(async (): Promise<CapData> => {
     const res = await fetch(URL_BCR, {
       next: { revalidate: 1800 },
       signal: AbortSignal.timeout(8000),
-      headers: { "user-agent": "Mozilla/5.0 (RFAGRO research)" },
+      headers: { "user-agent": "Mozilla/5.0 (ROFOAGRO research)" },
     });
     if (res.ok) html = await res.text();
     else caida = true;

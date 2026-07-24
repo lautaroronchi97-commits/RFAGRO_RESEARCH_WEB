@@ -31,7 +31,7 @@
 import { writeFileSync } from "node:fs";
 
 const TXT = "https://portaldeinformacoes.conab.gov.br/downloads/arquivos/LevantamentoGraos.txt";
-const UA = "Mozilla/5.0 (RFAGRO research)";
+const UA = "Mozilla/5.0 (ROFOAGRO research)";
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 

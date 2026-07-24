@@ -24,7 +24,7 @@
   repetido en diagonal. Técnica: `mask-image` (texto SVG como máscara) sobre `background-color:var(--ink)` → el
   color **sigue el tema** (claro/oscuro) sin duplicar capas; opacidad .05/.06 (sutil). Server Component (email de la
   sesión), cero JS. Se monta en `(site)/layout.tsx` solo con `AUTH_ENFORCED` + perfil aprobado.
-- **Landing mínima (`(auth)/bienvenida/page.tsx` + CSS `.landing-*`):** marca RF AGRO + una línea + botones
+- **Landing mínima (`(auth)/bienvenida/page.tsx` + CSS `.landing-*`):** marca ROFO AGRO + una línea + botones
   Ingresar/Registrarse, sin datos de mercado. El proxy redirige el `/` sin sesión → `/bienvenida` (solo con el flag
   prendido; con el flag apagado `/` sigue siendo el tablero).
 - **Botón "Cerrar sesión" por usuario en `/admin`** (`admin/actions.ts` `cerrarSesionesUsuario` + `usuario-row.tsx`).

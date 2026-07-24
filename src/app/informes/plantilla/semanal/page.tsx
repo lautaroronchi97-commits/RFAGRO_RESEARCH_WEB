@@ -102,7 +102,7 @@ export default async function PlantillaSemanalPage({
       {/* Página 1 — Tapa + resumen ejecutivo */}
       <section className="sem-hoja sem-tapa">
         {/* eslint-disable-next-line @next/next/no-img-element -- SVG estático de /public, no contenido para <Image>. */}
-        <img className="sem-tapa-logo" src="/rfagro-logo.svg" alt="RF AGRO" />
+        <img className="sem-tapa-logo" src="/rofoagro-logo.svg" alt="ROFO AGRO" />
         <h1 className="sem-tapa-tit">&ldquo;{titulo}&rdquo;</h1>
         <p className="sem-tapa-sub">
           Informe semanal de research · {fechaLegible(desdeSemana)} – {fechaLegible(fecha)}
@@ -117,7 +117,7 @@ export default async function PlantillaSemanalPage({
           <p className="sem-texto">Resumen ejecutivo pendiente de redacción.</p>
         )}
         <p className="sem-pie">
-          Research informativo de RF AGRO, no constituye recomendación de inversión. Datos de
+          Research informativo de ROFO AGRO, no constituye recomendación de inversión. Datos de
           fuentes públicas y de mercado, sujetos a revisión. Generado {horaCordoba(new Date(), true)}.
         </p>
       </section>
@@ -298,7 +298,7 @@ export default async function PlantillaSemanalPage({
         </div>
         {prosa.cierre && <p className="sem-texto">{prosa.cierre}</p>}
         <p className="sem-pie">
-          Research informativo de RF AGRO, no constituye recomendación de inversión. Datos de
+          Research informativo de ROFO AGRO, no constituye recomendación de inversión. Datos de
           fuentes públicas y de mercado, sujetos a revisión.
         </p>
       </section>

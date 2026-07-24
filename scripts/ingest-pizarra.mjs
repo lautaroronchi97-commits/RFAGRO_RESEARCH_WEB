@@ -31,7 +31,7 @@ const PRODUCTS = [
   { grano: "girasol", pid: 9 },
   { grano: "sorgo", pid: 6 },
 ];
-const UA = "Mozilla/5.0 (RFAGRO research)";
+const UA = "Mozilla/5.0 (ROFOAGRO research)";
 const VENTANA_ANIOS = 2; // CAC no embebe la serie en rangos muy amplios
 
 const SUPABASE_URL = process.env.SUPABASE_URL;

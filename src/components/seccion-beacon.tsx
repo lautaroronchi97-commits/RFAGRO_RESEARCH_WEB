@@ -25,7 +25,7 @@ export function SeccionBeacon() {
     if (!seccion) return;
 
     // Throttle por pestaña para no pegarle al endpoint en cada navegación.
-    const key = `rfagro:vis:${seccion}`;
+    const key = `rofoagro:vis:${seccion}`;
     try {
       const last = Number(sessionStorage.getItem(key) ?? "0");
       if (Date.now() - last < VENTANA_MS) return;

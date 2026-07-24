@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Política de privacidad · RF AGRO",
-  description: "Qué datos recopila RF AGRO, para qué los usa y cómo los protege.",
+  title: "Política de privacidad · ROFO AGRO",
+  description: "Qué datos recopila ROFO AGRO, para qué los usa y cómo los protege.",
 };
 
 /**
@@ -21,7 +21,7 @@ export default function PrivacidadPage() {
       <p className="lp-p">Última actualización: 23 de julio de 2026.</p>
 
       <p className="lp-p">
-        RF AGRO es una consultora de agronegocios. Esta web (el &ldquo;Sitio&rdquo;) es la
+        ROFO AGRO es una consultora de agronegocios. Esta web (el &ldquo;Sitio&rdquo;) es la
         herramienta de research y seguimiento de mercado que usamos con nuestros clientes.
         Esta política explica qué datos personales recopilamos cuando creás una cuenta o usás
         el Sitio, para qué los usamos y qué derechos tenés sobre ellos.
@@ -96,7 +96,7 @@ export default function PrivacidadPage() {
       <h2 className="lp-h2">8. Contacto</h2>
       <p className="lp-p">
         Ante cualquier duda sobre tus datos, escribinos por el formulario de contacto de{" "}
-        <a href="/bienvenida#contacto">rfagro</a>.
+        <a href="/bienvenida#contacto">rofoagro</a>.
       </p>
     </article>
   );

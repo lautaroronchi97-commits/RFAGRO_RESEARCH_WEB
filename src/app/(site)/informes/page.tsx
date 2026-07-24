@@ -8,8 +8,8 @@ import { QueEsEsto } from "@/components/que-es-esto";
 import { MdLite } from "@/components/md-lite";
 
 export const metadata: Metadata = {
-  title: "Informes · RF AGRO",
-  description: "El informe diario de la mesa RF AGRO: research del día con datos de mercado y color de la rueda.",
+  title: "Informes · ROFO AGRO",
+  description: "El informe diario de la mesa ROFO AGRO: research del día con datos de mercado y color de la rueda.",
 };
 
 type Informe = {
@@ -80,12 +80,12 @@ export default async function InformesPage() {
 
   return (
     <>
-      <h1 className="sr">RF AGRO — Informes</h1>
+      <h1 className="sr">ROFO AGRO — Informes</h1>
       <main className="wrap">
         <div className="col">
           <h2 className="sec-title">Informes de la mesa</h2>
           <Panel id="informe-diario">
-            <PanelHead title="Informe diario" sub="research del día · mesa RF AGRO" />
+            <PanelHead title="Informe diario" sub="research del día · mesa ROFO AGRO" />
             <QueEsEsto
               paraQue={
                 <>
@@ -156,7 +156,7 @@ export default async function InformesPage() {
 
           {semanales.length > 0 && (
             <Panel id="informe-semanal">
-              <PanelHead title="Informe semanal" sub="research de la semana · mesa RF AGRO" />
+              <PanelHead title="Informe semanal" sub="research de la semana · mesa ROFO AGRO" />
               <QueEsEsto
                 paraQue={
                   <>

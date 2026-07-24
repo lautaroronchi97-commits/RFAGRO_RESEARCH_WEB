@@ -22,7 +22,7 @@ export const fetchJson = cache(async (url: string): Promise<FetchResult> => {
     const res = await fetch(url, {
       next: { revalidate: REVALIDATE },
       signal: AbortSignal.timeout(8000),
-      headers: { accept: "application/json", "user-agent": "rfagro-research-web/0.1" },
+      headers: { accept: "application/json", "user-agent": "rofoagro-research-web/0.1" },
     });
     if (!res.ok) {
       console.error(`[market] HTTP ${res.status} en ${url}`);

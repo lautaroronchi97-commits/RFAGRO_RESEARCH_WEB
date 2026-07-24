@@ -1,4 +1,4 @@
--- RF AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
+-- ROFO AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
 -- ETAPA 1 del login (ver docs/PLAN_LOGIN.md §3.2): base de autenticación.
 -- Tablas: empresas · profiles (1:1 con auth.users) · access_log (auditoría).
 -- Modelo: registro autoservicio + aprobación manual · permisos por sección a nivel

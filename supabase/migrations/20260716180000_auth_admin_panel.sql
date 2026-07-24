@@ -1,4 +1,4 @@
--- RF AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
+-- ROFO AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
 -- ETAPA 2 del login (ver docs/PLAN_LOGIN.md §5.2): soporte del panel de administración.
 --
 -- No cambia el esquema de tablas (todo lo cubrió la Etapa 1). Agrega:

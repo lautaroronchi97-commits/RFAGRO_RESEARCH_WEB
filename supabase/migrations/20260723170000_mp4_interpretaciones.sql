@@ -1,4 +1,4 @@
--- RF AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
+-- ROFO AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
 -- MP4 (docs/PLAN_INFORMES.md): interpretación automática de informes de organismos (ítem 21).
 --
 -- Cuando la skill informe-diario detecta un informe de organismo (USDA/CONAB/BCR-GEA/DEA-SAGyP)

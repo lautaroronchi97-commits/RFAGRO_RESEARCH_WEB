@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Condiciones de servicio · RF AGRO",
-  description: "Condiciones de uso del Sitio de RF AGRO.",
+  title: "Condiciones de servicio · ROFO AGRO",
+  description: "Condiciones de uso del Sitio de ROFO AGRO.",
 };
 
 /** Condiciones de servicio (pública — ver RUTAS_PUBLICAS en src/lib/auth/config.ts). */
@@ -14,7 +14,7 @@ export default function TerminosPage() {
       <p className="lp-p">Última actualización: 23 de julio de 2026.</p>
 
       <p className="lp-p">
-        Estas condiciones rigen el uso de la web de research de RF AGRO (el
+        Estas condiciones rigen el uso de la web de research de ROFO AGRO (el
         &ldquo;Sitio&rdquo;). Al crear una cuenta o usar el Sitio, las aceptás. Si no estás de
         acuerdo, no lo uses.
       </p>
@@ -22,7 +22,7 @@ export default function TerminosPage() {
       <h2 className="lp-h2">1. Qué es el Sitio</h2>
       <p className="lp-p">
         El Sitio reúne información de mercado de granos (precios, futuros, dólar, producción,
-        comercio exterior) y herramientas de cálculo para clientes de RF AGRO. Es un servicio
+        comercio exterior) y herramientas de cálculo para clientes de ROFO AGRO. Es un servicio
         de research e información: <strong>no es</strong> una plataforma de trading, no ejecuta
         operaciones y no reemplaza el asesoramiento de tu corredor.
       </p>
@@ -53,8 +53,8 @@ export default function TerminosPage() {
 
       <h2 className="lp-h2">5. Propiedad intelectual</h2>
       <p className="lp-p">
-        El diseño, la marca y los contenidos elaborados por RF AGRO (análisis, informes,
-        interpretaciones) son propiedad de RF AGRO. Podés usarlos para tu actividad habitual
+        El diseño, la marca y los contenidos elaborados por ROFO AGRO (análisis, informes,
+        interpretaciones) son propiedad de ROFO AGRO. Podés usarlos para tu actividad habitual
         como cliente; no está permitido redistribuirlos comercialmente sin nuestro permiso.
       </p>
 
@@ -78,7 +78,7 @@ export default function TerminosPage() {
       <h2 className="lp-h2">9. Contacto</h2>
       <p className="lp-p">
         Cualquier consulta sobre estas condiciones, escribinos por el formulario de contacto
-        de <a href="/bienvenida#contacto">rfagro</a>. Ver también nuestra{" "}
+        de <a href="/bienvenida#contacto">rofoagro</a>. Ver también nuestra{" "}
         <a href="/privacidad">política de privacidad</a>.
       </p>
     </article>

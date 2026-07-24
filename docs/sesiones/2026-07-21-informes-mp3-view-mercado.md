@@ -60,11 +60,11 @@
   queda draft hasta ese OK. Las primeras 3-4 semanas son calibración declarada
   (`references/aprendizajes.md`).
 - **Routine semanal (paso manual de Lautaro)**, después del merge y con las env vars del entorno
-  configuradas (`INFORME_BASE_URL=https://rfagro-research-web.vercel.app`, `INFORME_TOKEN` —
+  configuradas (`INFORME_BASE_URL=https://rofoagro-research-web.vercel.app`, `INFORME_TOKEN` —
   el MISMO valor va en Vercel —, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`): desde su sesión de
   Claude, `create_trigger` con cron `0 12 * * 5` (9:00 ART viernes, antes del semanal de MP2),
   sesión nueva por disparo, modelo **Opus/Fable** (recomendación del plan), prompt:
-  *"Corré la skill view-mercado del repo RFAGRO_RESEARCH_WEB y generá el view de mercado
+  *"Corré la skill view-mercado del repo ROFOAGRO_RESEARCH_WEB y generá el view de mercado
   semanal de los 3 granos siguiendo su procedimiento al pie de la letra. Si algo falla,
   contalo en el resumen en vez de quedarte en silencio."*
 - Integración de la sección "view por grano" en el informe semanal → la hace **MP2** (la skill

@@ -11,9 +11,9 @@ export function LandingTopbar() {
   return (
     <header className="lp-nav">
       <div className="lp-nav-in">
-        <a href="#top" className="brand" aria-label="RF AGRO — Inicio">
+        <a href="#top" className="brand" aria-label="ROFO AGRO — Inicio">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/rfagro-isotipo.svg" alt="" className="brand-iso" width={58} height={32} />
+          <img src="/rofoagro-isotipo.svg" alt="" className="brand-iso" width={58} height={32} />
           <span className="wordmark">
             <span className="rf">RF</span>
             <span className="agro">AGRO</span>
@@ -23,7 +23,7 @@ export function LandingTopbar() {
         <nav className="lp-nav-links" aria-label="Secciones">
           <a href="#servicios">Servicios</a>
           <a href="#como-funciona">Cómo funciona</a>
-          <a href="#por-que">Por qué RF AGRO</a>
+          <a href="#por-que">Por qué ROFO AGRO</a>
           <a href="#preguntas">Preguntas</a>
         </nav>
 

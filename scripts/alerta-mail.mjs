@@ -36,7 +36,7 @@ async function main() {
     method: "POST",
     headers: { authorization: `Bearer ${KEY}`, "content-type": "application/json" },
     body: JSON.stringify({
-      from: `RF AGRO crons <${FROM}>`,
+      from: `ROFO AGRO crons <${FROM}>`,
       to: [TO],
       subject: `🔴 ${workflow} en ROJO`,
       text:

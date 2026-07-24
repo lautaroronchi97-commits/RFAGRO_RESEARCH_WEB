@@ -240,7 +240,7 @@ function desdeSupabase(rows: RawRow[]): NoticiasData | null {
     nFuentes: contarFuentes(categorias, destacados),
     generadoMs: Date.now(),
     meta: {
-      source: "Portal RF AGRO",
+      source: "Portal ROFO AGRO",
       updatedAt: ultimoVisto || Date.now(),
       status: "real",
       problemas: [],
@@ -335,7 +335,7 @@ async function fetchText(url: string): Promise<string | null> {
     const res = await fetch(url, {
       next: { revalidate: REVALIDATE },
       signal: AbortSignal.timeout(9000),
-      headers: { "user-agent": "Mozilla/5.0 (RFAGRO research)" },
+      headers: { "user-agent": "Mozilla/5.0 (ROFOAGRO research)" },
     });
     if (!res.ok) return null;
     return await res.text();
@@ -370,7 +370,7 @@ async function enVivo(problema: string): Promise<NoticiasData> {
     nFuentes: contarFuentes(categorias, destacados),
     generadoMs: Date.now(),
     meta: {
-      source: "Portal RF AGRO",
+      source: "Portal ROFO AGRO",
       updatedAt: items.length ? Date.now() : null,
       status: "parcial",
       problemas,

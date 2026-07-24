@@ -12,7 +12,7 @@ import { requireSeccion } from "@/lib/auth/dal";
 export const revalidate = 30;
 
 export const metadata: Metadata = {
-  title: "Granos · RF AGRO",
+  title: "Granos · ROFO AGRO",
   description:
     "Arbitrajes, pases, capacidad de pago y la mejor salida para hacer caja en el mercado de granos.",
 };
@@ -21,7 +21,7 @@ export default async function GranosPage() {
   await requireSeccion("granos");
   return (
     <>
-      <h1 className="sr">RF AGRO — Granos</h1>
+      <h1 className="sr">ROFO AGRO — Granos</h1>
       <main className="wrap">
         <div className="col">
           <h2 className="sec-title">Granos</h2>

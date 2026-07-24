@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ActualizarForm } from "./actualizar-form";
 
-export const metadata: Metadata = { title: "Nueva contraseña · RF AGRO" };
+export const metadata: Metadata = { title: "Nueva contraseña · ROFO AGRO" };
 
 /**
  * Pantalla a la que llega el usuario tras clickear el enlace del email de recupero.

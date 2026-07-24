@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ============================================================
-   RF AGRO — Design system "Pizarra electrónica" · edición premium
+   ROFO AGRO — Design system "Pizarra electrónica" · edición premium
    Dos temas: claro (informe de banca privada, papel crema) /
    oscuro "rueda" (terminal financiera, carbón verde + oro).
    Tokens del logo: verdes RF/AGRO + trigo. Números mono tabulares.
@@ -1557,9 +1557,9 @@ a.estim-inf:hover { color:var(--gold-text); }
    Gráficos — doble lectura: marca de agua (.cm-*) + tabla de datos (.ct-*)
    ============================================================ */
 
-/* Marca de agua del logo RF AGRO dentro de cada chart (chart-marca.tsx).
+/* Marca de agua del logo ROFO AGRO dentro de cada chart (chart-marca.tsx).
    El contenedor PADRE debe ser position:relative (.chart-wrap ya lo es).
-   Asset: /rfagro-logo-marca.svg (logo completo sin los halos del auto-trace).
+   Asset: /rofoagro-logo-marca.svg (logo completo sin los halos del auto-trace).
    Opacidad calibrada mirándolo en ambos temas: sutil, nunca compite con las
    líneas de datos. Queda debajo de tooltips (.cv-tip z-index:5). */
 .cm-marca { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;

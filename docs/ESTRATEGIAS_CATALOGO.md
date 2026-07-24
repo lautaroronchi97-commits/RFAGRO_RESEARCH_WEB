@@ -1,6 +1,6 @@
 # Estrategias con opciones — catálogo para la calculadora combinada
 
-> Relevamiento (RF AGRO) del universo de estrategias de futuros/forwards + opciones,
+> Relevamiento (ROFO AGRO) del universo de estrategias de futuros/forwards + opciones,
 > mapeado al modelo de **patas** del Excel INTAGRO (ver `docs/ESTRATEGIAS_COMBINADAS.md`).
 > Objetivo: dejar todas **preseteadas** en la calc #4 (menú), con patas editables,
 > tabla de escenarios y gráfico de payoff. Fuentes: AnalystPrep/FRM, CME Group

@@ -8,7 +8,7 @@ import { EmpresasPanel } from "@/components/lineup/empresas-panel";
  * Mauro. Cruza DJVE (declarado) con line-up (originado) por exportador.
  */
 export const metadata: Metadata = {
-  title: "Empresas exportadoras · Comercio exterior · RF AGRO",
+  title: "Empresas exportadoras · Comercio exterior · ROFO AGRO",
   description: "Cobertura de las empresas exportadoras: DJVE declarada vs line-up originado, avance de campaña y ritmo.",
   robots: { index: false, follow: false },
 };
@@ -17,7 +17,7 @@ export default async function EmpresasPage() {
   await requireAdmin();
   return (
     <>
-      <h1 className="sr">RF AGRO — Empresas exportadoras</h1>
+      <h1 className="sr">ROFO AGRO — Empresas exportadoras</h1>
       <main className="wrap">
         <div className="col">
           <h2 className="sec-title">Comercio exterior · Empresas</h2>

@@ -182,7 +182,7 @@ const senalVacia = (problema: string): SenalCamionesData => ({
   fecha: null,
   porProducto: [],
   porZona: [],
-  meta: { source: "Elaboración propia RF AGRO", updatedAt: null, status: "parcial", problemas: [problema] },
+  meta: { source: "Elaboración propia ROFO AGRO", updatedAt: null, status: "parcial", problemas: [problema] },
 });
 
 function comoPuntos(mapa: Map<string, number> | undefined): Punto[] {
@@ -279,6 +279,6 @@ export const getSenalCamiones = cache(async (): Promise<SenalCamionesData> => {
     fecha: fechaGlobal,
     porProducto,
     porZona,
-    meta: { source: "Elaboración propia RF AGRO", updatedAt: null, status: "real", problemas: [] },
+    meta: { source: "Elaboración propia ROFO AGRO", updatedAt: null, status: "real", problemas: [] },
   };
 });

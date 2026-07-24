@@ -22,7 +22,7 @@ import type { Meta } from "./market";
  */
 
 const API = "https://api.bcra.gob.ar/estadisticas/v4.0/monetarias/5";
-const UA = "Mozilla/5.0 (RFAGRO research)";
+const UA = "Mozilla/5.0 (ROFOAGRO research)";
 const REVALIDATE = 6 * 3600; // el BCRA publica ~1 vez por día hábil, no hace falta más seguido
 const SOURCE = "BCRA (API v4, var. 5 — A3500)";
 

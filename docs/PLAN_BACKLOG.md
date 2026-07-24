@@ -1,4 +1,4 @@
-# PLAN DEL BACKLOG — RF AGRO (pendientes sin plan previo)
+# PLAN DEL BACKLOG — ROFO AGRO (pendientes sin plan previo)
 
 > ⚠️ **TABLERO ABSORBIDO por el backlog maestro (22/07/2026, auditoría E7).** La priorización y el
 > estado de cada ítem viven ahora en **[`auditoria/E7-sintesis.md`](auditoria/E7-sintesis.md) §4**
@@ -86,7 +86,7 @@ entorno: `npm install`; `.env.local` con `SUPABASE_URL`/`SUPABASE_ANON_KEY` vía
 # PROMPT P1 — Merval + EWZ + volumen Matba en el monitor
 
 ```text
-Ejecutá el pendiente P1 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero: reglas transversales;
+Ejecutá el pendiente P1 de docs/PLAN_BACKLOG.md de ROFO AGRO (leé ese doc primero: reglas transversales;
 + docs/ESTADO.md y docs/CONTEXTO.md). Rama claude/backlog-p1-monitor desde main.
 OBJETIVO: completar el set de referencias del Monitor de mercados de /granos (src/lib/monitor-mercados.ts
 + src/components/monitor-mercados.tsx, PR #42) con lo que falta del ítem 5 del backlog: (a) MERVAL y
@@ -109,7 +109,7 @@ claro/oscuro, lint/tsc/build. PR draft base main; doc de sesión + ESTADO (marca
 # PROMPT P2 — Variación semanal del USD (gráfico en /dolar)
 
 ```text
-Ejecutá el pendiente P2 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md y
+Ejecutá el pendiente P2 de docs/PLAN_BACKLOG.md de ROFO AGRO (leé ese doc primero; + docs/ESTADO.md y
 docs/CONTEXTO.md). Rama claude/backlog-p2-usd-semanal desde main.
 OBJETIVO (ítem 13 del backlog): un gráfico de variación semanal del dólar en /dolar. Datos: el oficial
 mayorista MAE es en vivo (market.ts) pero NO se guarda historia propia → primero verificá qué historia
@@ -132,7 +132,7 @@ PR draft base main; doc de sesión + ESTADO (ítem 13 hecho).
 # PROMPT P3 — Compras netas BCRA + acumulado de rueda USD
 
 ```text
-Ejecutá el pendiente P3 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md,
+Ejecutá el pendiente P3 de docs/PLAN_BACKLOG.md de ROFO AGRO (leé ese doc primero; + docs/ESTADO.md,
 docs/CONTEXTO.md — módulo 7 "Panel cambiario"). Rama claude/backlog-p3-bcra desde main.
 OBJETIVO (ítem 12): sumar al panel cambiario (src/components/panel-cambiario.tsx) las compras netas
 del BCRA en el MULC y el acumulado (diario/mensual/anual), hoy inexistentes porque no hay API oficial.
@@ -157,7 +157,7 @@ main; doc de sesión (registrar el research aunque la fuente elegida falle despu
 # PROMPT P4 — Camiones en puerto (research → ingesta → panel)
 
 ```text
-Ejecutá el pendiente P4 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md,
+Ejecutá el pendiente P4 de docs/PLAN_BACKLOG.md de ROFO AGRO (leé ese doc primero; + docs/ESTADO.md,
 docs/CONTEXTO.md y docs/FUENTES.md §logística). Rama claude/backlog-p4-camiones desde main.
 OBJETIVO (ítem 14): panel de movimiento de camiones en puerto (arribos diarios por grano/terminal,
 señal de presión de oferta física que complementa el line-up de /comercio).
@@ -181,7 +181,7 @@ lint/tsc/build. PR draft base main; doc de sesión + ESTADO (ítem 14).
 # PROMPT P5 — Vista por grano
 
 ```text
-Ejecutá el pendiente P5 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md y
+Ejecutá el pendiente P5 de docs/PLAN_BACKLOG.md de ROFO AGRO (leé ese doc primero; + docs/ESTADO.md y
 docs/CONTEXTO.md). Rama claude/backlog-p5-vista-grano desde main.
 OBJETIVO (ítem 18): hoy todos los paneles son transversales a los granos; falta la vista de UN grano
 (soja | maíz | trigo) que junte todo lo suyo en una página: curva A3 completa + pases + arbitraje vs
@@ -206,7 +206,7 @@ flag on/off, claro/oscuro + mobile, lint/tsc/build. PR draft base main; doc de s
 # PROMPT P6 — Gráficos v2 (paquete)
 
 ```text
-Ejecutá el pendiente P6 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md,
+Ejecutá el pendiente P6 de docs/PLAN_BACKLOG.md de ROFO AGRO (leé ese doc primero; + docs/ESTADO.md,
 docs/CONTEXTO.md y docs/PLAN_GRAFICOS_SPREADS.md — el panel /graficos ya está en producción, PR #17).
 Rama claude/backlog-p6-graficos-v2 desde main.
 PASO 1 — INSUMOS DE LAUTARO (AskUserQuestion, antes de tocar código; "P12" y "P17" acá son los ítems
@@ -238,7 +238,7 @@ main; doc de sesión + ESTADO (lista v2 actualizada ítem por ítem).
 > ejecutar** salvo que Lautaro lo pida de nuevo explícitamente.
 
 ```text
-Ejecutá el pendiente P7 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md,
+Ejecutá el pendiente P7 de docs/PLAN_BACKLOG.md de ROFO AGRO (leé ese doc primero; + docs/ESTADO.md,
 docs/CONTEXTO.md §C4 y docs/PLAN_LOGIN.md — el modelo de secciones por empresa ya existe). Rama
 claude/backlog-p7-productor-pwa desde main.
 OBJETIVO (C4): (a) VISTA PRODUCTOR — una presentación simplificada para el cliente productor: menos
@@ -266,7 +266,7 @@ mobile, lint/tsc/build. PR draft base main; doc de sesión + ESTADO.
 > ítem "gráficos intradía" (C17 del backlog maestro), que consumía la tabla `snapshots` de acá.
 
 ```text
-Ejecutá el pendiente P8 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md,
+Ejecutá el pendiente P8 de docs/PLAN_BACKLOG.md de ROFO AGRO (leé ese doc primero; + docs/ESTADO.md,
 docs/CONTEXTO.md §"A3 — verificado OK" y docs/INFRAESTRUCTURA.md). Rama claude/backlog-p8-intradia
 desde main.
 OBJETIVO (Fase 2 del feed A3, pendiente desde el 09/07): guardar HISTORIA intradiaria de la rueda
@@ -294,7 +294,7 @@ los gráficos intradía que la consumen quedan como ítem nuevo del backlog).
 # PROMPT P9 — Sintéticos TIR (C3)
 
 ```text
-Ejecutá el pendiente P9 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md,
+Ejecutá el pendiente P9 de docs/PLAN_BACKLOG.md de ROFO AGRO (leé ese doc primero; + docs/ESTADO.md,
 docs/CONTEXTO.md — fila 6 "Sintéticos/LECAPs" de la TABLA DE MÓDULOS (ojo: no el punto 6 de la lista
 "Pendientes", que es otra cosa) y docs/FORMULAS_EXCEL.md). Rama claude/backlog-p9-sinteticos desde main.
 PASO 1 — INSUMO DE LAUTARO (sin esto no se avanza): pedile la tabla de "pago final por letra"
@@ -319,7 +319,7 @@ sesión + ESTADO (C3 hecho).
 # PROMPT P10 — Estrategias avanzadas
 
 ```text
-Ejecutá el pendiente P10 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md,
+Ejecutá el pendiente P10 de docs/PLAN_BACKLOG.md de ROFO AGRO (leé ese doc primero; + docs/ESTADO.md,
 docs/CONTEXTO.md — punto 6 "Estrategias" de la lista "Pendientes" (ojo: no la fila 6 de la tabla de
 módulos, que es Sintéticos), docs/ESTRATEGIAS_CATALOGO.md y docs/ESTRATEGIAS_COMBINADAS.md; código:
 src/lib/estrategias.ts + calc-estrategias.tsx + costos.ts). Rama claude/backlog-p10-estrategias
@@ -347,7 +347,7 @@ PR draft base main; doc de sesión + ESTADO.
 # PROMPT P11 — Modelo propio de capacidad de pago
 
 ```text
-Ejecutá el pendiente P11 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md,
+Ejecutá el pendiente P11 de docs/PLAN_BACKLOG.md de ROFO AGRO (leé ese doc primero; + docs/ESTADO.md,
 docs/CONTEXTO.md — punto 7 "Modelo propio de Lautaro" de la lista "Pendientes" (ojo: no la fila 7 de
 la tabla de módulos, que es el panel cambiario) y src/lib/capacidad.ts — hoy: FAS teórico BCR
 scrapeado + override por env
@@ -357,7 +357,7 @@ completa (FOB, retenciones, gastos fobbing, embolsado/comercialización, margen 
 lo que él use), CON un ejemplo numérico por grano resuelto a mano por él. Preguntale también qué
 inputs quiere editables en la web y si el FAS de BCR queda al lado como referencia comparativa.
 BUILD: lib capacidad-modelo.ts pura (testeable) que implementa SU fórmula exacta; el panel de
-capacidad muestra las dos columnas (modelo RF AGRO vs FAS teórico BCR) con los inputs editables que
+capacidad muestra las dos columnas (modelo ROFO AGRO vs FAS teórico BCR) con los inputs editables que
 él pidió (patrón client de arbitrajes-editable) y sello honesto de qué es cada una; el override por
 env queda como tercer nivel (emergencia). Inputs de mercado (FOB oficial, retenciones vigentes):
 identificá la fuente con request real y preguntale si la automatizás o la carga él.
@@ -374,7 +374,7 @@ de CONTEXTO hecho).
 > registro histórico — **NO ejecutar** salvo que lo pida de nuevo explícitamente.
 
 ```text
-Ejecutá el pendiente P12 de docs/PLAN_BACKLOG.md de RF AGRO (leé ese doc primero; + docs/ESTADO.md y
+Ejecutá el pendiente P12 de docs/PLAN_BACKLOG.md de ROFO AGRO (leé ese doc primero; + docs/ESTADO.md y
 SOBRE TODO docs/negocio/03_modulo_comportamiento_cliente_vendedor.md — la especificación completa del
 producto: scoring AHP + P&L del cliente vendedor — y docs/negocio/04 §exports). Rama
 claude/backlog-p12-scoring desde main. Es un PRODUCTO NUEVO de la consultora, no un panel más: andá

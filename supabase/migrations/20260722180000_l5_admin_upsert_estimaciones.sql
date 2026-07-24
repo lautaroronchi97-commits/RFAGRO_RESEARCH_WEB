@@ -1,4 +1,4 @@
--- RF AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
+-- ROFO AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
 -- Lote L5 (docs/auditoria/E7-sintesis.md §6): DEA-SAGyP destrabar la fuente.
 --
 -- `datosestimaciones.magyp.gob.ar` bloquea las IPs de datacenter (GitHub Actions, la Edge

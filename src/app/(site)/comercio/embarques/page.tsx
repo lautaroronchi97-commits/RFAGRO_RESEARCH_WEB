@@ -8,7 +8,7 @@ import { MesaEmbarquePanel } from "@/components/lineup/embarques-panel";
  * embarques declarado (DJVE) por mes × producto, leído en idioma A3.
  */
 export const metadata: Metadata = {
-  title: "Mesa de embarque · Comercio exterior · RF AGRO",
+  title: "Mesa de embarque · Comercio exterior · ROFO AGRO",
   description: "Programa de embarques declarado (DJVE) por mes y producto, cruzado con el line-up y la curva A3.",
   robots: { index: false, follow: false },
 };
@@ -17,7 +17,7 @@ export default async function EmbarquesPage() {
   await requireAdmin();
   return (
     <>
-      <h1 className="sr">RF AGRO — Mesa de embarque</h1>
+      <h1 className="sr">ROFO AGRO — Mesa de embarque</h1>
       <main className="wrap">
         <div className="col">
           <h2 className="sec-title">Comercio exterior · Mesa de embarque</h2>

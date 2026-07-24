@@ -7,7 +7,7 @@ import "server-only";
  *
  * Env:
  *  - RESEND_API_KEY  → clave de Resend (secreta). Sin ella, no se manda nada.
- *  - RESEND_FROM     → remitente (ej. "RF AGRO <research@tudominio.com>"). Default de
+ *  - RESEND_FROM     → remitente (ej. "ROFO AGRO <research@tudominio.com>"). Default de
  *                      prueba: onboarding@resend.dev (solo llega al dueño de la cuenta).
  *  - ADMIN_EMAILS    → destinatarios del aviso de registro nuevo (coma-separados).
  *  - NEXT_PUBLIC_SITE_URL → base para los links del email (panel, ingreso).
@@ -16,7 +16,7 @@ import "server-only";
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 
 function fromAddress(): string {
-  return process.env.RESEND_FROM || "RF AGRO <onboarding@resend.dev>";
+  return process.env.RESEND_FROM || "ROFO AGRO <onboarding@resend.dev>";
 }
 
 /** Lista de emails de admin (coma-separados) para los avisos de registro. */
@@ -28,7 +28,7 @@ export function adminEmails(): string[] {
 }
 
 function siteUrl(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL || "https://rfagro-research-web.vercel.app").replace(/\/$/, "");
+  return (process.env.NEXT_PUBLIC_SITE_URL || "https://rofoagro-research-web.vercel.app").replace(/\/$/, "");
 }
 
 /** Envía un email por Resend. Devuelve true si salió; degrada a false sin tirar. */
@@ -66,7 +66,7 @@ function plantilla(titulo: string, cuerpo: string): string {
       <h1 style="margin:0 0 12px;font-size:19px;color:#2F6E34">${titulo}</h1>
       ${cuerpo}
     </div>
-    <div style="padding:14px 22px;border-top:1px solid #eef2e6;font-size:12px;color:#7a887a">Este es un aviso automático de RF AGRO. No respondas a este correo.</div>
+    <div style="padding:14px 22px;border-top:1px solid #eef2e6;font-size:12px;color:#7a887a">Este es un aviso automático de ROFO AGRO. No respondas a este correo.</div>
   </div></body></html>`;
 }
 
@@ -91,7 +91,7 @@ export async function notificarRegistro(datos: {
       <tr><td style="padding:6px 0;color:#7a887a">Teléfono</td><td style="padding:6px 0">${escapar(datos.telefono)}</td></tr>
     </table>
     <p style="margin:18px 0 0"><a href="${siteUrl()}/admin" style="display:inline-block;background:#2F6E34;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:bold">Revisar en el panel</a></p>`;
-  await enviar(dests, "Nueva cuenta para aprobar · RF AGRO", plantilla("Registro nuevo", cuerpo));
+  await enviar(dests, "Nueva cuenta para aprobar · ROFO AGRO", plantilla("Registro nuevo", cuerpo));
 }
 
 /** Aviso al cliente de que su acceso quedó habilitado. */
@@ -100,9 +100,9 @@ export async function notificarAprobacion(email: string, nombre: string): Promis
   const saludo = nombre ? `Hola ${escapar(nombre.split(" ")[0] ?? nombre)},` : "Hola,";
   const cuerpo = `
     <p style="margin:0 0 12px">${saludo}</p>
-    <p style="margin:0 0 14px">Tu acceso al research de RF AGRO ya está <b>activo</b>. Podés ingresar cuando quieras.</p>
+    <p style="margin:0 0 14px">Tu acceso al research de ROFO AGRO ya está <b>activo</b>. Podés ingresar cuando quieras.</p>
     <p style="margin:18px 0 0"><a href="${siteUrl()}/ingresar" style="display:inline-block;background:#2F6E34;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:bold">Ingresar</a></p>`;
-  await enviar([email], "Tu acceso a RF AGRO está activo", plantilla("Acceso habilitado", cuerpo));
+  await enviar([email], "Tu acceso a ROFO AGRO está activo", plantilla("Acceso habilitado", cuerpo));
 }
 
 /**
@@ -137,7 +137,7 @@ export async function enviarConsulta(datos: {
     </table>
     <p style="margin:16px 0 6px;color:#7a887a;font-size:13px">Mensaje</p>
     <p style="margin:0;white-space:pre-wrap">${escapar(datos.mensaje)}</p>`;
-  return enviar(dests, "Nueva consulta · RF AGRO", plantilla("Consulta desde la web", cuerpo));
+  return enviar(dests, "Nueva consulta · ROFO AGRO", plantilla("Consulta desde la web", cuerpo));
 }
 
 /** Escape HTML mínimo para interpolar datos del usuario en el email. */

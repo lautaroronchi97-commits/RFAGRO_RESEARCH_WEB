@@ -12,7 +12,7 @@
   `RUTAS_PUBLICAS`, path-based → moverla no rompe el gate).
 - **Secciones** (`src/app/bienvenida/page.tsx`): hero (promesa) → problema → cómo funciona (01·02·03)
   → servicios (grilla de 6) → **vistazo al tablero** (mockups ilustrativos, sin datos reales, chip
-  "Vista previa") → por qué RF AGRO (4 diferenciales) → **para acopios** (replicá el modelo de un
+  "Vista previa") → por qué ROFO AGRO (4 diferenciales) → **para acopios** (replicá el modelo de un
   correacopio) → equipo (sin nombres) → FAQ (`<details>`, sin JS) → contacto (formulario).
 - **Topbar** (`components/landing/landing-topbar.tsx`): marca + anclas + Ingresar + CTA "Quiero
   asesoramiento" + toggle de tema. Nav oculta en mobile.
@@ -22,7 +22,7 @@
   neutral (no promete "te contactamos", pedido de Lautaro).
 - **Estilos** `lp-*` nuevos en `globals.css` (reemplazan el bloque `.landing-*` de la landing
   mínima). Todo con tokens del tema → claro/oscuro solo. Reusa `.auth-btn` / `.auth-field`.
-- **Link desde el dashboard**: "Conocé RF AGRO →" en el footer (`site-footer.tsx`).
+- **Link desde el dashboard**: "Conocé ROFO AGRO →" en el footer (`site-footer.tsx`).
 
 ## Decisiones tomadas (y por qué)
 - **Página de venta, no folleto**: el producto (el tablero) es el protagonista, con capturas

@@ -1,4 +1,4 @@
--- RF AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
+-- ROFO AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
 -- Tabla del portal de noticias: titulares con link-out (NUNCA el cuerpo de la nota).
 -- La llena el cron horario de GitHub Actions (scripts/ingest-noticias.mjs) con la
 -- categorización propia de src/lib/noticias-reglas.json. Dedup por link (PK):

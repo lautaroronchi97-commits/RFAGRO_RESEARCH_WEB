@@ -170,7 +170,7 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 
 ## 4. BACKLOG MAESTRO ÚNICO
 
-> **Desde el 22/07/2026 esta es LA lista donde se prioriza.** Reemplaza el checklist «Plan RF AGRO»
+> **Desde el 22/07/2026 esta es LA lista donde se prioriza.** Reemplaza el checklist «Plan ROFO AGRO»
 > de `ESTADO.md` (queda como histórico), los «Pendientes» de `CONTEXTO.md` (ya retirados por E6) y
 > el tablero de `PLAN_BACKLOG.md` (absorbido — sus prompts P1–P12 siguen siendo los prompts de
 > ejecución). Cada sesión que complete un ítem lo tacha ACÁ y anota el PR.

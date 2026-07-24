@@ -214,7 +214,7 @@ export const getVariacionSemanalDolarOficial = cache(async (hastaISO: string): P
   try {
     const res = await fetch(
       `https://api.bcra.gob.ar/estadisticas/v4.0/monetarias/5?desde=${desde}&hasta=${hastaISO}`,
-      { headers: { "user-agent": "Mozilla/5.0 (RFAGRO research)" }, signal: AbortSignal.timeout(10000) },
+      { headers: { "user-agent": "Mozilla/5.0 (ROFOAGRO research)" }, signal: AbortSignal.timeout(10000) },
     );
     if (!res.ok) return vacio;
     const json = (await res.json()) as { results?: { detalle?: { fecha: string; valor: number }[] }[] };
