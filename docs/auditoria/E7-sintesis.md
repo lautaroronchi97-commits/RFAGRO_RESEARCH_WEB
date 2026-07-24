@@ -181,23 +181,41 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 - [ ] **A1. Terminar Parte C del login**: publicar la app de Google a producción (retomar la pantalla
   de "verificación de marca" con captura completa) → checklist de encendido (`GUIA_LOGIN_SETUP.md`
   Parte C): Mauro admin → aprobar clientes → `AUTH_ENFORCED=true` + Redeploy → validación 5 min.
-- [ ] **A2. Crear la Routine semanal MP3** (cron `0 12 * * 5`, prompt exacto en
-  [`sesiones/2026-07-21-informes-mp3-view-mercado.md`](../sesiones/2026-07-21-informes-mp3-view-mercado.md)).
-  Sin esto el view de `/granos/view` no se regenera solo.
-- [ ] **A3. Suscribirse por mail al informe PAS de la BCBA** (respaldo acordado al descartar la
-  automatización — E6 #2).
-- [ ] **A4. Borrar las ramas remotas ya mergeadas**: las 7 de
-  [`E6-historia.md`](E6-historia.md) § «Higiene» + las de las auditorías mergeadas después
-  (`claude/auditoria-e3-ux-auikht`, `claude/auditoria-e4-codigo-p28mxd`, `claude/auditoria-e5-infra`,
-  `claude/auditoria-e6-historia-yk24fj`, `claude/e5-fix-edge-auth-jwt-role`,
-  `claude/e5-parte-b-c-cierre` — mismo comando `git push origin --delete <rama>`).
+  **En curso 24/07**: el dominio propio se está validando por Vercel (paso previo a la verificación
+  de marca de Google) — sigue sin encender, pero ya no está frenado en la conversación de
+  dominio/marca/SRL del 23/07.
+- [x] **A2. Crear la Routine semanal MP3** — ✅ hecha 23/07 (cron `0 12 * * 5`, modelo asignado a
+  mano por Lautaro desde la app). El primer disparo real cae el viernes siguiente, sin verificar
+  todavía de punta a punta. `sesiones/2026-07-23-mp2-skill-y-alta-srl.md`.
+- [x] **A3. Suscribirse por mail al informe PAS de la BCBA** — ✅ hecha 23/07 (Lautaro se suscribió
+  por WhatsApp, no por mail — mismo efecto: respaldo humano del informe). `sesiones/2026-07-23-mp2-skill-y-alta-srl.md`.
+- [x] **A4. Borrar las ramas remotas ya mergeadas** — ✅ verificado 24/07: `git ls-remote --heads
+  origin` solo devuelve `main`, no queda ninguna rama remota vieja (se limpiaron solas al mergear
+  con el flujo habitual de PR). Nada que borrar.
 - [x] **A5. Responder las preguntas de P3 y P4** — ✅ respondido 22/07 (§7): P3 = automático +
   carga manual del día · P4 = público, backfill 2020→hoy. C4 y C5 desbloqueados.
-- [ ] **A6. Confirmar si ya probaste el uploader de `/admin/datos` logueado** (promesa abierta desde
-  el PR #44; si no, probarlo con el próximo export de Agrochat).
+- [ ] **A6. Confirmar si ya probaste el uploader de `/admin/datos` logueado**: OJO, esto creció desde
+  el PR #44 — hoy `/admin/datos` tiene **7 secciones** de carga manual, cada una con su propio
+  procedimiento (previsualizar → confirmar, nunca escribe en el primer paso). Ninguna fue probada
+  todavía con tu sesión real logueada (solo con bypass temporal de admin en el sandbox). Lo que hay
+  que probar, sección por sección:
+  1. **Comercialización (Agrochat)** — copiá el prompt de la tarjeta, pedíselo a Agrochat, subí el
+     CSV/xlsx → Previsualizar → Confirmar. Se ve reflejado en `/comercio/negociado`.
+  2. **Camiones en puerto (Williams)** — mismo patrón con el prompt de camiones, elegís la serie
+     (total o un grano) → `/comercio/camiones`.
+  3. **Datos del día** — color de la rueda (texto libre) para el informe diario (MP1).
+  4. **Compras BCRA (MULC) — carga manual** — elegís una fecha hábil reciente y cargás el monto en
+     M USD (tapa el hueco de rezago hasta que el cron automático la pise) → `/dolar`.
+  5. **Estimaciones DEA-SAGyP** — descargá el CSV desde datosestimaciones.magyp.gob.ar (con tu
+     navegador, no bloqueado) y subilo → `/produccion`. Esta es la que más urge probar: mientras no
+     se cargue una vez real, el healthcheck de DEA sigue en rojo.
+  6. **Estimaciones BCBA-PAS** — CSV de bolsadecereales.com/estimaciones-agricolas → `/produccion`.
+  7. **Pago final de letras (sintéticos)** — pegás `TICKER PAGO_FINAL [VENCIMIENTO]` por línea (lo
+     sacás de tu Excel, IAMC o BYMA) → `/dolar` (panel Sintéticos).
+  Con que confirmes cuáles ya probaste (y cuáles fallaron, si alguna) alcanza para tachar esto.
 - [x] **A7. Decidir H12 y girasol/sorgo** — ✅ decidido 22/07 (§7): H12 no por ahora · girasol/sorgo sí.
-- [ ] **A8. (Cuando corresponda) re-evaluar Leaked password protection** si algún día upgradeás
-  Supabase a Pro — hoy decidido NO (plan Free).
+- [x] ~~**A8. Re-evaluar Leaked password protection**~~ → **descartado por ahora, 24/07** (Lautaro:
+  "descartalo"). Se retoma solo si algún día se decide upgradear Supabase a Pro ($25/mes).
 
 ### B. Quick wins restantes (fixes chicos, se pueden juntar en una sola sesión)
 
@@ -630,6 +648,15 @@ haya una ventana; B3 (girasol/sorgo) entra como quick win.
 **L5, B3, L4 y C5 quedan CERRADOS** (backlog §4 actualizado arriba). MP1/MP2/L1 también cerraron en
 sesiones paralelas el mismo día (ver `ESTADO.md`). Próximo en el orden: retomar C4 (compras BCRA)
 ahora que MP1 ya mergeó.
+
+### Bloque 6 — repaso del bloque A de manuales (24/07/2026)
+
+| Decisión | Respuesta de Lautaro | Efecto en el backlog |
+|---|---|---|
+| **A4** — borrar ramas remotas mergeadas | **"Eliminalo y no tenemos ramas"** | Verificado con `git ls-remote --heads origin`: no queda ninguna rama remota salvo `main` — ya estaban limpias, nada que borrar. A4 cerrado |
+| **A1** — estado del login/dominio | **"Se está validando por Vercel el dominio"** | Sigue abierto (no depende de una sesión de código) — anotado como en curso, un paso más cerca de retomar la verificación de marca de Google |
+| **A6** — qué probar del uploader | **"Más específico qué debo probar"** | A6 detallado en el ítem de arriba: son 7 secciones hoy (creció desde el PR #44), con el paso a paso de cada una |
+| **A8** — leaked password protection | **"Descartalo por ahora"** | Cerrado sin acción — se retoma solo si algún día se upgradea Supabase a Pro |
 
 ---
 

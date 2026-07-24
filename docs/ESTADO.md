@@ -19,7 +19,23 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 24/07/2026 — 💰 C16/P11 (capacidad de pago: BCR vs Nuestro vs Pizarra) HECHO)
+## Ahora (última actualización: 24/07/2026 — 🧹 repaso del bloque A de manuales del backlog maestro)
+
+**🧹 REPASO DEL BLOQUE A (pasos manuales) — sesión conversacional, sin rama de código, solo
+`docs/auditoria/E7-sintesis.md` §4/§7.** Lautaro contestó en bloque 4 pendientes del bloque A:
+**A4** (borrar ramas remotas mergeadas) — verificado con `git ls-remote --heads origin` que no
+queda ninguna rama remota salvo `main` (ya se habían limpiado solas con el flujo normal de PR) →
+cerrado sin acción. **A1** (login/dominio) — Lautaro avisó que el dominio propio se está validando
+por Vercel, un paso más cerca de retomar la verificación de marca de Google; sigue abierto, sin
+cambio de código. **A6** (probar el uploader de `/admin/datos` logueado) — pidió más precisión:
+se detalló que hoy son **7 secciones** (creció desde el PR #44 original: comercialización
+Agrochat, camiones Williams, datos del día/color de la rueda, compras BCRA manual, DEA-SAGyP,
+BCBA-PAS, pago final de LECAP), cada una con su propio paso a paso — sigue pendiente que Lautaro
+las pruebe, con la DEA como la más urgente (mientras no se cargue una vez real, su healthcheck
+sigue en rojo). **A8** (leaked password protection) — descartado por ahora a pedido explícito.
+Sin cambios de código; el detalle completo queda en `E7-sintesis.md` §4 (bloque A) y §7 (Bloque 6).
+
+## Anterior (24/07/2026 — 💰 C16/P11 (capacidad de pago: BCR vs Nuestro vs Pizarra) HECHO)
 
 **💰 C16/P11 — CAPACIDAD DE PAGO: BCR vs NUESTRO vs PIZARRA, con research profundo (Fable) —
 HECHO — rama `claude/c16-payment-capacity-formulas-0de77e`, PR #_.** Pedido explícito de Lautaro,
