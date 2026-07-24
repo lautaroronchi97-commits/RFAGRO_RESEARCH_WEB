@@ -51,7 +51,7 @@ export function NegociadoTabla({ filas, avance, fecha }: { filas: FilaSector[]; 
     }
     const out: Agregada[] = [];
     for (const [k, grupo] of porClave) {
-      const base = grupo[0];
+      const base = grupo[0]!; // cada clave de porClave se creó con al menos 1 push, nunca vacío
       const semanal = sumar(grupo.map((g) => g.semanal));
       const semanalPrev = sumar(grupo.map((g) => g.semanalPrev));
       const acumulado = sumar(grupo.map((g) => g.acumulado));

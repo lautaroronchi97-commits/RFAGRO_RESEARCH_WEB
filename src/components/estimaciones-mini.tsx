@@ -28,7 +28,7 @@ export async function EstimacionesMini() {
   const cel = new Map<string, (typeof pizarra)[number]>();
   for (const c of pizarra) cel.set(`${c.grano}|${c.pais}`, c);
 
-  const maxFecha = rows.reduce((m, r) => (r.fecha_publicacion > m ? r.fecha_publicacion : m), rows[0].fecha_publicacion);
+  const maxFecha = rows.reduce((m, r) => (r.fecha_publicacion > m ? r.fecha_publicacion : m), rows[0]!.fecha_publicacion); // rows.length===0 ya salió arriba
   const updatedAt = Date.parse(`${maxFecha}T00:00:00-03:00`);
   const meta: Meta = {
     source: "USDA",

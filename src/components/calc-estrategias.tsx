@@ -37,7 +37,7 @@ const toNum = (p: PataStr): Pata => ({
   prima: p.tipo === "futuro" ? 0 : Number.isFinite(num(p.prima)) ? num(p.prima) : 0,
 });
 
-const PRESET0 = PRESETS.find((p) => p.id === "collar") ?? PRESETS[0];
+const PRESET0 = PRESETS.find((p) => p.id === "collar") ?? PRESETS[0]!; // catálogo hardcodeado (~27), nunca vacío
 
 /** Gráfico de payoff: resultado por tonelada vs precio final, con breakevens. */
 function PayoffChart({ serie, B, bes }: { serie: Escenario[]; B: number; bes: number[] }) {
