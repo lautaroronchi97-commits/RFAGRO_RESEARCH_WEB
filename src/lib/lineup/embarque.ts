@@ -211,7 +211,9 @@ export const getMesaEmbarque = cache(async (): Promise<MesaEmbarque> => {
   // Cumplimiento del mes en curso: declarado del mes vs line-up del mes.
   const cumplimiento: CumplimientoMes[] = productos
     .map((p) => {
-      const c = p.celdas[0];
+      // p.celdas = meses.map(...) con meses.length === MESES_ADELANTE+1 === 7 (constante) →
+      // siempre tiene al menos 1 elemento.
+      const c = p.celdas[0]!;
       const e = emba.get(`${p.cod}|${mes0}`);
       return {
         display: p.display,
@@ -229,8 +231,9 @@ export const getMesaEmbarque = cache(async (): Promise<MesaEmbarque> => {
   let pico: MesaEmbarque["pico"] = null;
   for (const p of productos) {
     for (let i = 1; i < meses.length; i++) {
-      const ton = p.celdas[i].declarado;
-      if (ton > (pico?.ton ?? 0)) pico = { display: p.display, label: meses[i].label, ton };
+      // i < meses.length === p.celdas.length → índice válido en ambos arrays.
+      const ton = p.celdas[i]!.declarado;
+      if (ton > (pico?.ton ?? 0)) pico = { display: p.display, label: meses[i]!.label, ton };
     }
   }
 

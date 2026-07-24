@@ -49,7 +49,7 @@ export async function MesaEmbarquePanel() {
   const filasCsv: FilaCsv[] = productos.flatMap((p) =>
     p.celdas.map((c, i) => ({
       producto: p.display,
-      mes: meses[i].label,
+      mes: meses[i]!.label, // p.celdas.length === meses.length (ver embarque.ts)
       campania: c.campLabel,
       declarado: c.declarado,
       disponible: c.disp,
@@ -84,7 +84,7 @@ export async function MesaEmbarquePanel() {
         </div>
         <div className="lu-kpi">
           <span className="lu-kpi-v">{nfmt(lineupMes / 1e6, 1)} Mt</span>
-          <span className="lu-kpi-l">line-up del mes en curso ({meses[0].label})</span>
+          <span className="lu-kpi-l">line-up del mes en curso ({meses[0]!.label})</span>
         </div>
       </div>
 
@@ -114,10 +114,10 @@ export async function MesaEmbarquePanel() {
                   <td className="l sym">{p.display}</td>
                   {p.celdas.map((c, i) => (
                     <td
-                      key={meses[i].mes}
+                      key={meses[i]!.mes}
                       className={c.declarado === 0 ? "dim" : undefined}
                       style={c.declarado > 0 && c.declarado === max ? { fontWeight: 700 } : undefined}
-                      title={c.declarado > 0 ? `${meses[i].label} · disponible ${kt(c.disp)} kt · forward ${kt(c.fwd)} kt · campaña ${c.campLabel}` : undefined}
+                      title={c.declarado > 0 ? `${meses[i]!.label} · disponible ${kt(c.disp)} kt · forward ${kt(c.fwd)} kt · campaña ${c.campLabel}` : undefined}
                     >
                       {kt(c.declarado)}
                     </td>
@@ -129,7 +129,7 @@ export async function MesaEmbarquePanel() {
         </table>
       </div>
 
-      <h3 className="lu-h3">Mes en curso · {meses[0].label} — declarado vs line-up</h3>
+      <h3 className="lu-h3">Mes en curso · {meses[0]!.label} — declarado vs line-up</h3>
       <p className="lu-nota">
         Único mes con cruce físico posible. Un line-up mayor al declarado del mes es esperable y sano:
         los buques de hoy cumplen DJVE de ventanas anteriores (con prórroga automática de 30 días y
@@ -225,8 +225,8 @@ export async function MesaEmbarquePanel() {
               </thead>
               <tbody>
                 {p.celdas.map((c, i) => (
-                  <tr key={meses[i].mes}>
-                    <td className="l sym">{meses[i].label}</td>
+                  <tr key={meses[i]!.mes}>
+                    <td className="l sym">{meses[i]!.label}</td>
                     <td className="lu-mono">{c.campLabel}</td>
                     <td>{nfmt(c.declarado, 0)}</td>
                     <td className={c.disp === 0 ? "dim" : undefined}>{nfmt(c.disp, 0)}</td>

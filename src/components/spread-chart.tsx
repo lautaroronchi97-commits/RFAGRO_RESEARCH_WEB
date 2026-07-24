@@ -101,7 +101,8 @@ export function SpreadChart({
       drawnBase
         .filter((ln) => ln.parcial && ln.data.length > 0)
         .map((ln) => {
-          const ult = ln.data.reduce((m, p) => (p.x > m.x ? p : m), ln.data[0]);
+          // filter() de arriba ya exige ln.data.length>0 → ln.data[0] existe.
+          const ult = ln.data.reduce((m, p) => (p.x > m.x ? p : m), ln.data[0]!);
           return { key: ln.key, color: ln.color, x: ult.x, y: ult.y };
         }),
     [drawnBase],
@@ -111,7 +112,8 @@ export function SpreadChart({
   // Mes en cada x del eje días-al-vto: proyectado desde el vencimiento de la
   // campaña vigente (x=0 = vto). Si no hay refVto, cae al mes del último dato.
   const ref = lines.find((l) => l.vigente) ?? lines[0];
-  const ultFecha = ref && ref.data.length ? ref.data.reduce((m, p) => (p.x > m.x ? p : m), ref.data[0]).f : null;
+  // ref.data.length chequeado en la misma condición → ref.data[0] existe.
+  const ultFecha = ref && ref.data.length ? ref.data.reduce((m, p) => (p.x > m.x ? p : m), ref.data[0]!).f : null;
   const mesEnX = (x: number): string => {
     if (refVto) return mesEnRuedasAlVto(refVto, Math.max(0, Math.round(-x)));
     return ultFecha ? mesDeFecha(ultFecha) : "";
@@ -143,7 +145,7 @@ export function SpreadChart({
       const fs = drawn
         .map((ln) => r[`f${ln.key}`])
         .filter((v): v is string => typeof v === "string");
-      fila.x = fs.length > 0 && fs.every((f) => f === fs[0]) ? fs[0] : etiquetaCalendario(r.x, anchorMes);
+      fila.x = fs.length > 0 && fs.every((f) => f === fs[0]) ? fs[0]! : etiquetaCalendario(r.x, anchorMes);
     }
     for (const ln of drawn) {
       const y = r[`y${ln.key}`];
@@ -316,7 +318,7 @@ type TipProps = {
 
 function GxTooltip({ active, payload, lines, eje, anchorMes, fmtValor, usaBanda, mesEnX }: TipProps) {
   if (!active || !payload || payload.length === 0) return null;
-  const row = payload[0].payload;
+  const row = payload[0]!.payload; // payload.length===0 ya salió arriba
   const x = Number(row.x);
   const head =
     eje === "vto"
