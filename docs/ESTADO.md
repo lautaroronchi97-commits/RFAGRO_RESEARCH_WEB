@@ -19,7 +19,37 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 24/07/2026 — 🧪 A6: probando el uploader real → 1 bug encontrado y arreglado + feature nueva, TRABADO en el login)
+## Ahora (última actualización: 24/07/2026 — 📐 PLAN INFORMES V2: research multi-agente + view con bola de nieve — plan cerrado, espera OK de Lautaro)
+
+**📐 PLAN INFORMES V2 — HECHO (solo docs, cero código) — rama
+`claude/informes-skills-alternativas-9fvo9f`, PR #_.** Lautaro pidió llevar los informes
+(diario/semanal/view/interpretaciones) "a otro nivel": Fable orquestando agentes de research
+(web propia + fuentes externas) y un view de mercado **acumulativo** ("bola de nieve": tesis
+previa + lo nuevo de cada semana, con switches por eventos — como piensa un trader) — pero
+ANTES cuestionarlo a fondo y hacer research real. Resultado:
+**[`PLAN_INFORMES_V2.md`](PLAN_INFORMES_V2.md)** (crítica con evidencia → 9 riesgos con
+mitigación estructural · 7 principios · fuentes externas VERIFICADAS con requests reales hoy
+· pipeline F0-F6 del view v2 · migración mínima + scorecard · loop de aprendizaje
+formalizado · 5 fases V0→V4 con prompts autocontenidos · criterios de éxito medibles).
+**Research (3 agentes en paralelo)**: (1) el anclaje en LLMs NO se arregla con instrucciones
+(medido) → **blind-first** (view provisorio sin ver la tesis previa, reconciliar después);
+citas de deep-research 11-57% problemáticas → **pasaporte** URL+fecha+cita verificado;
+consolidación automática de memoria medida como destructiva → destilación manual gateada +
+cap. (2) Fuentes nuevas verificadas: **CFTC COT** (fondos, 200 sin key, Socrata con
+histórico), **DTN** (tablas expectativa-vs-dato pre/post-WASDE sin paywall — el salto de
+calidad de MP4), Crop Progress TXT, EIA etanol, SMN; bloqueados confirmados: AgWeb/
+SuccessfulFarming/Agrolink/CME-FTP/INMET. (3) Inventario: `views_mercado` sin relación entre
+views (la bola de nieve no tiene soporte en datos hoy), `aprendizajes.md` VACÍO, **0
+disparos reales verificados de las 3 Routines** → por eso la fase **V0 es verificar el piso**
+antes de sofisticar. Decisiones clave: el diario NO se sofistica (sale siempre, rápido);
+interpretaciones previas = calibración de criterio, nunca fuente de números (números siempre
+de cero del dato crudo); fetch-en-vivo sin ingesta nueva en v1. **Próximo paso: Lautaro lee
+el plan y contesta §10** (key FAS gratis · nota 1-5 · 5 vs 6 páginas · COT en diario ·
+modelo de Routine) **→ ejecutar V0 y después V1→V4** (prompts en §9). Al aprobarse, registrar
+V1-V4 en el backlog maestro (E7 §4). Detalle:
+[`sesiones/2026-07-24-plan-informes-v2.md`](sesiones/2026-07-24-plan-informes-v2.md).
+
+## Anterior (24/07/2026 — 🧪 A6: probando el uploader real → 1 bug encontrado y arreglado + feature nueva, TRABADO en el login)
 
 **🧪 A6 EN VIVO CON LAUTARO — historial editable de "Datos del día" + bug real de la DEA
 encontrado y arreglado — PR #77 (mergeado).** Arrancó como el repaso conversacional del bloque A
