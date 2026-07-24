@@ -85,6 +85,57 @@ teórico propio de SAGyP (Res. 42/2007) relevado pero no sumado (no hay API). De
 industria):
 [`sesiones/2026-07-24-c16-capacidad-pago.md`](sesiones/2026-07-24-c16-capacidad-pago.md).
 
+## Anterior (24/07/2026 — 🧮 C13 (P9) sintéticos LECAP + dólar futuro con TIR HECHO)
+
+**🧮 C13 / P9 — SINTÉTICOS LECAP + DÓLAR FUTURO CON TIR — HECHO — rama `claude/backlog-p9-sinteticos`,
+PR #75 (mergeado).** Cierra el ítem del backlog maestro (`auditoria/E7-sintesis.md` §4 / PROMPT P9 de
+`PLAN_BACKLOG.md`). La **fórmula ya estaba validada** por Lautaro (chat + su Excel "REAL_TIME v2.5",
+hoja "DOLAR SINTETICO", reproducida 1:1): `sint = spot × (pagoFinal/px)` · `directa = sint/fut − 1` ·
+`TNA = directa × 365/días` (act/365). Lo que faltaba era la fuente del **"pago final por letra"**.
+**Investigado con requests reales:** BYMA es la fuente última (verificado: los "Pago Final" del Excel
+coinciden 1:1 con lo que publica BYMA) pero su open-data es un feed de precios, no expone el importe al
+vencimiento; IAMC (informeslecap) es un PDF diario frágil (SSL/502 en el sandbox); MECON es letra por
+letra. Como el pago final **casi no cambia** (se fija en la emisión, se actualiza cada 1-2 meses cuando
+el Tesoro licita) y el precio diario ya lo trae data912 → **carga semi-manual** (mismo patrón que
+DEA-SAGyP y camiones/Williams). **Construido:** lib pura testeada `src/lib/sinteticos.ts`
+(`calcularSintetico` + `emparejarSinteticos` por **mismo mes calendario**, criterio del Excel — S31L6↔JUL26,
+S14G6/S31G6↔AGO26); fetcher `src/lib/market/sinteticos.ts` (junta data912 + MAE + Supabase, degrada
+honesto); panel `/dolar` **Sintéticos** completo (sintético/TNA + comparación vs futuro directo + mejor
+destacado, "—" si falta el pago final); tabla pública `lecap_pago_final` + RPC admin + uploader en
+`/admin/datos` (pegar `TICKER PAGO_FINAL [VENC]`, preview/confirm). Migración
+`20260724140000` **aplicada** por MCP (seed con los 3 valores del Excel; anon SELECT verificado).
+**Verificado:** fixture del Excel EXACTO (sint 1.503,678626, TNA 5,4843%) · lint/tsc/**154 tests**/build ✅ ·
+live end-to-end con datos reales en `/dolar` (spot 1491, S31L6→JUL26 TNA +16,6% vs futuro +8,2% =
+ventaja +8,4%, emparejamiento 100% mismo-mes, degradación honesta donde falta el pago final) · backend
+por SQL (guard rechaza no-admin, parseo jsonb OK). **Follow-up chico:** BONCAPs (T) — la tabla/uploader
+los soportan, falta wirear su precio en vivo (`getLecaps` filtra solo S). Detalle:
+[`sesiones/2026-07-24-c13-sinteticos-tir.md`](sesiones/2026-07-24-c13-sinteticos-tir.md).
+
+## Anterior (24/07/2026 — 🔎 verificación panel Compras BCRA + primer cron real + carga manual por fecha)
+
+**🔎 VERIFICACIÓN PANEL COMPRAS BCRA + PRIMER CRON REAL + CARGA MANUAL POR FECHA — HECHO — rama
+`claude/pending-tasks-no-deps-ahvewt`, PR #74 (mergeado).** Lautaro pidió avanzar con algo que no
+necesitara prender el login ni nada de su parte; repasado el backlog maestro (`auditoria/E7-sintesis.md`
+§4) no quedaba ninguna feature nueva 100% autónoma (C11-C16 necesitan login o un insumo suyo) →
+se eligió (por `AskUserQuestion`) verificar en navegador paneles recientes sin chequeo visual
+real. Verificado el panel **"Compras netas BCRA (MULC)"** de `/dolar` (C4, 23/07) con datos reales
+(este entorno sí tenía las claves de Supabase), claro/oscuro, con Playwright. **Hallazgo de
+paso**: el cron `ingest-bcra-mulc.yml` (10:00 ART L-V) mergeó el 23/07 a la tarde → su primera
+ventana programada recién caía hoy, nunca había corrido (0 runs) — no era bug, solo faltaba
+tiempo. Se disparó el primer `workflow_dispatch` manual (`success`, 13s), cargó 2026-07-20 (+32,0
+M USD), verificado 1:1 contra la API oficial del BCRA. Cierra el "falta el primer
+`workflow_dispatch` real" que había quedado anotado en la sesión de C4.
+**Pedido nuevo de Lautaro en el medio de la sesión**: botón de carga manual de compras BCRA para
+tapar el hueco de rezago (hoy 24/07, sin dato hasta el 20/07) — ya existía carga manual en
+"Datos del día" pero fija a la fecha de HOY. Separada en tarjeta propia **"Compras BCRA (MULC) —
+carga manual"** (`bcra-manual.tsx` + `bcra-actions.ts`, misma RPC `admin_upsert_compras_bcra` sin
+migración nueva) con fecha elegible (precargada en el hueco hábil más reciente, hoy 23/07) +
+lista de últimos días cargados y huecos detectados. Aclarado que el cron diario (no semanal, más
+seguido de lo que pensaba) ya pisa cualquier carga manual con el dato oficial en cuanto llega — no
+hizo falta un cron nuevo. Verificado con bypass temporal (`LOCAL_AUDIT_BYPASS`, revertido, `git
+diff` limpio) + backend por SQL con rollback + lint/tsc/build. Detalle:
+[`sesiones/2026-07-24-verificacion-panel-bcra.md`](sesiones/2026-07-24-verificacion-panel-bcra.md).
+
 ## Anterior (24/07/2026 — 🔧 L6+L3+L2 (3 lotes técnicos del backlog maestro) HECHOS)
 
 **🔧 L6 + L3 + L2 — 3 LOTES TÉCNICOS DEL BACKLOG MAESTRO, EN ORDEN, PR ACUMULADO — HECHOS — rama

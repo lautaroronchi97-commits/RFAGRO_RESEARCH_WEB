@@ -9,23 +9,20 @@ function ddmmaaaa(iso: string): string {
 
 /**
  * "Datos del día" del informe diario (MP1 de PLAN_INFORMES.md): el color de la
- * rueda (texto libre) + las compras netas del BCRA del día (M USD, carga manual).
- * Desde C4 (PLAN_BACKLOG.md), la ingesta automática (scripts/ingest-bcra-mulc.mjs,
- * API v4 del BCRA) escribe en la MISMA tabla con ~3-4 días hábiles de rezago — lo
- * que se carga acá es solo un adelanto para el hueco de los días recientes; se
- * pisa solo cuando llega el dato oficial. Pensado para cargar desde el celular,
- * con la fecha de hoy precargada y lo último guardado como referencia. Si un día
- * no se carga nada, el informe sale igual, solo con los datos automáticos.
+ * rueda (texto libre, negocios/sensaciones/precios que Lautaro vio en la rueda).
+ * Pensado para cargar desde el celular, con la fecha de hoy precargada y lo
+ * último guardado como referencia. Si un día no se carga nada, el informe sale
+ * igual, solo con los datos automáticos. Las compras BCRA (MULC) tienen su
+ * propia carga manual — ver `BcraManual` — porque a diferencia del color de la
+ * rueda (siempre "hoy"), a veces hace falta tapar un hueco de un día anterior.
  */
 export function DatosDia({
   fechaHoy,
   colorHoy,
-  bcraHoy,
   recientes,
 }: {
   fechaHoy: string;
   colorHoy: string;
-  bcraHoy: number | null;
   recientes: { fecha: string; texto: string }[];
 }) {
   const [st, dispatch, pend] = useActionState(guardarDatosDelDia, undefined);
@@ -34,10 +31,8 @@ export function DatosDia({
     <div className="admin-card">
       <h3 className="admin-preview-h">Datos del día — {ddmmaaaa(fechaHoy)}</h3>
       <p className="admin-sub" style={{ margin: "0 0 10px" }}>
-        Lo que viste hoy en la rueda (negocios, sensaciones, precios que te pasaron) y las compras
-        netas del BCRA del día (si las cargás, se pisan solas cuando llega el dato oficial de la
-        API). Alimenta el informe diario y el panel cambiario de /dolar. Si no cargás nada, salen
-        igual con los datos automáticos.
+        Lo que viste hoy en la rueda (negocios, sensaciones, precios que te pasaron). Alimenta el
+        informe diario. Si no cargás nada, sale igual solo con los datos automáticos.
       </p>
       <form action={dispatch}>
         <input type="hidden" name="fecha" value={fechaHoy} />
@@ -49,17 +44,6 @@ export function DatosDia({
             rows={6}
             defaultValue={colorHoy}
             placeholder="Ej: rueda floja de agro, poco negocio en soja disponible, exportación apretando en trigo julio, volumen X mil t…"
-          />
-        </label>
-        <label className="admin-field" style={{ marginTop: 10 }}>
-          <span>Compras BCRA de hoy (M USD)</span>
-          <input
-            name="bcra"
-            className="admin-input"
-            type="text"
-            inputMode="decimal"
-            defaultValue={bcraHoy != null ? String(bcraHoy).replace(".", ",") : ""}
-            placeholder="Ej: 120,5"
           />
         </label>
         <div className="admin-card-acciones">

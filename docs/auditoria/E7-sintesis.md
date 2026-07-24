@@ -234,7 +234,10 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   `ingest-bcra-mulc.mjs` + workflow + healthcheck, panel nuevo en `panel-cambiario.tsx`
   ("Compras netas BCRA (MULC)", KPIs + gráfico de barras), backfill real 5.770 filas 2003→hoy
   cargado a la base (verificado 1:1 contra la API), `compras_bcra` pasó a pública (mismo criterio
-  que camiones/DJVE). `sesiones/2026-07-23-c4-compras-bcra.md`.
+  que camiones/DJVE). **Verificación visual + primer cron real: HECHO 24/07** (panel confirmado en
+  navegador claro/oscuro con datos reales, primer `workflow_dispatch` disparado y verificado 1:1
+  contra la API). `sesiones/2026-07-23-c4-compras-bcra.md` +
+  `sesiones/2026-07-24-verificacion-panel-bcra.md`.
 - [x] **C5. P4 build — camiones en puerto** — hecho 23/07, **pivotó de fuente**: en vez de SAGyP
   diario automático, Williams Entregas (vía Agrochat) por carga manual — zona Y producto, cero
   dependencia de SAGyP (Williams confirmado como servicio pago sin API). Panel público + señal
@@ -273,18 +276,28 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   media móvil · vol/OI · guard parcial). P12/P17 resueltos con la respuesta de Lautaro (la relación
   % es el ratio existente pizarra maíz/soja; "son pizarras" → sin serie front-month que construir).
   Presets de usuario siguen esperando login ON (A1). `sesiones/2026-07-23-c10-graficos-v2.md`.
-- [ ] **C11. P7 — vista productor + PWA** (mejor con login encendido: es para clientes reales).
-- [ ] **C12. P8 — feed A3 histórico intradiario** (paso manual previo: secrets A3 en GitHub Actions).
-- [ ] **C13. P9 — sintéticos TIR** 🔒 (tabla IAMC + fórmula tuya como paso 1).
+- [x] ~~**C11. P7 — vista productor + PWA**~~ → **DESCARTADO 24/07** (Lautaro: "ninguno de los
+  dos desarrollos me interesa" — ni la vista simplificada ni la PWA instalable). Ver §5.
+- [x] ~~**C12. P8 — feed A3 histórico intradiario**~~ → **DESCARTADO 24/07** (Lautaro lo descartó
+  directamente). Ver §5.
+- [x] **C13. P9 — sintéticos TIR** — HECHO (24/07, PR #75). Fórmula validada contra el Excel de
+  Lautaro (sint = spot×(pagoFinal/px); directa = sint/fut−1; TNA act/365), panel `/dolar` Sintéticos
+  con TIR + comparación vs futuro directo. "Pago final por letra" por carga semi-manual en
+  `/admin/datos` (fuente última BYMA, no expone endpoint parseable; casi estático). Ver
+  `sesiones/2026-07-24-c13-sinteticos-tir.md`.
 - [ ] **C14. P10 — estrategias avanzadas** 🔒 (primas reales/costos: tus decisiones como paso 1).
+  **Sin prioridad por ahora (24/07)**: Lautaro no quiere sumar estrategias con costos por el
+  momento — sigue pendiente, no descartado, se retoma cuando él lo pida.
 - [x] **C15. P11 — modelo propio de capacidad de pago** — hecho 24/07 (Lautaro le dijo "C16" al
   pedirlo — la sesión y el PR quedaron con ese nombre; es este ítem, no el C16 real de abajo).
   En vez del paso 1 original (fórmula de Lautaro a mano), pidió research profundo con Fable +
   construir el modelo con eso. BCR/Nuestro/Pizarra + diferenciales, FOB oficial de SAGyP/MAGyP
   (fuente propia, homologada empíricamente), gastos sembrados de BCR y editables.
   `sesiones/2026-07-24-c16-capacidad-pago.md`.
-- [ ] **C16. P12 — scoring de clientes** 🔒 (datos de fijaciones como paso 1; producto nuevo, por fases).
-- [ ] **C17. Gráficos intradía** (consume la tabla `snapshots` de C12 — anotado al cerrar P8).
+- [x] ~~**C16. P12 — scoring de clientes**~~ → **DESCARTADO 24/07** (Lautaro: "tampoco me
+  interesa, descartalo"). Ver §5.
+- [x] ~~**C17. Gráficos intradía**~~ → **DESCARTADO 24/07** (cae con C12: consumía la tabla
+  `snapshots` que C12 iba a crear, sin C12 no tiene insumo). Ver §5.
 
 ### D. Lotes técnicos aprobados (refactors/calibración/robustez — prompts en §6)
 
@@ -332,15 +345,16 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 ### Dependencias explícitas (grafo corto)
 
 ```
-A1 (login ON) ──→ C11 (vista productor) · presets de usuario de C10 · marca de agua activa
+A1 (login ON) ──→ presets de usuario de C10 · marca de agua activa (C11 cayó — descartado, §5)
 A2 ──→ /granos/view se regenera solo
 A5 ──→ C4 y C5
 A7 ──→ B1 y B3
 C1 (MP1) ──→ C2 (MP2) y C3 (MP4)
-C12 (P8) ──→ C17 (gráficos intradía);  C12 espera secrets A3 en Actions (manual)
+C12 (P8) y C17 (gráficos intradía) — cayeron ambos, descartados (§5)
 D4 (L1) ──→ D5 (L3 más barato) · conviene antes de C7/C10
 D6 (L2) ──→ conviene antes de C7 (chart nuevo del USD semanal)
-D2 (L4) 🔒 valores de Lautaro;  C13–C16 🔒 insumos de Lautaro
+D2 (L4) 🔒 valores de Lautaro;  C13 hecho (PR #75) · C14 sin prioridad (pendiente) · C15 hecho
+(PR #76) · C16 cayó, descartado (§5)
 noindex→index: ✅ YA RESUELTO (E3/E4) — la dependencia que citaba PLAN_BACKLOG quedó caída
 ```
 
@@ -375,6 +389,9 @@ HECHOS, ver §4. Esta sección "Orden decidido" queda como registro histórico d
 | Borrar `calendario_informes` (0 filas) | E1 Duda 3 | **No** — se conserva como base del ítem 21/MP4 |
 | `cierres-panel.tsx` huérfano | E4 | **Intencional**, documentado — no tocar |
 | Leaked password protection ya | E5 #13c → sesión 22/07 | **Diferido a propósito** (requiere Supabase Pro $25/mes; plan Free confirmado) — solo vive como A8 |
+| C11/P7 — vista productor + PWA | Sesión 24/07 | **Descartado** — Lautaro: "ninguno de los dos desarrollos me interesa" (ni la vista simplificada ni la PWA instalable) |
+| C12/P8 — feed A3 histórico intradiario (+ C17, gráficos intradía que dependían de esto) | Sesión 24/07 | **Descartado** — Lautaro: "lo descarto" |
+| C16/P12 — scoring de clientes | Sesión 24/07 | **Descartado** — Lautaro: "tampoco me interesa, descartalo" |
 
 ## 6. Prompts de corrección por lote (autocontenidos, estilo PLAN_AUDITORIA)
 
