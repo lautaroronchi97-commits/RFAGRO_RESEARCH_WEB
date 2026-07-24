@@ -55,6 +55,9 @@
 5. **Prerrequisito antes de sofisticar** (V0): verificar que las 3 Routines existentes
    disparen de punta a punta (hoy 0 disparos reales verificados) y hacer girar el loop de
    feedback que ya existe y está vacío. No se construye el piso 2 sin pisar el piso 1.
+6. **Decisiones de Lautaro ya tomadas** (§10, 24/07): nota 1-5 en el feedback del view SÍ ·
+   el semanal se queda en 5 páginas (lo nuevo entra recortando, no sumando) · el COT vive en
+   semanal y view, no en el diario · la key gratuita de USDA FAS la registra él antes de V0.
 
 ---
 
@@ -275,7 +278,8 @@ alter table views_mercado
   add column relacion_previa text check (relacion_previa in ('inicial','confirma','ajusta','switch','cumplida')),
   add column view_previo_id uuid references views_mercado(id),
   add column invalidadores jsonb default '[]',   -- [{condicion, umbral, dato_ref, disparado_en}]
-  add column evidencia_externa jsonb default '[]'; -- pasaportes [{dato, url, fecha_pub, cita}]
+  add column evidencia_externa jsonb default '[]', -- pasaportes [{dato, url, fecha_pub, cita}]
+  add column nota_lautaro smallint check (nota_lautaro between 1 and 5); -- decisión 24/07
 ```
 
 - `invalidacion` (texto libre) se mantiene como el resumen legible; `invalidadores` es la
@@ -311,6 +315,9 @@ documenta como "sin medición, contrato venció" en vez de ensuciar el número.
 - Fila de scorecard por grano (hit-rate 4 semanas, N de views, racha).
 - Los invalidadores vigentes con su estado (🟢 lejos / 🟡 cerca / 🔴 disparado) — así Lautaro
   ve DE UN VISTAZO qué tendría que pasar para que la mesa cambie de opinión.
+- **Nota 1-5 junto al feedback de texto** (decisión de Lautaro, 24/07): un selector chico al
+  lado del textarea existente, mismo server action → RPC (`admin_feedback_view` extendida con
+  el parámetro nuevo). Es la señal estructurada que el loop de §7 usa junto al scorecard.
 
 ---
 
@@ -385,22 +392,27 @@ de cero?"): **las dos cosas, en capas distintas — nunca resumir el resumen.**
   automático a bullet del resumen ejecutivo (regla 3 del criterio del Paso 2 ya lo insinúa —
   ahora hay dato estructurado para dispararlo). El scorecard se menciona 1 vez por mes
   (transparencia estilo "what we got wrong" de los desks serios — construye confianza).
-- Sigue siendo **5 páginas** (P4). Si Lautaro quiere una 6ª para "El mundo", lo decide él
-  (§10).
+- **Sigue siendo 5 páginas — decidido por Lautaro el 24/07** (P4: la restricción de tamaño es
+  la que fuerza el criterio; si algo nuevo entra, algo viejo sale).
 - **[fix auditoría, MEDIO] La sección necesita un slot nuevo en la plantilla, no solo en la
   skill.** `src/app/informes/plantilla/semanal/page.tsx` tiene sus 5 páginas fijas y
   completas hoy (tapa/resumen · granos · dólar+Chicago · comercio exterior · view+agenda);
   no hay "relleno" identificable para cortar sin decidirlo a mano. El prompt V3 tiene que
   incluir explícito: editar `page.tsx` para insertar el bloque en la página de dólar/Chicago
   y decidir qué se recorta de esa página para no sumar hoja (y no romper el chequeo
-  `/Count 5` que la propia skill exige al final del Paso 5).
+  `/Count 5` que la propia skill exige al final del Paso 5). Como el tamaño está fijado, la
+  primera corrida real muestra el recorte propuesto a Lautaro antes de darlo por bueno.
 
 ### 6.4 Informe diario MP1 (V4 — mínimo, a propósito)
 
 - **Sin multi-agente** (R4/R5: su valor es salir SIEMPRE, en minutos).
+- **Sin bloque propio de COT — decidido por Lautaro el 24/07**: el posicionamiento de fondos
+  vive en el semanal y en el view, no en la placa diaria (es un dato que cambia una vez por
+  semana; el diario no se abruma).
 - Único agregado: si la lente 1 del view del viernes dejó algo vigente (ej. "fondos vendidos
   récord"), el diario PUEDE citarlo como contexto en el comentario — leyendo de
-  `evidencia_externa` del view vigente (dato ya verificado, cero fetch nuevo).
+  `evidencia_externa` del view vigente (dato ya verificado, cero fetch nuevo). Es oportunista
+  y opcional, no una sección fija.
 - Queda explícito: el diario es la pieza que NO se sofistica.
 
 ---
@@ -410,9 +422,11 @@ de cero?"): **las dos cosas, en capas distintas — nunca resumir el resumen.**
 Hoy: el loop existe y está vacío (`aprendizajes.md` sin reglas, 0 feedbacks, 0 disparos
 reales de Routines). Formalización:
 
-1. **Episodios crudos** (fuente primaria): `feedback_lautaro` por view (ya existe) + el
-   scorecard (señal objetiva). Opcional recomendado: sumar nota estructurada 1-5 además del
-   texto (§10) — hace medible la calibración.
+1. **Episodios crudos** (fuente primaria): `feedback_lautaro` por view (ya existe) + **nota
+   1-5** (`nota_lautaro`, decidido el 24/07 — hace medible la calibración) + el scorecard
+   (señal objetiva de acierto contra precio). Las tres señales son distintas y se leen juntas:
+   la nota dice si el view le sirvió, el scorecard si acertó — un view puede acertar y ser
+   poco útil, o fallar y estar bien razonado.
 2. **Destilación gateada**: una **sesión de mantenimiento mensual** (o cuando se acumulen
    ≥4 feedbacks) lee episodios + scorecard y propone ediciones a `aprendizajes.md`. La
    Routine NUNCA destila (R6). Gate por regla: "¿una corrida futura actúa mejor por esto?";
@@ -459,8 +473,9 @@ reales de Routines). Formalización:
 > `views_mercado`; Storage; mails). Arreglar lo que haya fallado (env vars, timeouts, pasos
 > de la skill que en la práctica no funcionan). (2) Pedirle a Lautaro que deje su PRIMER
 > feedback en `/granos/view` sobre el view vigente — el loop de aprendizaje arranca ahí.
-> (3) Pedirle la API key gratuita de USDA FAS (registro en api.fas.usda.gov, 2 min) y
-> cargarla como env var del entorno de Claude (`USDA_FAS_API_KEY`). (4) Anotar en el doc de
+> (3) Recordarle la API key gratuita de USDA FAS (ya decidió registrarla, §10.1 —
+> api.fas.usda.gov) y cargarla como env var del entorno de Claude (`USDA_FAS_API_KEY`).
+> (4) Anotar en el doc de
 > sesión el consumo/duración observado de cada Routine como línea de base. (5) Confirmar si
 > una sesión corriendo como Routine puede invocar el tool de subagentes (Agent/Task) — es
 > precondición de todo el fan-out de V1; si no puede, avisar antes de diseñar V1 como
@@ -493,8 +508,10 @@ reales de Routines). Formalización:
 > `futuros_cierres`, lib pura testeada con fixture real — **metodología de contrato fijada
 > en t0, nunca re-elegir la posición más cercana en cada medición**: fix de auditoría, es
 > lo que hace confiable la vara de éxito de §11); (4) UI `/granos/view`: badges
-> CONFIRMA/AJUSTA/SWITCH/CUMPLIDA, fila de scorecard, invalidadores con estado 🟢🟡🔴 —
-> y sumá los 4 campos nuevos al `select` explícito y al tipo `ViewMercado` de
+> CONFIRMA/AJUSTA/SWITCH/CUMPLIDA, fila de scorecard, invalidadores con estado 🟢🟡🔴, y el
+> **selector de nota 1-5** junto al textarea de feedback (decisión §10.2 — extender la RPC
+> `admin_feedback_view` con el parámetro nuevo, no crear otra) —
+> y sumá los 5 campos nuevos al `select` explícito y al tipo `ViewMercado` de
 > `src/lib/views-mercado.ts` (hoy es una lista de columnas, no `select("*")` — sin este
 > cambio los badges no tienen de dónde leer aunque la migración esté aplicada). Verificación:
 > lint/tsc/tests/build + una corrida completa EN SECO (sin guardar) mostrando las 6 fases y
@@ -544,11 +561,12 @@ reales de Routines). Formalización:
 > degrada honesta y el PDF sale igual; (b) agenda con expectativas (pre-report si hay);
 > (c) reglas nuevas del criterio del Paso 2: SWITCH del view v2 = candidato automático a
 > bullet del resumen ejecutivo; scorecard mencionado 1 vez por mes. El PDF sigue en 5
-> páginas: editá `src/app/informes/plantilla/semanal/page.tsx` para insertar el bloque en
-> la página de dólar/Chicago (hoy no hay relleno "de sobra" — decidí explícito qué se
-> recorta de esa página para no sumar hoja; si de verdad no entra, es señal de que sobra
-> otra cosa, no de agregar página sin consultar). Verificación: PDF en seco de la semana
-> corriente con la sección nueva poblada de datos reales verificados + `/Count 5`.
+> páginas (**decidido por Lautaro, §10.3 — la 6ª página está descartada**): editá
+> `src/app/informes/plantilla/semanal/page.tsx` para insertar el bloque en la página de
+> dólar/Chicago (hoy no hay relleno "de sobra" — decidí explícito qué se recorta de esa
+> página y mostrale el recorte a Lautaro en la primera corrida antes de darlo por bueno).
+> Verificación: PDF en seco de la semana corriente con la sección nueva poblada de datos
+> reales verificados + `/Count 5`.
 
 ### PROMPT V4 — diario (retoque) + medición
 
@@ -562,19 +580,19 @@ reales de Routines). Formalización:
 
 ---
 
-## 10. Preguntas abiertas para Lautaro (ninguna bloquea nada — P7: research es aditivo)
+## 10. Decisiones de Lautaro (respondidas el 24/07, antes de mergear el plan)
 
-1. **API key de USDA FAS** (gratis, 2 min en api.fas.usda.gov): ¿la registrás? Sin ella no
-   hay export sales; la lente 1 de F1 degrada esa fuente puntual, todo lo demás anda igual.
-2. **Feedback con nota**: ¿sumamos una calificación 1-5 por view además del texto libre?
-   (Hace medible la calibración; es una migración chica + un input en `/granos/view`.)
-3. **Semanal**: ¿"El mundo esta semana" dentro de las 5 páginas (recomendado) o 6ª página?
-4. **COT en el diario**: ¿querés el posicionamiento de fondos también en la placa diaria
-   (una línea, del dato del viernes) o solo en semanal/view? (Recomendado: solo semanal/view
-   — el diario no se abruma.)
-5. **Modelo de la Routine del view**: hoy Opus (lo pusiste a mano). Cuando Fable esté
-   disponible para Routines, ¿lo subimos? (El pipeline V1 está diseñado para funcionar con
-   cualquiera de los dos; con Fable rinde más el rol de orquestador.)
+1. **API key de USDA FAS**: **la registra él antes de V0** (gratis, api.fas.usda.gov) → se
+   carga como env var `USDA_FAS_API_KEY` del entorno de Claude. Habilita export sales
+   semanales de EEUU en la lente 1 de F1.
+2. **Feedback con nota: SÍ, 1-5** además del texto libre → columna `nota_lautaro` en la
+   migración de §5 + selector en `/granos/view` (§5 UI) + insumo del loop (§7).
+3. **Semanal: dentro de las 5 páginas.** "El mundo esta semana" entra recortando contenido
+   de la página de dólar/Chicago; el PDF NO crece (§6.3).
+4. **COT: solo en semanal y view**, no en la placa diaria (§6.4).
+5. **Modelo de la Routine del view** (única que queda abierta, no bloquea nada): hoy Opus,
+   puesto a mano por Lautaro. Cuando Fable esté disponible para Routines se evalúa subirlo —
+   el pipeline de V1 es agnóstico al modelo.
 
 ---
 

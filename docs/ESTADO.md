@@ -43,10 +43,19 @@ views (la bola de nieve no tiene soporte en datos hoy), `aprendizajes.md` VACÍO
 disparos reales verificados de las 3 Routines** → por eso la fase **V0 es verificar el piso**
 antes de sofisticar. Decisiones clave: el diario NO se sofistica (sale siempre, rápido);
 interpretaciones previas = calibración de criterio, nunca fuente de números (números siempre
-de cero del dato crudo); fetch-en-vivo sin ingesta nueva en v1. **Próximo paso: Lautaro lee
-el plan y contesta §10** (key FAS gratis · nota 1-5 · 5 vs 6 páginas · COT en diario ·
-modelo de Routine) **→ ejecutar V0 y después V1→V4** (prompts en §9). Al aprobarse, registrar
-V1-V4 en el backlog maestro (E7 §4). Detalle:
+de cero del dato crudo); fetch-en-vivo sin ingesta nueva en v1. **Auditoría adversarial del
+propio plan (mismo día)**: 3 hallazgos CRÍTICOS corregidos antes de mergear — (a) el disparo
+de BCBA-PAS filtraba por `fecha_publicacion` y NUNCA hubiera matcheado el día real de carga
+(fix: usar `actualizado_en`, que ya existe en `estimaciones_produccion`); (b) faltaba
+`getSenalCamiones()` (C5, ya construida) en los insumos del view — justo el dato de "¿quién
+pone el precio?"; (c) el scorecard no fijaba la posición del contrato en t0 → el hit-rate se
+hubiera contaminado con el salto de rolleo. + 8 hallazgos menores, todos aplicados y marcados
+`[fix auditoría]` en el texto. **Las 4 decisiones de §10 ya contestadas por Lautaro**: nota
+1-5 en el feedback SÍ · semanal se queda en **5 páginas** (lo nuevo entra recortando) · COT
+solo en semanal/view, no en el diario · key gratuita de USDA FAS la registra él antes de V0.
+**Próximo paso: ejecutar V0** (verificar de punta a punta las 3 Routines, que nunca se
+comprobaron; primer feedback real de Lautaro; cargar la key FAS) **y después V1→V4** (prompts
+autocontenidos en §9). Al arrancar, registrar V1-V4 en el backlog maestro (E7 §4). Detalle:
 [`sesiones/2026-07-24-plan-informes-v2.md`](sesiones/2026-07-24-plan-informes-v2.md).
 ## Anterior (24/07/2026 — 🏷️ REBRANDING RF AGRO → ROFO AGRO, texto + logo real HECHO; solo renames de plataforma EN VUELO)
 

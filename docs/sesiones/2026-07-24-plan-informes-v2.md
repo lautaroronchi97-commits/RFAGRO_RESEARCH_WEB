@@ -73,6 +73,14 @@
   justificada contra lo ya recorrido. CUMPLIDA (valor nuevo de `relacion_previa`) es salida
   posible cuando no queda recorrido, no default. Las interpretaciones suman el paso "cuánto
   ya estaba en el precio" (run-up previo al informe).
+- **Las 4 decisiones de §10, contestadas por Lautaro antes de mergear** (por eso el plan
+  entra a `main` sin preguntas colgadas): (1) **nota 1-5** en el feedback del view SÍ →
+  columna `nota_lautaro` + selector en `/granos/view`, insumo del loop junto al scorecard;
+  (2) el semanal **se queda en 5 páginas** — "El mundo esta semana" entra recortando la
+  página de dólar/Chicago, la 6ª página descartada (la restricción de tamaño es lo que
+  fuerza el criterio); (3) **COT solo en semanal y view**, no en la placa diaria; (4) la
+  **key gratuita de USDA FAS** la registra él antes de V0. Queda abierta solo la 5 (modelo
+  de la Routine del view: hoy Opus, Fable cuando esté disponible), que no bloquea nada.
 
 ## Verificado
 
@@ -101,10 +109,9 @@
 
 ## Quedó pendiente / en vuelo
 
-- **Lautaro lee el plan** y contesta §10 (key FAS gratis · nota 1-5 en feedback · 5 vs 6
-  páginas · COT en diario sí/no · modelo de la Routine del view).
-- Ejecutar **V0** (verificar Routines + primer feedback) y después V1→V4, cada una en su
-  sesión con el prompt de §9 (ahora con los fixes de auditoría incorporados en cada prompt).
+- Ejecutar **V0** (verificar Routines + primer feedback + cargar la key FAS) y después
+  V1→V4, cada una en su sesión con el prompt de §9 (ya con los fixes de auditoría y las
+  decisiones de §10 incorporados en cada prompt).
 - Registrar V1-V4 en el backlog maestro (`auditoria/E7-sintesis.md` §4) cuando Lautaro
   apruebe el plan.
 - Re-verificar con un request real si el texto completo de un artículo de DTN (no solo la
