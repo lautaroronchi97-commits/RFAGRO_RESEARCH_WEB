@@ -277,7 +277,12 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 - [ ] **C12. P8 — feed A3 histórico intradiario** (paso manual previo: secrets A3 en GitHub Actions).
 - [ ] **C13. P9 — sintéticos TIR** 🔒 (tabla IAMC + fórmula tuya como paso 1).
 - [ ] **C14. P10 — estrategias avanzadas** 🔒 (primas reales/costos: tus decisiones como paso 1).
-- [ ] **C15. P11 — modelo propio de capacidad de pago** 🔒 (tu fórmula como paso 1).
+- [x] **C15. P11 — modelo propio de capacidad de pago** — hecho 24/07 (Lautaro le dijo "C16" al
+  pedirlo — la sesión y el PR quedaron con ese nombre; es este ítem, no el C16 real de abajo).
+  En vez del paso 1 original (fórmula de Lautaro a mano), pidió research profundo con Fable +
+  construir el modelo con eso. BCR/Nuestro/Pizarra + diferenciales, FOB oficial de SAGyP/MAGyP
+  (fuente propia, homologada empíricamente), gastos sembrados de BCR y editables.
+  `sesiones/2026-07-24-c16-capacidad-pago.md`.
 - [ ] **C16. P12 — scoring de clientes** 🔒 (datos de fijaciones como paso 1; producto nuevo, por fases).
 - [ ] **C17. Gráficos intradía** (consume la tabla `snapshots` de C12 — anotado al cerrar P8).
 

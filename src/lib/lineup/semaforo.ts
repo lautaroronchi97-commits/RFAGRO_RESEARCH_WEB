@@ -74,7 +74,9 @@ export const getSemaforo = cache(async (): Promise<SemaforoData> => {
     const umbrales = g.cods.length === 1 ? (porCod.get(g.cods[0]!)?.umbrales ?? empresas.umbralesPool) : empresas.umbralesPool; // length===1 recién chequeado
     const fisico = senalDe(declarado, originado, umbrales).tag;
     const price = fasDe.get(g.precio);
-    const fas = price?.fas ?? null;
+    // Se ancla al FAS de BCR (no al "Nuestro" editable de C16): esta señal fue calibrada
+    // y verificada 1:1 contra ese número; cambiar la fuente por debajo la destunearía.
+    const fas = price?.fasBcr ?? null;
     const pizarra = price?.pizarra ?? null;
     const spread = fas !== null && pizarra !== null ? Math.round((fas - pizarra) * 10) / 10 : null;
     const l = lectura(fisico, spread);

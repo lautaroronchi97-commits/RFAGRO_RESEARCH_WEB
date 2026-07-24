@@ -58,7 +58,7 @@
 | P8 | Feed A3 Fase 2 — histórico intradiario | — | Sonnet | pendiente |
 | P9 | Sintéticos TIR | tabla IAMC de Lautaro (paso 1) | Fable/Opus (validación de fórmulas financieras) | pendiente |
 | P10 | Estrategias avanzadas | primas/decisiones de Lautaro (paso 1) | Fable/Opus (ídem P9) | pendiente |
-| P11 | Modelo propio de capacidad de pago | fórmula de Lautaro (paso 1) | Fable/Opus (ídem P9) | pendiente |
+| P11 | Modelo propio de capacidad de pago | fórmula de Lautaro (paso 1) | Fable/Opus (ídem P9) | **HECHO (24/07)** — paso 1 sustituido por research profundo con Fable (pedido de Lautaro) en vez de su fórmula a mano; BCR/Nuestro/Pizarra + diferenciales, FOB oficial SAGyP/MAGyP. `sesiones/2026-07-24-c16-capacidad-pago.md` |
 | P12 | Scoring de clientes | datos de fijaciones (paso 1) | Fable/Opus (diseño de producto + modelo AHP + privacidad) | pendiente |
 
 > Regla de modelos (igual que en los otros planes): **juicio → Fable mientras dure, después Opus;
