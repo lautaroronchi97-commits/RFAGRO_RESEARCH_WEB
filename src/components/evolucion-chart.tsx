@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { nfmt } from "@/lib/format";
 import { ORG_LABEL } from "@/lib/calendario";
 import type { SerieEvol } from "@/lib/estimaciones";
-import { ChartMarca } from "./chart-marca";
+import { useCrosshair, SvgLineChartBase } from "./chart-svg-base";
 import { ChartTabla, type ChartTablaColumna, type ChartTablaFila } from "./chart-tabla";
 
 const W = 660;
@@ -70,21 +69,20 @@ function tablaDeSeries(series: SerieEvol[], unidad: string): { columnas: ChartTa
 /**
  * Evolución de la estimación de una campaña, publicación a publicación. Una línea por organismo,
  * eje x = fecha de publicación (escala temporal real, así USDA y CONAB se superponen aunque tengan
- * distinta cantidad de vintages). SVG a mano, mismo estilo que el resto de la web.
+ * distinta cantidad de vintages). SVG a mano (motor compartido `chart-svg-base.tsx`), mismo estilo
+ * que el resto de la web.
  */
 export function EvolucionChart({ series, unidad }: { series: SerieEvol[]; unidad: string }) {
-  const [hi, setHi] = useState<number | null>(null);
-
   const flat: Flat[] = [];
   series.forEach((serie, s) =>
     serie.puntos.forEach((p) =>
       flat.push({ s, organismo: serie.organismo, ms: epoch(p.fecha), valor: p.valor, informe: p.informe, fecha: p.fecha }),
     ),
   );
-  if (flat.length === 0) {
-    return <div className="chart-wrap chart-empty">Sin datos para esta combinación.</div>;
-  }
 
+  // Seguro con flat=[] (Math.min/max sin args da ±Infinity, no crashea) — el guard real de
+  // "sin datos" está más abajo, DESPUÉS de `useCrosshair` (rules-of-hooks: el hook no puede
+  // quedar detrás de un return condicional).
   const xs = flat.map((f) => f.ms);
   const ys = flat.map((f) => f.valor);
   let xMin = Math.min(...xs);
@@ -106,10 +104,10 @@ export function EvolucionChart({ series, unidad }: { series: SerieEvol[]; unidad
   const spanAnios = (xMax - xMin) / (365 * 86400000);
   const xTicks = Array.from({ length: 5 }, (_, k) => xMin + ((xMax - xMin) * k) / 4);
 
-  function onMove(e: React.PointerEvent<SVGRectElement>) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const px = ((e.clientX - rect.left) / rect.width) * W;
-    const py = ((e.clientY - rect.top) / rect.height) * H;
+  // Punto más cercano en (x,y) sobre el array plano de TODAS las series — necesita las dos
+  // coordenadas para desambiguar series que se cruzan (ver chart-svg-base.tsx).
+  const { hi, onPointerMove, onPointerLeave } = useCrosshair(W, H, (px, py) => {
+    if (flat.length === 0) return null;
     let best = 0;
     let bd = Infinity;
     flat.forEach((f, i) => {
@@ -119,7 +117,11 @@ export function EvolucionChart({ series, unidad }: { series: SerieEvol[]; unidad
         best = i;
       }
     });
-    setHi(best);
+    return best;
+  });
+
+  if (flat.length === 0) {
+    return <div className="chart-wrap chart-empty">Sin datos para esta combinación.</div>;
   }
 
   const tabla = tablaDeSeries(series, unidad);
@@ -129,71 +131,62 @@ export function EvolucionChart({ series, unidad }: { series: SerieEvol[]; unidad
 
   return (
     <>
-      <div className="chart-wrap">
-        <ChartMarca />
-        <svg viewBox={`0 0 ${W} ${H}`} className="cv" role="img" aria-label="Evolución de la estimación de producción por organismo">
-          {yTicks.map((t, k) => (
-            <g key={`y${k}`}>
-              <line className="cv-grid" x1={pad.l} y1={Y(t)} x2={W - pad.r} y2={Y(t)} />
-              <text className="cv-axis" x={pad.l - 7} y={Y(t) + 3} textAnchor="end">
-                {nfmt(t, t >= 100 ? 0 : 1)}
-              </text>
+      <SvgLineChartBase
+        w={W}
+        h={H}
+        inner={{ x: pad.l, y: pad.t, width: iw, height: ih }}
+        ariaLabel="Evolución de la estimación de producción por organismo"
+        yTicks={yTicks.map((t) => ({ valor: t, y: Y(t), label: nfmt(t, t >= 100 ? 0 : 1) }))}
+        onPointerMove={onPointerMove}
+        onPointerLeave={onPointerLeave}
+        after={
+          <>
+            {hiFlat && (
+              <div className="cv-tip" style={{ left: `${(X(hiFlat.ms) / W) * 100}%`, top: `${(Y(hiFlat.valor) / H) * 100}%` }}>
+                <span className="tt-x">{ORG_LABEL[hiFlat.organismo as keyof typeof ORG_LABEL] ?? hiFlat.organismo}</span> · {nfmt(hiFlat.valor, 2)} {unidad}
+                <span className="cv-tip-sub">{hiFlat.informe}</span>
+              </div>
+            )}
+            <div className="cv-legend">
+              {series.map((serie) => (
+                <span className={`lk org-${serie.organismo}`} key={serie.organismo}>
+                  <span className="sw evo-sw" />
+                  {ORG_LABEL[serie.organismo as keyof typeof ORG_LABEL] ?? serie.organismo}
+                  <span className="lk-val">
+                    {serie.puntos.length ? nfmt(serie.puntos[serie.puntos.length - 1]!.valor, 2) : "—"}
+                  </span>
+                </span>
+              ))}
+            </div>
+          </>
+        }
+      >
+        {xTicks.map((t, k) => (
+          <text key={`x${k}`} className="cv-axis" x={X(t)} y={H - 9} textAnchor="middle">
+            {fmtMes(t, spanAnios > 0.9)}
+          </text>
+        ))}
+        {series.map((serie) => {
+          const pts = serie.puntos;
+          if (pts.length === 0) return null; // organismo sin puntos en esta selección
+          const d = pts.map((p, i) => `${i ? "L" : "M"}${X(epoch(p.fecha)).toFixed(1)},${Y(p.valor).toFixed(1)}`).join(" ");
+          return (
+            <g key={serie.organismo} className={`evo-serie org-${serie.organismo}`}>
+              <path d={d} className="evo-line" />
+              {pts.map((p, i) => (
+                <circle key={i} cx={X(epoch(p.fecha))} cy={Y(p.valor)} r={2.6} className="evo-dot" />
+              ))}
+              <circle cx={X(epoch(pts[pts.length - 1]!.fecha))} cy={Y(pts[pts.length - 1]!.valor)} r={4} className="evo-end" />
             </g>
-          ))}
-          {xTicks.map((t, k) => (
-            <text key={`x${k}`} className="cv-axis" x={X(t)} y={H - 9} textAnchor="middle">
-              {fmtMes(t, spanAnios > 0.9)}
-            </text>
-          ))}
-          {series.map((serie) => {
-            const pts = serie.puntos;
-            if (pts.length === 0) return null; // organismo sin puntos en esta selección
-            const d = pts.map((p, i) => `${i ? "L" : "M"}${X(epoch(p.fecha)).toFixed(1)},${Y(p.valor).toFixed(1)}`).join(" ");
-            return (
-              <g key={serie.organismo} className={`evo-serie org-${serie.organismo}`}>
-                <path d={d} className="evo-line" />
-                {pts.map((p, i) => (
-                  <circle key={i} cx={X(epoch(p.fecha))} cy={Y(p.valor)} r={2.6} className="evo-dot" />
-                ))}
-                <circle cx={X(epoch(pts[pts.length - 1]!.fecha))} cy={Y(pts[pts.length - 1]!.valor)} r={4} className="evo-end" />
-              </g>
-            );
-          })}
-          {hiFlat && (
-            <g className={`org-${hiFlat.organismo}`}>
-              <line className="cv-cross" x1={X(hiFlat.ms)} y1={pad.t} x2={X(hiFlat.ms)} y2={pad.t + ih} />
-              <circle className="evo-focus" cx={X(hiFlat.ms)} cy={Y(hiFlat.valor)} r={5} />
-            </g>
-          )}
-          <rect
-            x={pad.l}
-            y={pad.t}
-            width={iw}
-            height={ih}
-            fill="transparent"
-            style={{ cursor: "crosshair" }}
-            onPointerMove={onMove}
-            onPointerLeave={() => setHi(null)}
-          />
-        </svg>
+          );
+        })}
         {hiFlat && (
-          <div className="cv-tip" style={{ left: `${(X(hiFlat.ms) / W) * 100}%`, top: `${(Y(hiFlat.valor) / H) * 100}%` }}>
-            <span className="tt-x">{ORG_LABEL[hiFlat.organismo as keyof typeof ORG_LABEL] ?? hiFlat.organismo}</span> · {nfmt(hiFlat.valor, 2)} {unidad}
-            <span className="cv-tip-sub">{hiFlat.informe}</span>
-          </div>
+          <g className={`org-${hiFlat.organismo}`}>
+            <line className="cv-cross" x1={X(hiFlat.ms)} y1={pad.t} x2={X(hiFlat.ms)} y2={pad.t + ih} />
+            <circle className="evo-focus" cx={X(hiFlat.ms)} cy={Y(hiFlat.valor)} r={5} />
+          </g>
         )}
-        <div className="cv-legend">
-          {series.map((serie) => (
-            <span className={`lk org-${serie.organismo}`} key={serie.organismo}>
-              <span className="sw evo-sw" />
-              {ORG_LABEL[serie.organismo as keyof typeof ORG_LABEL] ?? serie.organismo}
-              <span className="lk-val">
-                {serie.puntos.length ? nfmt(serie.puntos[serie.puntos.length - 1]!.valor, 2) : "—"}
-              </span>
-            </span>
-          ))}
-        </div>
-      </div>
+      </SvgLineChartBase>
       <ChartTabla
         columnas={tabla.columnas}
         filas={tabla.filas}

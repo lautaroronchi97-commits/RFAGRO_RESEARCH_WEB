@@ -4,15 +4,15 @@ import { useMemo, useState } from "react";
 import { nfmt } from "@/lib/format";
 import { MESES_ES } from "@/lib/dates";
 import type { PuntoHisto } from "@/lib/compras/negociado";
-import { ChartMarca } from "@/components/chart-marca";
+import { useCrosshair, SvgLineChartBase } from "@/components/chart-svg-base";
 import { ChartTabla } from "@/components/chart-tabla";
 
 /**
  * Histograma del volumen negociado (compras semanales SIO Granos): barras apiladas por
  * sector (Exportación + Industria), toggle Semanal (últimas 52 semanas) / Mensual (suma
- * calendario, últimos 24 meses) y selector de grano (Todos = suma de los 7). SVG a mano,
- * mismo idioma que evolucion-chart (grilla punteada, ejes mono, claro/oscuro por
- * variables CSS). Eje y en miles de toneladas.
+ * calendario, últimos 24 meses) y selector de grano (Todos = suma de los 7). SVG a mano
+ * (motor compartido `chart-svg-base.tsx`), mismo idioma que evolucion-chart (grilla
+ * punteada, ejes mono, claro/oscuro por variables CSS). Eje y en miles de toneladas.
  */
 
 const W = 660;
@@ -34,7 +34,6 @@ function labelMes(ym: string): string {
 export function NegociadoChart({ serie, productos }: { serie: PuntoHisto[]; productos: { cod: string; display: string }[] }) {
   const [grano, setGrano] = useState("TODOS");
   const [modo, setModo] = useState<"semanal" | "mensual">("semanal");
-  const [hi, setHi] = useState<number | null>(null);
 
   const barras = useMemo<Barra[]>(() => {
     const filtrada = grano === "TODOS" ? serie : serie.filter((p) => p.cod === grano);
@@ -55,10 +54,6 @@ export function NegociadoChart({ serie, productos }: { serie: PuntoHisto[]; prod
     }));
   }, [serie, grano, modo]);
 
-  if (serie.length === 0) {
-    return <div className="chart-wrap chart-empty">Sin historia de compras para graficar.</div>;
-  }
-
   const maxTotal = Math.max(1, ...barras.map((b) => b.exp + b.ind));
   const yMax = maxTotal * 1.08;
   const paso = iw / Math.max(1, barras.length);
@@ -69,11 +64,15 @@ export function NegociadoChart({ serie, productos }: { serie: PuntoHisto[]; prod
   // ~6 etiquetas en el eje x
   const cadaX = Math.max(1, Math.ceil(barras.length / 6));
 
-  function onMove(e: React.PointerEvent<SVGRectElement>) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const px = ((e.clientX - rect.left) / rect.width) * W;
-    const i = Math.min(barras.length - 1, Math.max(0, Math.floor((px - pad.l) / paso)));
-    setHi(i);
+  // Histograma de barras evenly-spaced: el índice sale de la posición X directa (no hay "más
+  // cercano" que buscar entre puntos — ver chart-svg-base.tsx).
+  const { hi, onPointerMove, onPointerLeave } = useCrosshair(W, H, (px) => {
+    if (barras.length === 0) return null;
+    return Math.min(barras.length - 1, Math.max(0, Math.floor((px - pad.l) / paso)));
+  });
+
+  if (serie.length === 0) {
+    return <div className="chart-wrap chart-empty">Sin historia de compras para graficar.</div>;
   }
 
   const b = hi !== null ? barras[hi] : null;
@@ -97,55 +96,48 @@ export function NegociadoChart({ serie, productos }: { serie: PuntoHisto[]; prod
         </span>
       </div>
 
-      <div className="chart-wrap">
-        <ChartMarca />
-        <svg viewBox={`0 0 ${W} ${H}`} className="cv" role="img" aria-label="Histograma de volumen negociado por semana o mes, apilado por sector">
-          {yTicks.map((t, k) => (
-            <g key={`y${k}`}>
-              <line className="cv-grid" x1={pad.l} y1={Y(t)} x2={W - pad.r} y2={Y(t)} />
-              <text className="cv-axis" x={pad.l - 7} y={Y(t) + 3} textAnchor="end">{nfmt(t / 1000, 0)}</text>
+      <SvgLineChartBase
+        w={W}
+        h={H}
+        inner={{ x: pad.l, y: pad.t, width: iw, height: ih }}
+        ariaLabel="Histograma de volumen negociado por semana o mes, apilado por sector"
+        yTicks={yTicks.map((t) => ({ valor: t, y: Y(t), label: nfmt(t / 1000, 0) }))}
+        onPointerMove={onPointerMove}
+        onPointerLeave={onPointerLeave}
+        after={
+          <>
+            {b && hi !== null && (
+              <div className="cv-tip" style={{ left: `${((X(hi) + anchoBarra / 2) / W) * 100}%`, top: `${(Y(b.exp + b.ind) / H) * 100}%` }}>
+                <span className="tt-x">{b.label}</span> · {nfmt(b.exp + b.ind, 0)} t
+                <span className="cv-tip-sub">Exportación {nfmt(b.exp, 0)} · Industria {nfmt(b.ind, 0)}</span>
+              </div>
+            )}
+            <div className="cv-legend">
+              <span className="lk"><span className="sw ng-sw-exp" />Exportación</span>
+              <span className="lk"><span className="sw ng-sw-ind" />Industria</span>
+            </div>
+          </>
+        }
+      >
+        {barras.map((bar, i) => {
+          const x = X(i);
+          const yExp = Y(bar.exp);
+          const yTop = Y(bar.exp + bar.ind);
+          return (
+            <g key={bar.clave} className={hi === i ? "ng-g-hi" : undefined}>
+              {bar.exp > 0 && <rect className="ng-bar-exp" x={x} y={yExp} width={anchoBarra} height={pad.t + ih - yExp} />}
+              {bar.ind > 0 && <rect className="ng-bar-ind" x={x} y={yTop} width={anchoBarra} height={yExp - yTop} />}
             </g>
-          ))}
-          {barras.map((bar, i) => {
-            const x = X(i);
-            const yExp = Y(bar.exp);
-            const yTop = Y(bar.exp + bar.ind);
-            return (
-              <g key={bar.clave} className={hi === i ? "ng-g-hi" : undefined}>
-                {bar.exp > 0 && <rect className="ng-bar-exp" x={x} y={yExp} width={anchoBarra} height={pad.t + ih - yExp} />}
-                {bar.ind > 0 && <rect className="ng-bar-ind" x={x} y={yTop} width={anchoBarra} height={yExp - yTop} />}
-              </g>
-            );
-          })}
-          {barras.map((bar, i) =>
-            i % cadaX === 0 ? (
-              <text key={`x${bar.clave}`} className="cv-axis" x={X(i) + anchoBarra / 2} y={H - 9} textAnchor="middle">
-                {bar.label}
-              </text>
-            ) : null,
-          )}
-          <rect
-            x={pad.l}
-            y={pad.t}
-            width={iw}
-            height={ih}
-            fill="transparent"
-            style={{ cursor: "crosshair" }}
-            onPointerMove={onMove}
-            onPointerLeave={() => setHi(null)}
-          />
-        </svg>
-        {b && hi !== null && (
-          <div className="cv-tip" style={{ left: `${((X(hi) + anchoBarra / 2) / W) * 100}%`, top: `${(Y(b.exp + b.ind) / H) * 100}%` }}>
-            <span className="tt-x">{b.label}</span> · {nfmt(b.exp + b.ind, 0)} t
-            <span className="cv-tip-sub">Exportación {nfmt(b.exp, 0)} · Industria {nfmt(b.ind, 0)}</span>
-          </div>
+          );
+        })}
+        {barras.map((bar, i) =>
+          i % cadaX === 0 ? (
+            <text key={`x${bar.clave}`} className="cv-axis" x={X(i) + anchoBarra / 2} y={H - 9} textAnchor="middle">
+              {bar.label}
+            </text>
+          ) : null,
         )}
-        <div className="cv-legend">
-          <span className="lk"><span className="sw ng-sw-exp" />Exportación</span>
-          <span className="lk"><span className="sw ng-sw-ind" />Industria</span>
-        </div>
-      </div>
+      </SvgLineChartBase>
 
       <ChartTabla
         titulo={`Datos del gráfico · ${modo === "semanal" ? "semanal" : "mensual"}`}
