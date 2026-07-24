@@ -19,7 +19,45 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 24/07/2026 — 🏷️ REBRANDING RF AGRO → ROFO AGRO, texto + logo real HECHO; solo renames de plataforma EN VUELO)
+## Ahora (última actualización: 24/07/2026 — 📐 PLAN INFORMES V2: research multi-agente + view con bola de nieve — plan cerrado, espera OK de Lautaro)
+
+**📐 PLAN INFORMES V2 — HECHO (solo docs, cero código) — rama
+`claude/informes-skills-alternativas-9fvo9f`, PR #_.** Lautaro pidió llevar los informes
+(diario/semanal/view/interpretaciones) "a otro nivel": Fable orquestando agentes de research
+(web propia + fuentes externas) y un view de mercado **acumulativo** ("bola de nieve": tesis
+previa + lo nuevo de cada semana, con switches por eventos — como piensa un trader) — pero
+ANTES cuestionarlo a fondo y hacer research real. Resultado:
+**[`PLAN_INFORMES_V2.md`](PLAN_INFORMES_V2.md)** (crítica con evidencia → 9 riesgos con
+mitigación estructural · 7 principios · fuentes externas VERIFICADAS con requests reales hoy
+· pipeline F0-F6 del view v2 · migración mínima + scorecard · loop de aprendizaje
+formalizado · 5 fases V0→V4 con prompts autocontenidos · criterios de éxito medibles).
+**Research (3 agentes en paralelo)**: (1) el anclaje en LLMs NO se arregla con instrucciones
+(medido) → **blind-first** (view provisorio sin ver la tesis previa, reconciliar después);
+citas de deep-research 11-57% problemáticas → **pasaporte** URL+fecha+cita verificado;
+consolidación automática de memoria medida como destructiva → destilación manual gateada +
+cap. (2) Fuentes nuevas verificadas: **CFTC COT** (fondos, 200 sin key, Socrata con
+histórico), **DTN** (tablas expectativa-vs-dato pre/post-WASDE sin paywall — el salto de
+calidad de MP4), Crop Progress TXT, EIA etanol, SMN; bloqueados confirmados: AgWeb/
+SuccessfulFarming/Agrolink/CME-FTP/INMET. (3) Inventario: `views_mercado` sin relación entre
+views (la bola de nieve no tiene soporte en datos hoy), `aprendizajes.md` VACÍO, **0
+disparos reales verificados de las 3 Routines** → por eso la fase **V0 es verificar el piso**
+antes de sofisticar. Decisiones clave: el diario NO se sofistica (sale siempre, rápido);
+interpretaciones previas = calibración de criterio, nunca fuente de números (números siempre
+de cero del dato crudo); fetch-en-vivo sin ingesta nueva en v1. **Auditoría adversarial del
+propio plan (mismo día)**: 3 hallazgos CRÍTICOS corregidos antes de mergear — (a) el disparo
+de BCBA-PAS filtraba por `fecha_publicacion` y NUNCA hubiera matcheado el día real de carga
+(fix: usar `actualizado_en`, que ya existe en `estimaciones_produccion`); (b) faltaba
+`getSenalCamiones()` (C5, ya construida) en los insumos del view — justo el dato de "¿quién
+pone el precio?"; (c) el scorecard no fijaba la posición del contrato en t0 → el hit-rate se
+hubiera contaminado con el salto de rolleo. + 8 hallazgos menores, todos aplicados y marcados
+`[fix auditoría]` en el texto. **Las 4 decisiones de §10 ya contestadas por Lautaro**: nota
+1-5 en el feedback SÍ · semanal se queda en **5 páginas** (lo nuevo entra recortando) · COT
+solo en semanal/view, no en el diario · key gratuita de USDA FAS la registra él antes de V0.
+**Próximo paso: ejecutar V0** (verificar de punta a punta las 3 Routines, que nunca se
+comprobaron; primer feedback real de Lautaro; cargar la key FAS) **y después V1→V4** (prompts
+autocontenidos en §9). Al arrancar, registrar V1-V4 en el backlog maestro (E7 §4). Detalle:
+[`sesiones/2026-07-24-plan-informes-v2.md`](sesiones/2026-07-24-plan-informes-v2.md).
+## Anterior (24/07/2026 — 🏷️ REBRANDING RF AGRO → ROFO AGRO, texto + logo real HECHO; solo renames de plataforma EN VUELO)
 
 **🏷️ REBRANDING RF AGRO → ROFO AGRO — rama `claude/rf-agro-rofo-agro-rebrand-gb7syg`, PR #80.**
 Retoma el pendiente anotado el 23/07 (dominio `rofoagro.com.ar` ya conectado y verificado ese día;
