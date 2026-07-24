@@ -56,6 +56,23 @@
   completo para percentiles al vuelo; promover a ingesta es decisión aparte si se consolida).
 - **V0 antes que todo**: no se construye el piso 2 sin verificar el piso 1 (Routines nunca
   verificadas de punta a punta + loop de feedback vacío).
+- **BCBA-PAS (Lautaro, en el chat)**: lo carga él en cada salida por `/admin/datos` → la
+  interpretación se genera sola del dato crudo; su lectura propia (si la comparte) se trata
+  como el "color de la rueda" — citable, nunca fuente de números ni "corregida". El disparo
+  tolera carga con rezago (informe subido hoy con fecha de días atrás).
+- **"Cabeza de mercado y mente abierta" (Lautaro, en el chat)**: el prompt de análisis del
+  view lleva las "preguntas de la mesa" como ejemplos NO cerrados — driver coyuntural vs
+  estructural (maíz local subiendo por barcos+lluvia con view bajista de fondo), ¿el nivel
+  de precios tiene sentido con cosecha récord?, ¿quién pone el precio?, ¿caros/baratos vs
+  Chicago?, ¿sobra o falta en el mundo (stock/consumo)?, ¿demanda activa?, correlacionados
+  (aceites → soja). Regla explícita: si el mercado se mueve por algo fuera del checklist,
+  eso es lo que hay que detectar, no ignorar.
+- **Recorrido de la tesis (Lautaro, en el chat)**: en cada reconciliación el view se
+  **cuestiona contra el precio** (¿cuánto del movimiento ya se produjo? ¿qué recorrido
+  queda?) — pregunta obligatoria, no regla mecánica: la línea bajista puede seguir, pero
+  justificada contra lo ya recorrido. CUMPLIDA (valor nuevo de `relacion_previa`) es salida
+  posible cuando no queda recorrido, no default. Las interpretaciones suman el paso "cuánto
+  ya estaba en el precio" (run-up previo al informe).
 
 ## Verificado
 

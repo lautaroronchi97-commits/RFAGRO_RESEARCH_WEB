@@ -179,6 +179,36 @@ F6  Salida con template fijo + guardado + scorecard
   confianza + argumentos) usando el checklist de la mesa de siempre (demanda física →
   oferta → fundamentals → precio → contexto) sobre insumos propios + hallazgos F1
   verificados. **No lee la tesis previa todavía** (mitigación R1, la única con respaldo).
+
+  **Las preguntas de la mesa (ejemplos de Lautaro, 24/07 — cabeza de mercado):** el
+  checklist ordena, pero el análisis se hace preguntando como un trader, no llenando un
+  formulario. Ejemplos del tipo de pregunta que el view tiene que hacerse:
+  - **¿Por qué se está moviendo el precio HOY, de verdad?** El plano local puede reaccionar
+    por algo distinto a la tendencia de fondo: maíz local subiendo porque hay barcos
+    cargando y la lluvia no deja entrar a cosechar — el view puede ser bajista y el precio
+    subir por logística de corto. Separar el driver coyuntural del estructural, y
+    preguntarse qué pasa cuando el driver de corto se agota (¿cuando el productor coseche
+    arranca la presión de cosecha, o se sostiene?).
+  - **¿El nivel de precios tiene sentido con el balance?** Cosecha récord con precios
+    firmes es una pregunta, no un dato — ¿quién está pagando y por qué?
+  - **¿Quién pone el precio?** ¿El productor reteniendo (farmer selling bajo) o la
+    exportación apretando (línea de barcos, gap de cobertura)?
+  - **¿Caros o baratos contra Chicago?** Paridad/premios: FAS vs pizarra vs CBOT (todo en
+    casa) — si el local está caro contra el mundo, la corrección puede venir por paridad
+    aunque el view local sea alcista.
+  - **¿En el mundo sobra o falta?** Balance mundial y relaciones stock/consumo (WASDE; la
+    lente 1 de F1 lo trae con pasaporte si no está en casa). ¿La demanda está activa o
+    comprada?
+  - **¿Algún activo muy correlacionado está con problemas?** Los mercados de aceites se
+    mueven todos juntos y afectan a la soja (palma/canola/girasol → aceite de soja →
+    poroto); energía → etanol → maíz. Un quiebre en el correlacionado es señal aunque el
+    propio grano no haya hecho nada todavía.
+
+  Son **ejemplos, no una lista cerrada** — hay miles. La regla del prompt es explícita:
+  **cabeza de mercado y mente abierta** — si el mercado se está moviendo por algo que el
+  checklist no lista, eso es justamente lo que hay que detectar y explicar, no ignorar
+  porque "no estaba en el formulario". (Esto convive con "ni un número inventado": la
+  pregunta puede ser libre, la respuesta cita datos.)
 - **F3 — Reconciliación.** Recién ahora entra: view vigente + resultado F0 + scorecard.
   Reglas: si F0 disparó un invalidador → SWITCH/AJUSTE obligatorio explicando el gatillo.
   Si no disparó y el provisorio coincide → CONFIRMA (la evidencia nueva se suma a la tesis:
@@ -186,6 +216,16 @@ F6  Salida con template fijo + guardado + scorecard
   justificación explícita de por qué la evidencia nueva pesa más que la tesis acumulada
   (y queda marcado). La confianza se mueve de a 1 punto la mayoría de las semanas — "update
   a lot, but not too much" (superforecasters): muchas actualizaciones chicas, pocas grandes.
+  **Recorrido de la tesis (aporte de Lautaro, 24/07)**: en cada reconciliación, el view se
+  **cuestiona contra el precio** — pregunta obligatoria, NO regla mecánica de cierre:
+  ¿cuánto del movimiento esperado ya se materializó desde que la tesis nació (dato propio:
+  precio desde la fecha del view inicial) y qué recorrido le queda? La respuesta puede ser
+  perfectamente "la línea bajista sigue" — pero tiene que estar **justificada contra el
+  precio ya recorrido**, no asumida: un CONFIRMA con el movimiento ya producido debe decir
+  de dónde sale el recorrido restante. CUMPLIDA existe como salida posible (la tesis no
+  tiene más recorrido → neutral explicándolo), no como default. El anti-patrón que esto
+  evita: el informe bajista que sale DESPUÉS de la baja sumado como evidencia bajista
+  fresca, sin preguntarse cuánto ya estaba en el precio.
 - **F4 — Abogado del diablo.** Un agente con mandato único: atacar la tesis final (buscar el
   dato en contra más fuerte, propio o externo). Sus ataques con sustancia entran a
   `en_contra` o bajan la confianza; no es "una opinión más que se promedia" — es input
@@ -209,7 +249,7 @@ mide en la primera corrida real y se anota (R5).
 
 ```sql
 alter table views_mercado
-  add column relacion_previa text check (relacion_previa in ('inicial','confirma','ajusta','switch')),
+  add column relacion_previa text check (relacion_previa in ('inicial','confirma','ajusta','switch','cumplida')),
   add column view_previo_id uuid references views_mercado(id),
   add column invalidadores jsonb default '[]',   -- [{condicion, umbral, dato_ref, disparado_en}]
   add column evidencia_externa jsonb default '[]'; -- pasaportes [{dato, url, fecha_pub, cita}]
@@ -267,13 +307,25 @@ de cero?"): **las dos cosas, en capas distintas — nunca resumir el resumen.**
      (DTN pre-report, Pro Farmer) y la interpretación pasa de "el USDA recortó X vs el mes
      pasado" a "el mercado esperaba A, salió B → sorpresa alcista/bajista/neutra" — que es
      lo ÚNICO que explica la reacción del precio. Con pasaporte; si no se consigue, la
-     interpretación sale como hoy (P7).
+     interpretación sale como hoy (P7). La estructura suma un paso: **cuánto ya estaba en
+     el precio** — qué hizo el precio en los días PREVIOS al informe (dato propio,
+     `cbot_cierres`/`futuros_cierres`): si la baja ya se produjo antes de que salga el
+     dato, la interpretación lo dice ("el mercado lo venía descontando: Chicago cayó X%
+     en la semana previa") en vez de anunciar una baja que ya pasó.
   2. **Reacción del mercado**: qué hizo Chicago ese día (ya está en casa —
      `cbot_cierres`/monitor) citado junto a la sorpresa: "el mercado esperaba A, salió B,
      Chicago reaccionó +C%". Cero fuente nueva.
 - GEA/DEA/CONAB no tienen encuestas de expectativas públicas → para esos, la capa 1 degrada
   a "vs el consenso implícito" (la estimación previa del mismo organismo + qué decían los
   otros organismos), que ya está en casa.
+- **BCBA-PAS (decisión de Lautaro, 24/07): lo carga él en cada salida** por `/admin/datos`
+  → entra a `estimaciones_produccion` como cualquier organismo y la interpretación se
+  genera sola **del dato crudo** (anillo 1), no de un resumen. Detalle de implementación:
+  el disparo debe tolerar "informe cargado HOY con fecha de días atrás" (Lautaro puede
+  subirlo con rezago; el filtro actual de `informesHoy` es por fecha del informe). Si
+  Lautaro además comparte su propia lectura del PAS, se trata igual que el "color de la
+  rueda" del diario: **citable como lectura de la mesa, nunca fuente de números ni algo
+  que el modelo "corrige"** — si su lectura y el dato difieren, se muestran las dos.
 - El gate no cambia: borrador → OK de Lautaro → publicar.
 
 ### 6.3 Informe semanal MP2 (V3)
@@ -366,14 +418,21 @@ reales de Routines). Formalización:
 > §1) y la skill actual `.claude/skills/view-mercado/`. Construí: (1) la migración aditiva
 > de `views_mercado` (§5) — aplicarla por MCP CON OK de Lautaro, como siempre; (2) la skill
 > reescrita con el pipeline F0-F6 — respetando: blind-first estricto (la tesis previa no
-> entra al contexto hasta F3), invalidadores inmutables chequeados en F0, 4 lentes de
+> entra al contexto hasta F3), las "preguntas de la mesa" de §4 F2 en el prompt de análisis
+> (con la regla explícita "cabeza de mercado y mente abierta": los ejemplos orientan, no
+> limitan — driver coyuntural vs estructural, quién pone el precio, paridad vs Chicago,
+> stock/consumo mundial, correlacionados como el complejo de aceites para la soja),
+> invalidadores inmutables chequeados en F0, 4 lentes de
 > recolección con presupuesto ~10-15 tool calls y salida JSON con pasaporte (fuentes de §3:
 > COT Socrata, Crop Progress ESMIS, DTN vía Google News RSS, SMN/CPC; jerarquía oficial >
 > bolsa > medio > agregador; devolver vacío es válido), agente rojo en F4, verificación
-> mecánica de pasaportes en F5, template de salida SIN crecer (3-5 argumentos máx.);
+> mecánica de pasaportes en F5, template de salida SIN crecer (3-5 argumentos máx.), y el
+> chequeo de **recorrido de tesis** en F3 (cuestionar el view contra el precio: cuánto ya
+> se movió y qué recorrido queda — la línea puede seguir, pero justificada; CUMPLIDA es
+> salida posible, no automática);
 > (3) `src/lib/views-scorecard.ts` (hit-rate direccional 1/2/4 semanas + Brier contra
 > `futuros_cierres`, lib pura testeada con fixture real); (4) UI `/granos/view`: badges
-> CONFIRMA/AJUSTA/SWITCH, fila de scorecard, invalidadores con estado 🟢🟡🔴. Verificación:
+> CONFIRMA/AJUSTA/SWITCH/CUMPLIDA, fila de scorecard, invalidadores con estado 🟢🟡🔴. Verificación:
 > lint/tsc/tests/build + una corrida completa EN SECO (sin guardar) mostrando las 6 fases y
 > el consumo total; los números del scorecard cotejados 1:1 por SQL contra `futuros_cierres`.
 > La primera corrida real la dispara la Routine del viernes — dejarla apuntando a la skill
@@ -390,9 +449,13 @@ reales de Routines). Formalización:
 > JSON). El borrador pasa a la estructura: qué se esperaba → qué salió → sorpresa → reacción
 > del precio → qué implica → qué mirar. Con pasaporte (URL + fecha + cita) para todo dato
 > externo, verificado antes de citar; si no se consigue expectativa, la interpretación sale
-> con el formato actual y lo dice ("sin encuesta de expectativas a mano"). Para
-> GEA/DEA/CONAB: consenso implícito = estimación previa del organismo + qué decían los
-> otros (todo en casa). Las interpretaciones PUBLICADAS previas se leen como calibración de
+> con el formato actual y lo dice ("sin encuesta de expectativas a mano"). La estructura
+> incluye SIEMPRE el paso "cuánto ya estaba en el precio" (run-up previo al informe, dato
+> propio). Para GEA/DEA/CONAB: consenso implícito = estimación previa del organismo + qué
+> decían los otros (todo en casa). **BCBA-PAS**: el disparo debe tolerar informe cargado
+> hoy con fecha de días atrás (Lautaro lo sube a mano en cada salida, puede haber rezago);
+> su lectura propia, si la comparte, se trata como el color de la rueda (citable, nunca
+> fuente de números). Las interpretaciones PUBLICADAS previas se leen como calibración de
 > criterio (qué priorizó/descartó Lautaro), NUNCA como fuente de números. El gate
 > borrador→OK no se toca. Verificación: regenerar en seco la interpretación del WASDE #673
 > (10/07) con el formato nuevo y comparar contra la publicada — mostrársela a Lautaro.
