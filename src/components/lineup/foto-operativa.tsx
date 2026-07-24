@@ -39,7 +39,7 @@ export async function FotoOperativaPanel() {
     );
   }
 
-  const { fecha, fechaPrev, productos, zonas, buques, nuevos, totalTon, totalBuques } = data;
+  const { fecha, fechaPrev, productos, zonas, buques, nuevos, salidos, referencia, totalTon, totalBuques } = data;
 
   return (
     <Panel id="lineup-foto">
@@ -65,19 +65,58 @@ export async function FotoOperativaPanel() {
         </div>
       </div>
 
-      {nuevos.length > 0 && fechaPrev && (
+      {(nuevos.length > 0 || salidos.length > 0) && fechaPrev && (
         <div className="lu-cambios">
           <h3 className="lu-h3">Qué cambió vs el {ddmm(fechaPrev)}</h3>
           <ul className="lu-nuevos">
             {nuevos.map((n) => (
-              <li key={n.vessel}>
+              <li key={`n-${n.vessel}`}>
                 <span className="lu-nuevo-badge">nuevo</span>
                 <b>{n.vessel}</b> · {n.empresa} · {n.productos.join(", ")} ·{" "}
                 <span className="lu-mono">{nfmt(n.toneladas, 0)} t</span> · {n.zona}
                 {n.etb ? ` · ETB ${ddmm(n.etb)}` : ""}
               </li>
             ))}
+            {salidos.map((n) => (
+              <li key={`s-${n.vessel}`}>
+                <span className="lu-salido-badge">salió</span>
+                <b>{n.vessel}</b> · {n.empresa} · {n.productos.join(", ")} ·{" "}
+                <span className="lu-mono">{nfmt(n.toneladas, 0)} t</span> · {n.zona}
+              </li>
+            ))}
           </ul>
+        </div>
+      )}
+
+      {referencia && (
+        <div className="lu-cambios lu-cambios-ref">
+          <h3 className="lu-h3">Vs hace {referencia.diasAtras} días ({ddmm(referencia.fecha)})</h3>
+          <div className="lu-kpis" style={{ margin: "0 0 8px" }}>
+            <div className="lu-kpi">
+              <span className={`lu-kpi-v ${referencia.deltaBuques === 0 ? "" : referencia.deltaBuques > 0 ? "pos" : "neg"}`}>
+                {referencia.deltaBuques > 0 ? "+" : ""}{nfmt(referencia.deltaBuques, 0)}
+              </span>
+              <span className="lu-kpi-l">buques ({nfmt(referencia.totalBuquesRef, 0)} entonces)</span>
+            </div>
+            <div className="lu-kpi">
+              <span className={`lu-kpi-v ${Math.abs(referencia.deltaTon) < 1 ? "" : referencia.deltaTon > 0 ? "pos" : "neg"}`}>
+                {referencia.deltaTon > 0 ? "+" : ""}{nfmt(referencia.deltaTon, 0)}
+              </span>
+              <span className="lu-kpi-l">toneladas ({nfmt(referencia.totalTonRef, 0)} entonces)</span>
+            </div>
+          </div>
+          {referencia.productos.length > 0 && (
+            <ul className="lu-nuevos">
+              {referencia.productos.map((p) => (
+                <li key={p.codigo}>
+                  <b>{p.display}</b>{" "}
+                  <span className={Math.abs(p.deltaTon) < 1 ? "dim" : p.deltaTon > 0 ? "pos" : "neg"}>
+                    {p.deltaTon > 0 ? "+" : ""}{nfmt(p.deltaTon, 0)} t
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 
@@ -138,7 +177,7 @@ export async function FotoOperativaPanel() {
 
       <QueEsEsto
         paraQue="Es la foto del último line-up de buques en puertos argentinos: qué barcos vienen a cargar granos y subproductos para exportar, cuánto, de qué empresa y a qué destino. Sirve para leer la demanda física de exportación antes de la rueda."
-        comoSeCalcula="Toma la última rueda del line-up de buques (exportaciones = carga), agrupa por producto y por zona portuaria (Up River Norte/Sur y Bahía Blanca, clasificadas por el muelle), normaliza los nombres de los exportadores y compara contra la rueda anterior para marcar los buques nuevos."
+        comoSeCalcula="Toma la última rueda del line-up de buques (exportaciones = carga), agrupa por producto y por zona portuaria (Up River Norte/Sur y Bahía Blanca, clasificadas por el muelle), normaliza los nombres de los exportadores y compara contra la rueda anterior para marcar los buques nuevos y los que salieron (embarcaron o se cayeron del programa). Además compara contra la rueda más cercana a una semana atrás, para distinguir tendencia de movimiento puntual."
       />
     </Panel>
   );

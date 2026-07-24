@@ -19,7 +19,33 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 23/07/2026 — día grande de backlog maestro, 7 sesiones en paralelo:
+## Ahora (última actualización: 24/07/2026 — 🚢 C9 (extras de spec de puertos) HECHO)
+
+**🚢 C9 — EXTRAS DE SPEC DE PUERTOS (matriz mes×zona + "qué cambió" ampliado) — HECHO — rama
+`claude/c9-execution-models-2g48l6`, PR #_.** C9 (backlog maestro, `auditoria/E7-sintesis.md` §4)
+estaba en la cola sin priorizar y **sin prompt escrito** (a diferencia de P1-P12 en
+`PLAN_BACKLOG.md` o los lotes L1-L6 en `E7-sintesis.md` §6) — se le preguntó a Lautaro cómo
+seguir y decidió **definir el alcance ahora, sin la spec original** de `LineUps_Code`
+(`ESPECIFICACION_MESA_CALOR.md`, nunca versionada acá). **Alcance cerrado por
+`AskUserQuestion`**: (1) matriz mes×zona en `/comercio/embarques` **solo en la fila de
+embarcado** — hallazgo real: `djve` (declarado) no tiene puerto/muelle, la zona (Up River
+Norte/Sur/Bahía) solo existe en el line-up físico, así que la matriz declarada sigue sin zona y
+el desglose nuevo aplica al line-up del mes en curso (mismo alcance i≤1 de siempre); (2) "qué
+cambió" ampliado en `/comercio/puertos` = buques que **salieron** (no solo los nuevos, mismo
+umbral 30kt sin bajarlo — Lautaro descartó esa opción) + comparación contra una **rueda de
+referencia ~1 semana atrás** (bloque nuevo, no solo la rueda inmediata anterior). **2 vistas SQL
+nuevas** (`lineup_visitas_recientes` con port/berth para zona en TS, `lineup_fechas_recientes`
+para ubicar la rueda de referencia), ambas **aditivas** — no tocan `lineup_visitas` (matview de
+Fase 3 con 6+ dependientes) para evitar el riesgo de un DROP/CREATE en cascada. **Verificado 1:1
+contra SQL real**: zona de Maíz (Norte+Sur+Bahía = 5,79 Mt/219 buques vs línea-up total 6,10
+Mt/234 buques, la diferencia cae en "Otros" por diseño) · referencia semanal (16/07 187
+buques/6,50 Mt vs 22/07 181/6,43 Mt reproducido exacto) · salidos (`ARUNA CIHAN` y `SELO`
+confirmados presentes el 21/07 y ausentes el 22/07). lint/tsc/build ✅ · 140/140 tests sin
+regresión · navegador claro/oscuro con datos reales (rutas de verificación temporales, borradas
+antes de cerrar, git diff limpio). Detalle:
+[`sesiones/2026-07-24-c9-puertos-extras.md`](sesiones/2026-07-24-c9-puertos-extras.md).
+
+## Anterior (23/07/2026 — día grande de backlog maestro, 7 sesiones en paralelo:
 📊 C10 (gráficos v2, P6) HECHO, paquete completo (URL Período, %, media móvil, volumen/OI, export
 PNG/CSV, guard parcial) ·
 📝 C3 (interpretación de informes de organismos) HECHO, migración aplicada y probada con un informe real ·

@@ -1461,6 +1461,11 @@ a.estim-inf:hover { color:var(--gold-text); }
 .lu-nuevo-badge { display:inline-block; font-family:var(--font-mono); font-size:9px; font-weight:800;
   text-transform:uppercase; letter-spacing:.05em; color:var(--pos); background:var(--pos-weak);
   border-radius:4px; padding:1px 5px; margin-right:6px; vertical-align:middle; }
+.lu-salido-badge { display:inline-block; font-family:var(--font-mono); font-size:9px; font-weight:800;
+  text-transform:uppercase; letter-spacing:.05em; color:var(--neg); background:var(--neg-weak);
+  border-radius:4px; padding:1px 5px; margin-right:6px; vertical-align:middle; }
+.lu-cambios-ref { background:var(--panel-2); border-color:var(--line); }
+.lu-cambios-ref .lu-h3 { color:var(--ink-2); }
 .lu-mono { font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
 
 .tbl tbody td.pos { color:var(--pos); font-variant-numeric:tabular-nums; }

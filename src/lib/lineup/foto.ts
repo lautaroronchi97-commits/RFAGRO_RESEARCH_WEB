@@ -5,16 +5,24 @@ import type { Meta } from "../market";
 import { PRODUCTOS, productoDe, type Familia } from "./config";
 import { zonaCarga, ZONAS, type Zona } from "./zonas";
 import { canonShipper } from "./shippers";
+import { diasEntre } from "../dates";
 
 /**
  * Foto operativa del line-up (Fase 1 del plan de puertos): la última rueda de ISA
  * más el delta vs la anterior. Se enfoca en las EXPORTACIONES (ops = LOAD) de los
  * productos prioritarios (decisión 8) en las zonas operativas (decisión 9). Lee la
  * vista `lineup_ultimas_ruedas` (2 snapshots) y agrega todo en el server.
+ *
+ * C9 (extras de spec): además del delta vs la rueda inmediata anterior, "qué cambió"
+ * ahora suma (a) los buques que SALIERON del line-up (no solo los nuevos) y (b) una
+ * comparación contra una rueda de referencia más vieja (~1 semana), para ver tendencia
+ * y no solo el último movimiento.
  */
 
 const SOURCE = "Elaboración propia RF AGRO";
-const UMBRAL_BUQUE_NUEVO_TN = 30_000; // materialidad de "buque nuevo" (mesa_diff.py)
+const UMBRAL_BUQUE_NUEVO_TN = 30_000; // materialidad de "buque nuevo/salido" (mesa_diff.py)
+const DIAS_REFERENCIA = 7; // objetivo: comparar contra la rueda de hace ~1 semana
+const TOLERANCIA_DIAS = 3; // si no hay rueda a ±3 días del objetivo, no se muestra (feriados/huecos de ISA)
 
 export type ProductoAgg = {
   codigo: string;
@@ -44,6 +52,16 @@ export type BuqueNuevo = {
   etb: string | null;
   productos: string[];
 };
+export type BuqueSalido = BuqueNuevo; // mismo shape: buque que estaba en la rueda anterior y ya no está
+export type ReferenciaComparacion = {
+  fecha: string; // rueda de referencia usada
+  diasAtras: number; // diferencia real en días vs la rueda actual (puede no ser exacto a 7 por huecos de ISA)
+  totalTonRef: number;
+  totalBuquesRef: number;
+  deltaTon: number; // actual − referencia
+  deltaBuques: number;
+  productos: { codigo: string; display: string; deltaTon: number }[];
+};
 export type FotoOperativa = {
   fecha: string | null;
   fechaPrev: string | null;
@@ -51,6 +69,8 @@ export type FotoOperativa = {
   zonas: ZonaAgg[];
   buques: BuqueRow[];
   nuevos: BuqueNuevo[];
+  salidos: BuqueSalido[];
+  referencia: ReferenciaComparacion | null;
   totalTon: number;
   totalBuques: number;
   meta: Meta;
@@ -77,10 +97,75 @@ function empresaDisplay(shipper: string | null): string {
 }
 
 const vacia = (problema: string): FotoOperativa => ({
-  fecha: null, fechaPrev: null, productos: [], zonas: [], buques: [], nuevos: [],
-  totalTon: 0, totalBuques: 0,
+  fecha: null, fechaPrev: null, productos: [], zonas: [], buques: [], nuevos: [], salidos: [],
+  referencia: null, totalTon: 0, totalBuques: 0,
   meta: { source: SOURCE, updatedAt: null, status: "parcial", problemas: [problema] },
 });
+
+/**
+ * Busca la rueda de referencia más cercana a "hace ~DIAS_REFERENCIA días" (estrictamente
+ * anterior a `fechaActual`) y compara sus agregados por producto contra los de hoy. Si no
+ * hay ninguna rueda dentro de la tolerancia, devuelve null (mejor nada que un dato
+ * engañoso — no hay "hace 1 semana" real para comparar).
+ */
+async function buscarReferencia(
+  fechaActual: string,
+  tonActual: Map<string, number>,
+  totalTonActual: number,
+  totalBuquesActual: number,
+): Promise<ReferenciaComparacion | null> {
+  const fechasRes = await sbSelectAll("lineup_fechas_recientes?select=fecha_consulta", 900);
+  if (!fechasRes.ok) return null;
+  const fechas = (fechasRes.data as { fecha_consulta: string }[])
+    .map((r) => r.fecha_consulta)
+    .filter((f) => f < fechaActual);
+  if (fechas.length === 0) return null;
+
+  let mejor: string | null = null;
+  let mejorDelta = Infinity;
+  for (const f of fechas) {
+    const delta = Math.abs(diasEntre(f, fechaActual) - DIAS_REFERENCIA);
+    if (delta < mejorDelta) { mejorDelta = delta; mejor = f; }
+  }
+  if (!mejor || mejorDelta > TOLERANCIA_DIAS) return null;
+
+  const rowsRes = await sbSelectAll(
+    `lineup?select=port,berth,vessel,ops,cargo,quantity,dest_orig,shipper,etb,es_agro&fecha_consulta=eq.${mejor}`,
+    900,
+  );
+  if (!rowsRes.ok) return null;
+  const raw = (Array.isArray(rowsRes.data) ? rowsRes.data : []) as Omit<Raw, "fecha_consulta" | "rueda_rank">[];
+  const relevantesRef = raw
+    .filter((r) => r.es_agro && r.ops === "LOAD" && r.vessel && productoDe(r.cargo))
+    .map((r) => ({ r, prod: productoDe(r.cargo)! }));
+
+  const tonRef = new Map<string, number>();
+  const vesselsRef = new Set<string>();
+  for (const { r, prod } of relevantesRef) {
+    tonRef.set(prod.codigo, (tonRef.get(prod.codigo) ?? 0) + (r.quantity ?? 0));
+    vesselsRef.add(r.vessel!);
+  }
+  const totalTonRef = [...tonRef.values()].reduce((s, v) => s + v, 0);
+
+  const codigos = new Set([...tonActual.keys(), ...tonRef.keys()]);
+  const productos = PRODUCTOS.filter((p) => codigos.has(p.codigo))
+    .map((p) => ({
+      codigo: p.codigo,
+      display: p.display,
+      deltaTon: (tonActual.get(p.codigo) ?? 0) - (tonRef.get(p.codigo) ?? 0),
+    }))
+    .filter((p) => Math.abs(p.deltaTon) >= 1 || (tonActual.get(p.codigo) ?? 0) > 0 || (tonRef.get(p.codigo) ?? 0) > 0);
+
+  return {
+    fecha: mejor,
+    diasAtras: diasEntre(mejor, fechaActual),
+    totalTonRef,
+    totalBuquesRef: vesselsRef.size,
+    deltaTon: totalTonActual - totalTonRef,
+    deltaBuques: totalBuquesActual - vesselsRef.size,
+    productos,
+  };
+}
 
 export const getFotoOperativa = cache(async (): Promise<FotoOperativa> => {
   const res = await sbSelectAll("lineup_ultimas_ruedas?select=*", 900);
@@ -175,11 +260,36 @@ export const getFotoOperativa = cache(async (): Promise<FotoOperativa> => {
     .filter((n) => n.toneladas >= UMBRAL_BUQUE_NUEVO_TN)
     .sort((a, b) => b.toneladas - a.toneladas);
 
+  // Qué cambió (ampliado, C9): buques que SALIERON del line-up (estaban en la rueda
+  // anterior, ya no están en la última — embarcaron o se cayeron del programa).
+  const vesselsUlt = new Set(ultima.map((x) => x.r.vessel!));
+  const salidosMap = new Map<string, BuqueSalido>();
+  for (const { r, prod } of previa) {
+    if (vesselsUlt.has(r.vessel!)) continue;
+    const key = r.vessel!;
+    if (!salidosMap.has(key)) {
+      salidosMap.set(key, {
+        vessel: r.vessel!, empresa: empresaDisplay(r.shipper), toneladas: 0,
+        zona: zonaCarga(r.port, r.berth), etb: r.etb, productos: [],
+      });
+    }
+    const n = salidosMap.get(key)!;
+    n.toneladas += r.quantity ?? 0;
+    if (!n.productos.includes(prod.display)) n.productos.push(prod.display);
+  }
+  const salidos = [...salidosMap.values()]
+    .filter((n) => n.toneladas >= UMBRAL_BUQUE_NUEVO_TN)
+    .sort((a, b) => b.toneladas - a.toneladas);
+
   const totalBuques = new Set(buques.map((b) => b.vessel)).size;
   const totalTon = buques.reduce((s, b) => s + (b.toneladas ?? 0), 0);
 
+  // Qué cambió (ampliado, C9): comparación contra una rueda de referencia ~1 semana
+  // atrás (no solo la inmediata anterior), para ver tendencia.
+  const referencia = await buscarReferencia(fecha, tonU, totalTon, totalBuques);
+
   return {
-    fecha, fechaPrev, productos, zonas, buques, nuevos, totalTon, totalBuques,
+    fecha, fechaPrev, productos, zonas, buques, nuevos, salidos, referencia, totalTon, totalBuques,
     meta: { source: SOURCE, updatedAt: null, status: "real", problemas: [] },
   };
 });

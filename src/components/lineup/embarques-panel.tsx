@@ -1,5 +1,6 @@
 import { getMesaEmbarque, type ProductoMesa } from "@/lib/lineup/embarque";
 import { nfmt } from "@/lib/format";
+import { ZONAS } from "@/lib/lineup/zonas";
 import { Panel, PanelHead } from "../panel";
 import { SourceStamp } from "../source-stamp";
 import { QueEsEsto } from "../que-es-esto";
@@ -158,6 +159,46 @@ export async function MesaEmbarquePanel() {
           </tbody>
         </table>
       </div>
+
+      {cumplimiento.some((c) => c.porZona.length > 0) && (
+        <>
+          <h3 className="lu-h3">Line-up del mes en curso · por zona</h3>
+          <p className="lu-nota">
+            El declarado DJVE no tiene puerto/muelle (no hay zona posible); esta matriz desglosa solo la
+            parte física — el line-up del mes en curso — por zona portuaria.
+          </p>
+          <div className="table-scroll">
+            <table className="tbl" style={{ minWidth: 480 }}>
+              <thead>
+                <tr>
+                  <th className="l" scope="col">Producto</th>
+                  {ZONAS.map((z) => (
+                    <th key={z} scope="col">{z}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {cumplimiento.filter((c) => c.porZona.length > 0).map((c) => {
+                  const porZona = new Map(c.porZona.map((z) => [z.zona, z]));
+                  return (
+                    <tr key={c.display}>
+                      <td className="l sym">{c.display}</td>
+                      {ZONAS.map((z) => {
+                        const v = porZona.get(z);
+                        return (
+                          <td key={z} className={!v ? "dim" : undefined} title={v ? `${nfmt(v.buques, 0)} buques` : undefined}>
+                            {v ? nfmt(v.toneladas, 0) : "—"}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       <h3 className="lu-h3">En idioma A3 · granos que cotizan en Matba Rofex</h3>
       <p className="lu-nota">
