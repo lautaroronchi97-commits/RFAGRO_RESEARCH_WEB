@@ -28,13 +28,13 @@ function vencKeyDePosicion(posicion: string | null): number {
   if (!posicion) return 0;
   const m = posicion.toUpperCase().match(/^([A-Z]{3})(\d{2})$/);
   if (!m) return 0;
-  const mes = MESES[m[1]] ?? 0;
-  return (2000 + Number(m[2])) * 100 + mes;
+  const mes = MESES[m[1] ?? ""] ?? 0;
+  return (2000 + Number(m[2] ?? "")) * 100 + mes;
 }
 
 function hoyVencKey(hoyISO: string): number {
   const [anio, mes] = hoyISO.split("-").map(Number);
-  return anio * 100 + mes;
+  return (anio ?? 0) * 100 + (mes ?? 0);
 }
 
 function restarDias(iso: string, dias: number): string {
@@ -76,7 +76,7 @@ function calcularVariacion(porFecha: Map<string, number>): VariacionPunto {
   const fechas = [...porFecha.keys()].sort();
   const vacio: VariacionPunto = { actual: null, previa: null, deltaPct: null, fechaActual: null, fechaPrevia: null };
   if (fechas.length === 0) return vacio;
-  const fechaActual = fechas[fechas.length - 1];
+  const fechaActual = fechas[fechas.length - 1]!; // length===0 ya salió arriba
   const actual = porFecha.get(fechaActual) ?? null;
   const objetivo = restarDias(fechaActual, 7);
   const fechaPrevia = fechaMasCercana(fechas, objetivo, fechaActual);
