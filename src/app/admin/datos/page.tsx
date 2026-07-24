@@ -9,6 +9,7 @@ import { PromptCamiones } from "./prompt-camiones";
 import { DatosDia } from "./datos-dia";
 import { DeaUploader } from "./dea-uploader";
 import { PasUploader } from "./pas-uploader";
+import { LecapUploader } from "./lecap-uploader";
 
 /**
  * Pestaña DATOS del panel admin: actualizar series que se cargan a mano (sin cron), subiendo
@@ -24,14 +25,19 @@ export default async function DatosPage() {
 
   const fechaHoy = hoyCordobaISO();
   const supabase = await createSupabaseServerClient();
-  const [{ data: colorRows }, { data: bcraRow }] = await Promise.all([
+  const [{ data: colorRows }, { data: bcraRow }, { data: lecapRows }] = await Promise.all([
     supabase.from("mesa_color").select("fecha,texto").order("fecha", { ascending: false }).limit(6),
     supabase.from("compras_bcra").select("monto_musd").eq("fecha", fechaHoy).maybeSingle(),
+    supabase
+      .from("lecap_pago_final")
+      .select("ticker,pago_final,fecha_vencimiento")
+      .order("fecha_vencimiento", { ascending: true, nullsFirst: false }),
   ]);
   const filas = (colorRows ?? []) as { fecha: string; texto: string }[];
   const deHoy = filas.find((f) => f.fecha === fechaHoy);
   const recientes = filas.filter((f) => f.fecha !== fechaHoy).slice(0, 3);
   const bcraHoy = (bcraRow as { monto_musd: number } | null)?.monto_musd ?? null;
+  const lecapActuales = (lecapRows ?? []) as { ticker: string; pago_final: number; fecha_vencimiento: string | null }[];
 
   return (
     <section>
@@ -62,6 +68,16 @@ export default async function DatosPage() {
       <DatosDia fechaHoy={fechaHoy} colorHoy={deHoy?.texto ?? ""} bcraHoy={bcraHoy} recientes={recientes} />
       <DeaUploader hoy={fechaHoy} />
       <PasUploader hoy={fechaHoy} />
+
+      <div className="admin-hd" style={{ marginTop: 32 }}>
+        <h2 className="admin-h1" style={{ fontSize: "1.3rem" }}>Datos · Pago final de letras (sintéticos)</h2>
+        <p className="admin-sub">
+          Cargá el pago final (importe al vencimiento) de cada LECAP/BONCAP para el panel{" "}
+          <Link href="/dolar">Sintéticos</Link>. Es un dato casi estático: solo se actualiza cuando el Tesoro
+          emite letras nuevas.
+        </p>
+      </div>
+      <LecapUploader actuales={lecapActuales} />
     </section>
   );
 }
