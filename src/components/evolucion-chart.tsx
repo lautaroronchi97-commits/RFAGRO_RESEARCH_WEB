@@ -123,6 +123,9 @@ export function EvolucionChart({ series, unidad }: { series: SerieEvol[]; unidad
   }
 
   const tabla = tablaDeSeries(series, unidad);
+  // `hi` es índice guardado en state; si `series` cambia entre renders `flat` puede achicarse y
+  // dejarlo apuntando afuera — guard real (no `!`), como en camiones-chart.tsx.
+  const hiFlat = hi !== null ? flat[hi] : undefined;
 
   return (
     <>
@@ -144,6 +147,7 @@ export function EvolucionChart({ series, unidad }: { series: SerieEvol[]; unidad
           ))}
           {series.map((serie) => {
             const pts = serie.puntos;
+            if (pts.length === 0) return null; // organismo sin puntos en esta selección
             const d = pts.map((p, i) => `${i ? "L" : "M"}${X(epoch(p.fecha)).toFixed(1)},${Y(p.valor).toFixed(1)}`).join(" ");
             return (
               <g key={serie.organismo} className={`evo-serie org-${serie.organismo}`}>
@@ -151,14 +155,14 @@ export function EvolucionChart({ series, unidad }: { series: SerieEvol[]; unidad
                 {pts.map((p, i) => (
                   <circle key={i} cx={X(epoch(p.fecha))} cy={Y(p.valor)} r={2.6} className="evo-dot" />
                 ))}
-                <circle cx={X(epoch(pts[pts.length - 1].fecha))} cy={Y(pts[pts.length - 1].valor)} r={4} className="evo-end" />
+                <circle cx={X(epoch(pts[pts.length - 1]!.fecha))} cy={Y(pts[pts.length - 1]!.valor)} r={4} className="evo-end" />
               </g>
             );
           })}
-          {hi !== null && (
-            <g className={`org-${flat[hi].organismo}`}>
-              <line className="cv-cross" x1={X(flat[hi].ms)} y1={pad.t} x2={X(flat[hi].ms)} y2={pad.t + ih} />
-              <circle className="evo-focus" cx={X(flat[hi].ms)} cy={Y(flat[hi].valor)} r={5} />
+          {hiFlat && (
+            <g className={`org-${hiFlat.organismo}`}>
+              <line className="cv-cross" x1={X(hiFlat.ms)} y1={pad.t} x2={X(hiFlat.ms)} y2={pad.t + ih} />
+              <circle className="evo-focus" cx={X(hiFlat.ms)} cy={Y(hiFlat.valor)} r={5} />
             </g>
           )}
           <rect
@@ -172,10 +176,10 @@ export function EvolucionChart({ series, unidad }: { series: SerieEvol[]; unidad
             onPointerLeave={() => setHi(null)}
           />
         </svg>
-        {hi !== null && (
-          <div className="cv-tip" style={{ left: `${(X(flat[hi].ms) / W) * 100}%`, top: `${(Y(flat[hi].valor) / H) * 100}%` }}>
-            <span className="tt-x">{ORG_LABEL[flat[hi].organismo as keyof typeof ORG_LABEL] ?? flat[hi].organismo}</span> · {nfmt(flat[hi].valor, 2)} {unidad}
-            <span className="cv-tip-sub">{flat[hi].informe}</span>
+        {hiFlat && (
+          <div className="cv-tip" style={{ left: `${(X(hiFlat.ms) / W) * 100}%`, top: `${(Y(hiFlat.valor) / H) * 100}%` }}>
+            <span className="tt-x">{ORG_LABEL[hiFlat.organismo as keyof typeof ORG_LABEL] ?? hiFlat.organismo}</span> · {nfmt(hiFlat.valor, 2)} {unidad}
+            <span className="cv-tip-sub">{hiFlat.informe}</span>
           </div>
         )}
         <div className="cv-legend">
@@ -183,7 +187,9 @@ export function EvolucionChart({ series, unidad }: { series: SerieEvol[]; unidad
             <span className={`lk org-${serie.organismo}`} key={serie.organismo}>
               <span className="sw evo-sw" />
               {ORG_LABEL[serie.organismo as keyof typeof ORG_LABEL] ?? serie.organismo}
-              <span className="lk-val">{nfmt(serie.puntos[serie.puntos.length - 1].valor, 2)}</span>
+              <span className="lk-val">
+                {serie.puntos.length ? nfmt(serie.puntos[serie.puntos.length - 1]!.valor, 2) : "—"}
+              </span>
             </span>
           ))}
         </div>
