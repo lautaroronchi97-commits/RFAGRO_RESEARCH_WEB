@@ -66,9 +66,14 @@ export async function procesarCargaCamiones(_state: DatosCamionesState, formData
   if ("error" in res) return { error: res.error };
   const { parsed, nombre, producto } = res;
 
+  // L3 (noUncheckedIndexedAccess): reveló un caso sin guard — 0 filas parseadas (CSV solo con
+  // encabezado) dejaba `fechas` vacío y `desde`/`hasta` en `undefined` corriendo hasta la preview.
+  if (parsed.filas.length === 0) {
+    return { error: "El archivo no tiene filas de datos (¿subiste el CSV correcto?)." };
+  }
   const fechas = parsed.filas.map((f) => f.fecha).sort();
-  const desde = fechas[0];
-  const hasta = fechas[fechas.length - 1];
+  const desde = fechas[0]!; // filas.length===0 ya salió arriba
+  const hasta = fechas[fechas.length - 1]!;
   const paso = String(formData.get("paso") ?? "preview");
 
   if (paso !== "confirm") {

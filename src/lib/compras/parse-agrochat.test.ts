@@ -40,8 +40,8 @@ describe("compras/parse-agrochat.ts", () => {
     );
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.filas[0].toneladas).toBeCloseTo(64099.99999999999, 4); // punto decimal, NO separador de miles
-    expect(r.filas[1].toneladas).toBe(12345); // "12.345" = grupo de 3 dígitos -> miles
+    expect(r.filas[0]!.toneladas).toBeCloseTo(64099.99999999999, 4); // punto decimal, NO separador de miles
+    expect(r.filas[1]!.toneladas).toBe(12345); // "12.345" = grupo de 3 dígitos -> miles
   });
 
   it("fechaISO: acepta DD/MM/AAAA y también ISO AAAA-MM-DD (fallback — auditoría E4 #2)", () => {
@@ -51,7 +51,7 @@ describe("compras/parse-agrochat.ts", () => {
     );
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.filas[0].fecha).toBe("2026-07-08");
+    expect(r.filas[0]!.fecha).toBe("2026-07-08");
   });
 
   it("dedup por clave (campana, codigo_interno, sector, fecha): queda la primera aparición", () => {
@@ -66,7 +66,7 @@ describe("compras/parse-agrochat.ts", () => {
     if (!r.ok) return;
     expect(r.filas).toHaveLength(1);
     expect(r.duplicadas).toBe(1);
-    expect(r.filas[0].toneladas).toBe(1000); // la primera, no la segunda
+    expect(r.filas[0]!.toneladas).toBe(1000); // la primera, no la segunda
   });
 
   it("descarta filas con grano/sector no mapeable, sin tumbar el resto", () => {

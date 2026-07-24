@@ -52,7 +52,7 @@ export function ImplicitasChart({ series }: { series: Serie[] }) {
           </text>
         ))}
         {series.map((s, si) => {
-          const pts = sorted[si];
+          const pts = sorted[si]!; // sorted = series.map(...) → mismo largo e índices que `series`
           const dpath = pts.map((p, i) => `${i ? "L" : "M"}${X(p.x).toFixed(1)},${Y(p.y).toFixed(1)}`).join(" ");
           return (
             <g key={si}>
@@ -77,10 +77,14 @@ export function ImplicitasChart({ series }: { series: Serie[] }) {
       </svg>
       {hover &&
         (() => {
-          const p = sorted[hover.s][hover.p];
+          // `hover` es state guardado entre renders: si `series` cambia de largo, s/p pueden
+          // quedar afuera — guard real (no `!`), mismo criterio que camiones-chart.tsx.
+          const p = sorted[hover.s]?.[hover.p];
+          const s = series[hover.s];
+          if (!p || !s) return null;
           return (
             <div className="ic-tip" style={{ left: `${(X(p.x) / W) * 100}%`, top: `${(Y(p.y) / H) * 100}%` }}>
-              <b>{series[hover.s].name}</b> · {p.x}d · {nfmt(p.y, 1)}%
+              <b>{s.name}</b> · {p.x}d · {nfmt(p.y, 1)}%
             </div>
           );
         })()}

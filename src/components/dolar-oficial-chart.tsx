@@ -63,7 +63,9 @@ export function DolarOficialChart({ serie }: { serie: PuntoDolar[] }) {
     setHi(best);
   }
 
-  const ultimo = serie[serie.length - 1].valor;
+  const ultimo = serie[serie.length - 1]!.valor; // serie.length<2 ya salió arriba
+  // `hi` es state entre renders: si `serie` cambia de largo puede quedar afuera — guard real.
+  const hiPt = hi !== null ? serie[hi] : undefined;
 
   const columnas: ChartTablaColumna[] = [
     { key: "fecha", label: "Fecha", align: "left" },
@@ -96,10 +98,10 @@ export function DolarOficialChart({ serie }: { serie: PuntoDolar[] }) {
             ))}
             <circle cx={X(serie.length - 1)} cy={Y(ultimo)} r={4} className="evo-end" />
           </g>
-          {hi !== null && (
+          {hi !== null && hiPt && (
             <>
               <line className="cv-cross" x1={X(hi)} y1={pad.t} x2={X(hi)} y2={pad.t + ih} />
-              <circle className="evo-focus" cx={X(hi)} cy={Y(serie[hi].valor)} r={5} />
+              <circle className="evo-focus" cx={X(hi)} cy={Y(hiPt.valor)} r={5} />
             </>
           )}
           <rect
@@ -113,9 +115,9 @@ export function DolarOficialChart({ serie }: { serie: PuntoDolar[] }) {
             onPointerLeave={() => setHi(null)}
           />
         </svg>
-        {hi !== null && (
-          <div className="cv-tip" style={{ left: `${(X(hi) / W) * 100}%`, top: `${(Y(serie[hi].valor) / H) * 100}%` }}>
-            <span className="tt-x">{fmtFecha(serie[hi].fecha)}</span> · $ {nfmt(serie[hi].valor, 2)}
+        {hi !== null && hiPt && (
+          <div className="cv-tip" style={{ left: `${(X(hi) / W) * 100}%`, top: `${(Y(hiPt.valor) / H) * 100}%` }}>
+            <span className="tt-x">{fmtFecha(hiPt.fecha)}</span> · $ {nfmt(hiPt.valor, 2)}
           </div>
         )}
         <div className="cv-legend">

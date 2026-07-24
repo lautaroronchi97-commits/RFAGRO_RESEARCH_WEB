@@ -58,6 +58,8 @@ export function BcraMulcChart({ serie }: { serie: PuntoBcraMulc[] }) {
     });
     setHi(best);
   }
+  // `hi` es state entre renders: si `serie` cambia de largo puede quedar afuera — guard real.
+  const hiPt = hi !== null ? serie[hi] : undefined;
 
   const columnas: ChartTablaColumna[] = [
     { key: "fecha", label: "Fecha", align: "left" },
@@ -120,10 +122,10 @@ export function BcraMulcChart({ serie }: { serie: PuntoBcraMulc[] }) {
             onPointerLeave={() => setHi(null)}
           />
         </svg>
-        {hi !== null && (
-          <div className="cv-tip" style={{ left: `${(X(hi) / W) * 100}%`, top: `${(Y(Math.max(0, serie[hi].montoMusd)) / H) * 100}%` }}>
-            <span className="tt-x">{fmtFecha(serie[hi].fecha)}</span> · {nfmt(serie[hi].montoMusd, 1)} M USD
-            {serie[hi].fuente === "manual" ? " (manual)" : ""}
+        {hi !== null && hiPt && (
+          <div className="cv-tip" style={{ left: `${(X(hi) / W) * 100}%`, top: `${(Y(Math.max(0, hiPt.montoMusd)) / H) * 100}%` }}>
+            <span className="tt-x">{fmtFecha(hiPt.fecha)}</span> · {nfmt(hiPt.montoMusd, 1)} M USD
+            {hiPt.fuente === "manual" ? " (manual)" : ""}
           </div>
         )}
       </div>

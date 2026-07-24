@@ -65,7 +65,7 @@ describe("camiones/williams.ts — parser del backfill Williams Entregas", () =>
       '"ene 2, 2018",,378,454,1160\n';
     const { filas, totales } = parseZonasWilliams(txt);
     expect(filas.find((f) => f.clave === "DARSENA_BSAS_ER")?.cantidad).toBe(0);
-    expect(totales[0].cantidad).toBe(378 + 454 + 1160);
+    expect(totales[0]!.cantidad).toBe(378 + 454 + 1160);
   });
 
   it("parseZonasWilliams: fila con fecha inválida se descarta y cuenta en filasInvalidas", () => {

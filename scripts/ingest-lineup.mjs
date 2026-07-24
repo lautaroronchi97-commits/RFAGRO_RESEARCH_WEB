@@ -103,6 +103,13 @@ async function main() {
     console.error("ERROR: 0 filas de line-up en la ventana diaria (hoy + 2 días). No se da por bueno (probable bloqueo/estructura).");
     process.exit(1);
   }
+  // L6 (Anexo A camino 19): el mismo guard faltaba en backfill (--from/--to) — un rango de
+  // VARIOS días enteramente vacío también es sospechoso (fin de semana suelto = legítimo con
+  // --date de un solo día, pero un backfill multi-día en 0 es bloqueo/estructura, no calendario).
+  if (!diario && fechas.length > 1 && total === 0) {
+    console.error(`ERROR: 0 filas de line-up en el backfill de ${fechas.length} fechas [${fechas[0]} → ${fechas[fechas.length - 1]}]. No se da por bueno (probable bloqueo/estructura).`);
+    process.exit(1);
+  }
 
   // Refrescar la vista materializada `lineup_visitas` (dedup de visitas físicas que
   // consumen /comercio/empresas y /comercio/embarques). Si falla, el run se pone rojo:

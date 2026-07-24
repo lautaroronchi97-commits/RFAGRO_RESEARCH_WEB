@@ -99,7 +99,7 @@ const vacia = (problema: string): TemperaturaData => ({
 
 /** Última observación de una serie ordenada asc. por fecha (valor en la fecha máxima). */
 function ultimo(serie: Punto[]): Punto | null {
-  return serie.length ? serie[serie.length - 1] : null;
+  return serie.length ? serie[serie.length - 1]! : null; // serie.length truthy → índice válido
 }
 
 /** Valor del punto con la mayor fecha ≤ objetivo (la foto "de hace K días"). */

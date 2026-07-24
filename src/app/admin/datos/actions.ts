@@ -164,9 +164,11 @@ export async function procesarCarga(_state: DatosState, formData: FormData): Pro
   if ("error" in res) return { error: res.error };
   const { parsed, nombre } = res;
 
+  // parseAgrochat() ya garantiza filas.length>0 acá (si viniera 0 filas, `parsearArchivo` habría
+  // devuelto {error} arriba — ver parse-agrochat.ts:420) → fechas siempre tiene al menos 1 elemento.
   const fechas = parsed.filas.map((f) => f.fecha).sort();
-  const desde = fechas[0];
-  const hasta = fechas[fechas.length - 1];
+  const desde = fechas[0]!;
+  const hasta = fechas[fechas.length - 1]!;
 
   const paso = String(formData.get("paso") ?? "preview");
 

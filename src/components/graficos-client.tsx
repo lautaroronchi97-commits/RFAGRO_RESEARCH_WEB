@@ -3,7 +3,7 @@
 import * as React from "react";
 import { fuenteDeId, type SerieCat, type SeriePuntos, type Fuente } from "@/lib/series-types";
 import {
-  joinFfill, metricaDiaria, mediaMovil, alinear, mesDePosicion, mediana, percentil,
+  joinFfill, metricaDiaria, mediaMovil, alinear, mesDePosicion, mediana, percentil, zipSerie,
   type Metric, type Eje, type BandaPunto, type PuntoXY,
 } from "@/lib/derivadas";
 import { mesIndice, hoyCordobaISO } from "@/lib/dates";
@@ -26,6 +26,11 @@ const GRANO_NOMBRE: Record<string, string> = {
 };
 const FUENTE_NOMBRE: Record<Fuente, string> = { a3: "A3", cbot: "Chicago", pizarra: "Pizarra" };
 const FALLBACK_COLORS = ["#2A78D6","#D96A2A","#0891B2","#B45309","#DB5A9B","#9333EA","#0F9E8C","#7C4FD0"];
+/** Color de paleta por índice, con módulo — siempre en rango (arreglo no vacío) así que el `??`
+ *  final nunca se ejercita en la práctica; evita el `!` en los 3 call-sites de abajo. */
+function fallbackColor(i: number): string {
+  return FALLBACK_COLORS[i % FALLBACK_COLORS.length] ?? "#2A78D6";
+}
 
 type Pata = { fuente: Fuente; grano: string; mon: string | null }; // mon null = pizarra
 type PataResuelta = { serieId: string; vto: string | null };
@@ -218,7 +223,7 @@ function useCampColors(years: number[]): Record<number, string> {
       const m: Record<number, string> = {};
       years.forEach((y, i) => {
         const v = cs.getPropertyValue(`--camp-${y}`).trim();
-        m[y] = v || FALLBACK_COLORS[i % FALLBACK_COLORS.length];
+        m[y] = v || fallbackColor(i);
       });
       setColors(m);
     };
@@ -367,7 +372,11 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
   // Guard "parcial" (P6): el último punto de una línea cuya fecha es HOY puede
   // seguir cambiando (rueda sin cerrar / pizarra sin la actualización del día).
   const hoyISO = hoyCordobaISO();
-  const esParcial = (puntos: PuntoXY[]): boolean => puntos.length > 0 && puntos[puntos.length - 1].f === hoyISO;
+  const esParcial = (puntos: PuntoXY[]): boolean => {
+    if (puntos.length === 0) return false;
+    // length>0 recién chequeado → el último índice siempre existe.
+    return puntos[puntos.length - 1]!.f === hoyISO;
+  };
 
   // Calcular las líneas del chart a partir de las series traídas.
   const lines = React.useMemo<CampLine[]>(() => {
@@ -380,14 +389,14 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
       if (!ra) continue;
       const sa = series[ra.serieId];
       if (!sa) continue;
-      const color = colors[year] ?? FALLBACK_COLORS[year % FALLBACK_COLORS.length];
+      const color = colors[year] ?? fallbackColor(year);
       const vigente = year === vigenteYear;
       const vtos = [ra.vto, rb?.vto].filter((v): v is string => !!v);
       const vto = vtos.length ? vtos.reduce((m, v) => (v < m ? v : m)) : `${year}-12-31`;
 
       // Una sola pata → serie cruda alineada.
       if (!b || !rb) {
-        const puntos = alinear(sa.d.map((f, i) => ({ f, y: sa.v[i] })), vto, eje, ventanaDias);
+        const puntos = alinear(zipSerie(sa), vto, eje, ventanaDias);
         if (puntos.length) out.push({ key: String(year), label: String(year), color, vigente, parcial: esParcial(puntos), data: puntos });
         continue;
       }
@@ -395,8 +404,8 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
       if (!sb) continue;
 
       if (metric === "crudo") {
-        const pa = alinear(sa.d.map((f, i) => ({ f, y: sa.v[i] })), vto, eje, ventanaDias);
-        const pb = alinear(sb.d.map((f, i) => ({ f, y: sb.v[i] })), vto, eje, ventanaDias);
+        const pa = alinear(zipSerie(sa), vto, eje, ventanaDias);
+        const pb = alinear(zipSerie(sb), vto, eje, ventanaDias);
         if (pa.length) out.push({ key: `${year}A`, label: `${year} · A`, color, vigente, parcial: esParcial(pa), data: pa });
         if (pb.length) out.push({ key: `${year}B`, label: `${year} · B`, color, vigente, dash: true, parcial: esParcial(pb), data: pb });
         continue;
@@ -426,11 +435,11 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
     if (!sa) return [];
     const vtos = [ra.vto, rb?.vto].filter((v): v is string => !!v);
     const vto = vtos.length ? vtos.reduce((m, v) => (v < m ? v : m)) : `${vigenteYear}-12-31`;
-    const color = colors[vigenteYear] ?? FALLBACK_COLORS[vigenteYear % FALLBACK_COLORS.length];
+    const color = colors[vigenteYear] ?? fallbackColor(vigenteYear);
 
     let serieDiaria: { f: string; y: number }[];
     if (!b || !rb) {
-      serieDiaria = sa.d.map((f, i) => ({ f, y: sa.v[i] }));
+      serieDiaria = zipSerie(sa);
     } else {
       const sb = series[rb.serieId];
       if (!sb) return [];
@@ -456,7 +465,15 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
     const rb = b ? idx.resolver(b, vigenteYear + offsetB(a, b)) : null;
     const vtos = [ra.vto, rb?.vto].filter((v): v is string => !!v);
     const vto = vtos.length ? vtos.reduce((m, v) => (v < m ? v : m)) : `${vigenteYear}-12-31`;
-    const raw = sa.d.map((f, i) => ({ f, y: sa.v[i], vol: sa.vol?.[i] ?? null, oi: sa.oi?.[i] ?? null }));
+    // d/v/vol/oi son arrays paralelos (mismo contrato que zipSerie) — acá se arma a mano porque
+    // suma vol/oi, que zipSerie no trae.
+    const raw: { f: string; y: number; vol: number | null; oi: number | null }[] = [];
+    for (let i = 0; i < sa.d.length; i++) {
+      const f = sa.d[i];
+      const y = sa.v[i];
+      if (f === undefined || y === undefined) continue;
+      raw.push({ f, y, vol: sa.vol?.[i] ?? null, oi: sa.oi?.[i] ?? null });
+    }
     return alinear(raw, vto, eje, ventanaDias);
   }, [verVolumen, volumenDisponible, vigenteYear, ventanaMeses, idx, a, b, series, eje]);
 
@@ -504,7 +521,8 @@ export function GraficosClient({ catalogo }: { catalogo: SerieCat[] }) {
     const ln = lines.find((l) => l.vigente) ?? lines.at(-1);
     if (!ln || ln.data.length === 0) return null;
     const ys = ln.data.map((p) => p.y);
-    const hoy = ln.data.reduce((m, p) => (p.x > m.x ? p : m), ln.data[0]);
+    // ln.data.length===0 ya devolvió null arriba → ln.data[0] siempre existe.
+    const hoy = ln.data.reduce((m, p) => (p.x > m.x ? p : m), ln.data[0]!);
     // Percentil: muestra = valores de las campañas históricas a la misma x (hoy.x).
     const hist = lines.filter((l) => !l.vigente);
     const muestra: number[] = [];

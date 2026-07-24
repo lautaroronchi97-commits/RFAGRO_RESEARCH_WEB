@@ -55,6 +55,10 @@ const POS_COLORS = [
   "#2A78D6","#D96A2A","#0891B2","#B45309","#DB5A9B","#9333EA",
   "#0F9E8C","#7C4FD0","#C2410C","#4D7C0F","#0E7490","#BE123C",
 ];
+/** Color de paleta por índice, con módulo — siempre en rango (arreglo no vacío). */
+function posColor(i: number): string {
+  return POS_COLORS[i % POS_COLORS.length] ?? "#2A78D6";
+}
 
 type Target = { serieId: string; posicion: string; mon: string; yy: number; venc: string | null };
 
@@ -164,9 +168,9 @@ export function PeriodoPanel({ catalogo, anioActual }: { catalogo: SerieCat[]; a
       out.push({
         key: t.serieId,
         label: t.posicion,
-        color: POS_COLORS[i % POS_COLORS.length],
+        color: posColor(i),
         vigente: false,
-        parcial: data[data.length - 1].f === hoyISO,
+        parcial: data[data.length - 1]!.f === hoyISO, // data.length===0 ya salió arriba
         data,
       });
     });
@@ -190,7 +194,7 @@ export function PeriodoPanel({ catalogo, anioActual }: { catalogo: SerieCat[]; a
       out.push({
         key: `${t.serieId}-ma`,
         label: `${t.posicion} · MA${ventanaMA}`,
-        color: POS_COLORS[i % POS_COLORS.length],
+        color: posColor(i),
         vigente: false,
         dash: true,
         data,
@@ -295,7 +299,7 @@ export function PeriodoPanel({ catalogo, anioActual }: { catalogo: SerieCat[]; a
           const on = !ocultas.has(t.serieId);
           return (
             <button key={t.serieId} type="button" className="gx-chip" aria-pressed={on}
-              style={{ ["--c" as string]: POS_COLORS[i % POS_COLORS.length] }}
+              style={{ ["--c" as string]: posColor(i) }}
               onClick={() => setOcultas((prev) => {
                 const n = new Set(prev);
                 if (n.has(t.serieId)) n.delete(t.serieId); else n.add(t.serieId);

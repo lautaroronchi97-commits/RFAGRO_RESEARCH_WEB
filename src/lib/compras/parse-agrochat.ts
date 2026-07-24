@@ -96,7 +96,7 @@ function num(s: string | undefined): number | null {
 function fechaISO(s: string | undefined): string | null {
   const t = String(s ?? "").trim();
   const m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  if (m) return `${m[3]}-${m[2]!.padStart(2, "0")}-${m[1]!.padStart(2, "0")}`; // grupos obligatorios del regex
   if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
   return null;
 }
@@ -283,7 +283,7 @@ function parseTablaXLSX(buf: Buffer): { error?: string; celdas?: string[][]; num
   if (ssXml) {
     const re = /<si(?:\s[^>]*)?>([\s\S]*?)<\/si>/g;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ssXml)) !== null) shared.push(textoDeRuns(m[1]));
+    while ((m = re.exec(ssXml)) !== null) shared.push(textoDeRuns(m[1]!)); // grupo obligatorio del regex
   }
 
   // Primera hoja: sheet1.xml, o la primera xl/worksheets/sheet*.xml que exista.
@@ -304,19 +304,19 @@ function parseTablaXLSX(buf: Buffer): { error?: string; celdas?: string[][]; num
     const valores: string[] = [];
     let cm: RegExpExecArray | null;
     let colAuto = 0;
-    while ((cm = cellRe.exec(rm[1])) !== null) {
-      const attrs = cm[1];
+    while ((cm = cellRe.exec(rm[1]!)) !== null) {
+      const attrs = cm[1] ?? ""; // grupo obligatorio del regex de <c ...> (nunca undefined en la práctica)
       const inner = cm[2] ?? "";
       const refM = attrs.match(/\br="([A-Z]+)\d+"/);
-      const col = refM ? colIndex(refM[1]) : colAuto;
+      const col = refM ? colIndex(refM[1]!) : colAuto; // grupo obligatorio del regex
       colAuto = col + 1;
       const tipoM = attrs.match(/\bt="(\w+)"/);
-      const tipo = tipoM ? tipoM[1] : "n";
+      const tipo = tipoM ? (tipoM[1] ?? "n") : "n";
       let valor = "";
       if (tipo === "inlineStr") valor = textoDeRuns(inner);
       else {
         const vM = inner.match(/<v(?:\s[^>]*)?>([\s\S]*?)<\/v>/);
-        const vRaw = vM ? xmlDecode(vM[1]).trim() : "";
+        const vRaw = vM ? xmlDecode(vM[1]!).trim() : ""; // grupo obligatorio del regex
         if (tipo === "s") valor = shared[Number(vRaw)] ?? "";
         else if (tipo === "n" && vRaw !== "") {
           // Numérico crudo: puede ser una cantidad o un serial de fecha. Se normaliza a
@@ -368,7 +368,14 @@ export function parseAgrochat(datos: Uint8Array, nombre: string): ParseResultado
     celdas = t.celdas;
   }
 
-  const idx = mapearCabecera(celdas[0]);
+  // L3 (noUncheckedIndexedAccess): reveló un caso sin cubrir — un archivo de 0 filas (celdas=[])
+  // llegaba con `celdas[0]` undefined a mapearCabecera(), que hace `.forEach` sin guard → TypeError
+  // sin capturar (mitigado hoy solo por el try/catch genérico de `actions.ts`, hallazgo #8 de E4,
+  // que lo convierte en un error "no pude leer el archivo" en vez del ERROR_FORMATO específico).
+  // Con el guard explícito, un archivo vacío da el mismo mensaje que cualquier otro formato inválido.
+  const cabecera = celdas[0];
+  if (!cabecera) return { ok: false, error: ERROR_FORMATO };
+  const idx = mapearCabecera(cabecera);
   if (!idx) return { ok: false, error: ERROR_FORMATO };
 
   const iFecha = idx.get("fecha")!;
@@ -376,13 +383,14 @@ export function parseAgrochat(datos: Uint8Array, nombre: string): ParseResultado
   const crudas: Cruda[] = [];
   let fechasSerial = 0;
   for (let f = 1; f < celdas.length; f++) {
-    const row = celdas[f];
+    const row = celdas[f] ?? []; // f<celdas.length por el for → siempre existe; `[]` solo para el tipo
     const r: Cruda = {};
     for (const [col, i] of idx) r[col] = (row[i] ?? "").trim();
 
     // Fechas de Excel como serial numérico (epoch 1899-12-30) → ISO.
     if (numericas.has(`${f},${iFecha}`)) {
-      const iso = serialExcelAISO(Number(r["fecha"].replace(",", ".")));
+      // "fecha" siempre quedó seteada en el loop de arriba (es obligatoria en mapearCabecera).
+      const iso = serialExcelAISO(Number((r["fecha"] ?? "").replace(",", ".")));
       if (iso) { r["fecha"] = iso; fechasSerial++; }
     }
     // Campaña que Excel convirtió a número/fecha (p. ej. "19/20" → serial): no es recuperable.

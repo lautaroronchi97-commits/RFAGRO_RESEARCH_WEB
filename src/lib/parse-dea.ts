@@ -76,9 +76,9 @@ export function parseDea(csv: string, fecha: string, sinceYear?: number | null):
     if (!l) continue;
     const c = splitSemicolon(l);
     if (c.length < 12) continue;
-    const grano = CULTIVO[c[5]];
+    const grano = CULTIVO[c[5] ?? ""];
     if (!grano) continue;
-    const campania = c[7];
+    const campania = c[7] ?? "";
     if (!/^\d{4}\/\d{2}$/.test(campania)) continue;
     if (sinceYear && Number(campania.slice(0, 4)) < sinceYear) continue;
     const semb = Number(c[8]) || 0;
@@ -95,7 +95,9 @@ export function parseDea(csv: string, fecha: string, sinceYear?: number | null):
   const out: FilaEstimacion[] = [];
   for (const [k, v] of agg.entries()) {
     if (v.prod <= 0) continue;
-    const [grano, campania] = k.split("|");
+    // k = `${grano}|${campania}` (armado 2 líneas arriba, ninguno de los 2 trae "|") → split
+    // siempre da los 2.
+    const [grano, campania] = k.split("|") as [string, string];
     const base = {
       organismo: "DEA" as const,
       pais: "argentina" as const,

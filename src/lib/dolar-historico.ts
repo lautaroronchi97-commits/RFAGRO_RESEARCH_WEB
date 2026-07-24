@@ -62,7 +62,7 @@ const vacio = (problema: string): DolarOficialHistorico => ({
 
 /** ISO 8601: semana del jueves más cercano (algoritmo estándar, sin dependencias). */
 function isoWeekKey(fechaISO: string): string {
-  const [y, m, d] = fechaISO.split("-").map(Number);
+  const [y, m, d] = fechaISO.split("-").map(Number) as [number, number, number]; // fecha BCRA, siempre YYYY-MM-DD
   const dt = new Date(Date.UTC(y, m - 1, d));
   dt.setUTCDate(dt.getUTCDate() + 4 - (dt.getUTCDay() || 7));
   const yearStart = new Date(Date.UTC(dt.getUTCFullYear(), 0, 1));
@@ -105,7 +105,7 @@ export const getDolarOficialHistorico = cache(async (): Promise<DolarOficialHist
   const semanasOrdenadas = [...porSemana.entries()].sort(([a], [b]) => (a < b ? -1 : 1));
 
   const semanas: PuntoSemanalDolar[] = semanasOrdenadas.map(([semana, p], i) => {
-    const prev = i > 0 ? semanasOrdenadas[i - 1][1].valor : null;
+    const prev = i > 0 ? semanasOrdenadas[i - 1]![1].valor : null; // i>0 recién chequeado
     const deltaPct = prev != null && prev > 0 ? (p.valor / prev - 1) * 100 : null;
     return { semana, fecha: p.fecha, valor: p.valor, deltaPct };
   });
@@ -130,7 +130,7 @@ export const getDolarOficialHistorico = cache(async (): Promise<DolarOficialHist
   // ruedas hábiles/año, la convención de mercado — no √365). Ambas series solo se completan
   // cuando hay la ventana llena de variaciones reales, nunca con menos.
   const conDeltaDiario = ordenado.map((p, i) => {
-    const prev = i > 0 ? ordenado[i - 1].valor : null;
+    const prev = i > 0 ? ordenado[i - 1]!.valor : null; // i>0 recién chequeado
     const deltaPct = prev != null && prev > 0 ? (p.valor / prev - 1) * 100 : null;
     return { fecha: p.fecha, deltaPct };
   });

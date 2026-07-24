@@ -33,12 +33,13 @@ const UMBRALES_DEFAULT: UmbralesCobertura = { ratioCorto: RATIO_CORTO, ratioSobr
 function percentilLineal(valoresAsc: number[], p: number): number {
   const n = valoresAsc.length;
   if (n === 0) return NaN;
-  if (n === 1) return valoresAsc[0];
+  if (n === 1) return valoresAsc[0]!; // n===1 recién chequeado
   const idx = (p / 100) * (n - 1);
   const lo = Math.floor(idx);
   const hi = Math.ceil(idx);
-  if (lo === hi) return valoresAsc[lo];
-  return valoresAsc[lo] + (valoresAsc[hi] - valoresAsc[lo]) * (idx - lo);
+  // p en [0,100] → idx en [0,n-1] → lo/hi (floor/ceil de idx) siempre en [0,n-1].
+  if (lo === hi) return valoresAsc[lo]!;
+  return valoresAsc[lo]! + (valoresAsc[hi]! - valoresAsc[lo]!) * (idx - lo);
 }
 
 /**

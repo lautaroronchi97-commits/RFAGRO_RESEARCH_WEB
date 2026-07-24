@@ -62,7 +62,8 @@ type PosicionParsed = { mon: string; mes: number; anio: number };
 export function parsePosicion(pos: string | null | undefined): PosicionParsed | null {
   const m = (pos || "").toUpperCase().match(/^([A-Z]{3})(\d{2})$/);
   if (!m) return null;
-  return { mon: m[1], mes: mesIndice(m[1]), anio: 2000 + Number(m[2]) };
+  const mon = m[1]!; // grupos obligatorios del regex
+  return { mon, mes: mesIndice(mon), anio: 2000 + Number(m[2]!) };
 }
 
 /** "JUL26" → 202607 (aaaamm, para ordenar/filtrar posiciones vivas). 0 si no matchea. */

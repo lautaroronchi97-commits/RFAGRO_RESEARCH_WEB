@@ -91,7 +91,7 @@ function splitSemicolon(line: string): string[] {
 function normalizarCampania(raw: string): string | null {
   const c = raw.trim();
   const largo = c.match(/^(\d{4})\/(\d{4})$/);
-  if (largo) return `${largo[1]}/${largo[2].slice(2)}`;
+  if (largo) return `${largo[1]}/${largo[2]!.slice(2)}`; // grupos obligatorios del regex
   if (/^\d{4}\/\d{2}$/.test(c)) return c;
   return null;
 }
@@ -113,7 +113,7 @@ export function parsePas(csv: string, fecha: string): { filas: FilaEstimacion[];
     if (!l || !l.trim()) continue;
     const c = splitSemicolon(l);
     if (c.length < 8) continue;
-    const grano = CULTIVO[c[0]?.trim()];
+    const grano = CULTIVO[c[0]?.trim() ?? ""];
     if (!grano) continue;
     if ((c[2] ?? "").trim().toUpperCase() !== "TOTAL") continue; // solo el agregado nacional
     const campania = normalizarCampania(c[1] ?? "");

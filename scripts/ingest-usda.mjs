@@ -315,7 +315,10 @@ async function main() {
       const from = arg("from", "2020-01");
       const to = arg("to", new Date().toISOString().slice(0, 7));
       console.log(`WASDE backfill ${from} → ${to}`);
-      for (const ym of mesesEntre(from, to)) {
+      const meses = mesesEntre(from, to);
+      let erroresBackfill = 0;
+      const antes = all.length;
+      for (const ym of meses) {
         try {
           const csv = await fetchWasde(ym);
           if (!csv) {
@@ -327,7 +330,19 @@ async function main() {
           all.push(...rows);
         } catch (e) {
           console.log(`  ${ym}: ERROR ${e.message}`);
+          erroresBackfill++;
         }
+      }
+      // L6 (Anexo A camino 13): antes el backfill 100% fallido (0 filas parseadas en TODO el
+      // rango) quedaba verde — indistinguible de "el rango elegido no tenía ninguna edición"
+      // (imposible en la práctica: WASDE sale ~mensual desde 2020, salvo el shutdown de oct-2025).
+      // Si hubo al menos un error real de fetch/parse Y no se sumó ninguna fila, es la fuente rota,
+      // no un rango vacío legítimo.
+      if (all.length === antes && erroresBackfill > 0) {
+        console.error(
+          `ERROR: WASDE backfill ${from}→${to}: ${erroresBackfill}/${meses.length} meses con error y 0 filas parseadas en total. No se da por bueno (probable cambio de formato / fuente caída).`,
+        );
+        process.exit(1);
       }
     } else {
       // Cron: la edición del mes en curso (si ya salió).

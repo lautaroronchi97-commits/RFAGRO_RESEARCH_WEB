@@ -212,12 +212,14 @@ async function main() {
   }
 
   let all = [];
+  let nSnapshots = 0;
 
   if (hasFlag("backfill")) {
     const from = arg("from", "20200101");
     const to = arg("to", new Date().toISOString().slice(0, 10).replace(/-/g, ""));
     console.log(`GEA backfill Wayback ${from} → ${to}`);
     const stamps = await snapshotsWayback(from, to);
+    nSnapshots = stamps.length;
     console.log(`  ${stamps.length} snapshots`);
     for (const ts of stamps) {
       try {
@@ -265,11 +267,17 @@ async function main() {
     return;
   }
   if (all.length === 0) {
-    // Backfill Wayback: un rango sin snapshots parseables es legítimo → return blando.
     // Live (cron): 0 filas = cambió el HTML de BCR-GEA o hay un interstitial. Falla ruidoso para
     // NO congelar en silencio (fue exactamente lo que dejó a GEA clavado en feb-2026).
     if (!hasFlag("backfill")) {
       console.error("ERROR: GEA live devolvió 0 filas — cambió el HTML de BCR-GEA o hay un interstitial. No se congela en silencio.");
+      process.exit(1);
+    }
+    // Backfill Wayback (L6, Anexo A camino 15): un RANGO sin snapshots (nSnapshots===0) es
+    // legítimo → return blando. Pero si HUBO snapshots y ninguno parseó filas, es el parser
+    // roto contra ese HTML archivado, no "sin datos" — mismo patrón que ingest-compras.mjs.
+    if (nSnapshots > 0) {
+      console.error(`ERROR: backfill con ${nSnapshots} snapshots y 0 filas parseables — el parser no entiende ese HTML archivado. No se da por bueno.`);
       process.exit(1);
     }
     console.log("Sin filas — nada que subir.");

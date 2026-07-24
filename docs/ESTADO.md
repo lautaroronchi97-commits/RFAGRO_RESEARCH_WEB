@@ -19,7 +19,55 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 24/07/2026 — 🚢 C9 (extras de spec de puertos) HECHO)
+## Ahora (última actualización: 24/07/2026 — 🔧 L6+L3+L2 (3 lotes técnicos del backlog maestro) HECHOS)
+
+**🔧 L6 + L3 + L2 — 3 LOTES TÉCNICOS DEL BACKLOG MAESTRO, EN ORDEN, PR ACUMULADO — HECHOS — rama
+`claude/pending-tasks-no-login-dawaha`, PR #_.** Los 3 refactors/robustez que quedaban de
+`auditoria/E7-sintesis.md` §4 (D3/D5/D6), ejecutados en la misma sesión con un PR único.
+
+**L6 (robustez de ingestas v2):** falso-verde restante en modos backfill/dispatch (Anexo A de
+`E5-infra.md`, los caminos que la fase 2 de E5 del 22/07 NO había cubierto porque se enfocó en el
+camino diario) — guard "0 filas = exit 1" extendido a `ingest-cierres --from`, `ingest-cbot
+--backfill`, `ingest-pizarra --from`, `ingest-usda --backfill-wasde` (distingue "no existe esa
+edición" de error real), `ingest-gea --backfill` (mismo patrón que `ingest-compras.mjs`) e
+`ingest-lineup --from/--date` multi-fecha; el guard `daily` muerto de la Edge Function
+`lineup-ingest` (nunca se activaba, el caller siempre manda `?date=`) se retiró y se redeployó.
+**Calendario NASS generado desde el ICS oficial**: `calendario-nass.ts` (parser RFC 5545 puro) +
+`generar-calendario-nass.mjs` → `calendario-seed-nass.json` versionado, reemplaza los arrays
+`WASDE_2026`/`GRAIN_STOCKS_2026`/`CROP_PROGRESS_2026` hardcodeados — verificado 1:1 contra el ICS
+real antes del cambio (además trae 3 fechas 2026 que el array a mano nunca tuvo, por escribirse a
+mitad de año — documentado como mejora, no regresión); 2027 confirmado NO publicado todavía (404
+real, esperable). Roster de exportadores ya lo había cerrado L4 el 23/07 (nada que hacer).
+
+**L3 (`noUncheckedIndexedAccess`):** re-medido primero como pedía el prompt — dio **288 errores en
+55 archivos** (no los ~152/32 de la medición de E4 del 21/07, por el trabajo nuevo del 23-24/07) —
+documentado en vez de recortar el scope en silencio. **Saneados los 288/288** con guard explícito
+por defecto (`?? fallback`) y `!` solo en invariantes de una línea arriba, comentados; patrón
+repetido: `Record<string,X>` con claves fijas pasado a tipo literal (`as const`) para que el acceso
+por punto deje de traer "| undefined". **4 bugs latentes reales encontrados y corregidos**: leyenda
+de `evolucion-chart.tsx` crasheaba con un organismo sin puntos; `parse-agrochat.ts` y
+`actions-camiones.ts` dejaban pasar un archivo de 0 filas hasta un `TypeError`/`undefined` sin
+guard; `calendario.ts` silenciaba una fecha ISO inválida como `NaN` en vez de fallar claro. 147/147
+tests sin tocar ningún expect.
+
+**L2 (motor de gráfico SVG compartido):** `chart-svg-base.tsx` (`useCrosshair` + `SvgLineChartBase`)
+extraído de `evolucion-chart.tsx`/`dolar-futuro-chart.tsx`/`compras/negociado-chart.tsx` — comparten
+el envoltorio (`.chart-wrap`+`ChartMarca`+`<svg viewBox>`+grilla+`<rect>` interactivo) y el estado
+del crosshair, pero **cada chart conserva su propio algoritmo de "punto más cercano"** (2D para
+series superpuestas, 1D para una sola serie, índice directo para el histograma de barras — forzar
+una sola métrica habría cambiado comportamiento real, documentado explícitamente en el código).
+`spread-chart.tsx` (recharts) y `ChartMarca`/`ChartTabla` quedaron afuera, como pedía el prompt.
+2 trampas reales resueltas: `.cv-tip` necesita seguir siendo hijo de `.chart-wrap` (slot `after`
+nuevo) y `useCrosshair` no puede quedar detrás de un `return` condicional (rules-of-hooks).
+
+**Verificado los 3 lotes**: lint/tsc/test(147/147)/build ✅ en el estado final · Edge Function
+redeployada y verificada byte a byte · L2 verificado con Playwright real (Chromium headless, datos
+reales de Supabase, claro/oscuro, desktop 1280px/mobile 390px, hover sobre cada chart) sin
+diferencia visual — bypass temporal de `requireAdmin()` en `/comercio/negociado` para poder
+screenshotearla, revertido antes de cerrar (`git diff` limpio). Detalle:
+[`sesiones/2026-07-24-l6-l3-l2-lotes-tecnicos.md`](sesiones/2026-07-24-l6-l3-l2-lotes-tecnicos.md).
+
+## Anterior (24/07/2026 — 🚢 C9 (extras de spec de puertos) HECHO)
 
 **🚢 C9 — EXTRAS DE SPEC DE PUERTOS (matriz mes×zona + "qué cambió" ampliado) — HECHO — rama
 `claude/c9-execution-models-2g48l6`, PR #_.** C9 (backlog maestro, `auditoria/E7-sintesis.md` §4)

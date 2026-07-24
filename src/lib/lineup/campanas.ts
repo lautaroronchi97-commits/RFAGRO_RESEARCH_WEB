@@ -64,7 +64,7 @@ const DIA_MS = 86_400_000;
  */
 export function fechasDeCampana(producto: string | null, campana: string): { inicio: Date; fin: Date } {
   const mesIni = mesInicio(producto); // día de inicio siempre 1 (como campanas.py)
-  const anioInicio = parseInt(campana.split("/")[0], 10);
+  const anioInicio = parseInt(campana.split("/")[0]!, 10); // split() nunca da array vacío
   const inicio = new Date(Date.UTC(anioInicio, mesIni - 1, 1));
   const fin = new Date(Date.UTC(anioInicio + 1, mesIni - 1, 1) - DIA_MS);
   return { inicio, fin };

@@ -60,7 +60,7 @@ export async function EstimacionesPanel() {
   const granos = granosPresentes(rows);
   const organismos = organismosPresentes(rows);
   const interpretaciones = await getInterpretacionesPublicadas();
-  const maxFecha = rows.reduce((m, r) => (r.fecha_publicacion > m ? r.fecha_publicacion : m), rows[0].fecha_publicacion);
+  const maxFecha = rows.reduce((m, r) => (r.fecha_publicacion > m ? r.fecha_publicacion : m), rows[0]!.fecha_publicacion); // rows.length===0 ya salió arriba
   const updatedAt = Date.parse(`${maxFecha}T00:00:00-03:00`);
   const meta: Meta = {
     source: SOURCE,

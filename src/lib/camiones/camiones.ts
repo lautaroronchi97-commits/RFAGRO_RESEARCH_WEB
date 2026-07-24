@@ -111,7 +111,9 @@ export const getCamiones = cache(async (): Promise<CamionesData> => {
   const fechasTotal = [...(porZonaMap.get("ROSARIO_ALEDANOS")?.keys() ?? [])].sort();
   // Fallback: si por algún motivo no hay TOTAL, usar la fecha más nueva de cualquier serie.
   const todasFechas = [...new Set(rows.map((r) => r.fecha))].sort();
-  const fecha = fechasTotal.length ? fechasTotal[fechasTotal.length - 1] : todasFechas[todasFechas.length - 1] ?? null;
+  const fecha = fechasTotal.length
+    ? (fechasTotal[fechasTotal.length - 1] ?? null)
+    : (todasFechas[todasFechas.length - 1] ?? null);
 
   let totalHoy: number | null = null;
   let deltaAyer: number | null = null;
@@ -120,7 +122,8 @@ export const getCamiones = cache(async (): Promise<CamionesData> => {
     totalHoy = ZONA_CLAVES.reduce((acc, z) => acc + (porZonaMap.get(z)?.get(fecha) ?? 0), 0);
     const idx = fechasTotal.indexOf(fecha);
     if (idx > 0) {
-      const fAyer = fechasTotal[idx - 1];
+      // idx>0 → idx-1 es un índice válido de fechasTotal.
+      const fAyer = fechasTotal[idx - 1]!;
       const tAyer = ZONA_CLAVES.reduce((acc, z) => acc + (porZonaMap.get(z)?.get(fAyer) ?? 0), 0);
       deltaAyer = totalHoy - tAyer;
     }
@@ -248,8 +251,10 @@ export const getSenalCamiones = cache(async (): Promise<SenalCamionesData> => {
       return { cod, display, senal: calcularSenal(null, null), camionesHoyMA7: null, densidadHoyTn: null, fecha: null };
     }
     const ma7 = mediaMovil(camPts, 7);
-    const hoyCam = ma7[ma7.length - 1];
-    const hoyDens = densPts[densPts.length - 1];
+    // mediaMovil() de senal.ts es de ventana EXPANSIVA (nunca acorta el largo): ma7.length ===
+    // camPts.length, ya >=1 por el guard de arriba. densPts idem.
+    const hoyCam = ma7[ma7.length - 1]!;
+    const hoyDens = densPts[densPts.length - 1]!;
     const hoy = hoyCam.fecha > hoyDens.fecha ? hoyCam.fecha : hoyDens.fecha;
     const pctlCamiones = percentilCalendario(ma7, hoy, hoyCam.valor);
     const pctlLineup = percentilCalendario(densPts, hoy, hoyDens.valor);

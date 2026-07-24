@@ -2,21 +2,27 @@
 /**
  * refresh-calendario — heartbeat mensual del módulo Calendario (docs/PLAN_CALENDARIO_PRODUCCION.md).
  *
- * En v1 el calendario se GENERA EN CÓDIGO (src/lib/calendario.ts) con el seed de fechas oficiales
- * 2026 + reglas. No hay ingesta que refrescar. Este script es un CENTINELA: chequea, una vez por mes,
- * si ya aparecieron las fuentes del AÑO SIGUIENTE para poder sembrar el seed del año que viene:
- *   - ICS oficial de NASS del próximo año (aparece ~oct-nov).
+ * WASDE/Grain Stocks/Crop Progress (NASS) ya NO son arrays a mano: se generan desde el ICS oficial
+ * por `scripts/generar-calendario-nass.mjs` → `src/lib/calendario-seed-nass.json` (L6, auditoría E7
+ * §6). CONAB sigue a mano (NASS no lo cubre). Este script es un CENTINELA: chequea, una vez por mes,
+ * si ya aparecieron las fuentes del AÑO SIGUIENTE:
+ *   - ICS oficial de NASS del próximo año (aparece ~oct-nov) — delega en el generador real
+ *     (`--check`: valida que el ICS existe Y que los 3 informes parsean con datos, no solo "hay
+ *     VEVENTs"). Si ya está, avisa que `node scripts/generar-calendario-nass.mjs --year <N>` (sin
+ *     `--check`) escribe el seed nuevo — CERO edición de código.
  *   - Calendario BCR (ICS/JSON) por si lo reactivan para fechas futuras (hoy está vacío 2025/26).
- * No escribe en la base. Cuando el seed próximo ya está disponible emite un `::warning` en el run
- * (deliberadamente NO exit≠0: mails de error + GitHub deshabilita crons que fallan seguido). El
- * aviso que SÍ enrojece vive en el healthcheck diario: check "seed de calendario por agotarse"
- * (scripts/healthcheck-frescura.mjs, E5 #9c) — este centinela quedó como detalle informativo.
+ * `permissions: contents: read` (E5 #12d) → este cron NUNCA commitea; solo avisa con `::warning` en
+ * el run (deliberadamente NO exit≠0: mails de error + GitHub deshabilita crons que fallan seguido).
+ * El aviso que SÍ enrojece vive en el healthcheck diario: check "seed de calendario por agotarse"
+ * (scripts/healthcheck-frescura.mjs, E5 #9c) — este centinela queda como detalle informativo + el
+ * paso manual (correr el generador y commitear) lo hace quien lea el `::warning`.
  *
  * Uso: node scripts/refresh-calendario.mjs
  */
+import { extraerSeedNass } from "../src/lib/calendario-nass.ts";
 
 const UA = "Mozilla/5.0 (RFAGRO research)";
-// El año cuyo seed oficial YA está cargado en src/lib/calendario.ts. Actualizar al sumar el próximo.
+// El último año con seed NASS versionado en src/lib/calendario-seed-nass.json.
 const SEED_ACTUAL = 2026;
 
 async function existe(url, { json = false } = {}) {
@@ -29,7 +35,7 @@ async function existe(url, { json = false } = {}) {
     }
     const txt = await res.text();
     const vevents = (txt.match(/BEGIN:VEVENT/g) || []).length;
-    return { ok: true, status: res.status, vevents };
+    return { ok: true, status: res.status, vevents, texto: txt };
   } catch (e) {
     return { ok: false, error: e.message };
   }
@@ -40,12 +46,24 @@ async function main() {
   console.log(`refresh-calendario · seed cargado hasta ${SEED_ACTUAL} · chequeando fuentes de ${proximo}`);
   let seedProximoDisponible = false;
 
-  // 1) ICS de NASS del próximo año.
+  // 1) ICS de NASS del próximo año — delega en el parser REAL (mismo que usa el generador), no
+  //    solo cuenta VEVENTs: exige que los 3 informes (wasde/grainStocks/cropProgress) parseen con
+  //    al menos una fecha, que es la condición real para poder sembrar el seed.
   const nassUrl = `https://www.nass.usda.gov/Publications/Calendar/${proximo}/NassReleases${proximo}.ics`;
   const nass = await existe(nassUrl);
   if (nass.ok && nass.vevents > 0) {
-    console.log(`  ✅ NASS ${proximo} ICS disponible (${nass.vevents} eventos): ${nassUrl}`);
-    seedProximoDisponible = true;
+    const seed = extraerSeedNass(nass.texto ?? "");
+    const completo = seed.wasde.length > 0 && seed.grainStocks.length > 0 && seed.cropProgress.length > 0;
+    if (completo) {
+      console.log(
+        `  ✅ NASS ${proximo} ICS disponible y parseable (wasde ${seed.wasde.length} · grainStocks ${seed.grainStocks.length} · cropProgress ${seed.cropProgress.length}): ${nassUrl}`,
+      );
+      seedProximoDisponible = true;
+    } else {
+      console.log(
+        `  ⚠️ NASS ${proximo} ICS existe (${nass.vevents} VEVENTs) pero el parser no completó los 3 informes (¿cambiaron los SUMMARY?) — revisar antes de generar.`,
+      );
+    }
   } else {
     console.log(`  ⏳ NASS ${proximo} ICS todavía no está (status ${nass.status ?? nass.error}).`);
   }
@@ -63,8 +81,10 @@ async function main() {
     // Anotación de GitHub Actions: resalta en la UI del run sin marcarlo como fallido
     // (un exit≠0 mandaría mails de error y GitHub deshabilita crons que fallan seguido).
     console.log(
-      `::warning title=Seed ${proximo} disponible::Ya se puede armar el seed oficial ${proximo} en ` +
-        `src/lib/calendario.ts (WASDE/Grain Stocks/Crop Progress/CONAB) y actualizar SEED_ACTUAL en ` +
+      `::warning title=Seed NASS ${proximo} disponible::Correr ` +
+        `"node scripts/generar-calendario-nass.mjs --year ${proximo}" y commitear ` +
+        `src/lib/calendario-seed-nass.json (cero edición de calendario.ts) — de paso, sumar las ` +
+        `fechas oficiales ${proximo} de CONAB a mano (NASS no las cubre) y actualizar SEED_ACTUAL en ` +
         `scripts/refresh-calendario.mjs.`,
     );
     return;

@@ -32,7 +32,7 @@ describe("lineup/estacional.ts — bordes ficha E2 5.3", () => {
     const fechaActual = new Date(Date.UTC(2026, 6, 20)); // 20/07/2026
     const ventanas = fechasEstacionales("MAIZE", fechaActual);
     // Un solo punto dentro de la ventana de la campaña más reciente.
-    const serie: SerieRow[] = [{ fecha: ventanas[0].desde, cod: "MAIZE", valor: 42 }];
+    const serie: SerieRow[] = [{ fecha: ventanas[0]!.desde, cod: "MAIZE", valor: 42 }];
     expect(percentilEstacional(serie, "MAIZE", fechaActual, 50)).toBeNull();
   });
 
@@ -40,9 +40,9 @@ describe("lineup/estacional.ts — bordes ficha E2 5.3", () => {
     const fechaActual = new Date(Date.UTC(2026, 6, 20));
     const ventanas = fechasEstacionales("MAIZE", fechaActual);
     const serie: SerieRow[] = [
-      { fecha: ventanas[0].desde, cod: "MAIZE", valor: 10 },
-      { fecha: ventanas[1].desde, cod: "MAIZE", valor: 20 },
-      { fecha: ventanas[2].desde, cod: "MAIZE", valor: 30 },
+      { fecha: ventanas[0]!.desde, cod: "MAIZE", valor: 10 },
+      { fecha: ventanas[1]!.desde, cod: "MAIZE", valor: 20 },
+      { fecha: ventanas[2]!.desde, cod: "MAIZE", valor: 30 },
     ];
     const pctl = percentilEstacional(serie, "MAIZE", fechaActual, 25);
     expect(pctl).not.toBeNull();

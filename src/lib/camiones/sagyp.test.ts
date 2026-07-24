@@ -90,7 +90,7 @@ describe("camiones/sagyp.ts — parser del HTML diario de SAGyP/MAGyP", () => {
     expect(r.identidadesRotas).toBe(0);
     expect(r.filas).toHaveLength(1); // la de 19-jul (todo cero) se descarta
 
-    const f = r.filas[0];
+    const f = r.filas[0]!;
     expect(f.fecha).toBe("2026-07-17");
     expect(f.zona).toEqual({
       ROSARIO_ALEDANOS: 5068,

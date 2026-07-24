@@ -292,7 +292,14 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   P25/P75 por producto (el fijo 0,7/1,3 disparaba señal 74-95% de los días, verificado por SQL);
   índice MESA auditado y dejado como está; roster con aviso al 15% de OTROS; comisiones de
   estrategias con toggle (tarifario A3/Cocos). `sesiones/2026-07-23-l4-c5-camiones.md`.
-- [ ] **D3 = L6. Robustez de ingestas v2** (falso-verde en backfills + ICS NASS + roster-erosión).
+- [x] **D3 = L6. Robustez de ingestas v2** — hecho 24/07: guard "0 filas = exit 1" extendido a
+  modos backfill/dispatch de cierres/cbot/pizarra/usda/gea/lineup (Anexo A de E5-infra.md, caminos
+  1/3/5/6/13/15/19) + guard `daily` muerto de la Edge Function `lineup-ingest` retirado (camino 20,
+  redeployado). Calendario NASS (WASDE/Grain Stocks/Crop Progress) generado desde el ICS oficial en
+  vez de arrays a mano (`calendario-nass.ts` + `generar-calendario-nass.mjs` →
+  `calendario-seed-nass.json`, versionado); verificado 1:1 contra el ICS real antes del cambio,
+  2027 confirmado no publicado todavía (404 esperable). Roster de exportadores ya lo había cerrado
+  L4 el 23/07 (nada que hacer). `sesiones/2026-07-24-l6-l3-l2-lotes-tecnicos.md`.
 - [x] **D4 = L1. Partir `market.ts` + util única de mes/posición** — ✅ hecho 23/07, PR #_. Refactor
   puro (cero cambios de comportamiento): `market.ts` (546 líneas) partido en 8 módulos de
   `src/lib/market/*` + fachada de re-export; `dates.ts` extendido con la util única de mes/posición
@@ -301,8 +308,21 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   antes/después verificado (byte a byte en `/` y `/granos`; `/dolar` con la única diferencia siendo
   datos en vivo de `data912`, no código). Detalle:
   [`sesiones/2026-07-23-lote-l1-market.md`](../sesiones/2026-07-23-lote-l1-market.md).
-- [ ] **D5 = L3. `noUncheckedIndexedAccess`** (después de L1).
-- [ ] **D6 = L2. Motor de gráfico SVG compartido** (antes de C7 idealmente).
+- [x] **D5 = L3. `noUncheckedIndexedAccess`** — hecho 24/07. Re-medido primero (pedía el prompt):
+  288 errores en 55 archivos (más que los ~152/32 de E4 del 21/07, por el trabajo nuevo del 23-24/07)
+  — documentado, no recortado en silencio. Saneados los 288/288 con guard explícito por defecto y
+  `!` solo en invariantes de una línea arriba, comentados. 4 bugs latentes reales encontrados y
+  corregidos (crash de leyenda con series vacías en `evolucion-chart.tsx`, crash con CSV de 0 filas
+  en `parse-agrochat.ts` y en `actions-camiones.ts`, fecha inválida silenciada en `calendario.ts`).
+  147/147 tests sin tocar expects. `sesiones/2026-07-24-l6-l3-l2-lotes-tecnicos.md`.
+- [x] **D6 = L2. Motor de gráfico SVG compartido** — hecho 24/07: `chart-svg-base.tsx`
+  (`useCrosshair` + `SvgLineChartBase`) extraído de `evolucion-chart.tsx`/`dolar-futuro-chart.tsx`/
+  `compras/negociado-chart.tsx` — comparten el envoltorio (wrap+marca+svg+grilla+rect interactivo) y
+  el estado del crosshair, pero CADA chart conserva su propio algoritmo de "punto más cercano"
+  (2D para series superpuestas, 1D para una sola serie, índice directo para el histograma de
+  barras — forzar una sola métrica habría cambiado comportamiento real). Verificado con Playwright
+  real (datos reales, claro/oscuro, desktop/mobile, hover) sin diferencia visual.
+  `sesiones/2026-07-24-l6-l3-l2-lotes-tecnicos.md`.
 
 ### Dependencias explícitas (grafo corto)
 
@@ -328,6 +348,9 @@ código (P2 el USD semanal, P6 gráficos); D5/L3 después de L1.
 **En cola (Lautaro evalúa una por una, sin orden fijo):** C6 (P1), C7 (P2), C8 (P5), C9 (extras
 puertos), C10 (P6), C11 (P7, mejor con login), C12 (P8), y C13–C16 cuando estén sus insumos.
 **Cuando haya ventana:** B2 (Claude investiga D6), B3 (girasol/sorgo, quick win), D3/L6.
+
+*(Nota 24/07: D3/L6, D5/L3 y D6/L2 — los 3 lotes técnicos que quedaban de este grupo — ya están
+HECHOS, ver §4. Esta sección "Orden decidido" queda como registro histórico del 22/07, sin reescribir.)*
 
 ## 5. Rechazados y descartados (para que NO reaparezcan)
 

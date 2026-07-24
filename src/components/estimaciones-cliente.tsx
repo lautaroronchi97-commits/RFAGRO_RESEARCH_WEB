@@ -62,15 +62,19 @@ export function EstimacionesCliente({
   }
 
   /* ---------- Gráfico de evolución (selectores) ---------- */
-  const granoIni = granos.includes("soja") ? "soja" : granos[0];
+  // `granos[0]`/`paisesIni[0]` pueden ser undefined solo si `rows` viene vacío (sin estimaciones
+  // cargadas todavía) — fallback a un valor por defecto en vez de un `!` que asumiría no-vacío.
+  const granoIni = granos.includes("soja") ? "soja" : (granos[0] ?? "soja");
   const paisesIni = paisesDe(rows, granoIni);
-  const paisIni = paisesIni.includes("brasil") ? "brasil" : paisesIni[0];
+  const paisIni = paisesIni.includes("brasil") ? "brasil" : (paisesIni[0] ?? "argentina");
   const [gGrano, setGGrano] = useState(granoIni);
   const [gPais, setGPais] = useState(paisIni);
   const [gVar, setGVar] = useState<Variable>("produccion");
 
   const paisesGrano = useMemo(() => paisesDe(rows, gGrano), [rows, gGrano]);
-  const paisEfectivo = paisesGrano.includes(gPais) ? gPais : paisesGrano[0];
+  // Fallback a gPais (no a un default ajeno) si paisesGrano viene vacío — conserva la selección
+  // del usuario en vez de saltar a otro país cuando ese grano no tiene datos todavía.
+  const paisEfectivo = paisesGrano.includes(gPais) ? gPais : (paisesGrano[0] ?? gPais);
   const campanias = useMemo(() => campaniasDe(rows, gGrano, paisEfectivo), [rows, gGrano, paisEfectivo]);
   const [gCampManual, setGCampManual] = useState<string | null>(null);
   const gCamp = gCampManual && campanias.includes(gCampManual) ? gCampManual : campaniaMasRica(rows, gGrano, paisEfectivo);

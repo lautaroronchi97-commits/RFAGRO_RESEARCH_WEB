@@ -207,7 +207,9 @@ export function construirPizarra(rows: EstimRow[]): CeldaEstim[] {
 
   const celdas: CeldaEstim[] = [];
   for (const combo of combos) {
-    const [organismo, pais, grano] = combo.split("|");
+    // combo se armó acá mismo como `${organismo}|${pais}|${grano}` (línea de arriba) → split
+    // siempre da los 3 (ninguno de los 3 campos trae "|" — son códigos cortos, verificado).
+    const [organismo, pais, grano] = combo.split("|") as [string, string, string];
     const campania = campaniaVigente(rows, organismo, pais, grano);
     if (!campania) continue;
 

@@ -23,10 +23,10 @@ describe("estimaciones.ts — ficha E2 6.2 (campaniaVigente prefiere la campaña
     ];
     const pizarra = construirPizarra(rows);
     expect(pizarra).toHaveLength(1);
-    expect(pizarra[0].campania).toBe("2025/26");
-    expect(pizarra[0].produccion).toBe(29.5);
-    expect(pizarra[0].deltaProd).toBeCloseTo(0, 6); // último vintage sin cambio (29,5 -> 29,5)
-    expect(pizarra[0].fecha).toBe("2026-05-13"); // el vintage MÁS RECIENTE con producción
+    expect(pizarra[0]!.campania).toBe("2025/26");
+    expect(pizarra[0]!.produccion).toBe(29.5);
+    expect(pizarra[0]!.deltaProd).toBeCloseTo(0, 6); // último vintage sin cambio (29,5 -> 29,5)
+    expect(pizarra[0]!.fecha).toBe("2026-05-13"); // el vintage MÁS RECIENTE con producción
   });
 
   it("delta vs el vintage anterior de la MISMA campaña: 27,7 -> 29,5 da +1,80", () => {
@@ -43,6 +43,6 @@ describe("estimaciones.ts — ficha E2 6.2 (campaniaVigente prefiere la campaña
       },
     ];
     const pizarra = construirPizarra(rows);
-    expect(pizarra[0].deltaProd).toBeCloseTo(1.8, 6);
+    expect(pizarra[0]!.deltaProd).toBeCloseTo(1.8, 6);
   });
 });

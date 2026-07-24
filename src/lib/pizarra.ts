@@ -52,7 +52,7 @@ function extraerBloque(html: string, cls: string): { claseExtra: string; bloque:
   const start = m.index + m[0].length;
   const restante = html.slice(start);
   const finRel = restante.search(/<div class="board board-|<div class="price-board-footer">/);
-  return { claseExtra: m[1], bloque: finRel === -1 ? restante : restante.slice(0, finRel) };
+  return { claseExtra: m[1] ?? "", bloque: finRel === -1 ? restante : restante.slice(0, finRel) };
 }
 
 function parseGrano(html: string, cls: string): { usd: number; ars: number; estimativo: boolean } | null {
@@ -66,8 +66,8 @@ function parseGrano(html: string, cls: string): { usd: number; ars: number; esti
   // Formato normal (soja/maíz/trigo/sorgo la mayoría de los días): $ARS directo + US$ directo.
   let m = bloque.match(/<div class="price">\s*\$([\d.]+,\d{2})[\s\S]*?<strong>US\$<\/strong>\s*([\d.]+,\d{2})/);
   if (m) {
-    const ars = arNum(m[1]);
-    const usd = arNum(m[2]);
+    const ars = arNum(m[1]!); // grupos obligatorios del regex
+    const usd = arNum(m[2]!);
     if (ars == null || usd == null) return null;
     return { estimativo: claseEstimativa, ars, usd };
   }
@@ -76,8 +76,8 @@ function parseGrano(html: string, cls: string): { usd: number; ars: number; esti
   // "S/C" y un valor de referencia marcado "(E)" tanto en $ como en US$.
   m = bloque.match(/S\/C[\s\S]*?\(E\)[\s\S]*?\$([\d.]+,\d{2})[\s\S]*?<strong>US\$<\/strong>[\s\S]*?\(E\)[\s\S]*?([\d.]+,\d{2})/);
   if (m) {
-    const ars = arNum(m[1]);
-    const usd = arNum(m[2]);
+    const ars = arNum(m[1]!); // grupos obligatorios del regex
+    const usd = arNum(m[2]!);
     if (ars == null || usd == null) return null;
     return { estimativo: true, ars, usd };
   }
@@ -115,7 +115,7 @@ export const getPizarra = cache(async (): Promise<PizarraData> => {
   const fechaM = html.match(/Comprador\s+(\d{2})\/(\d{2})\/(\d{4})/);
   const fecha = fechaM ? `${fechaM[3]}-${fechaM[2]}-${fechaM[1]}` : null;
   const tcM = html.match(/Comprador\s+\d{2}\/\d{2}\/\d{4}:\s*<strong>\$\s*([\d.]+,\d{2})/);
-  const tcBna = tcM ? arNum(tcM[1]) : null;
+  const tcBna = tcM ? arNum(tcM[1]!) : null; // grupo obligatorio del regex
 
   const n = Object.keys(granos).length;
   const requeridosOk = GRANOS_REQUERIDOS.every((u) => granos[u] != null);

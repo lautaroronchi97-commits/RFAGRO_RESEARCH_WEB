@@ -102,7 +102,7 @@ export function DolarOficialVolatilidadChart({
                   isAnimationActive={false}
                   content={({ active, payload }) => {
                     if (!active || !payload || payload.length === 0) return null;
-                    const row = payload[0].payload as PuntoVolDolar;
+                    const row = payload[0]!.payload as PuntoVolDolar; // length===0 ya salió arriba
                     return (
                       <div className="gx-tip">
                         <div className="gx-tip-h">{modo === "semanal" ? "Semana del" : "Rueda del"} {fmtFecha(row.fecha)}</div>
@@ -127,7 +127,7 @@ export function DolarOficialVolatilidadChart({
               deltaPct: p.deltaPct != null ? pfmt(p.deltaPct, modo === "diaria" ? 3 : 2) : null,
               vol: p.volAnualizada != null ? pfmt(p.volAnualizada, 2) : null,
             })) as ChartTablaFila[]}
-            nota={`Desvío estándar de las últimas ${cfg.ventana}, anualizado (${cfg.factor}). Último dato: ${nfmt(conVol[conVol.length - 1].volAnualizada, 2)}%.`}
+            nota={`Desvío estándar de las últimas ${cfg.ventana}, anualizado (${cfg.factor}). Último dato: ${nfmt(conVol[conVol.length - 1]!.volAnualizada, 2)}%.`} // conVol.length<2 ya cayó en la rama de arriba
             exportCsv={nombreArchivo("dolar-oficial-volatilidad", modo)}
           />
         </>

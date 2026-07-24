@@ -82,7 +82,7 @@ export function DolarOficialSemanalChart({ semanas }: { semanas: PuntoSemanalDol
               isAnimationActive={false}
               content={({ active, payload }) => {
                 if (!active || !payload || payload.length === 0) return null;
-                const row = payload[0].payload as PuntoSemanalDolar;
+                const row = payload[0]!.payload as PuntoSemanalDolar; // length===0 ya salió arriba
                 return (
                   <div className="gx-tip">
                     <div className="gx-tip-h">Semana del {fmtSemana(row.fecha)}</div>

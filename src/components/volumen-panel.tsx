@@ -88,7 +88,7 @@ export function VolumenPanel({
               isAnimationActive={false}
               content={({ active, payload }) => {
                 if (!active || !payload || payload.length === 0) return null;
-                const row = payload[0].payload as VolPunto;
+                const row = payload[0]!.payload as VolPunto; // length===0 ya salió arriba
                 const head = eje === "vto" ? `${-Math.round(row.x)} ruedas al vto · ${mesEnX(row.x)}` : etiquetaCalendario(row.x, anchorMes);
                 return (
                   <div className="gx-tip">
