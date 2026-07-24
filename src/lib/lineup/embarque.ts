@@ -6,6 +6,7 @@ import { PRODUCTOS, type Familia } from "./config";
 import { campaniaIniYear, campanaLabel, parseFechaUTC } from "./campanas";
 import { getCurvaGranos } from "../curva";
 import { posicionDeFecha } from "../dates";
+import { zonaCarga, ZONAS, type Zona } from "./zonas";
 
 /**
  * Mesa de embarque (Fase 3 del plan de puertos): el programa de embarques declarado
@@ -34,9 +35,11 @@ const COD_A3: Record<string, string> = { SBS: "SOJ", MAIZE: "MAI", WHEAT: "TRI" 
 
 type EmbRow = { cod: string; opcion: string | null; camp_ini: number; mes: string; declarado_tn: number | null; n_tramos: number };
 type LupRow = { cod: string; mes: string; camp_ini: number; embarcado_tn: number | null; buques: number | null };
+type VisitaZonaRow = { cod: string; etb: string; quantity: number | null; port: string | null; berth: string | null };
 
 export type PosMesA3 = { posicion: string; precio: number; exacta: boolean };
 export type MesCol = { mes: string; label: string };
+export type ZonaEmbarco = { zona: Zona; toneladas: number; buques: number };
 export type CeldaMes = {
   declarado: number;
   disp: number; // opción 30
@@ -44,6 +47,7 @@ export type CeldaMes = {
   anioPrevio: number | null; // declarado del mes análogo de la campaña pasada (programa FINAL)
   embarcado: number | null; // line-up del mes (solo si hay dato)
   buques: number | null;
+  porZona: ZonaEmbarco[]; // desglose por zona del embarcado (C9): solo existe donde embarcado no es null
   campLabel: string; // campaña comercial a la que pertenece el mes para este grano
   a3: PosMesA3 | null; // posición A3 contra la que se lee el mes (solo soja/maíz/trigo)
 };
@@ -54,7 +58,10 @@ export type ProductoMesa = {
   celdas: CeldaMes[]; // alineadas 1:1 con meses[]
   totalProximos: number; // declarado de los meses futuros (sin el corriente)
 };
-export type CumplimientoMes = { display: string; declarado: number; embarcado: number; buques: number; ratio: number | null };
+export type CumplimientoMes = {
+  display: string; declarado: number; embarcado: number; buques: number; ratio: number | null;
+  porZona: ZonaEmbarco[]; // desglose por zona del line-up del mes en curso (C9)
+};
 export type MesaEmbarque = {
   hoy: string;
   fechaLineup: string | null;
@@ -96,10 +103,11 @@ export const getMesaEmbarque = cache(async (): Promise<MesaEmbarque> => {
   const desde = addMeses(mes0, -12); // cubre el mes análogo del año previo de todas las columnas
   const cods = PRODUCTOS.map((p) => p.codigo).join(",");
 
-  const [embRes, lupRes, ruedaRes, curva] = await Promise.all([
+  const [embRes, lupRes, ruedaRes, zonaRes, curva] = await Promise.all([
     sbSelectAll(`djve_embarques_mes?select=*&mes=gte.${desde}&cod=in.(${cods})`, 900),
     sbSelectAll(`lineup_embarcado_mes?select=*&mes=gte.${addMeses(mes0, -1)}`, 900),
     sbSelect("lineup_ultimas_ruedas?select=fecha_consulta&rueda_rank=eq.1&limit=1", 900),
+    sbSelectAll("lineup_visitas_recientes?select=*", 900),
     getCurvaGranos(),
   ]);
   if (!embRes.ok) {
@@ -138,6 +146,31 @@ export const getMesaEmbarque = cache(async (): Promise<MesaEmbarque> => {
     emba.set(k, e);
   }
 
+  // Desglose por zona del embarcado (C9: matriz mes×zona, solo donde hay cruce físico
+  // — el declarado DJVE no tiene puerto/muelle, la zona sale del line-up físico).
+  // `lineup_visitas_recientes` ya viene deduplicada por visita (Fase 3); acá se agrupa
+  // por cod|mes|zona en TS, mismo patrón que foto.ts/empresas.ts (zonaCarga en TS, no en SQL).
+  const porZonaMap = new Map<string, Map<Zona, ZonaEmbarco>>();
+  if (zonaRes.ok) {
+    for (const r of zonaRes.data as VisitaZonaRow[]) {
+      const zona = zonaCarga(r.port, r.berth);
+      if (zona === "Otros") continue;
+      const k = `${r.cod}|${r.etb.slice(0, 7)}-01`;
+      if (!porZonaMap.has(k)) porZonaMap.set(k, new Map());
+      const zm = porZonaMap.get(k)!;
+      const cur = zm.get(zona) ?? { zona, toneladas: 0, buques: 0 };
+      cur.toneladas += r.quantity ?? 0;
+      cur.buques += 1;
+      zm.set(zona, cur);
+    }
+  }
+  function porZonaDe(cod: string, mesISO: string): ZonaEmbarco[] {
+    const zm = porZonaMap.get(`${cod}|${mesISO}`);
+    if (!zm) return [];
+    return ZONAS.map((z) => zm.get(z)).filter((z): z is ZonaEmbarco => !!z && z.toneladas > 0)
+      .sort((a, b) => b.toneladas - a.toneladas);
+  }
+
   // Posiciones A3 vivas por underlying, ordenadas (de curva.ts, ya filtradas a vivas).
   const posPorGrano = new Map(curva.granos.map((g) => [g.underlying, g.posiciones]));
   function a3De(cod: string, mesISO: string): PosMesA3 | null {
@@ -164,6 +197,7 @@ export const getMesaEmbarque = cache(async (): Promise<MesaEmbarque> => {
         anioPrevio: dPrev ? dPrev.total : null,
         embarcado: i <= 1 && e ? e.ton : null, // el line-up solo ve ~10 días: corriente y borde del próximo
         buques: i <= 1 && e ? e.buques : null,
+        porZona: i <= 1 ? porZonaDe(p.codigo, mes) : [],
         campLabel: campanaLabel(campaniaIniYear(p.codigo, parseFechaUTC(mes)!)),
         a3: a3De(p.codigo, mes),
       };
@@ -185,6 +219,7 @@ export const getMesaEmbarque = cache(async (): Promise<MesaEmbarque> => {
         embarcado: e?.ton ?? 0,
         buques: e?.buques ?? 0,
         ratio: c.declarado > 0 ? (e?.ton ?? 0) / c.declarado : null,
+        porZona: c.porZona,
       };
     })
     .filter((x) => x.declarado > 0 || x.embarcado > 0)

@@ -263,8 +263,12 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   ranking ES la comparación cross-grano) y "Capacidad de pago" (3 filas, no
   aporta). Verificado con Playwright + datos reales.
   `sesiones/2026-07-23-c8-filtro-por-grano.md`.
-- [ ] **C9. Extras de spec de puertos** (matriz por mes/zonas · "qué cambió" ampliado — lo que quedó
-  fuera de las Fases 1-4).
+- [x] **C9. Extras de spec de puertos** — hecho 24/07: alcance cerrado con Lautaro por
+  `AskUserQuestion` (no había prompt escrito ni spec original versionada acá). Matriz mes×zona en
+  `/comercio/embarques` solo en la fila de embarcado (DJVE no tiene puerto/muelle) + "qué cambió"
+  ampliado en `/comercio/puertos` (buques que salieron, mismo umbral 30kt + comparación contra una
+  rueda de referencia ~1 semana atrás). 2 vistas SQL aditivas, verificado 1:1 contra SQL real.
+  `sesiones/2026-07-24-c9-puertos-extras.md`.
 - [x] **C10. P6 — gráficos v2** — hecho 23/07 (URL modo Período · ratio/base % · export PNG/CSV ·
   media móvil · vol/OI · guard parcial). P12/P17 resueltos con la respuesta de Lautaro (la relación
   % es el ratio existente pizarra maíz/soja; "son pizarras" → sin serie front-month que construir).
