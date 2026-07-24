@@ -1,5 +1,5 @@
 import { getCapacidad } from "@/lib/capacidad";
-import { CapacidadEditable, type CapGranoClient } from "./capacidad-editable";
+import { CapacidadEditable, type CapGranoClient, type CapIndustriaClient } from "./capacidad-editable";
 import { Panel, PanelHead } from "./panel";
 import { SourceStamp } from "./source-stamp";
 import { QueEsEsto } from "./que-es-esto";
@@ -26,6 +26,19 @@ export async function CapacidadPanel() {
     cfg: g.cfg,
   }));
 
+  const industria: CapIndustriaClient | null = data.industriaSoja
+    ? {
+        nombre: data.industriaSoja.nombre,
+        fasBcr: data.industriaSoja.fasBcr,
+        pizarra: data.industriaSoja.pizarra,
+        fobMercadoAceite: data.industriaSoja.fobMercadoAceite,
+        fobOficialAceite: data.industriaSoja.fobOficialAceite,
+        fobMercadoHarina: data.industriaSoja.fobMercadoHarina,
+        fobOficialHarina: data.industriaSoja.fobOficialHarina,
+        cfg: data.industriaSoja.cfg,
+      }
+    : null;
+
   // Stamp combinado: BCR (el scrape de la planilla) + SAGyP/MAGyP (el FOB oficial que alimenta
   // "Nuestro") — mismo criterio que semaforo.ts para paneles con más de una fuente.
   const metaCombinada: Meta = {
@@ -43,10 +56,10 @@ export async function CapacidadPanel() {
         sub="FAS teórico BCR vs modelo propio vs pizarra"
         stamp={<SourceStamp meta={metaCombinada} />}
       />
-      <CapacidadEditable granos={granos} />
+      <CapacidadEditable granos={granos} industria={industria} />
       <QueEsEsto
-        paraQue="Cuánto puede pagar el exportador por tu grano hoy, en dólares por tonelada, leído de TRES formas: lo que calcula BCR, lo que calculamos nosotros (editable), y lo que efectivamente paga hoy la pizarra. La columna Diferencial te dice si el grano se está pagando por encima (sobrepagado) o por debajo (subpagado) de lo teórico."
-        comoSeCalcula="Partimos del FOB oficial que fija SAGyP/MAGyP (la misma base que usan los derechos de exportación) y le descontamos retenciones, reintegro (si lo hay), gastos portuarios y comerciales — igual estructura que la metodología pública de BCR. BCR usa la misma base FOB oficial para su columna SAGyP, así el diferencial entre BCR y Nuestro aísla la diferencia de SUPUESTOS de gastos, no de precio. Los supuestos de 'Nuestro' arrancan sembrados de los propios costos que publica BCR y son editables (desplegable abajo de la tabla)."
+        paraQue="Cuánto puede pagar el exportador por tu grano hoy, en dólares por tonelada, leído de TRES formas: lo que calcula BCR, lo que calculamos nosotros (editable), y lo que efectivamente paga hoy la pizarra. La columna Diferencial te dice si el grano se está pagando por encima (sobrepagado) o por debajo (subpagado) de lo teórico. La fila 'Soja (industria)' es OTRA cuenta, la del complejo aceite+harina que crushea la industria — en la práctica argentina suele ser la que más mueve el precio que le pagan al productor de soja, más que la del poroto entero."
+        comoSeCalcula="Partimos del FOB oficial que fija SAGyP/MAGyP (la misma base que usan los derechos de exportación) y le descontamos retenciones, reintegro (si lo hay), gastos portuarios y comerciales — igual estructura que la metodología pública de BCR. BCR usa la misma base FOB oficial para su columna SAGyP, así el diferencial entre BCR y Nuestro aísla la diferencia de SUPUESTOS de gastos, no de precio. Los supuestos de 'Nuestro' arrancan sembrados de los propios costos que publica BCR y son editables (desplegable abajo de la tabla). La industria (soja) usa el FOB de aceite y harina en vez del poroto, ponderado por el rinde de molienda de cada uno."
       />
     </Panel>
   );

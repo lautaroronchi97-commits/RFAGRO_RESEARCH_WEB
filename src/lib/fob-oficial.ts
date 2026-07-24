@@ -40,8 +40,22 @@ export const POSICIONES_FOB: Record<string, string> = {
   GIR: "12060090910Y", // semilla de girasol, uso industrial "los demás" (oleaginoso estándar, excluye confitería)
 };
 
+/**
+ * Posiciones de los subproductos de la industria aceitera (soja) — para el FAS Teórico
+ * INDUSTRIA (`capacidad-industria-modelo.ts`). Aparte de `POSICIONES_FOB` (no cuentan para su
+ * status "real"/"parcial": son un cálculo adicional, no de los 5 granos principales).
+ * Homologadas con el mismo cruce empírico (fecha 21/01/2025 vs datos.gob.ar):
+ *   aceite_soja_granel = 1042 el 21/01/2025 → 15071000100Q
+ *   tortas_..._soja_pellets_harina_extr = 335 el 21/01/2025 → 23040010100B (23040010200G da idéntico precio)
+ */
+export const POSICIONES_FOB_INDUSTRIA: Record<string, string> = {
+  SOJ_ACEITE: "15071000100Q", // aceite de soja crudo, a granel
+  SOJ_HARINA: "23040010100B", // harina/pellets de soja (extracción)
+};
+
 export type FobOficialData = {
   granos: Record<string, number | null>; // USD/tn, posición "spot" (ventana de embarque más cercana)
+  industria: Record<string, number | null>; // ídem, subproductos (SOJ_ACEITE/SOJ_HARINA)
   fecha: string | null; // ISO de la circular usada (puede ser < hoy si hoy no publicó todavía)
   circular: string | null;
   meta: Meta;
@@ -85,6 +99,7 @@ export const getFobOficial = cache(async (): Promise<FobOficialData> => {
   }
 
   const granos: Record<string, number | null> = {};
+  const industria: Record<string, number | null> = {};
   let circular: string | null = null;
   let fecha: string | null = null;
   if (posts && posts.length > 0) {
@@ -96,8 +111,12 @@ export const getFobOficial = cache(async (): Promise<FobOficialData> => {
         fecha = fila.fecha.slice(0, 10);
       }
     }
+    for (const [u, posicion] of Object.entries(POSICIONES_FOB_INDUSTRIA)) {
+      industria[u] = filaSpot(posts, posicion)?.precio ?? null;
+    }
   } else {
     for (const u of Object.keys(POSICIONES_FOB)) granos[u] = null;
+    for (const u of Object.keys(POSICIONES_FOB_INDUSTRIA)) industria[u] = null;
   }
 
   const n = Object.values(granos).filter((v) => v != null).length;
@@ -111,6 +130,7 @@ export const getFobOficial = cache(async (): Promise<FobOficialData> => {
 
   return {
     granos,
+    industria,
     fecha,
     circular,
     meta: {

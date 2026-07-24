@@ -1,6 +1,6 @@
 # Sesión 2026-07-24 — Capacidad de pago (BCR vs Nuestro vs Pizarra)
 
-- **Rama:** `claude/c16-payment-capacity-formulas-0de77e` · **PR:** #_ (base `main`)
+- **Rama:** `claude/c16-payment-capacity-formulas-0de77e` · **PR:** #76 (base `main`)
 - **Objetivo pedido por Lautaro:** el pendiente P11/C15 del backlog maestro ("modelo propio de
   capacidad de pago"), pero con un pedido explícito distinto al del prompt original: en vez de
   que Lautaro aporte su fórmula a mano (paso 1 del prompt de `PLAN_BACKLOG.md`), pidió
@@ -179,8 +179,78 @@ muestra en su planilla — confirma que homologamos la misma referencia que usa 
   en vivo (verificado a mano: 470×0,06 ≈ 28,2 de baja, exacto), y el botón ↺ restauró el valor
   sembrado.
 
+## Follow-up en la misma sesión/PR: FAS Teórico INDUSTRIA (soja) — 4ª lectura
+
+Después del build inicial, Lautaro compartió un Google Sheet (`preciosFAS`, 4 pestañas:
+Parámetros, InputsMercado, Crush, DesgloseCostos, FASExportacion) hecho por un tercero que
+entiende la materia, "vigente 04/2026", pidiendo verificar el modelo. La hoja de Google no era
+accesible (401, no pública) — exportó CSV de cada pestaña.
+
+**Verificación del modelo de referencia**: internamente consistente y bien sourceado —
+rindes de molienda (19,5% aceite / 71,2% harina / 6,0% cáscara / 3,3% desecho = 100,0%) coinciden
+casi al decimal con el Anexo 2 del PDF de BCR 2021; retenciones aceite/harina 22,5% coinciden con
+`docs/negocio/05`; fobbing poroto USD 8,2/tn está a 0,2 del que sembramos en vivo desde BCR (8,4);
+y, crucialmente, **retenciones calculadas sobre FOB SAGyP (oficial), nunca sobre FOB mercado** —
+la MISMA decisión de diseño que ya habíamos tomado para "Nuestro" (grano), confirmada
+independientemente por un tercero.
+
+**El hallazgo real**: ese documento no calcula lo mismo que ya construimos (FAS Teórico
+EXPORTACIÓN, poroto sin procesar) — calcula el **FAS Teórico INDUSTRIA** de BCR (el complejo
+aceite+harina que crushea la industria aceitera), la OTRA metodología del PDF (Anexo 2). En la
+práctica argentina el número de industria suele ser el que de verdad mueve el precio que le pagan
+al productor de soja (casi toda la soja se cruza acá, muy poca se exporta como poroto entero) —
+justo el tipo de matiz "controversial" que motivó todo C16.
+
+**Decisión (`AskUserQuestion`)**: Lautaro eligió sumar FAS Industria como 4ª lectura ("Soja
+(industria)"), sin tocar el cálculo de grano ya construido.
+
+**Build**:
+- `capacidad-bcr-parse.ts`: nuevo `parseBcrIndustria()` — parsea la sección "Cálculo del FAS
+  Teórico para la Industria Aceitera Exportadora" de la MISMA planilla de BCR (la que `parseBcr`
+  descarta a propósito). Mismo criterio 1er/último valor (soja primero, girasol al final), con
+  UNA mejora real de robustez descubierta acá: se agregó `contarColumnas()` — un chequeo contra
+  la fila "Puertos/Ports" para NO asignarle al segundo grano un valor que en realidad pertenece
+  al primero cuando una celda viene rota (encontrado con datos reales: la celda de pellets de
+  girasol trae un typo real de BCR, `"v165,0"`, que no parsea como número — sin el chequeo, el
+  código le asignaba a girasol el 2º valor de soja por error). Este chequeo NO se aplicó a
+  `parseBcr` (la tabla de grano): ahí la fila de posiciones no tiene 1:1 con las filas de datos
+  (colspans distintos), aplicarlo hubiera roto la extracción de sorgo que ya funcionaba.
+- `capacidad-industria-modelo.ts`: fórmula pura, reproduce EXACTO el modelo de referencia
+  (verificado línea por línea contra sus propios números de ejemplo) salvo la cáscara —
+  omitida a propósito: ni la API de FOB oficial ni la planilla en vivo de BCR publican una
+  posición propia para pellets de cáscara de soja, y ponerle un FOB inventado es peor que
+  omitirla (subestima el precio compuesto ~6-8 USD/tn, documentado). Gastos comerciales
+  calculados sobre la PIZARRA/A3 de soja (no el FOB) — así lo define el modelo de referencia,
+  distinto del grano; no se tocó el grano para no cambiarle comportamiento sin que nadie lo pidiera.
+- `fob-oficial.ts`: sumadas 2 posiciones más (`SOJ_ACEITE`=15071000100Q, `SOJ_HARINA`=23040010100B),
+  homologadas con el MISMO cruce empírico que los 5 granos (fecha 21/01/2025 vs datos.gob.ar) —
+  fuera del cómputo de status "real"/"parcial" de los 5 granos principales (es un cálculo aparte).
+- `capacidad-editable.tsx`/`capacidad-panel.tsx`: fila nueva "Soja (industria)" en la MISMA tabla
+  (mismas 6 columnas), con su propio bloque editable aparte (retenciones/fobbing/rinde por
+  producto + gastos comerciales + costo de industrialización + margen de riesgo), recalculando en
+  vivo con la misma arquitectura que el grano.
+
+**Verificado**: 20 tests nuevos (194 total) con 2 fixtures reales más (HTML de la sección
+Industria de BCR del 23/07/2026, con el typo real de girasol incluido — el caso que motivó el
+chequeo de columnas; datos reales de la API de FOB oficial para aceite/harina) · lint/tsc/build ✅
+· navegador con datos reales: fila "Soja (industria)" BCR=340,40 / Nuestro=335,85 / Pizarra=347,64
+— ambos modelos teóricos bien por debajo de la pizarra (Dif. BCR +2,1%, Dif. Nuestro +3,5%),
+consistente con la explicación de la controversia que dio el research (expectativa de baja de
+retenciones adelantada al precio); edición en vivo probada a mano (retenciones aceite 22,5%→30%
+recalculó 335,85→318,21, exacto: Δ=0,075×FOB oficial aceite×rinde aceite).
+
 ## Quedó pendiente / en vuelo
 
+- **Girasol (industria)**: `parseBcrIndustria` YA extrae el FAS Teórico de girasol que publica
+  BCR (columna "Complejo Girasol", verificado en el test — 486,8 el 23/07/2026), pero no se
+  construyó un "Nuestro Industria" para girasol: el documento de referencia solo trajo parámetros
+  de soja (rindes/retenciones/fobbing de girasol son distintos — otro rinde de aceite, sin la
+  posición de harina de soja). Si Lautaro consigue esos parámetros, es una extensión chica sobre
+  la misma `capacidad-industria-modelo.ts` (generalizar de "soja" a un 2º grano).
+- **Cáscara de soja**: omitida del "Nuestro Industria" por no tener una posición NCM de FOB
+  oficial verificada (ver `capacidad-industria-modelo.ts`) — subestima el precio compuesto en
+  ~6-8 USD/tn. Si en algún momento se homologa esa posición (o Lautaro confirma que no existe FOB
+  oficial para cáscara y hay que usar otra fuente), se puede sumar sin tocar el resto de la fórmula.
 - **Confirmar con Lautaro** (es un modelo nuevo, "controversial" por su propio pedido): que la
   homologación de posiciones NCM es la correcta desde SU conocimiento de mercado (documentado
   arriba con la evidencia numérica, pero él puede confirmar con un vistazo si "trigo pan" /

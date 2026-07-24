@@ -3,13 +3,14 @@ import { cache } from "react";
 import { getPizarra } from "./pizarra";
 import { getFobOficial } from "./fob-oficial";
 import { leerOverrideEnv } from "./env-utils";
-import { parseBcr } from "./capacidad-bcr-parse";
+import { parseBcr, parseBcrIndustria } from "./capacidad-bcr-parse";
 import {
   cfgSembrada,
   calcularFasTeorico,
   diferencialVsPizarra,
   type CapacidadModeloCfg,
 } from "./capacidad-modelo";
+import { calcularFasIndustria, CFG_INDUSTRIA_DEFAULT, type CapacidadIndustriaCfg } from "./capacidad-industria-modelo";
 import type { Meta } from "./market";
 
 /**
@@ -61,8 +62,30 @@ export type CapGrano = {
   diffNuestroPct: number | null;
   cfg: CapacidadModeloCfg; // supuestos usados en "Nuestro" (editables en el cliente)
 };
+/**
+ * FAS Teórico INDUSTRIA (complejo aceite+harina de soja) — capacidad de pago de la industria
+ * que crushea, distinta de la de grano sin procesar. Misma estructura BCR/Nuestro/Pizarra que
+ * `CapGrano`, pero con la config del modelo de industria (`capacidad-industria-modelo.ts`).
+ */
+export type CapIndustria = {
+  nombre: string;
+  fasBcr: number | null;
+  fasNuestro: number | null;
+  pizarra: number | null;
+  diffBcrUsd: number | null;
+  diffBcrPct: number | null;
+  diffNuestroUsd: number | null;
+  diffNuestroPct: number | null;
+  cfg: CapacidadIndustriaCfg;
+  // FOB de entrada (para que el cliente pueda recalcular "Nuestro" en vivo al editar supuestos).
+  fobMercadoAceite: number | null;
+  fobOficialAceite: number | null;
+  fobMercadoHarina: number | null;
+  fobOficialHarina: number | null;
+};
 export type CapData = {
   granos: CapGrano[];
+  industriaSoja: CapIndustria | null;
   fecha: string | null; // fecha de BCR
   fechaFobOficial: string | null; // fecha del FOB oficial usado en "Nuestro"
   meta: Meta; // BCR
@@ -90,6 +113,7 @@ export const getCapacidad = cache(async (): Promise<CapData> => {
   }
 
   const { porGrano: bcr, fecha } = parseBcr(html, GRANOS_ORDEN);
+  const { porGrano: bcrIndustria } = parseBcrIndustria(html, GRANOS_ORDEN);
   const [pizarra, fobOficial] = await Promise.all([getPizarra(), getFobOficial()]);
 
   const granos: CapGrano[] = GRANOS_ORDEN.map((u) => {
@@ -130,8 +154,40 @@ export const getCapacidad = cache(async (): Promise<CapData> => {
   const updatedAtRaw = fecha ? Date.parse(`${fecha}T00:00:00-03:00`) : null;
   const updatedAt = updatedAtRaw !== null && !Number.isNaN(updatedAtRaw) ? updatedAtRaw : null;
 
+  const filaBcrIndustriaSoja = bcrIndustria.SOJ;
+  const fasNuestroIndustria = calcularFasIndustria(
+    filaBcrIndustriaSoja?.fobAceite ?? null, // FOB mercado aceite (scrape BCR, forward más cercano)
+    fobOficial.industria.SOJ_ACEITE ?? null, // FOB oficial aceite (SAGyP/MAGyP, independiente)
+    filaBcrIndustriaSoja?.fobPellets ?? null, // FOB mercado harina/pellets
+    fobOficial.industria.SOJ_HARINA ?? null, // FOB oficial harina/pellets
+    pizarra.granos.SOJ?.usd ?? null, // base de gastos comerciales (así lo define el modelo de referencia)
+    CFG_INDUSTRIA_DEFAULT,
+  );
+  const pzSoja = pizarra.granos.SOJ?.usd ?? null;
+  const diffBcrIndustria = diferencialVsPizarra(pzSoja, filaBcrIndustriaSoja?.fas ?? null);
+  const diffNuestroIndustria = diferencialVsPizarra(pzSoja, fasNuestroIndustria);
+  const industriaSoja: CapIndustria | null =
+    filaBcrIndustriaSoja?.fas != null || fasNuestroIndustria != null || pzSoja != null
+      ? {
+          nombre: "Soja (industria)",
+          fasBcr: filaBcrIndustriaSoja?.fas ?? null,
+          fasNuestro: fasNuestroIndustria,
+          pizarra: pzSoja,
+          diffBcrUsd: diffBcrIndustria.usd,
+          diffBcrPct: diffBcrIndustria.pct,
+          diffNuestroUsd: diffNuestroIndustria.usd,
+          diffNuestroPct: diffNuestroIndustria.pct,
+          cfg: CFG_INDUSTRIA_DEFAULT,
+          fobMercadoAceite: filaBcrIndustriaSoja?.fobAceite ?? null,
+          fobOficialAceite: fobOficial.industria.SOJ_ACEITE ?? null,
+          fobMercadoHarina: filaBcrIndustriaSoja?.fobPellets ?? null,
+          fobOficialHarina: fobOficial.industria.SOJ_HARINA ?? null,
+        }
+      : null;
+
   return {
     granos,
+    industriaSoja,
     fecha,
     fechaFobOficial: fobOficial.fecha,
     meta: {

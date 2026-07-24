@@ -3,6 +3,7 @@
 import * as React from "react";
 import { nfmt, sfmt, pfmt } from "@/lib/format";
 import { calcularFasTeorico, diferencialVsPizarra, type CapacidadModeloCfg } from "@/lib/capacidad-modelo";
+import { calcularFasIndustria, type CapacidadIndustriaCfg } from "@/lib/capacidad-industria-modelo";
 import { GlyphSoja, GlyphMaiz, GlyphTrigo } from "./icons";
 import { InfoTip } from "./infotip";
 
@@ -12,6 +13,11 @@ import { InfoTip } from "./infotip";
  * supuestos (retenciones, reintegro, gastos portuarios/comerciales, margen de riesgo) arrancan
  * sembrados por el servidor (`capacidad.ts` — desde los propios a/b/c de BCR) y se recalculan
  * en vivo acá, sin ir al servidor, con la misma fórmula pura de `capacidad-modelo.ts`.
+ *
+ * Debajo, la fila "Soja (industria)" — el FAS Teórico del complejo aceite+harina (la OTRA
+ * metodología de BCR, la que de verdad mueve el precio que le pagan al productor de soja en
+ * Argentina) — con su propio bloque de supuestos editables, distinto en forma al de grano
+ * (`capacidad-industria-modelo.ts`).
  */
 
 export type CapGranoClient = {
@@ -21,6 +27,17 @@ export type CapGranoClient = {
   pizarra: number | null;
   fobOficial: number | null;
   cfg: CapacidadModeloCfg; // supuestos default (sembrados por el servidor)
+};
+
+export type CapIndustriaClient = {
+  nombre: string;
+  fasBcr: number | null;
+  pizarra: number | null;
+  fobMercadoAceite: number | null;
+  fobOficialAceite: number | null;
+  fobMercadoHarina: number | null;
+  fobOficialHarina: number | null;
+  cfg: CapacidadIndustriaCfg;
 };
 
 // Sorgo y girasol no tienen glifo propio todavía (solo soja/maíz/trigo tienen futuro A3) —
@@ -38,13 +55,50 @@ function glyphColor(u: string) {
 }
 const cls = (v: number | null) => (v == null ? "neu2" : v > 0 ? "pos" : v < 0 ? "neg" : "neu2");
 
+function FilaResultado({
+  nombre,
+  glyph,
+  fasBcr,
+  fasNuestro,
+  pizarra,
+}: {
+  nombre: string;
+  glyph: React.ReactNode;
+  fasBcr: number | null;
+  fasNuestro: number | null;
+  pizarra: number | null;
+}) {
+  const diffBcr = diferencialVsPizarra(pizarra, fasBcr);
+  const diffNuestro = diferencialVsPizarra(pizarra, fasNuestro);
+  return (
+    <tr>
+      <td className="l">
+        <span className="grp-cell">
+          {glyph}
+          <span className="gname">{nombre}</span>
+        </span>
+      </td>
+      <td>{fasBcr != null ? nfmt(fasBcr, 2) : "—"}</td>
+      <td className="b">{fasNuestro != null ? nfmt(fasNuestro, 2) : "—"}</td>
+      <td className="dim">{pizarra != null ? nfmt(pizarra, 2) : "—"}</td>
+      <td className={cls(diffBcr.usd)}>{diffBcr.usd != null ? `${sfmt(diffBcr.usd, 1)} (${pfmt(diffBcr.pct, 1)})` : "—"}</td>
+      <td className={cls(diffNuestro.usd)}>
+        {diffNuestro.usd != null ? `${sfmt(diffNuestro.usd, 1)} (${pfmt(diffNuestro.pct, 1)})` : "—"}
+      </td>
+    </tr>
+  );
+}
+
 type CampoPct = "alicuotaDex" | "reintegro" | "gastosComercialesPct";
 type CampoUsd = "gastosPortuariosUsd" | "margenRiesgoUsd";
+type CampoPctIndustria = "alicuotaDexAceite" | "alicuotaDexHarina" | "rindeAceite" | "rindeHarina" | "gastosComercialesPct";
+type CampoUsdIndustria = "fobbingAceiteUsd" | "fobbingHarinaUsd" | "costoIndustrializacionUsd" | "margenRiesgoUsd";
 
-export function CapacidadEditable({ granos }: { granos: CapGranoClient[] }) {
+export function CapacidadEditable({ granos, industria }: { granos: CapGranoClient[]; industria?: CapIndustriaClient | null }) {
   const [cfgs, setCfgs] = React.useState<Record<string, CapacidadModeloCfg>>(() =>
     Object.fromEntries(granos.map((g) => [g.underlying, g.cfg])),
   );
+  const [cfgIndustria, setCfgIndustria] = React.useState<CapacidadIndustriaCfg | null>(industria?.cfg ?? null);
 
   const setCampoPct = (u: string, campo: CampoPct, raw: string) => {
     const n = Number(raw.replace(",", "."));
@@ -57,14 +111,34 @@ export function CapacidadEditable({ granos }: { granos: CapGranoClient[] }) {
   const resetear = (u: string, cfgDefault: CapacidadModeloCfg) =>
     setCfgs((prev) => ({ ...prev, [u]: cfgDefault }));
 
+  const setCampoPctIndustria = (campo: CampoPctIndustria, raw: string) => {
+    const n = Number(raw.replace(",", "."));
+    setCfgIndustria((prev) => (prev ? { ...prev, [campo]: Number.isFinite(n) ? n / 100 : 0 } : prev));
+  };
+  const setCampoUsdIndustria = (campo: CampoUsdIndustria, raw: string) => {
+    const n = Number(raw.replace(",", "."));
+    setCfgIndustria((prev) => (prev ? { ...prev, [campo]: Number.isFinite(n) ? n : 0 } : prev));
+  };
+
   const filas = granos.map((g) => {
     const cfg = cfgs[g.underlying] ?? g.cfg;
     const fasNuestro = calcularFasTeorico(g.fobOficial, cfg);
-    const diffBcr = diferencialVsPizarra(g.pizarra, g.fasBcr);
-    const diffNuestro = diferencialVsPizarra(g.pizarra, fasNuestro);
     const editado = JSON.stringify(cfg) !== JSON.stringify(g.cfg);
-    return { g, cfg, fasNuestro, diffBcr, diffNuestro, editado };
+    return { g, cfg, fasNuestro, editado };
   });
+
+  const fasNuestroIndustria =
+    industria && cfgIndustria
+      ? calcularFasIndustria(
+          industria.fobMercadoAceite,
+          industria.fobOficialAceite,
+          industria.fobMercadoHarina,
+          industria.fobOficialHarina,
+          industria.pizarra,
+          cfgIndustria,
+        )
+      : null;
+  const industriaEditada = !!(industria && cfgIndustria && JSON.stringify(cfgIndustria) !== JSON.stringify(industria.cfg));
 
   return (
     <div>
@@ -104,26 +178,19 @@ export function CapacidadEditable({ granos }: { granos: CapGranoClient[] }) {
             </tr>
           </thead>
           <tbody>
-            {filas.map(({ g, fasNuestro, diffBcr, diffNuestro }) => (
-              <tr key={g.underlying}>
-                <td className="l">
-                  <span className="grp-cell">
-                    <span className="gglyph" style={{ color: glyphColor(g.underlying) }}>
-                      {glyphFor(g.underlying)}
-                    </span>
-                    <span className="gname">{g.nombre}</span>
+            {filas.map(({ g, fasNuestro }) => (
+              <FilaResultado
+                key={g.underlying}
+                nombre={g.nombre}
+                glyph={
+                  <span className="gglyph" style={{ color: glyphColor(g.underlying) }}>
+                    {glyphFor(g.underlying)}
                   </span>
-                </td>
-                <td>{g.fasBcr != null ? nfmt(g.fasBcr, 2) : "—"}</td>
-                <td className="b">{fasNuestro != null ? nfmt(fasNuestro, 2) : "—"}</td>
-                <td className="dim">{g.pizarra != null ? nfmt(g.pizarra, 2) : "—"}</td>
-                <td className={cls(diffBcr.usd)}>
-                  {diffBcr.usd != null ? `${sfmt(diffBcr.usd, 1)} (${pfmt(diffBcr.pct, 1)})` : "—"}
-                </td>
-                <td className={cls(diffNuestro.usd)}>
-                  {diffNuestro.usd != null ? `${sfmt(diffNuestro.usd, 1)} (${pfmt(diffNuestro.pct, 1)})` : "—"}
-                </td>
-              </tr>
+                }
+                fasBcr={g.fasBcr}
+                fasNuestro={fasNuestro}
+                pizarra={g.pizarra}
+              />
             ))}
             {filas.length === 0 && (
               <tr>
@@ -132,12 +199,25 @@ export function CapacidadEditable({ granos }: { granos: CapGranoClient[] }) {
                 </td>
               </tr>
             )}
+            {industria && (
+              <FilaResultado
+                nombre={industria.nombre}
+                glyph={
+                  <span className="gglyph" style={{ color: glyphColor("SOJ") }}>
+                    {glyphFor("SOJ")}
+                  </span>
+                }
+                fasBcr={industria.fasBcr}
+                fasNuestro={fasNuestroIndustria}
+                pizarra={industria.pizarra}
+              />
+            )}
           </tbody>
         </table>
       </div>
 
       <details className="qee">
-        <summary className="qee-sum">Ajustar los supuestos de &quot;Nuestro&quot;</summary>
+        <summary className="qee-sum">Ajustar los supuestos de &quot;Nuestro&quot; (grano)</summary>
         <div className="qee-body">
           <p>
             Retenciones (alícuota vigente por decreto), reintegro, gastos portuarios (USD/tn), gastos
@@ -206,6 +286,106 @@ export function CapacidadEditable({ granos }: { granos: CapGranoClient[] }) {
           ))}
         </div>
       </details>
+
+      {industria && cfgIndustria && (
+        <details className="qee">
+          <summary className="qee-sum">Ajustar los supuestos de la Industria (soja)</summary>
+          <div className="qee-body">
+            <p>
+              Complejo aceite + harina de soja: retenciones y fobbing por producto, rindes de molienda,
+              gastos comerciales (% de la pizarra/A3, así lo define este modelo — no del FOB como en el
+              de grano) y costo de industrialización. Cáscara (~6% del rinde) queda afuera: no hay una
+              posición de FOB oficial propia verificada para ese subproducto. Fuente de los defaults:
+              modelo de un tercero, parámetros vigente 04/2026 (docs/sesiones/2026-07-24-c16-capacidad-pago.md).
+            </p>
+            <div className="cap-cfg-row">
+              <span className="grp-cell">
+                <span className="gglyph" style={{ color: glyphColor("SOJ") }}>{glyphFor("SOJ")}</span>
+                <span className="gname">Aceite</span>
+              </span>
+              <label className="cap-cfg-field">
+                Retenciones %
+                <input type="number" inputMode="decimal" step="0.1" className="pz-input"
+                  value={round1(cfgIndustria.alicuotaDexAceite * 100)}
+                  onChange={(e) => setCampoPctIndustria("alicuotaDexAceite", e.target.value)}
+                  aria-label="Retenciones % aceite de soja" />
+              </label>
+              <label className="cap-cfg-field">
+                Fobbing USD/tn
+                <input type="number" inputMode="decimal" step="0.1" className="pz-input"
+                  value={round1(cfgIndustria.fobbingAceiteUsd)}
+                  onChange={(e) => setCampoUsdIndustria("fobbingAceiteUsd", e.target.value)}
+                  aria-label="Fobbing USD/tn aceite de soja" />
+              </label>
+              <label className="cap-cfg-field">
+                Rinde %
+                <input type="number" inputMode="decimal" step="0.1" className="pz-input"
+                  value={round1(cfgIndustria.rindeAceite * 100)}
+                  onChange={(e) => setCampoPctIndustria("rindeAceite", e.target.value)}
+                  aria-label="Rinde % aceite de soja" />
+              </label>
+            </div>
+            <div className="cap-cfg-row">
+              <span className="grp-cell">
+                <span className="gglyph" style={{ color: glyphColor("SOJ") }}>{glyphFor("SOJ")}</span>
+                <span className="gname">Harina</span>
+              </span>
+              <label className="cap-cfg-field">
+                Retenciones %
+                <input type="number" inputMode="decimal" step="0.1" className="pz-input"
+                  value={round1(cfgIndustria.alicuotaDexHarina * 100)}
+                  onChange={(e) => setCampoPctIndustria("alicuotaDexHarina", e.target.value)}
+                  aria-label="Retenciones % harina de soja" />
+              </label>
+              <label className="cap-cfg-field">
+                Fobbing USD/tn
+                <input type="number" inputMode="decimal" step="0.1" className="pz-input"
+                  value={round1(cfgIndustria.fobbingHarinaUsd)}
+                  onChange={(e) => setCampoUsdIndustria("fobbingHarinaUsd", e.target.value)}
+                  aria-label="Fobbing USD/tn harina de soja" />
+              </label>
+              <label className="cap-cfg-field">
+                Rinde %
+                <input type="number" inputMode="decimal" step="0.1" className="pz-input"
+                  value={round1(cfgIndustria.rindeHarina * 100)}
+                  onChange={(e) => setCampoPctIndustria("rindeHarina", e.target.value)}
+                  aria-label="Rinde % harina de soja" />
+              </label>
+            </div>
+            <div className="cap-cfg-row">
+              <span className="grp-cell">
+                <span className="gname">General</span>
+              </span>
+              <label className="cap-cfg-field">
+                Gastos comerciales % (s/pizarra)
+                <input type="number" inputMode="decimal" step="0.1" className="pz-input"
+                  value={round1(cfgIndustria.gastosComercialesPct * 100)}
+                  onChange={(e) => setCampoPctIndustria("gastosComercialesPct", e.target.value)}
+                  aria-label="Gastos comerciales % industria soja" />
+              </label>
+              <label className="cap-cfg-field">
+                Costo industrialización USD/tn
+                <input type="number" inputMode="decimal" step="0.1" className="pz-input"
+                  value={round1(cfgIndustria.costoIndustrializacionUsd)}
+                  onChange={(e) => setCampoUsdIndustria("costoIndustrializacionUsd", e.target.value)}
+                  aria-label="Costo de industrialización USD/tn" />
+              </label>
+              <label className="cap-cfg-field">
+                Margen riesgo USD/tn
+                <input type="number" inputMode="decimal" step="0.1" className="pz-input"
+                  value={round1(cfgIndustria.margenRiesgoUsd)}
+                  onChange={(e) => setCampoUsdIndustria("margenRiesgoUsd", e.target.value)}
+                  aria-label="Margen de riesgo USD/tn industria soja" />
+              </label>
+              {industriaEditada && (
+                <button type="button" className="pz-reset" title="Volver a los supuestos default" onClick={() => setCfgIndustria(industria.cfg)}>
+                  ↺
+                </button>
+              )}
+            </div>
+          </div>
+        </details>
+      )}
     </div>
   );
 }

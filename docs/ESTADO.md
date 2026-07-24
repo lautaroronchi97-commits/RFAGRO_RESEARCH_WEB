@@ -58,11 +58,31 @@ reales — HTML de BCR del 22/07 + respuesta real de la API de FOB del 23/07, co
 consistencia aritmética) · lint/tsc/build ✅ · navegador con datos reales (Playwright, claro/oscuro,
 desktop/mobile): BCR≈Nuestro el día 1 (misma fuente+gastos sembrados), diferenciales plausibles
 (soja +3,1% sobrepagado, sorgo −7,0% subpagado, girasol +19,4%); edición en vivo probada a mano
-(retenciones soja 24%→30% recalculó 337,10→308,90, exacto) + botón de reset. **Pendiente**:
-Lautaro confirma la homologación de posiciones NCM con su propio conocimiento de mercado; el FAS
-teórico propio de SAGyP (Res. 42/2007) quedó relevado pero no sumado (no hay API, y el pedido era
-3 columnas, no 4). Detalle completo (research de las 5 preguntas, tabla de homologación con la
-evidencia numérica):
+(retenciones soja 24%→30% recalculó 337,10→308,90, exacto) + botón de reset. **PR #76.**
+
+**Follow-up en el mismo PR (mismo día): FAS Teórico INDUSTRIA (soja), 4ª lectura.** Lautaro
+compartió un Google Sheet de un tercero que entiende la materia ("parámetros vigente 04/2026")
+pidiendo verificar su modelo. Verificado: internamente consistente, rindes de molienda coinciden
+casi al decimal con el Anexo 2 del PDF de BCR 2021, retenciones aceite/harina 22,5% coinciden con
+`docs/negocio/05`, y confirma independientemente la misma decisión de diseño ya tomada acá
+(retenciones sobre FOB SAGyP, nunca sobre FOB mercado). **El hallazgo real**: ese documento
+calcula el FAS Teórico INDUSTRIA de BCR (complejo aceite+harina que crushea la industria), NO el
+de EXPORTACIÓN (poroto) que ya habíamos construido — en la práctica argentina el de industria
+suele ser el que más mueve el precio al productor de soja. Por `AskUserQuestion`, Lautaro eligió
+sumarlo como 4ª lectura sin tocar el cálculo de grano. Build: `parseBcrIndustria()` (nueva sección
+de la misma planilla de BCR, con un chequeo de columnas nuevo — `contarColumnas()` — que evitó un
+bug real: un typo de BCR en la celda de pellets de girasol corría el índice y le asignaba a
+girasol un valor de soja) · `capacidad-industria-modelo.ts` (fórmula pura, reproduce exacto el
+modelo de referencia salvo cáscara, omitida por no tener FOB oficial verificado) · 2 posiciones
+NCM más homologadas (aceite/harina de soja) · fila nueva "Soja (industria)" en el panel con su
+propio bloque editable. Verificado: 194/194 tests (20 nuevos, con el typo real de girasol en el
+fixture) · lint/tsc/build ✅ · navegador con datos reales (BCR=340,40 / Nuestro=335,85 /
+Pizarra=347,64, ambos modelos bien por debajo de la pizarra, consistente con la controversia
+documentada) · edición en vivo verificada a mano. **Pendiente**: Lautaro confirma la homologación
+de posiciones NCM; girasol (industria) queda sin "Nuestro" por falta de parámetros propios; FAS
+teórico propio de SAGyP (Res. 42/2007) relevado pero no sumado (no hay API). Detalle completo
+(research de las 5 preguntas, tabla de homologación con la evidencia numérica, y el follow-up de
+industria):
 [`sesiones/2026-07-24-c16-capacidad-pago.md`](sesiones/2026-07-24-c16-capacidad-pago.md).
 
 ## Anterior (24/07/2026 — 🔧 L6+L3+L2 (3 lotes técnicos del backlog maestro) HECHOS)

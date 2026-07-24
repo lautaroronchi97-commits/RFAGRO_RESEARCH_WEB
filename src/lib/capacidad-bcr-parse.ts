@@ -14,7 +14,8 @@ import { arNum } from "./env-utils";
  * vigente, exacto, para los 5 granos (docs/sesiones/2026-07-24-c16-capacidad-pago.md).
  */
 
-// Fragmento inicial de la etiqueta del "Commodity" (split por "/" del texto real) → underlying.
+// Fragmento inicial de la etiqueta del "Commodity"/"Complejo" (split por "/" del texto real) → underlying.
+// "Girasol" (con nombre completo) solo aparece en el bloque de Industria; "Gsl" es el bloque de grano.
 const GRANOS_COMMODITY: Record<string, string> = {
   Trigo: "TRI",
   Maíz: "MAI",
@@ -22,6 +23,7 @@ const GRANOS_COMMODITY: Record<string, string> = {
   Soja: "SOJ",
   Sorg: "SOR",
   Gsl: "GIR",
+  Girasol: "GIR",
 };
 
 export type FilaBcr = {
@@ -47,22 +49,40 @@ export function numerosDeFila(cells: string[]): number[] {
   return nums;
 }
 
-/** Asigna el 1er valor de la fila al grano listado primero, y el ÚLTIMO al listado segundo (si hay 2). */
-export function asignarFilaGrano(
-  porGrano: Record<string, FilaBcr>,
+/**
+ * Asigna el 1er valor de la fila al grano listado primero (siempre confiable: nunca depende de
+ * si otras celdas parsearon bien), y el ÚLTIMO al listado segundo — genérico: lo usan tanto la
+ * tabla de grano (`FilaBcr`) como la de industria (`FilaBcrIndustria`), mismo layout de columnas
+ * SAGyP-primero/último en ambas.
+ *
+ * `totalColsEsperadas` (del header "Puerto/Port(s)" del bloque, ver `contarColumnas`): si se
+ * pasa y `nums.length` no coincide, NO se asigna el último valor — una celda de en medio rota
+ * (ej. el typo real "v165,0" de girasol en la sección Industria) puede correr el índice y
+ * pisarle al segundo grano un valor que en realidad es del primero. Sin este chequeo, ese bug
+ * pasaba silencioso: el "último valor" dejaba de ser el último grano.
+ */
+export function asignarFilaGrano<F extends Record<string, unknown>>(
+  porGrano: Record<string, F>,
   granosBloque: string[],
-  campo: keyof FilaBcr,
+  campo: keyof F,
   nums: number[],
+  totalColsEsperadas?: number,
 ) {
   if (granosBloque.length === 0 || nums.length === 0) return;
   const primero = granosBloque[0]!; // length===0 ya salió arriba
   const filaPrimero = porGrano[primero];
-  if (filaPrimero && filaPrimero[campo] == null) filaPrimero[campo] = nums[0]!;
+  if (filaPrimero && filaPrimero[campo] == null) filaPrimero[campo] = nums[0] as F[keyof F];
   if (granosBloque.length > 1 && nums.length > 1) {
+    if (totalColsEsperadas != null && nums.length !== totalColsEsperadas) return;
     const segundo = granosBloque[granosBloque.length - 1]!;
     const filaSegundo = porGrano[segundo];
-    if (filaSegundo && filaSegundo[campo] == null) filaSegundo[campo] = nums[nums.length - 1]!;
+    if (filaSegundo && filaSegundo[campo] == null) filaSegundo[campo] = nums[nums.length - 1] as F[keyof F];
   }
+}
+
+/** Cuenta las celdas de datos no vacías de la fila "Puerto/Port(s)" — total de columnas del bloque. */
+export function contarColumnas(cells: string[]): number {
+  return cells.slice(1).filter(Boolean).length;
 }
 
 /**
@@ -107,6 +127,67 @@ export function parseBcr(html: string, granosOrden: readonly string[]): ParseBcr
       asignarFilaGrano(porGrano, granosBloque, "gastosComerc", numerosDeFila(cells));
     } else if (head.startsWith("FAS Teórico")) {
       asignarFilaGrano(porGrano, granosBloque, "fas", numerosDeFila(cells));
+    }
+  }
+  return { porGrano, fecha };
+}
+
+export type FilaBcrIndustria = { fobAceite: number | null; fobPellets: number | null; fas: number | null };
+export type ParseBcrIndustriaResult = { porGrano: Record<string, FilaBcrIndustria>; fecha: string | null };
+
+function filaIndustriaVacia(): FilaBcrIndustria {
+  return { fobAceite: null, fobPellets: null, fas: null };
+}
+
+/**
+ * Parsea la sección "Cálculo del FAS Teórico para la Industria Aceitera Exportadora" (soja +
+ * girasol, complejo aceite/harina/pellets) — la misma planilla de BCR, la parte que `parseBcr`
+ * descarta a propósito (es un cálculo distinto: capacidad de pago de la INDUSTRIA que crushea,
+ * no del exportador de grano sin procesar). Mismo criterio 1er/último valor que `parseBcr`
+ * (bloque "Complejo / Complex" en vez de "Commodity"): soja listada primero (columnas Ago-26/
+ * Sep-26 forward), girasol al final (columna Spot). La fila "FAS Teórico en u$s y $ (BNA)" trae
+ * el equivalente en pesos entre paréntesis intercalado (ej. "($503,720)") — `numerosDeFila` ya
+ * lo descarta solo porque `arNum` no puede parsear paréntesis, así que los valores en USD quedan
+ * limpios sin tratamiento especial.
+ */
+export function parseBcrIndustria(html: string, granosOrden: readonly string[]): ParseBcrIndustriaResult {
+  const i = html.indexOf("Industria Aceitera");
+  if (i < 0) return { porGrano: {}, fecha: null };
+  const seg = html.slice(i, i + 20_000);
+
+  const fm = seg.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  const fecha = fm ? `${fm[3]}-${fm[2]}-${fm[1]}` : null;
+
+  const porGrano: Record<string, FilaBcrIndustria> = {};
+  for (const u of granosOrden) porGrano[u] = filaIndustriaVacia();
+
+  let granosBloque: string[] = [];
+  let totalColsEsperadas: number | undefined;
+  for (const rowHtml of seg.split(/<\/tr>/)) {
+    const cells = [...rowHtml.matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/g)]
+      .map((m) => (m[1] ?? "").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim()) // grupo obligatorio del regex
+      .filter(Boolean);
+    if (cells.length === 0) continue;
+    const head = cells[0]!; // cells.length===0 ya salió arriba
+
+    if (head.startsWith("Complejo")) {
+      granosBloque = [];
+      for (const c of cells.slice(1)) {
+        const key = c.split("/")[0]!.trim(); // split() nunca da array vacío
+        const g = GRANOS_COMMODITY[key];
+        if (g && !granosBloque.includes(g)) granosBloque.push(g);
+      }
+    } else if (head.startsWith("Puerto")) {
+      // "Puertos / Ports": Ago-26/Sep-26 (soja) + Spot (girasol) — a diferencia de la tabla de
+      // grano, ACÁ esta fila SÍ coincide 1:1 con la cantidad real de valores de las filas de
+      // datos (verificado con el fixture real) → sirve de chequeo contra celdas rotas.
+      totalColsEsperadas = contarColumnas(cells);
+    } else if (head.startsWith("FOB ACEITE")) {
+      asignarFilaGrano(porGrano, granosBloque, "fobAceite", numerosDeFila(cells), totalColsEsperadas);
+    } else if (head.startsWith("FOB PELLETS")) {
+      asignarFilaGrano(porGrano, granosBloque, "fobPellets", numerosDeFila(cells), totalColsEsperadas);
+    } else if (head.startsWith("FAS Teórico")) {
+      asignarFilaGrano(porGrano, granosBloque, "fas", numerosDeFila(cells), totalColsEsperadas);
     }
   }
   return { porGrano, fecha };
