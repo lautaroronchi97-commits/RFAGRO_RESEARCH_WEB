@@ -17,6 +17,12 @@
 > **Base de evidencia:** todo lo afirmado acá sale del research del 24/07 (3 agentes:
 > sesgos/multi-agente con papers · informes agro profesionales + fuentes verificadas con
 > requests reales HOY · inventario exacto del repo). Referencias en §12.
+>
+> **Auditado (24/07):** un agente adversarial cruzó este plan contra el código real y encontró
+> 3 huecos críticos (el disparo de BCBA-PAS no matcheaba nunca · faltaba la señal de camiones
+> ya construida en los insumos del view · el scorecard tenía un agujero de roll de contrato)
+> + 8 más chicos. Todos corregidos en esta versión — quedan marcados **[fix auditoría]** donde
+> aplica para que quede el rastro.
 
 ---
 
@@ -110,7 +116,7 @@ las mitigaciones de arriba como reglas duras, no como sugerencias.
 | Fuente | URL / mecanismo | Qué aporta | Cadencia | Verificado |
 |---|---|---|---|---|
 | **CFTC COT desagregado** | `cftc.gov/dea/newcot/f_disagg.txt` (CSV plano) o API Socrata `publicreporting.cftc.gov/resource/72hh-3qpy.json` (JSON filtrable, histórico completo, sin key) | **Posicionamiento de fondos** (managed money neto + Δ semanal) en maíz/soja/trigo CBOT — EL dato que separa un informe de mesa de uno de diario ("fondos vendidos récord = cualquier susto climático dispara short covering") | Viernes ~15:30 ET (dato del martes) | ✅ 200 ambos, formato estable |
-| **DTN pre/post-report** | `dtnpf.com/agriculture/web/ag/news/` + descubrimiento por Google News RSS la semana del informe | **Tablas de expectativas de analistas vs dato** (Avg/High/Low) para WASDE/Stocks/Acreage — habilita "el mercado esperaba X, salió Y" (hoy MP4 solo compara vintage vs vintage) | Pre ~T-3 y post cada informe USDA | ✅ 200 sin paywall, tablas presentes (verificado con el WASDE de julio) |
+| **DTN pre/post-report** | `dtnpf.com/agriculture/web/ag/news/` + descubrimiento por Google News RSS la semana del informe | **Tablas de expectativas de analistas vs dato** (Avg/High/Low) para WASDE/Stocks/Acreage — habilita "el mercado esperaba X, salió Y" (hoy MP4 solo compara vintage vs vintage) | Pre ~T-3 y post cada informe USDA | ⚠️ Portada/índice 200 sin paywall; **[fix auditoría, MEDIO]** un chequeo posterior mostró que el TEXTO COMPLETO de artículos individuales pide login — no confirmado si la tabla de expectativas específica queda visible sin loguearse. Re-verificar con un artículo pre/post-WASDE completo antes de V2; si el gate la tapa, degradar a Pro Farmer como primario. |
 | **USDA Crop Progress** | ESMIS API (`usda.library.cornell.edu/api/v1/...CropProg?latest=true`, sin key) → TXT plano | **Condición de cultivo EEUU** (% bueno/excelente por estado, vs año pasado) — el driver de Chicago de mayo a septiembre, hoy ausente del stack | Lunes 16:00 ET (abr-nov) | ✅ API 200 + TXT 200 parseable |
 | **USDA FAS Export Sales** | `api.fas.usda.gov/api/esr/...` — **requiere key GRATIS** (registro 2 min) | Demanda EEUU semanal por país; lectura pro = "ritmo acumulado vs necesario para la meta WASDE" (la meta ya está en casa) | Jueves 8:30 ET | ⚠️ 403 sin key; key gratuita → **pedir a Lautaro que la registre** (§10) |
 | **EIA etanol + AMS GTR** | `ir.eia.gov/wpsr/table9.csv` · `ams.usda.gov/.../gtr` (PDF semanal) | Demanda de maíz para etanol · fletes barcaza/oceánico (proxy gratis del Baltic) | Mié / Jue | ✅ 200 ambos |
@@ -144,8 +150,16 @@ ingesta con el patrón de siempre — decisión aparte, no de este plan.
 ## 4. Arquitectura de la corrida semanal del view v2 (el corazón del plan)
 
 La Routine del viernes (MP3) pasa de "un prompt lineal" a un pipeline orquestado. La skill
-la define paso a paso; el orquestador es la propia sesión (Fable), los agentes son
-subagentes de solo lectura.
+la define paso a paso; el orquestador es la propia sesión (**hoy Opus** — Lautaro lo puso a
+mano, ver §10 pregunta 5 — el diseño del pipeline es agnóstico al modelo; Fable cuando esté
+disponible para Routines), los agentes son subagentes de solo lectura.
+
+**[fix auditoría, MENOR] Precondición no confirmada**: el diseño F1/F4 asume que una sesión
+corriendo como Routine puede invocar el tool de subagentes para lanzar el fan-out en
+paralelo de verdad. Ningún doc del repo lo confirma (`PLAN_INFORMES.md` solo define el
+worker como "una sesión nueva de Claude Code"). El prompt V0/V1 debe verificarlo primero —
+si no está disponible, el "fan-out" en la práctica corre secuencial (cambia la matemática de
+consumo de R5).
 
 ```
 F0  Chequeo mecánico de invalidadores            (sin LLM opinando: dato vs umbral)
@@ -192,7 +206,13 @@ F6  Salida con template fijo + guardado + scorecard
   - **¿El nivel de precios tiene sentido con el balance?** Cosecha récord con precios
     firmes es una pregunta, no un dato — ¿quién está pagando y por qué?
   - **¿Quién pone el precio?** ¿El productor reteniendo (farmer selling bajo) o la
-    exportación apretando (línea de barcos, gap de cobertura)?
+    exportación apretando (línea de barcos, gap de cobertura)? **[fix auditoría, CRÍTICO]**
+    Esta pregunta la responde un dato propio que hoy NO está en los insumos del view:
+    `getSenalCamiones()` (`src/lib/camiones/camiones.ts`) — el diferencial de percentiles
+    estacionales barcos-vs-camiones construido en C5 (23/07) exactamente para esto. Falta
+    sumarlo al `Promise.all` de `src/app/api/views/insumos/route.ts` (mismo patrón que
+    `temperatura`/`empresas`, service key, cero fetch nuevo) y a la tabla de insumos de la
+    skill. Sin este fix, F1/F2 saldrían a buscar afuera algo que ya está calculado adentro.
   - **¿Caros o baratos contra Chicago?** Paridad/premios: FAS vs pizarra vs CBOT (todo en
     casa) — si el local está caro contra el mundo, la corrección puede venir por paridad
     aunque el view local sea alcista.
@@ -202,7 +222,10 @@ F6  Salida con template fijo + guardado + scorecard
   - **¿Algún activo muy correlacionado está con problemas?** Los mercados de aceites se
     mueven todos juntos y afectan a la soja (palma/canola/girasol → aceite de soja →
     poroto); energía → etanol → maíz. Un quiebre en el correlacionado es señal aunque el
-    propio grano no haya hecho nada todavía.
+    propio grano no haya hecho nada todavía. **[fix auditoría, MEDIO]** Aceite y harina de
+    soja (el correlacionado más directo) YA están en `chicago`/`getMonitorMercados()`
+    (anillo 1, sin fetch nuevo, ya en USD/tn) — mirarlos primero ahí. Palma/canola/girasol
+    sí requieren research externo (lente 1 de F1).
 
   Son **ejemplos, no una lista cerrada** — hay miles. La regla del prompt es explícita:
   **cabeza de mercado y mente abierta** — si el mercado se está moviendo por algo que el
@@ -265,12 +288,21 @@ alter table views_mercado
 ### Scorecard (lib pura, cero tabla nueva)
 
 `src/lib/views-scorecard.ts`: para cada view histórico con ≥7 días de vida, computa contra
-`futuros_cierres` (posición más cercana del grano a la fecha del view) el retorno a 1/2/4
-semanas y lo cruza con la dirección → **hit-rate direccional** por grano y global, y Brier
-sobre la confianza mapeada a probabilidad. Computado al vuelo (siempre actualizado, nada que
-mantener). Se muestra en `/granos/view` (la UI está ~80% lista: el historial ya se lista;
-se suma la columna resultado + badge de switch) y entra como insumo de F3 (la corrida sabe
-cómo le fue viniendo).
+`futuros_cierres` el retorno a 1/2/4 semanas y lo cruza con la dirección → **hit-rate
+direccional** por grano y global, y Brier sobre la confianza mapeada a probabilidad.
+Computado al vuelo (siempre actualizado, nada que mantener). Se muestra en `/granos/view`
+(la UI está ~80% lista: el historial ya se lista; se suma la columna resultado + badge de
+switch) y entra como insumo de F3 (la corrida sabe cómo le fue viniendo).
+
+**[fix auditoría, CRÍTICO] Metodología de selección de contrato — fijar en t0, nunca
+re-elegir.** "La posición más cercana" cambia con el tiempo: un contrato puede vencer entre
+la fecha del view y la medición a 4 semanas, y si el scorecard re-elige "la más cercana" en
+cada fecha de medición, el retorno mide en parte el salto de rolleo (contango/backwardation),
+no el movimiento que la tesis predijo — contamina el hit-rate/Brier que §11 usa como vara de
+éxito. Regla obligatoria: **la posición se fija UNA VEZ, al momento t0 del view** (la más
+cercana en esa fecha), y se mide el retorno de ESA MISMA posición en t0+n; si esa posición ya
+venció antes de t0+n, el scorecard degrada a `null` para esa ventana (no re-elige otra) — se
+documenta como "sin medición, contrato venció" en vez de ensuciar el número.
 
 ### UI `/granos/view` (cambios chicos)
 
@@ -320,12 +352,25 @@ de cero?"): **las dos cosas, en capas distintas — nunca resumir el resumen.**
   otros organismos), que ya está en casa.
 - **BCBA-PAS (decisión de Lautaro, 24/07): lo carga él en cada salida** por `/admin/datos`
   → entra a `estimaciones_produccion` como cualquier organismo y la interpretación se
-  genera sola **del dato crudo** (anillo 1), no de un resumen. Detalle de implementación:
-  el disparo debe tolerar "informe cargado HOY con fecha de días atrás" (Lautaro puede
-  subirlo con rezago; el filtro actual de `informesHoy` es por fecha del informe). Si
-  Lautaro además comparte su propia lectura del PAS, se trata igual que el "color de la
-  rueda" del diario: **citable como lectura de la mesa, nunca fuente de números ni algo
-  que el modelo "corrige"** — si su lectura y el dato difieren, se muestran las dos.
+  genera sola **del dato crudo** (anillo 1), no de un resumen. **[fix auditoría, CRÍTICO]**
+  El disparo actual (Paso 9 de `informe-diario`) filtra `informesHoy` por
+  `fecha_publicacion === hoy` — como Lautaro sube el PAS con la fecha REAL del informe
+  (que puede ser de días atrás), ese filtro nunca matchea el día de carga y el disparo
+  falla en silencio (nunca hay error, simplemente "no hay nada que hacer"). La tabla YA
+  tiene la columna que lo resuelve: `estimaciones_produccion.actualizado_en timestamptz`
+  (se setea a `now()` en cada upsert de `admin_upsert_estimaciones`) — pero ni
+  `/api/informes/datos` ni `/api/views/insumos` la seleccionan hoy. Fix: sumar
+  `actualizado_en` al `select` de ambas rutas y disparar el Paso 9 también cuando
+  `actualizado_en::date === hoy` (no solo `fecha_publicacion === hoy`). Si Lautaro además
+  comparte su propia lectura del PAS, se trata igual que el "color de la rueda" del
+  diario: **citable como lectura de la mesa, nunca fuente de números ni algo que el
+  modelo "corrige"** — si su lectura y el dato difieren, se muestran las dos.
+- **[fix auditoría, MEDIO] Pasaporte también en `interpretaciones`.** La migración de §5 le
+  suma `evidencia_externa jsonb` a `views_mercado`, pero `interpretaciones` (tabla separada,
+  `supabase/migrations/20260723170000_mp4_interpretaciones.sql`) no la tiene — el dato
+  externo quedaría enterrado en `borrador_md`/`publicado_md` (texto libre), sin campo que
+  F5 pueda re-verificar mecánicamente. Fix: sumar la misma columna
+  `evidencia_externa jsonb default '[]'` a `interpretaciones` en la migración de V2.
 - El gate no cambia: borrador → OK de Lautaro → publicar.
 
 ### 6.3 Informe semanal MP2 (V3)
@@ -342,6 +387,13 @@ de cero?"): **las dos cosas, en capas distintas — nunca resumir el resumen.**
   (transparencia estilo "what we got wrong" de los desks serios — construye confianza).
 - Sigue siendo **5 páginas** (P4). Si Lautaro quiere una 6ª para "El mundo", lo decide él
   (§10).
+- **[fix auditoría, MEDIO] La sección necesita un slot nuevo en la plantilla, no solo en la
+  skill.** `src/app/informes/plantilla/semanal/page.tsx` tiene sus 5 páginas fijas y
+  completas hoy (tapa/resumen · granos · dólar+Chicago · comercio exterior · view+agenda);
+  no hay "relleno" identificable para cortar sin decidirlo a mano. El prompt V3 tiene que
+  incluir explícito: editar `page.tsx` para insertar el bloque en la página de dólar/Chicago
+  y decidir qué se recorta de esa página para no sumar hoja (y no romper el chequeo
+  `/Count 5` que la propia skill exige al final del Paso 5).
 
 ### 6.4 Informe diario MP1 (V4 — mínimo, a propósito)
 
@@ -409,14 +461,21 @@ reales de Routines). Formalización:
 > feedback en `/granos/view` sobre el view vigente — el loop de aprendizaje arranca ahí.
 > (3) Pedirle la API key gratuita de USDA FAS (registro en api.fas.usda.gov, 2 min) y
 > cargarla como env var del entorno de Claude (`USDA_FAS_API_KEY`). (4) Anotar en el doc de
-> sesión el consumo/duración observado de cada Routine como línea de base. Criterio de
-> cierre: las 3 Routines con ≥1 corrida real verificada de punta a punta.
+> sesión el consumo/duración observado de cada Routine como línea de base. (5) Confirmar si
+> una sesión corriendo como Routine puede invocar el tool de subagentes (Agent/Task) — es
+> precondición de todo el fan-out de V1; si no puede, avisar antes de diseñar V1 como
+> paralelo de verdad. Criterio de cierre: las 3 Routines con ≥1 corrida real verificada de
+> punta a punta.
 
 ### PROMPT V1 — view-mercado v2 (la bola de nieve)
 
 > Leé `docs/PLAN_INFORMES_V2.md` §§2, 4, 5 y 6.1 (el diseño completo, con la evidencia en
-> §1) y la skill actual `.claude/skills/view-mercado/`. Construí: (1) la migración aditiva
-> de `views_mercado` (§5) — aplicarla por MCP CON OK de Lautaro, como siempre; (2) la skill
+> §1 y los fixes de auditoría marcados **[fix auditoría]** en el texto — son parte del
+> alcance, no opcionales) y la skill actual `.claude/skills/view-mercado/`. Construí: (1) la
+> migración aditiva de `views_mercado` (§5) — aplicarla por MCP CON OK de Lautaro, como
+> siempre; sumá también `getSenalCamiones()` al `Promise.all` de
+> `src/app/api/views/insumos/route.ts` y a la tabla de insumos de la skill (dato propio, C5,
+> hoy ausente); (2) la skill
 > reescrita con el pipeline F0-F6 — respetando: blind-first estricto (la tesis previa no
 > entra al contexto hasta F3), las "preguntas de la mesa" de §4 F2 en el prompt de análisis
 > (con la regla explícita "cabeza de mercado y mente abierta": los ejemplos orientan, no
@@ -431,34 +490,49 @@ reales de Routines). Formalización:
 > se movió y qué recorrido queda — la línea puede seguir, pero justificada; CUMPLIDA es
 > salida posible, no automática);
 > (3) `src/lib/views-scorecard.ts` (hit-rate direccional 1/2/4 semanas + Brier contra
-> `futuros_cierres`, lib pura testeada con fixture real); (4) UI `/granos/view`: badges
-> CONFIRMA/AJUSTA/SWITCH/CUMPLIDA, fila de scorecard, invalidadores con estado 🟢🟡🔴. Verificación:
+> `futuros_cierres`, lib pura testeada con fixture real — **metodología de contrato fijada
+> en t0, nunca re-elegir la posición más cercana en cada medición**: fix de auditoría, es
+> lo que hace confiable la vara de éxito de §11); (4) UI `/granos/view`: badges
+> CONFIRMA/AJUSTA/SWITCH/CUMPLIDA, fila de scorecard, invalidadores con estado 🟢🟡🔴 —
+> y sumá los 4 campos nuevos al `select` explícito y al tipo `ViewMercado` de
+> `src/lib/views-mercado.ts` (hoy es una lista de columnas, no `select("*")` — sin este
+> cambio los badges no tienen de dónde leer aunque la migración esté aplicada). Verificación:
 > lint/tsc/tests/build + una corrida completa EN SECO (sin guardar) mostrando las 6 fases y
-> el consumo total; los números del scorecard cotejados 1:1 por SQL contra `futuros_cierres`.
-> La primera corrida real la dispara la Routine del viernes — dejarla apuntando a la skill
-> nueva. Actualizar `aprendizajes.md` con el cap y formato de §7 (sin inventar reglas: sigue
-> vacío hasta que haya feedback).
+> el consumo total; los números del scorecard cotejados 1:1 por SQL contra `futuros_cierres`
+> (incluido un caso con rolleo de contrato en el medio de la ventana, para probar que degrada
+> a null en vez de mezclar posiciones). La primera corrida real la dispara la Routine del
+> viernes — dejarla apuntando a la skill nueva. Actualizar `aprendizajes.md` con el cap y
+> formato de §7 (sin inventar reglas: sigue vacío hasta que haya feedback).
 
 ### PROMPT V2 — interpretaciones v2 (expectativa vs dato)
 
-> Leé `docs/PLAN_INFORMES_V2.md` §6.2 y el Paso 9 de `.claude/skills/informe-diario/`.
-> Modificá el Paso 9: antes de redactar, para informes USDA, un paso de research acotado
-> (≤10 tool calls) busca la tabla de expectativas pre-report (DTN `dtnpf.com` — verificado
-> sin paywall — descubierta vía Google News RSS `"WASDE" analysts` la semana del informe;
-> Pro Farmer como alternativa) y la reacción de Chicago del día (dato propio, `chicago` del
-> JSON). El borrador pasa a la estructura: qué se esperaba → qué salió → sorpresa → reacción
-> del precio → qué implica → qué mirar. Con pasaporte (URL + fecha + cita) para todo dato
-> externo, verificado antes de citar; si no se consigue expectativa, la interpretación sale
-> con el formato actual y lo dice ("sin encuesta de expectativas a mano"). La estructura
-> incluye SIEMPRE el paso "cuánto ya estaba en el precio" (run-up previo al informe, dato
-> propio). Para GEA/DEA/CONAB: consenso implícito = estimación previa del organismo + qué
-> decían los otros (todo en casa). **BCBA-PAS**: el disparo debe tolerar informe cargado
-> hoy con fecha de días atrás (Lautaro lo sube a mano en cada salida, puede haber rezago);
-> su lectura propia, si la comparte, se trata como el color de la rueda (citable, nunca
-> fuente de números). Las interpretaciones PUBLICADAS previas se leen como calibración de
-> criterio (qué priorizó/descartó Lautaro), NUNCA como fuente de números. El gate
-> borrador→OK no se toca. Verificación: regenerar en seco la interpretación del WASDE #673
-> (10/07) con el formato nuevo y comparar contra la publicada — mostrársela a Lautaro.
+> Leé `docs/PLAN_INFORMES_V2.md` §6.2 y el Paso 9 de `.claude/skills/informe-diario/` (los
+> fixes marcados **[fix auditoría]** son parte del alcance). PRIMERO: re-verificar con un
+> request real que un artículo pre/post-WASDE COMPLETO de DTN (no solo la portada) muestra
+> la tabla de expectativas sin login — si el gate la tapa, usar Pro Farmer como primario y
+> anotarlo. Modificá el Paso 9: antes de redactar, para informes USDA, un paso de research
+> acotado (≤10 tool calls) busca la tabla de expectativas pre-report y la reacción de
+> Chicago del día (dato propio, `chicago` del JSON). El borrador pasa a la estructura: qué
+> se esperaba → qué salió → sorpresa → reacción del precio → qué implica → qué mirar. Con
+> pasaporte (URL + fecha + cita) para todo dato externo, verificado antes de citar y
+> guardado en una columna nueva `evidencia_externa jsonb default '[]'` en `interpretaciones`
+> (mismo shape que `views_mercado`, migración en esta fase) — no solo enterrado en el
+> markdown; si no se consigue expectativa, la interpretación sale con el formato actual y lo
+> dice ("sin encuesta de expectativas a mano"). La estructura incluye SIEMPRE el paso
+> "cuánto ya estaba en el precio" (run-up previo al informe, dato propio). Para
+> GEA/DEA/CONAB: consenso implícito = estimación previa del organismo + qué decían los
+> otros (todo en casa). **BCBA-PAS — fix del disparo (crítico)**: sumar la columna
+> `actualizado_en` (ya existe en `estimaciones_produccion`, se setea sola en cada upsert) al
+> `select` de `/api/informes/datos` y `/api/views/insumos`, y disparar el Paso 9 también
+> cuando `actualizado_en::date === hoy` — el filtro actual solo por `fecha_publicacion`
+> nunca matchea el día real en que Lautaro sube el PAS (lo hace con la fecha real del
+> informe, que puede ser de días atrás) y el disparo fallaría en silencio. Su lectura
+> propia, si la comparte, se trata como el color de la rueda (citable, nunca fuente de
+> números). Las interpretaciones PUBLICADAS previas se leen como calibración de criterio
+> (qué priorizó/descartó Lautaro), NUNCA como fuente de números. El gate borrador→OK no se
+> toca. Verificación: regenerar en seco la interpretación del WASDE #673 (10/07) con el
+> formato nuevo y comparar contra la publicada — mostrársela a Lautaro; y probar el fix del
+> disparo con un caso sintético de PAS cargado hoy con `fecha_publicacion` de 3 días atrás.
 
 ### PROMPT V3 — informe semanal v2 (el mundo esta semana)
 
@@ -470,8 +544,10 @@ reales de Routines). Formalización:
 > degrada honesta y el PDF sale igual; (b) agenda con expectativas (pre-report si hay);
 > (c) reglas nuevas del criterio del Paso 2: SWITCH del view v2 = candidato automático a
 > bullet del resumen ejecutivo; scorecard mencionado 1 vez por mes. El PDF sigue en 5
-> páginas: "El mundo" entra en la página de contexto reemplazando relleno, no sumando hoja
-> (si no entra, es señal de que sobra otra cosa). Verificación: PDF en seco de la semana
+> páginas: editá `src/app/informes/plantilla/semanal/page.tsx` para insertar el bloque en
+> la página de dólar/Chicago (hoy no hay relleno "de sobra" — decidí explícito qué se
+> recorta de esa página para no sumar hoja; si de verdad no entra, es señal de que sobra
+> otra cosa, no de agregar página sin consultar). Verificación: PDF en seco de la semana
 > corriente con la sección nueva poblada de datos reales verificados + `/Count 5`.
 
 ### PROMPT V4 — diario (retoque) + medición
@@ -486,10 +562,10 @@ reales de Routines). Formalización:
 
 ---
 
-## 10. Preguntas abiertas para Lautaro (ninguna bloquea V0-V1 salvo la 1)
+## 10. Preguntas abiertas para Lautaro (ninguna bloquea nada — P7: research es aditivo)
 
 1. **API key de USDA FAS** (gratis, 2 min en api.fas.usda.gov): ¿la registrás? Sin ella no
-   hay export sales; todo lo demás anda igual.
+   hay export sales; la lente 1 de F1 degrada esa fuente puntual, todo lo demás anda igual.
 2. **Feedback con nota**: ¿sumamos una calificación 1-5 por view además del texto libre?
    (Hace medible la calibración; es una migración chica + un input en `/granos/view`.)
 3. **Semanal**: ¿"El mundo esta semana" dentro de las 5 páginas (recomendado) o 6ª página?

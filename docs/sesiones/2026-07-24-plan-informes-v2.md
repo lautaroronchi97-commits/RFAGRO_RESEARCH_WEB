@@ -79,15 +79,37 @@
 - Solo docs (cero código): no aplica lint/tsc/build más allá del CI normal del PR.
 - Las verificaciones de fuentes externas (§3 del plan) son requests reales de HOY con status
   HTTP reportado tal cual, incluidas las negativas.
+- **Auditoría adversarial del plan** (agente de solo lectura, cruzó `PLAN_INFORMES_V2.md`
+  contra el código real, las migraciones, las skills y el backlog): encontró 3 hallazgos
+  CRÍTICOS + 4 MEDIOS + 4 MENORES, todos corregidos en el plan (marcados **[fix auditoría]**
+  en el texto). Los 3 críticos:
+  1. El disparo de BCBA-PAS filtraba por `fecha_publicacion` — como Lautaro carga el PAS con
+     la fecha real del informe (puede ser de días atrás), el filtro nunca iba a matchear el
+     día de carga y el Paso 9 fallaba en silencio. Fix: usar la columna `actualizado_en` que
+     ya existe en `estimaciones_produccion` (se setea sola en cada upsert) y sumarla al
+     `select` de los 2 endpoints de insumos.
+  2. La señal de camiones-vs-barcos (C5, ya construida el 23/07) faltaba en los insumos del
+     view — justo el dato que responde "¿quién pone el precio?", una de las preguntas de la
+     mesa que el propio plan cita como ejemplo. Fix: sumar `getSenalCamiones()` al endpoint.
+  3. El scorecard (la pieza que mide si la bola de nieve mejora o degrada) no fijaba la
+     posición del contrato en el tiempo — "la más cercana" cambia si un contrato vence entre
+     mediciones, contaminando el hit-rate con el salto de rolleo en vez del movimiento real.
+     Fix: fijar la posición en t0 y degradar a null si venció, nunca re-elegir.
+  Nota operativa: el primer intento de lanzar este auditor se cortó por una interrupción de
+  usuario a mitad de camino y quedó colgado sin avisar (82 min sin actividad en su transcript,
+  cero notificación) — se detectó chequeando el timestamp del archivo de salida y se relanzó.
 
 ## Quedó pendiente / en vuelo
 
 - **Lautaro lee el plan** y contesta §10 (key FAS gratis · nota 1-5 en feedback · 5 vs 6
   páginas · COT en diario sí/no · modelo de la Routine del view).
 - Ejecutar **V0** (verificar Routines + primer feedback) y después V1→V4, cada una en su
-  sesión con el prompt de §9.
+  sesión con el prompt de §9 (ahora con los fixes de auditoría incorporados en cada prompt).
 - Registrar V1-V4 en el backlog maestro (`auditoria/E7-sintesis.md` §4) cuando Lautaro
   apruebe el plan.
+- Re-verificar con un request real si el texto completo de un artículo de DTN (no solo la
+  portada) muestra la tabla de expectativas sin login, antes de ejecutar V2 (hallazgo MEDIO
+  de la auditoría, sin confirmar todavía).
 
 ## Trampas descubiertas (para la próxima sesión)
 
