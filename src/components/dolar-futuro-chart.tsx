@@ -34,6 +34,8 @@ export function DolarFuturoChart({ points }: { points: Pt[] }) {
     points.map((p, i) => `L${X(i).toFixed(1)},${Y(p.value).toFixed(1)}`).join(" ") +
     ` L${X(points.length - 1).toFixed(1)},${pad.t + ih} Z`;
   const last = points.length - 1;
+  // `hi` es state entre renders: si `points` cambia de largo puede quedar afuera — guard real.
+  const hiPt = hi !== null ? points[hi] : undefined;
 
   function onMove(e: React.PointerEvent<SVGRectElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -78,11 +80,11 @@ export function DolarFuturoChart({ points }: { points: Pt[] }) {
         {points.map((p, i) =>
           i < last ? <circle key={`d${i}`} cx={X(i)} cy={Y(p.value)} r={2.4} className="cv-dot" /> : null,
         )}
-        <circle cx={X(last)} cy={Y(points[last].value)} r={4.5} className="cv-end" />
-        {hi !== null && (
+        <circle cx={X(last)} cy={Y(points[last]!.value)} r={4.5} className="cv-end" />
+        {hi !== null && hiPt && (
           <>
             <line className="cv-cross" x1={X(hi)} y1={pad.t} x2={X(hi)} y2={pad.t + ih} />
-            <circle className="cv-focus" cx={X(hi)} cy={Y(points[hi].value)} r={5} />
+            <circle className="cv-focus" cx={X(hi)} cy={Y(hiPt.value)} r={5} />
           </>
         )}
         <rect
@@ -96,12 +98,12 @@ export function DolarFuturoChart({ points }: { points: Pt[] }) {
           onPointerLeave={() => setHi(null)}
         />
       </svg>
-      {hi !== null && (
+      {hi !== null && hiPt && (
         <div
           className="cv-tip"
-          style={{ left: `${(X(hi) / W) * 100}%`, top: `${(Y(points[hi].value) / H) * 100}%` }}
+          style={{ left: `${(X(hi) / W) * 100}%`, top: `${(Y(hiPt.value) / H) * 100}%` }}
         >
-          <span className="tt-x">{points[hi].label}</span> · $ {nfmt(points[hi].value, 1)}
+          <span className="tt-x">{hiPt.label}</span> · $ {nfmt(hiPt.value, 1)}
         </div>
       )}
     </div>
