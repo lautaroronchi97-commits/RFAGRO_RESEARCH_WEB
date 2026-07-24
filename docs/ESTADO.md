@@ -215,8 +215,8 @@ antes de cerrar, git diff limpio). Detalle:
 PNG/CSV, guard parcial) ·
 📝 C3 (interpretación de informes de organismos) HECHO, migración aplicada y probada con un informe real ·
 🧹 LOTE L1 (partir `market.ts`) HECHO · 📄 MP2 informe semanal HECHO (skill + Novedades del día con
-interpretaciones + páginas legales, PR #68 en vuelo) · 🔓 A1 login Google TRABADO en verificación de
-marca — abrió research de dominio/marca/SRL, PAUSADO a pedido de Lautaro ·
+interpretaciones + páginas legales, PR #68 en vuelo) · 🔓 A1 login Google: dominio `rofoagro.com.ar` conectado y verificado, marca pivotó a
+"ROFO AGRO" — falta el rebranding del sitio (próxima sesión) ·
 🔓 LOTE L5 (DEA-SAGyP) HECHO (carga semi-manual) · 📰 MP1 informe diario HECHO ·
 🎯 L4 (calibración de cobertura/roster/comisiones) CERRADO · 🌻 B3 (girasol/sorgo) CERRADO ·
 🚚 C5 (camiones en puerto + señal barcos-vs-camiones) CONSTRUIDO con pivote a Williams Entregas ·
@@ -416,29 +416,30 @@ por REST con la service key (mismo patrón que los scripts de ingesta) — BCBA 
 de `/produccion` junto a USDA/CONAB/BCR/DEA, 2000/01→2025/26. Detalle:
 [`sesiones/2026-07-23-mp2-skill-y-alta-srl.md`](sesiones/2026-07-23-mp2-skill-y-alta-srl.md).
 
-**🔓 A1 — LOGIN CON GOOGLE: verificación de marca TRABADA, abrió un tema de negocio (nombre/
-dominio/SRL) — PAUSADO a pedido explícito de Lautaro ("documentan todo lo que hablamos y lo
-dejamos para otro momento").** Al intentar publicar el consent screen (Google Auth Platform, UI
-nueva), Google rechazó la verificación de marca por 4 motivos, todos con la misma raíz: la web
-vive en un subdominio de Vercel (`rfagro-research-web.vercel.app`, no verificable como propiedad
-de Lautaro), la URL de página principal cargada no explica el propósito (probablemente `/` en vez
-de `/bienvenida`), el nombre "RF AGRO WEB" no coincide con la marca del sitio ("RF AGRO"), y el
-logo (probablemente el isotipo solo) no identifica la marca de forma inequívoca. **Investigado en
-el camino**: `rfagro.com.ar` (la primera opción de Lautaro) está tomado — Vercel no puede
-consultar ni vender `.ar`/`.com.ar` (hay que ir a nic.ar a mano); alternativas libres
-confirmadas: `rfagro.com` (USD 11,25/año), `rfagro.co`, `rfagro.io`. **Hallazgo importante**: la
-búsqueda de Lautaro en INPI (marcas) por "RF AGRO" dio limpia, PERO en AFIP apareció **RF AGRO
-SRL, CUIT 30712631208, activa desde 2013**, rubro "transporte automotor de mercaderías a granel"
-(camiones) — rubro adyacente, no idéntico, al de la consultora. Se le explicó la diferencia entre
-marca registrada (INPI, limpia) y nombre comercial/competencia desleal (no requiere INPI, y ahí sí
-hay una empresa activa con el nombre idéntico). Lautaro preguntó por dar de alta una SRL "R&F
-AGRO" + registrar esa marca — opinión dada (no es asesoramiento legal formal): no recomendado, el
-"&" es una diferencia demasiado fina; mejor separar los trámites (razón social de la SRL puede ser
-cualquier nombre legal, no necesita coincidir con la marca comercial "RF AGRO", a confirmar con un
-gestor/contador si pasa el registro de personas jurídicas de Santa Fe). **Nada de esto se
-ejecutó** — sigue 100% pendiente, ningún dominio comprado, ninguna SRL dada de alta, ninguna marca
-registrada, verificación de Google sin completar. Detalle (con el research completo y las
-opciones consideradas):
+**🔓 A1 — LOGIN CON GOOGLE + REBRANDING A "ROFO AGRO" — DOMINIO CONECTADO Y VERIFICADO, FALTA EL
+REBRANDING DEL SITIO (próxima sesión dedicada) — misma tarde del 23/07.** Retomado en la misma
+sesión (Lautaro: "ya registré el dominio"). Research previo (research de nombre/SRL, ver detalle
+abajo) llevó a la decisión de **pivotar la marca a "ROFO AGRO"** — esquiva del todo la duda legal
+de **RF AGRO SRL** (CUIT 30712631208, activa desde 2013, transporte de granel) sin necesitar
+consulta con gestor/abogado. **Dominio `rofoagro.com.ar` registrado y CONECTADO**: nameservers de
+Vercel (`ns1`/`ns2.vercel-dns.com`) delegados desde nic.ar (Mis dominios → Delegar → Agregar nueva
+delegación), propagado y en `Valid Configuration`. **Verificado LIVE desde el sandbox** (curl):
+`rofoagro.com.ar`, `/bienvenida`, `/privacidad`, `/terminos` → los 4 responden HTTP 200.
+**Search Console verificado** (propiedad de Dominio, TXT cargado en Vercel → DNS Records, ya no en
+nic.ar una vez delegados los nameservers). **Google Auth Platform, Centro de verificación**: el
+motivo "sitio no registrado a tu nombre" **ya desapareció** de la lista de problemas (el dominio
+resolvió eso) — quedan 2, y los 2 son consecuencia directa de que **el código todavía dice "RF
+AGRO" en todos lados** mientras el nombre cargado en el OAuth ya es "ROFO AGRO": (1) nombre de la
+app no coincide con la marca de la página principal, (2) la página principal no explica el
+propósito (puede resolverse solo o necesitar retoque una vez que el wordmark diga "ROFO AGRO").
+**Pendiente concreto para la próxima sesión — REBRANDING "RF AGRO" → "ROFO AGRO" en TODO el
+sitio**: wordmark/logo (`public/rfagro-*.svg` y su uso en header/footer/auth/admin/landing),
+`<title>`/metadata de cada página (la mayoría trae "· RF AGRO" en el título), textos de la landing
+(`/bienvenida`), las placas de los informes diario/semanal (llevan el logo), favicon, y cualquier
+otra mención de marca visible al cliente — auditar con un grep amplio antes de tocar nada. **NO
+tocar**: nombres internos de tablas/repo/skills (son identificadores técnicos, no marca visible),
+ni la cuestión de razón social/SRL (sigue sin resolverse, pero ya no es urgente si la marca
+pública pasa a ser "ROFO AGRO"). Detalle completo (research de dominio/SRL previo a la decisión):
 [`sesiones/2026-07-23-mp2-skill-y-alta-srl.md`](sesiones/2026-07-23-mp2-skill-y-alta-srl.md).
 
 *(La base + gráfico de MP2 — `src/lib/informe-semanal.ts`, decisión de usar BCRA A3500 para el

@@ -172,10 +172,42 @@ entre otros — sin confirmar disponibilidad real, es solo lista de ideas.
   consultoría/asesoramiento financiero — separa los dos trámites y no resigna la marca ya
   construida.
 
-**Decisión de Lautaro al cierre de esta sesión: "documentan todo lo que hablamos y lo dejamos
-para otro momento"** — el tema de nombre/dominio/SRL queda EXPLÍCITAMENTE PAUSADO. No se compró
-ningún dominio, no se registró ninguna marca, no se dio de alta ninguna SRL, no se completó la
-verificación de marca de Google. **Nada de A1 quedó resuelto** — sigue To Do completo.
+**Decisión de Lautaro al cierre de ese bloque: "documentan todo lo que hablamos y lo dejamos
+para otro momento"** — el tema de nombre/dominio/SRL quedó EXPLÍCITAMENTE PAUSADO en ese momento.
+No se había comprado ningún dominio, ni registrado marca, ni dado de alta SRL, ni completado la
+verificación de Google.
+
+### A1 (retomado más tarde, misma sesión) — dominio conectado, marca pivotó a "ROFO AGRO"
+
+Lautaro volvió más tarde en la misma sesión ("ya registré el dominio") — retomó por su cuenta y
+**decidió pivotar la marca completa a "ROFO AGRO"** (probablemente atado al dominio elegido:
+`rofoagro.com.ar`), lo que de paso resuelve del todo la duda de RF AGRO SRL sin necesitar
+consultar a un gestor/abogado (ya no hay coincidencia de nombre con la SRL de transporte).
+
+**Hecho, guiado paso a paso por captura de pantalla** (Lautaro operando la UI, yo verificando y
+diciendo el siguiente click):
+1. Dominio `rofoagro.com.ar` agregado en Vercel → Settings → Domains → nameservers de Vercel
+   (`ns1.vercel-dns.com`/`ns2.vercel-dns.com`) delegados desde nic.ar (Mis dominios → Delegar →
+   Agregar nueva delegación) → propagó → `Valid Configuration`.
+2. **Verificado LIVE desde el sandbox** con `curl`: `rofoagro.com.ar`, `/bienvenida`,
+   `/privacidad`, `/terminos` → los 4 HTTP 200 (las páginas legales armadas en el bloque de MP2 de
+   esta misma sesión ya estaban listas para este momento).
+3. Search Console: propiedad de Dominio verificada por TXT — cargado en **Vercel → DNS Records**
+   del dominio (NO en nic.ar: una vez delegados los nameservers, nic.ar deja de manejar los
+   registros).
+4. Google Auth Platform → Información de la marca: nombre cambiado a "ROFO AGRO", dominios
+   autorizados/homepage/privacidad/condiciones apuntados al dominio nuevo.
+5. Reenviado a verificación → **Centro de verificación** ya NO lista el motivo "sitio no
+   registrado a tu nombre" (resuelto por el dominio propio). Quedan 2 pendientes, los dos porque
+   **el sitio en sí sigue diciendo "RF AGRO"** en todos lados mientras el OAuth ya dice "ROFO
+   AGRO": nombre no coincide + página principal no explica el propósito.
+
+**Pendiente real: rebranding completo "RF AGRO" → "ROFO AGRO" en el sitio** (logo/wordmark,
+`<title>` de cada página, landing, placas de informes, favicon). Lautaro decidió explícitamente
+**hacerlo en una sesión aparte** ("me conviene hacer todos los cambios en otra sesión no?") en vez
+de en el cierre de esta — de acuerdo: es un cambio transversal a casi toda la web, mejor con
+contexto fresco y una auditoría prolija (grep amplio) que apurado. Nada de este rebranding se
+tocó en esta sesión — solo quedó identificado y documentado el alcance en `ESTADO.md`.
 
 ### A3 (cont.) — Carga de estimaciones BCBA-PAS: producción histórica cargada, condición de cultivos queda para después
 
