@@ -240,8 +240,19 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   dependencia de SAGyP (Williams confirmado como servicio pago sin API). Panel público + señal
   barcos-vs-camiones solo-mesa. Backfill 2018→hoy (mejor que el 2020→hoy decidido el 22/07, porque
   la fuente cambió a una con más historia disponible). `sesiones/2026-07-23-l4-c5-camiones.md`.
-- [ ] **C6. P1 — Merval + EWZ + volumen Matba** en el monitor de `/granos`.
-- [ ] **C7. P2 — variación semanal del USD** (gráfico en /dolar; *conviene después de L1/L2*).
+- [x] **C6. P1 — Merval + EWZ + volumen Matba** — hecho 23/07. Merval/EWZ sumados al Monitor de
+  mercados (`/granos`); volumen+interés abierto por grano sumados al panel de Arbitrajes (ya
+  conectado al feed en vivo de A3 — decisión de Lautaro: sumar a lo que ya fluye ahí, no traer una
+  fuente externa nueva), en toneladas (contrato Matba = 100 t, verificado). Detalle:
+  [`sesiones/2026-07-23-p1-p2-monitor-dolar.md`](../sesiones/2026-07-23-p1-p2-monitor-dolar.md).
+- [x] **C7. P2 — variación semanal del USD** — hecho 23/07 (se construyó sin esperar L1/L2: el
+  combo línea+barras se armó con Recharts, patrón `volumen-panel.tsx`, no con el motor SVG que L2
+  va a compartir). Hallazgo: ya existía un panel chico (~13 días, para MP2) marcado "pendiente" por
+  desactualización del backlog — quedó sin tocar; se sumó la serie semanal larga (26 semanas,
+  fuente BCRA API v4 var. 5 directa, en vivo cacheada, sin tabla nueva) + un gráfico de volatilidad
+  (desvío rolling 12 semanas anualizado, pedido nuevo de Lautaro, fórmula confirmada con datos
+  reales). Detalle:
+  [`sesiones/2026-07-23-p1-p2-monitor-dolar.md`](../sesiones/2026-07-23-p1-p2-monitor-dolar.md).
 - [x] **C8. P5 — filtro por grano** — hecho 23/07. Lautaro aclaró que NO quería
   una página nueva por grano (como proponía el prompt original): quería un
   **filtro por grano dentro de los paneles ya existentes**. Chips
