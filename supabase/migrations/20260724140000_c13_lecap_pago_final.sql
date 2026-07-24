@@ -1,4 +1,4 @@
--- RF AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
+-- ROFO AGRO · proyecto Supabase lineup-argentina (gbpfgfeksqmzmsxnxiwg)
 -- C13 (docs/auditoria/E7-sintesis.md §4 / PROMPT P9 de PLAN_BACKLOG.md): sintéticos LECAP + dólar
 -- futuro con TIR. El precio diario de cada letra ya lo trae data912 (src/lib/market/lecaps.ts); lo
 -- que faltaba es el "pago final" (importe a pagar al vencimiento), que se fija en la emisión de la

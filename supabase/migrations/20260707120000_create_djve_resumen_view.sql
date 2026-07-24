@@ -1,4 +1,4 @@
--- Vista de resumen de DJVE por producto para la web RF AGRO.
+-- Vista de resumen de DJVE por producto para la web ROFO AGRO.
 -- Aplicada al proyecto Supabase `lineup-argentina` (gbpfgfeksqmzmsxnxiwg).
 --
 -- security_invoker = true → la vista respeta el RLS de la tabla base `djve`
@@ -21,6 +21,6 @@ where producto is not null
 group by producto;
 
 comment on view public.djve_resumen is
-  'Resumen DJVE por producto para la web RF AGRO: acumulado del anio en curso + ventanas 7/30 dias. security_invoker respeta el RLS de djve; lectura anon.';
+  'Resumen DJVE por producto para la web ROFO AGRO: acumulado del anio en curso + ventanas 7/30 dias. security_invoker respeta el RLS de djve; lectura anon.';
 
 grant select on public.djve_resumen to anon;

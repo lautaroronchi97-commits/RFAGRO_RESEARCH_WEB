@@ -41,6 +41,6 @@ export const config = {
   // marca (logo/isotipo en /public): sirven a visitantes sin sesión (landing/login), así
   // que el gate NO debe redirigirlos cuando `AUTH_ENFORCED` esté prendido.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icon.svg|rfagro-logo.svg|rfagro-isotipo.svg|robots.txt|sitemap.xml).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icon.svg|rofoagro-logo.svg|rofoagro-isotipo.svg|robots.txt|sitemap.xml).*)",
   ],
 };

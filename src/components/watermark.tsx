@@ -11,7 +11,7 @@
  * (es estático, sin animación).
  */
 export function Watermark({ email }: { email: string }) {
-  const txt = (email || "RF AGRO")
+  const txt = (email || "ROFO AGRO")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")

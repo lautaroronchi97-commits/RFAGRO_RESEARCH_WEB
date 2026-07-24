@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sección no incluida · RF AGRO",
+  title: "Sección no incluida · ROFO AGRO",
   robots: { index: false, follow: false },
 };
 

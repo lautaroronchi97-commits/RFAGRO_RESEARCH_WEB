@@ -40,7 +40,7 @@ Deno.serve(async (req: Request) => {
     const res = await fetch(URL_DEA, {
       method: "POST",
       headers: {
-        "user-agent": "Mozilla/5.0 (RFAGRO research)",
+        "user-agent": "Mozilla/5.0 (ROFOAGRO research)",
         "content-type": "application/x-www-form-urlencoded",
       },
       body: "Dataset=Dataset",

@@ -3,7 +3,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { LandingTopbar } from "@/components/landing/landing-topbar";
 
 export const metadata: Metadata = {
-  title: "RF AGRO · Consultora de agronegocios",
+  title: "ROFO AGRO · Consultora de agronegocios",
   description:
     "Dejá de tomar decisiones a ciegas. Accedé a las herramientas y al criterio de una mesa de trading de granos de Rosario, con el acompañamiento de un equipo con más de 10 años de experiencia.",
 };

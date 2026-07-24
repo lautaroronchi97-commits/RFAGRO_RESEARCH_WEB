@@ -40,7 +40,7 @@ import type { Meta } from "./market";
 const REVALIDATE = 30;
 const SPARK = "https://query1.finance.yahoo.com/v7/finance/spark";
 const SINA_PEANUT = "https://hq.sinajs.cn/list=nf_PK0"; // ZCE maní continuo (主力)
-const UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (RFAGRO research)";
+const UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (ROFOAGRO research)";
 // Símbolo FX auxiliar (no se muestra): USD/CNY para pasar el maní a USD/tn.
 const FX_HELPER = "CNY=X";
 

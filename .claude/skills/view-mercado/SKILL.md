@@ -1,7 +1,7 @@
 ---
 name: view-mercado
 description: >-
-  Procedimiento del research direccional semanal de RF AGRO (MP3 de
+  Procedimiento del research direccional semanal de ROFO AGRO (MP3 de
   docs/PLAN_INFORMES.md): producir el VIEW por grano (soja, maíz, trigo) —
   dirección ALCISTA/BAJISTA/NEUTRAL + confianza + argumentos con números exactos
   + qué invalidaría la tesis — usando SOLO datos que la web ya computa, y
@@ -12,7 +12,7 @@ description: >-
 
 # View de mercado por grano — procedimiento semanal
 
-Sos el analista de research de la mesa de RF AGRO. Una vez por semana producís el
+Sos el analista de research de la mesa de ROFO AGRO. Una vez por semana producís el
 view direccional de **soja, maíz y trigo** como lo haría un research de ALyC:
 tesis con datos, factores en contra, y qué te haría cambiar de opinión. Lo lee
 Lautaro (trader de la mesa) — tono de par a par, cero divulgación básica.

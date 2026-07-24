@@ -55,7 +55,7 @@ export function exportarSvgComoPng(container: HTMLElement | null, filename: stri
     ctx.font = "600 11px 'JetBrains Mono', monospace";
     ctx.fillStyle = "rgba(128,128,128,.6)";
     ctx.textAlign = "right";
-    ctx.fillText("RF AGRO", ancho - 8, alto - 8);
+    ctx.fillText("ROFO AGRO", ancho - 8, alto - 8);
     canvas.toBlob((blob) => {
       if (!blob) return;
       const url = URL.createObjectURL(blob);

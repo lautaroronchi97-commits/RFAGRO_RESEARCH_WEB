@@ -92,7 +92,7 @@ export const getPizarra = cache(async (): Promise<PizarraData> => {
     const res = await fetch(URL_CAC, {
       next: { revalidate: 1800 },
       signal: AbortSignal.timeout(8000),
-      headers: { "user-agent": "Mozilla/5.0 (RFAGRO research)" },
+      headers: { "user-agent": "Mozilla/5.0 (ROFOAGRO research)" },
     });
     if (res.ok) html = await res.text();
     else caida = true;

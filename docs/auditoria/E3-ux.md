@@ -63,7 +63,7 @@ global), `/comercio` con ~70 filas DJVE vacías, `/produccion` sin las pestañas
 5. **D5 — Sello de las páginas de line-up: ¿qué institución mostramos?** Hoy dicen "ISA Agents" (el
    proveedor técnico del scraping), que la regla "institución sí, puente no" prohíbe. El line-up no tiene
    un organismo oficial único (sale de las terminales portuarias). ¿Qué rótulo querés? (ej. "Terminales
-   portuarias · elaboración RF AGRO", "Line-up de buques", etc.).
+   portuarias · elaboración ROFO AGRO", "Line-up de buques", etc.).
 6. **D6 — Números "VIEJA" enormes en `/comercio/empresas`** (soja 108.983.988 t · maíz 395.301.079 t
    declarado campaña vieja). Parecen acumular varias campañas, no una sola. ¿Es lo esperado o hay que
    revisar la atribución de campaña? (posible dato → **E1/E2**; lo dejo como duda por si tenés el criterio).
@@ -86,7 +86,7 @@ global), `/comercio` con ~70 filas DJVE vacías, `/produccion` sin las pestañas
   **landing `/bienvenida`** (venta completa) — prolijas, branded, con estados claros. `/admin` (5
   pestañas + uploader) bien estructurado, estados vacíos amables.
 - **Transversal**: breadcrumbs en todas las `(site)`, tema claro/oscuro parejo (verificado en oscuro con
-  datos), marca de agua en todos los charts, footer sin chips técnicos ("Elaboración propia RF AGRO").
+  datos), marca de agua en todos los charts, footer sin chips técnicos ("Elaboración propia ROFO AGRO").
 - **Código muerto (semilla 3): NO hay.** `arbitrajes-table.tsx` es el wrapper server que renderiza
   `arbitrajes-editable.tsx` (client) — ambos se usan. Descartado como hallazgo.
 
@@ -137,7 +137,7 @@ el `noindex`), pestañas en producción, y los 6 fixes chicos (para H3 eligió *
 |---|---|---|---|
 | H1/H6 | `djve_embarques_mes` y `lineup_estacional` → matview; refresh agregado a `refresh_lineup_visitas()`. **Migración SOLO versionada** (la aplica el orquestador por MCP). Código sin cambios (mismo nombre). | `supabase/migrations/20260721180000_e3_matview_embarques_estacional.sql` | pendiente de aplicar la migración; el fix rinde recién ahí |
 | H2 | `.head-tools` con `flex-wrap`; en ≤560px se ocultan los horarios de rueda (`.ruedas`). | `globals.css` | ✅ mobile 390px: body=390 (antes 485) en todas las `(site)` |
-| H3 | Sacado "ISA Agents" de los 5 sellos (`SOURCE`) y de 3 textos "¿Qué es esto?". Puertos pasó a "Elaboración propia RF AGRO". | `lineup/{embarque,temperatura,foto,semaforo,empresas}.ts` + 3 `components/lineup/*` | ✅ `grep` de "ISA Agents" en cero + build |
+| H3 | Sacado "ISA Agents" de los 5 sellos (`SOURCE`) y de 3 textos "¿Qué es esto?". Puertos pasó a "Elaboración propia ROFO AGRO". | `lineup/{embarque,temperatura,foto,semaforo,empresas}.ts` + 3 `components/lineup/*` | ✅ `grep` de "ISA Agents" en cero + build |
 | H4 | Cinta: pizarra real de CAC (`getPizarra`), sin literales de ejemplo, `change` null, degrada a "—". | `market.ts` | ✅ cinta muestra soja 339,7 (= arbitrajes), sin badge "PROV" |
 | H5 | Sacada la serie "Granos (ej.)" de Implícitas combinadas; status pasa a real. | `implicitas-panel.tsx` | ✅ chart de 2 curvas limpias, sin "provisorio" |
 | noindex | Quitado el `robots:{index:false}` global (ya no hay dato de ejemplo a la vista). Las páginas de mesa mantienen el suyo. | `app/layout.tsx` | ✅ home sin `<meta robots>`; produccion sigue noindex |

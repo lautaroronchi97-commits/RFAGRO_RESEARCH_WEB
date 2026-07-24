@@ -1,6 +1,6 @@
 # Sesión 2026-07-23 — MP2 skill + Novedades del día + páginas legales + research alta SRL/dominio
 
-- **Rama:** `claude/pending-tasks-mp2-writing-6kfbrp` · **PR:** [#68](https://github.com/lautaroronchi97-commits/RFAGRO_RESEARCH_WEB/pull/68) (base `main`)
+- **Rama:** `claude/pending-tasks-mp2-writing-6kfbrp` · **PR:** [#68](https://github.com/lautaroronchi97-commits/ROFOAGRO_RESEARCH_WEB/pull/68) (base `main`)
 - **Objetivo pedido por Lautaro:** cerrar los pendientes de la sesión anterior (A1 login Google, A2
   Routines, A3 suscripción PAS, revisar el borrador WASDE #673 de MP4) — la mayoría eran pasos
   manuales suyos, así que la sesión terminó siendo: (1) construir lo único que quedaba en código
@@ -32,7 +32,7 @@ correcto") y pidió: **"todo informe que se interpreta tiene que ir a parar a la
 novedades [...] hasta el día siguiente"**. Implementado en `src/app/(site)/page.tsx`:
 - `getInterpretacionesPublicadas()` (ya existía, la usa `/informes`) se filtra por
   `fecha_publicacion === hoy` (Córdoba) y se mapea a un titular sintético (`titulo`: "La lectura
-  de la mesa: {informe} ({organismo})", `fuente`: "RF AGRO", `link`: `/informes#lectura-mesa`).
+  de la mesa: {informe} ({organismo})", `fuente`: "ROFO AGRO", `link`: `/informes#lectura-mesa`).
 - Esos titulares van **primero**, antes que las noticias externas, en la cabecera "Novedades del
   día" (`[...interpHoy, ...noticias.destacados].slice(0, 8)`).
 - El día siguiente el filtro por `hoy` ya no matchea → desaparece solo, sin cron ni limpieza
@@ -89,11 +89,11 @@ cargada** (`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `RESEND_API_KEY`, `ADMIN_EMAI
 `INFORME_TOKEN`, `INFORME_BASE_URL`). Guiado paso a paso por captura de pantalla (la ubicación no
 es obvia: **no** está en el Settings general de la app ni en el selector de entorno de una tarea
 nueva — es el diálogo **"Actualizar entorno en la nube"**, que se abre clickeando el chip
-`☁ RFAGRO_RESEARCH_WEB` que aparece junto al compositor de mensajes). Ese diálogo tiene un aviso
+`☁ ROFOAGRO_RESEARCH_WEB` que aparece junto al compositor de mensajes). Ese diálogo tiene un aviso
 explícito: *"Estos son visibles para cualquier persona que use este entorno — no agregues
 secretos ni credenciales"* — se le avisó a Lautaro igual antes de que las cargara (el entorno es
 solo suyo, riesgo bajo, pero queda anotado por si en algún momento invita a alguien más). `RESEND_FROM`
-se dejó SIN cargar a propósito: el código ya tiene default `RF AGRO <onboarding@resend.dev>`
+se dejó SIN cargar a propósito: el código ya tiene default `ROFO AGRO <onboarding@resend.dev>`
 (sandbox gratuito de Resend, sin necesitar dominio propio) — ver `src/lib/auth/emails.ts:19`.
 
 Con las env vars cargadas (confirmado por `env | grep` en la MISMA sesión — el cambio se propagó
@@ -132,28 +132,28 @@ research, jueves 15hs, gratis). No hay forma de automatizar la suscripción desd
 Lautaro empezó a publicar el consent screen de Google Auth Platform (UI nueva: Descripción
 general / Información de la marca / Público / Centro de verificación) y se encontró con 4
 rechazos de verificación de marca, todos con la misma raíz:
-1. La URL de página principal (`rfagro-research-web.vercel.app`) no está registrada a su nombre
+1. La URL de página principal (`rofoagro-research-web.vercel.app`) no está registrada a su nombre
    (es un subdominio de Vercel, no verificable como propiedad).
 2. La página principal no explica el propósito de la app (probablemente porque cargó `/`, el
    tablero, en vez de `/bienvenida`, la landing de venta).
-3. El nombre configurado "RF AGRO WEB" no coincide con la marca mostrada en el sitio ("RF AGRO").
+3. El nombre configurado "ROFO AGRO WEB" no coincide con la marca mostrada en el sitio ("ROFO AGRO").
 4. El logo (aparentemente el isotipo solo) no identifica la marca de forma inequívoca.
 
 **Research de dominio** (`mcp__Vercel__check_domain_availability_and_price`, Vercel NO soporta
-`.ar`/`.com.ar` — hay que chequearlos a mano en nic.ar): `rfagro.com` libre USD 11,25/año,
-`rfagro.co` USD 4,99, `rfagro.io` USD 37,99. Se armó una lista larga de candidatos `.com.ar`/`.ar`
-para que Lautaro los chequee él mismo en nic.ar (Vercel no puede consultarlos): `rfagro.ar`,
-`rfagronegocios.com.ar`, `rfagroconsultora.com.ar`, `rfagrogranos.com.ar`, `mesarfagro.com.ar`,
+`.ar`/`.com.ar` — hay que chequearlos a mano en nic.ar): `rofoagro.com` libre USD 11,25/año,
+`rofoagro.co` USD 4,99, `rofoagro.io` USD 37,99. Se armó una lista larga de candidatos `.com.ar`/`.ar`
+para que Lautaro los chequee él mismo en nic.ar (Vercel no puede consultarlos): `rofoagro.ar`,
+`rofoagronegocios.com.ar`, `rofoagroconsultora.com.ar`, `rofoagrogranos.com.ar`, `mesarofoagro.com.ar`,
 entre otros — sin confirmar disponibilidad real, es solo lista de ideas.
 
 **Hallazgo importante — auditoría propia de Lautaro (búsqueda en INPI + AFIP)**:
-- Búsqueda en `marcas.inpi.gob.ar` por "RF AGRO" (variantes, clases 35/36, con y sin "solo
+- Búsqueda en `marcas.inpi.gob.ar` por "ROFO AGRO" (variantes, clases 35/36, con y sin "solo
   vigentes"): **sin coincidencias**. No hay marca registrada que choque.
-- PERO en AFIP apareció **RF AGRO SRL, CUIT 30712631208, activa desde 11-2013**, actividad
+- PERO en AFIP apareció **ROFO AGRO SRL, CUIT 30712631208, activa desde 11-2013**, actividad
   económica declarada F-883 (código 492229): "Servicio de transporte automotor de mercaderías a
   granel N.C.P." — es decir, **camiones de carga a granel**, un rubro adyacente (no idéntico) al
   de la consultora de agronegocios/mesa de trading. Probablemente sea el titular real de
-  `rfagro.com.ar` (el dominio no resuelve a un sitio activo, pero eso NO significa que esté
+  `rofoagro.com.ar` (el dominio no resuelve a un sitio activo, pero eso NO significa que esté
   disponible para registrar — hay que confirmarlo en el buscador de disponibilidad de nic.ar,
   distinto del buscador de marcas, no en si la página carga).
 - Se le explicó a Lautaro la distinción entre **marca registrada (INPI)** — que dio limpia — y
@@ -162,13 +162,13 @@ entre otros — sin confirmar disponibilidad real, es solo lista de ideas.
   alcanza para descartar riesgo legal.
 - Lautaro preguntó puntualmente si podía dar de alta una SRL "R&F AGRO" y registrar esa marca.
   **Opinión dada (no es asesoramiento legal formal)**: no recomendado — el "&" es una diferencia
-  demasiado fina (se lee/escucha casi igual a "RF AGRO", no lo protege de una oposición en INPI
+  demasiado fina (se lee/escucha casi igual a "ROFO AGRO", no lo protege de una oposición en INPI
   ni de un reclamo de competencia desleal) y además desalinea la marca del dominio que había
   propuesto (`ryfagro.com.ar`, que ya veníamos objetando por ambigüedad fonética). Alternativa
   sugerida: la SRL puede tener CUALQUIER razón social legal (no necesita coincidir con la marca —
-  patrón común en Argentina, ej. "RF AGRO CONSULTORA SRL" o similar, a confirmar con un gestor/
+  patrón común en Argentina, ej. "ROFO AGRO CONSULTORA SRL" o similar, a confirmar con un gestor/
   contador si pasa el registro de personas jurídicas de Santa Fe), y de forma independiente
-  registrar "RF AGRO" (sin cambios) como marca/nombre de fantasía en INPI para la clase de
+  registrar "ROFO AGRO" (sin cambios) como marca/nombre de fantasía en INPI para la clase de
   consultoría/asesoramiento financiero — separa los dos trámites y no resigna la marca ya
   construida.
 
@@ -181,7 +181,7 @@ verificación de Google.
 
 Lautaro volvió más tarde en la misma sesión ("ya registré el dominio") — retomó por su cuenta y
 **decidió pivotar la marca completa a "ROFO AGRO"** (probablemente atado al dominio elegido:
-`rofoagro.com.ar`), lo que de paso resuelve del todo la duda de RF AGRO SRL sin necesitar
+`rofoagro.com.ar`), lo que de paso resuelve del todo la duda de ROFO AGRO SRL sin necesitar
 consultar a un gestor/abogado (ya no hay coincidencia de nombre con la SRL de transporte).
 
 **Hecho, guiado paso a paso por captura de pantalla** (Lautaro operando la UI, yo verificando y
@@ -199,10 +199,10 @@ diciendo el siguiente click):
    autorizados/homepage/privacidad/condiciones apuntados al dominio nuevo.
 5. Reenviado a verificación → **Centro de verificación** ya NO lista el motivo "sitio no
    registrado a tu nombre" (resuelto por el dominio propio). Quedan 2 pendientes, los dos porque
-   **el sitio en sí sigue diciendo "RF AGRO"** en todos lados mientras el OAuth ya dice "ROFO
+   **el sitio en sí sigue diciendo "ROFO AGRO"** en todos lados mientras el OAuth ya dice "ROFO
    AGRO": nombre no coincide + página principal no explica el propósito.
 
-**Pendiente real: rebranding completo "RF AGRO" → "ROFO AGRO" en el sitio** (logo/wordmark,
+**Pendiente real: rebranding completo "ROFO AGRO" → "ROFO AGRO" en el sitio** (logo/wordmark,
 `<title>` de cada página, landing, placas de informes, favicon). Lautaro decidió explícitamente
 **hacerlo en una sesión aparte** ("me conviene hacer todos los cambios en otra sesión no?") en vez
 de en el cierre de esta — de acuerdo: es un cambio transversal a casi toda la web, mejor con

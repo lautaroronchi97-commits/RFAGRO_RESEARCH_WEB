@@ -1,5 +1,5 @@
 -- Fase 2 Comercio exterior — panel de empresas + semáforo físico→precio.
--- Objetos de lectura (anon, security_invoker) sobre `lineup` + `djve` para la web RF AGRO.
+-- Objetos de lectura (anon, security_invoker) sobre `lineup` + `djve` para la web ROFO AGRO.
 -- Lógica portada de LineUps_Code (cobertura.py / campanas.py). El gate de mesa (requireAdmin)
 -- vive en la app; esto es solo la capa de datos (respeta el RLS de las tablas base).
 --

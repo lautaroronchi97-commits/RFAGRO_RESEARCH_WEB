@@ -14,7 +14,7 @@ import { SenalCamionesPanel } from "@/components/camiones/senal-camiones";
  * sirviendo el bloque público a un cliente logueado sin acceso de mesa, y sigue 100% pública hoy.
  */
 export const metadata: Metadata = {
-  title: "Camiones en puerto · Comercio exterior · RF AGRO",
+  title: "Camiones en puerto · Comercio exterior · ROFO AGRO",
   description: "Entrada diaria de camiones a puertos, fábricas y molinos por zona y producto (Williams Entregas).",
 };
 
@@ -25,7 +25,7 @@ export default async function CamionesPage() {
 
   return (
     <>
-      <h1 className="sr">RF AGRO — Camiones en puerto</h1>
+      <h1 className="sr">ROFO AGRO — Camiones en puerto</h1>
       <main className="wrap">
         <div className="col">
           <h2 className="sec-title">Comercio exterior · Camiones en puerto</h2>

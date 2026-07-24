@@ -3,11 +3,11 @@
 - **Rama:** `claude/data-table-charts-2m8nvd` · **PR:** #_ (base `main`)
 - **Objetivo pedido por Lautaro:** que cada gráfico de la web tenga (a) una **tabla con los
   mismos datos que dibuja** (doble lectura número/curva), **siempre visible** debajo del chart,
-  y (b) una **marca de agua con el logo completo** de RF AGRO dentro del área del gráfico.
+  y (b) una **marca de agua con el logo completo** de ROFO AGRO dentro del área del gráfico.
 
 ## Hecho
 - **Fundaciones (commit `d885274`)** — 2 componentes genéricos + asset:
-  - `public/rfagro-logo-marca.svg` — derivado de `rfagro-logo.svg` (logo completo) apto para
+  - `public/rofoagro-logo-marca.svg` — derivado de `rofoagro-logo.svg` (logo completo) apto para
     marca de agua: se quitaron los **31 halos pálidos** del auto-trace (chroma<30, lum>185)
     **solo en la zona del isotipo** (y<1000); los blancos del wordmark son los contadores de las
     letras y se conservan (quitarlos deja las letras macizas). Verificado sobre fondo claro y
@@ -45,7 +45,7 @@
   pendiente "tabla alternativa" de la v2 del panel de gráficos.
 - **Las 2 calculadoras NO llevan tabla nueva**: "a fijar" y "estrategias" ya tienen su tabla de
   escenarios con los mismos datos del chart → duplicarla era ruido. Solo se les sumó la marca.
-- **Asset de marca = logo COMPLETO** (`rfagro-logo-marca.svg`, derivado de `rfagro-logo.svg`),
+- **Asset de marca = logo COMPLETO** (`rofoagro-logo-marca.svg`, derivado de `rofoagro-logo.svg`),
   no el isotipo — pedido explícito. Se limpió el ruido del auto-trace SOLO donde corresponde
   (zona del isotipo); a baja opacidad los knockouts del wordmark no se notan.
 - **Opacidad/tamaño centralizados en `.cm-marca`** (un solo lugar en `globals.css`): si Lautaro
@@ -82,7 +82,7 @@
   **solo en la zona del isotipo** (y<1000) — los blancos del wordmark son los contadores de las
   letras; el filtro chroma/luminancia a ciegas las deja macizas.
 - **El sandbox no tenía `.env.local`** → /graficos y /produccion degradaban a vacío/roadmap en el
-  build. Se creó `/home/user/RFAGRO_RESEARCH_WEB/.env.local` con `SUPABASE_URL` +
+  build. Se creó `/home/user/ROFOAGRO_RESEARCH_WEB/.env.local` con `SUPABASE_URL` +
   `SUPABASE_ANON_KEY` (la publishable, pública por diseño, vía MCP de Supabase); está
   gitignoreado (verificado con `git check-ignore`) y queda en el sandbox para futuras sesiones.
 - Para que la marca quede **debajo del tooltip** alcanza con `z-index:0` en el overlay: `.cv-tip`

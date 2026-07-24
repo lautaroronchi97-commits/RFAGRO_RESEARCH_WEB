@@ -17,7 +17,7 @@ El proyecto Supabase es **`lineup-argentina`**, ref **`gbpfgfeksqmzmsxnxiwg`**.
 
 ### Parte A — Vercel Pro (hacelo primero; ~10 min)
 
-1. Entrá a https://vercel.com → tu cuenta → el proyecto **rfagro-research-web** → arriba a la
+1. Entrá a https://vercel.com → tu cuenta → el proyecto **rofoagro-research-web** → arriba a la
    izquierda elegí el *scope* (equipo) dueño del proyecto → **Settings → Billing → Upgrade to
    Pro**. Es **US$20/mes por asiento** y alcanza con **1 asiento** (los deploys entran por
    GitHub, nadie más necesita cuenta de Vercel). Cargás la tarjeta y listo.
@@ -63,7 +63,7 @@ El proyecto Supabase es **`lineup-argentina`**, ref **`gbpfgfeksqmzmsxnxiwg`**.
 Seguí el checklist de la **Etapa 3 §3** de abajo (cuenta admin OK → Mauro → aprobar clientes →
 `AUTH_ENFORCED=true` en Production → Redeploy). Validación de 5 minutos post-encendido:
 
-- Ventana de incógnito → `rfagro-research-web.vercel.app` → tiene que aparecer **/bienvenida**.
+- Ventana de incógnito → `rofoagro-research-web.vercel.app` → tiene que aparecer **/bienvenida**.
 - Logueado vos → tablero completo + marca de agua + `/comercio/temperatura` visible.
 - `curl -H "Authorization: Bearer <INFORME_TOKEN>" https://<tu-dominio>/api/views/insumos`
   → JSON (200); sin el header → 401. **Ojo MP3**: el token ahora va por header — el prompt de
@@ -100,7 +100,7 @@ y **Preview**):
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://gbpfgfeksqmzmsxnxiwg.supabase.co` | Misma URL de Supabase que ya usás |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | tu clave **publishable/anon** | La misma que `SUPABASE_ANON_KEY`; es pública por diseño |
-| `NEXT_PUBLIC_SITE_URL` | `https://rfagro-research-web.vercel.app` | Para los enlaces de los emails y el callback |
+| `NEXT_PUBLIC_SITE_URL` | `https://rofoagro-research-web.vercel.app` | Para los enlaces de los emails y el callback |
 | `AUTH_ENFORCED` | `false` | **Dejalo en false por ahora.** Se prende en la Etapa 3 |
 
 > Estas son las mismas credenciales que ya tenés, solo con el nombre `NEXT_PUBLIC_`
@@ -129,10 +129,10 @@ podés saltear esto y hacerlo después.
 2. Pegá el **Client ID** y el **Client Secret** → *Save*.
 
 **c) URLs de redirección permitidas en Supabase** (*Authentication* → *URL Configuration*):
-- **Site URL:** `https://rfagro-research-web.vercel.app`
+- **Site URL:** `https://rofoagro-research-web.vercel.app`
 - En **Redirect URLs**, agregá:
   ```
-  https://rfagro-research-web.vercel.app/auth/callback
+  https://rofoagro-research-web.vercel.app/auth/callback
   http://localhost:3000/auth/callback
   ```
   (La de localhost es para probar en tu compu.)
@@ -191,7 +191,7 @@ servidor). Para que se manden:
 
 **b) Remitente (`RESEND_FROM`):** para mandar a cualquier casilla necesitás **verificar un
 dominio propio** en Resend (*Domains* → agregás tu dominio y cargás los registros DNS que te
-da). Después usás algo como `RF AGRO <research@tudominio.com>`. Si todavía no tenés dominio,
+da). Después usás algo como `ROFO AGRO <research@tudominio.com>`. Si todavía no tenés dominio,
 Resend te deja probar con `onboarding@resend.dev`, pero **solo te llega a vos mismo** (el email
 de la cuenta de Resend) — sirve para probar, no para producción.
 
@@ -201,7 +201,7 @@ y en `.env.local` para local):
 | Variable | Valor | Nota |
 |---|---|---|
 | `RESEND_API_KEY` | tu clave `re_...` | Secreta. Sin ella, no se envían emails (no rompe nada) |
-| `RESEND_FROM` | `RF AGRO <research@tudominio.com>` | Remitente. Requiere dominio verificado en Resend |
+| `RESEND_FROM` | `ROFO AGRO <research@tudominio.com>` | Remitente. Requiere dominio verificado en Resend |
 | `ADMIN_EMAILS` | `lautaroronchi97@gmail.com` | Quién recibe el aviso de "registro nuevo". Coma-separado si son varios |
 
 **Qué manda:** cuando alguien se registra, te llega un email con sus datos y un link al panel.

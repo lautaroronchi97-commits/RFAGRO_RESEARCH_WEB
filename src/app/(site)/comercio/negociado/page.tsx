@@ -9,7 +9,7 @@ import { NegociadoPanel } from "@/components/compras/negociado-panel";
  * histograma + % sobre cosecha + SIO Granos semanal/mensual).
  */
 export const metadata: Metadata = {
-  title: "Negociado por producto · Comercio exterior · RF AGRO",
+  title: "Negociado por producto · Comercio exterior · ROFO AGRO",
   description: "Volumen negociado por producto (SIO Granos): compras semanales, % sobre cosecha, % priceado e histograma.",
   robots: { index: false, follow: false },
 };
@@ -18,7 +18,7 @@ export default async function NegociadoPage() {
   await requireAdmin();
   return (
     <>
-      <h1 className="sr">RF AGRO — Negociado por producto</h1>
+      <h1 className="sr">ROFO AGRO — Negociado por producto</h1>
       <main className="wrap">
         <div className="col">
           <h2 className="sec-title">Comercio exterior · Negociado por producto</h2>

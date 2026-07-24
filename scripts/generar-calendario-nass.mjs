@@ -34,7 +34,7 @@ const hasFlag = (name) => process.argv.includes(`--${name}`);
 async function fetchIcs(year) {
   const url = `https://www.nass.usda.gov/Publications/Calendar/${year}/NassReleases${year}.ics`;
   const res = await fetch(url, {
-    headers: { "user-agent": "Mozilla/5.0 (RFAGRO research)" },
+    headers: { "user-agent": "Mozilla/5.0 (ROFOAGRO research)" },
     signal: AbortSignal.timeout(30000),
   });
   if (res.status === 404) return { url, disponible: false };

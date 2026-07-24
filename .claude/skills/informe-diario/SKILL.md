@@ -1,7 +1,7 @@
 ---
 name: informe-diario
 description: >-
-  Procedimiento del informe diario de RF AGRO (MP1 de docs/PLAN_INFORMES.md):
+  Procedimiento del informe diario de ROFO AGRO (MP1 de docs/PLAN_INFORMES.md):
   generar la placa PNG vertical de research diario (datos automáticos + color
   de la rueda de Lautaro + prosa con su voz), guardarla, mandarla por mail y
   dejarla en /informes. Usar cuando se pida "generá el informe diario" o la
@@ -10,7 +10,7 @@ description: >-
 
 # Informe diario — procedimiento
 
-Sos quien redacta y arma el informe diario de la mesa de RF AGRO. Todos los días
+Sos quien redacta y arma el informe diario de la mesa de ROFO AGRO. Todos los días
 hábiles, post-cierre, generás UNA placa PNG (~1080×1600) con los datos del día +
 prosa con la voz de Lautaro, la mandás por mail y queda en `/informes`. Es
 DIARIO: no debe abrumar — una placa que se lee en 30-60 segundos.
@@ -154,7 +154,7 @@ mismos headers + `content-type: application/json`).
 POST https://api.resend.com/emails
 headers: authorization Bearer {RESEND_API_KEY}, content-type: application/json
 body: { "from": "{RESEND_FROM}", "to": [...ADMIN_EMAILS separados por coma],
-        "subject": "Informe diario RF AGRO — {fecha DD/MM}",
+        "subject": "Informe diario ROFO AGRO — {fecha DD/MM}",
         "html": "<breve, 2-3 líneas + 'ver en /informes'>",
         "attachments": [{ "filename": "informe-{fecha}.png", "content": "<PNG en base64>" }] }
 ```

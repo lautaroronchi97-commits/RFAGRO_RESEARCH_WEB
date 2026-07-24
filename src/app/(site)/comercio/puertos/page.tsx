@@ -9,7 +9,7 @@ import { FotoOperativaPanel } from "@/components/lineup/foto-operativa";
  * login y se quiera abrir a clientes, se cambia el guard a permisos por sección.
  */
 export const metadata: Metadata = {
-  title: "Puertos · Line-up · RF AGRO",
+  title: "Puertos · Line-up · ROFO AGRO",
   description: "Line-up de buques en puertos argentinos: exportaciones por producto, zona y empresa.",
   robots: { index: false, follow: false },
 };
@@ -18,7 +18,7 @@ export default async function PuertosPage() {
   await requireAdmin();
   return (
     <>
-      <h1 className="sr">RF AGRO — Puertos · Line-up de buques</h1>
+      <h1 className="sr">ROFO AGRO — Puertos · Line-up de buques</h1>
       <main className="wrap">
         <div className="col">
           <h2 className="sec-title">Puertos · Line-up de buques</h2>

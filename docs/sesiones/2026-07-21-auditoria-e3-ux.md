@@ -40,7 +40,7 @@ misma rama:
   `refresh_lineup_visitas`). **Solo versionada, NO aplicada** (Lautaro rechazó el apply por MCP → la aplica
   el orquestador). Sin cambio de código (mismo nombre de relación).
 - **H2** — `.head-tools` colapsa en mobile (oculta horarios ≤560px) → body 390px (antes 485) en todas las `(site)`.
-- **H3** — "ISA Agents" fuera de los 5 sellos + 3 textos; puertos = "Elaboración propia RF AGRO".
+- **H3** — "ISA Agents" fuera de los 5 sellos + 3 textos; puertos = "Elaboración propia ROFO AGRO".
 - **H4** — cinta con pizarra real de CAC (`getPizarra`), sin literales de ejemplo.
 - **H5** — sacada la serie "Granos (ej.)" de Implícitas.
 - **noindex** — quitado el global de `layout.tsx` (ya no hay dato de ejemplo); mesa mantiene el suyo.

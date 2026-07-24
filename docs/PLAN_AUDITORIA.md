@@ -1,4 +1,4 @@
-# PLAN DE AUDITORÍA INTEGRAL — RF AGRO
+# PLAN DE AUDITORÍA INTEGRAL — ROFO AGRO
 
 > **Qué es esto.** El plan maestro para auditar TODO el proyecto: datos, fórmulas, UX, código,
 > infraestructura e historia. Se ejecuta en **7 etapas (E1→E7), una sesión de Claude Code por etapa**:
@@ -90,7 +90,7 @@ aprobadas). **E7 es la única que exige que las 6 anteriores estén cerradas.**
 Copiá desde acá hasta el fin del bloque en una sesión nueva:
 
 ```text
-Sos el auditor de la etapa E1 (datos y base de datos) de la auditoría integral de RF AGRO.
+Sos el auditor de la etapa E1 (datos y base de datos) de la auditoría integral de ROFO AGRO.
 Leé primero docs/PLAN_AUDITORIA.md (reglas transversales y este mismo encargo), docs/ESTADO.md y
 docs/CONTEXTO.md. Trabajá en una rama claude/auditoria-e1-datos creada desde main actualizado.
 FASE 1 = SOLO AUDITAR: no corregís nada hasta que Lautaro apruebe el informe hallazgo por hallazgo.
@@ -161,7 +161,7 @@ Regla de oro: nada especulativo; lo no verificado va en «Dudas».
 # PROMPT E2 — Auditoría de fórmulas y lógica de negocio
 
 ```text
-Sos el auditor de la etapa E2 (fórmulas y lógica de negocio) de la auditoría integral de RF AGRO.
+Sos el auditor de la etapa E2 (fórmulas y lógica de negocio) de la auditoría integral de ROFO AGRO.
 Leé primero docs/PLAN_AUDITORIA.md, docs/ESTADO.md, docs/CONTEXTO.md, docs/FORMULAS_EXCEL.md y
 docs/negocio/ (01, 02 y 05 como mínimo). Rama claude/auditoria-e2-formulas desde main.
 FASE 1 = SOLO AUDITAR. REGLA CENTRAL: las fórmulas las define Lautaro. Si una fórmula te parece
@@ -229,7 +229,7 @@ sesión + ESTADO.md. lint/tsc/build antes de pushear.
 # PROMPT E3 — Auditoría UX / navegación página por página
 
 ```text
-Sos el auditor de la etapa E3 (UX y navegación) de la auditoría integral de RF AGRO. Leé primero
+Sos el auditor de la etapa E3 (UX y navegación) de la auditoría integral de ROFO AGRO. Leé primero
 docs/PLAN_AUDITORIA.md, docs/ESTADO.md, docs/CONTEXTO.md y los planes de origen de cada página
 (docs/PLAN_UX_NAVEGACION.md, PLAN_PUERTOS.md, PLAN_MONITOR_MERCADOS.md, PLAN_LOGIN.md,
 PLAN_GRAFICOS_SPREADS.md, PLAN_CALENDARIO_PRODUCCION.md). Rama claude/auditoria-e3-ux desde main.
@@ -292,7 +292,7 @@ pushear y git diff limpio de bypasses.
 # PROMPT E4 — Auditoría de código y arquitectura
 
 ```text
-Sos el auditor de la etapa E4 (código y arquitectura) de la auditoría integral de RF AGRO. Leé
+Sos el auditor de la etapa E4 (código y arquitectura) de la auditoría integral de ROFO AGRO. Leé
 primero docs/PLAN_AUDITORIA.md, docs/ESTADO.md, docs/CONTEXTO.md y, si ya existen,
 docs/auditoria/E1-datos.md y E2-formulas.md (sus hallazgos alimentan esta etapa — en particular las
 fichas de fórmulas de E2, que acá se vuelven tests). Rama claude/auditoria-e4-codigo desde main.
@@ -345,7 +345,7 @@ ESTADO.md. lint/tsc/build (+ tests) antes de pushear.
 
 ```text
 Sos el auditor de la etapa E5 (infraestructura, ingestas y seguridad operativa) de la auditoría
-integral de RF AGRO. Leé primero docs/PLAN_AUDITORIA.md, docs/ESTADO.md, docs/CONTEXTO.md,
+integral de ROFO AGRO. Leé primero docs/PLAN_AUDITORIA.md, docs/ESTADO.md, docs/CONTEXTO.md,
 docs/INFRAESTRUCTURA.md, docs/GUIA_LOGIN_SETUP.md y, si existe, docs/auditoria/E1-datos.md (los
 hallazgos de advisors de E1 que sean operativos se resuelven acá si Lautaro los aprobó). Rama
 claude/auditoria-e5-infra desde main. FASE 1 = SOLO AUDITAR. Tenés MCP de GitHub (runs de Actions:
@@ -399,7 +399,7 @@ lint/tsc/build antes de pushear.
 # PROMPT E6 — Auditoría de la historia del repo (PRs + sesiones)
 
 ```text
-Sos el auditor de la etapa E6 (historia del repo) de la auditoría integral de RF AGRO. Leé primero
+Sos el auditor de la etapa E6 (historia del repo) de la auditoría integral de ROFO AGRO. Leé primero
 docs/PLAN_AUDITORIA.md, docs/ESTADO.md y docs/CONTEXTO.md. Rama claude/auditoria-e6-historia desde
 main. FASE 1 = SOLO AUDITAR. Tenés MCP de GitHub (list_pull_requests, pull_request_read) y el git
 local (~106 commits en main, 06/07→20/07/2026). Nivel acordado con Lautaro: POR PR/SESIÓN — el diff
@@ -417,7 +417,7 @@ QUÉ AUDITAR (recorré los ~48 PRs y las ~29 bitácoras de docs/sesiones/ en ord
 2. CONTRADICCIONES — ESTADO.md y CONTEXTO.md vs código real: módulos que dicen "EJEMPLO" y ya son
    reales (o al revés — ej. la cinta dice pizarra ejemplo: ¿ESTADO lo refleja?), conteos/estados
    desactualizados, decisiones registradas en un doc y pisadas después sin actualizar el primero.
-3. TRES LISTAS DE PENDIENTES PARALELAS — el backlog de ESTADO.md («Plan RF AGRO»), los «Pendientes»
+3. TRES LISTAS DE PENDIENTES PARALELAS — el backlog de ESTADO.md («Plan ROFO AGRO»), los «Pendientes»
    de CONTEXTO.md y la lista v2 del panel de gráficos se solapan y divergen. Propuesta concreta de
    consolidación en UNA lista canónica (con Lautaro decidiendo dónde vive).
 4. HIGIENE — ramas remotas ya mergeadas que ESTADO manda borrar y siguen vivas (listalas con
@@ -440,7 +440,7 @@ como comandos para que lo corra Lautaro — no borres ramas vos). Cerrá con doc
 # PROMPT E7 — Síntesis y backlog maestro
 
 ```text
-Sos el auditor de la etapa E7 (síntesis final) de la auditoría integral de RF AGRO. Requisito: las
+Sos el auditor de la etapa E7 (síntesis final) de la auditoría integral de ROFO AGRO. Requisito: las
 etapas E1–E6 están cerradas (informes en docs/auditoria/E1..E6 con la columna «Decisión» completa y
 sus correcciones chicas ya mergeadas). Leé docs/PLAN_AUDITORIA.md, los 6 informes completos,
 docs/ESTADO.md y docs/CONTEXTO.md. Rama claude/auditoria-e7-sintesis desde main. Esta etapa NO

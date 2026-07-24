@@ -88,7 +88,7 @@
   ajusta) con las env vars `SUPABASE_URL`/`SUPABASE_SERVICE_KEY`/`RESEND_API_KEY`/
   `RESEND_FROM`/`ADMIN_EMAILS`/`INFORME_TOKEN`/`INFORME_BASE_URL` configuradas en el
   entorno de Claude Code. Prompt de la Routine: "Corré la skill `informe-diario` del
-  repo RFAGRO_RESEARCH_WEB y generá el informe diario de hoy siguiendo su
+  repo ROFOAGRO_RESEARCH_WEB y generá el informe diario de hoy siguiendo su
   procedimiento al pie de la letra. Si algo falla, avisá por mail a ADMIN_EMAILS con
   el error en vez de quedarte en silencio."
 - La calibración Sonnet+Fable de la prosa (sugerida por el plan) no se ejecutó — la

@@ -1,27 +1,27 @@
 # Sesión 2026-07-17 — Logo real integrado
 
 - **Rama:** `claude/desarrollos-pendientes-dbq59w` · **PR:** #_ (base `main`)
-- **Objetivo pedido por Lautaro:** ítem 2 del backlog — integrar el logo real de RF AGRO
+- **Objetivo pedido por Lautaro:** ítem 2 del backlog — integrar el logo real de ROFO AGRO
   como asset (hasta ahora la marca era 100% tipográfica + glifos dibujados en código).
 
 ## Hecho
 - **Assets de marca en `public/`** (nuevo directorio; antes no existía):
-  - `public/rfagro-isotipo.svg` — los **3 símbolos** (trigo amarillo · trigo verde con espiga
+  - `public/rofoagro-isotipo.svg` — los **3 símbolos** (trigo amarillo · trigo verde con espiga
     dorada · gota de soja), recortados del logo. Es lo que se usa en toda la UI.
-  - `public/rfagro-logo.svg` — el **logo completo** (símbolos + wordmark + "Consultora de
+  - `public/rofoagro-logo.svg` — el **logo completo** (símbolos + wordmark + "Consultora de
     agronegocios"). Queda como asset de marca para email/OG/impresión (no se referencia en la
     UI porque el wordmark en texto sigue mejor el tema; ver Decisiones).
 - **Header** (`site-header.tsx` + `.brand-iso` en `globals.css`): reemplazado el glifo de
-  espiga (`WheatMark`) por el **isotipo real** (`<img src="/rfagro-isotipo.svg">`), manteniendo
-  el wordmark "RF AGRO" como texto (colores del tema) + el subtítulo. Se sacó el recuadro `.mark`.
-- **Landing `/bienvenida`**: isotipo grande arriba + título "RF AGRO" + nueva bajada
+  espiga (`WheatMark`) por el **isotipo real** (`<img src="/rofoagro-isotipo.svg">`), manteniendo
+  el wordmark "ROFO AGRO" como texto (colores del tema) + el subtítulo. Se sacó el recuadro `.mark`.
+- **Landing `/bienvenida`**: isotipo grande arriba + título "ROFO AGRO" + nueva bajada
   **"Consultora de agronegocios"** → recrea el logo completo pero con el texto adaptándose al tema.
 - **Auth (`(auth)/layout.tsx`), Admin (`admin/layout.tsx`), Footer (`site-footer.tsx`)**:
   mismo isotipo real en lugar de `WheatMark`.
 - **Favicon** (`src/app/icon.svg`): glifo nuevo, simple y legible a 16px (espiga dorada + hojas
   verdes sobre cuadrado verde de marca) — eco del símbolo central del logo. Los 3 símbolos
   completos a 16px quedaban confusos.
-- **Proxy** (`proxy.ts`): agregados `rfagro-logo.svg` y `rfagro-isotipo.svg` al matcher de
+- **Proxy** (`proxy.ts`): agregados `rofoagro-logo.svg` y `rofoagro-isotipo.svg` al matcher de
   exclusión, para que cuando se prenda `AUTH_ENFORCED` el gate NO redirija la carga del logo en
   las páginas públicas (landing/login).
 
@@ -53,7 +53,7 @@
   feedback de Lautaro se re-verificó el oscuro: **halos de borde eliminados**.
 
 ## Quedó pendiente / en vuelo
-- El **logo completo** (`rfagro-logo.svg`) queda como asset pero sin usar en la UI. Candidatos a
+- El **logo completo** (`rofoagro-logo.svg`) queda como asset pero sin usar en la UI. Candidatos a
   futuro: imagen OpenGraph/social, firma de los emails de Resend, reportes/impresión.
 - Nada bloqueado. El ítem 2 del backlog queda cerrado.
 

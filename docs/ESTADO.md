@@ -19,7 +19,52 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 24/07/2026 — 🧪 A6: probando el uploader real → 1 bug encontrado y arreglado + feature nueva, TRABADO en el login)
+## Ahora (última actualización: 24/07/2026 — 🏷️ REBRANDING RF AGRO → ROFO AGRO, texto + logo real HECHO; solo renames de plataforma EN VUELO)
+
+**🏷️ REBRANDING RF AGRO → ROFO AGRO — rama `claude/rf-agro-rofo-agro-rebrand-gb7syg`, PR #80.**
+Retoma el pendiente anotado el 23/07 (dominio `rofoagro.com.ar` ya conectado y verificado ese día;
+faltaba "el rebranding del sitio"). Lautaro pidió, explícitamente y varias veces, que no quede
+"RF AGRO" en NINGÚN lugar bajo ningún punto de vista — código, docs, ni plataformas externas.
+**Barrido de texto HECHO y verificado**: `grep -rli "rfagro|RF AGRO|RFAGRO" -i .` (fuera de
+`node_modules`/`.git`/`.next`) encontró **127 archivos**; reemplazados por orden de variante
+(mayúsculas/guiones/minúsculas) con un script `perl -pi -e` — cubre componentes/páginas
+(`<title>`, wordmark de header/footer/auth/admin/landing/legal), emails (`auth/emails.ts`),
+placas de informes, marca de agua de gráficos, user-agents de los scrapers, migraciones SQL,
+Edge Function `dea-fetch`, scripts de ingesta, workflows, `package.json`, `.env.local.example` y
+TODA `docs/` (incluidos los `sesiones/*` históricos — a propósito, por el pedido explícito de no
+dejar ninguna mención vieja, apartándose del criterio habitual de "no reescribir bitácoras").
+**2ª pasada** encontró texto partido que ese grep no veía: el wordmark del header/footer/auth/
+admin/legal/landing/404 se arma con 2 `<span>` de color (`RF`+`AGRO` sin espacio entre tags) y el
+email de Resend usaba `RF&nbsp;AGRO` (entidad HTML) — corregidos los 7 componentes + el email +
+un comentario de `globals.css`; verificado con Chromium headless contra el server real (`npm run
+start`) que el header ya dice "ROFO AGRO" de verdad, no solo en el `<title>`.
+**Logo real HECHO**: Lautaro lo había subido por el chat pero nunca llegó al filesystem de la
+sesión — resultó que lo subió directo por la web de GitHub ("Add files via upload" a `main`,
+`public/ROFO SVG.svg` + un PNG de referencia, este último con "RF AGRO" en el nombre del archivo);
+recuperado con `git show origin/main:"..."` y, al mergear `main`, ambos movidos de `public/`
+(donde quedaban servidos como estáticos) a `docs/marca/rofoagro-{fuente.svg,referencia.png}`
+(nombre limpio, ya no público).
+Del SVG completo (2000×2000, auto-trace de 285 paths sin `<text>`, con los 3 íconos + wordmark +
+bajada "Consultora de agronegocios") se extrajeron por bucketing de posición **los 3 assets reales**
+(`rofoagro-isotipo.svg` solo íconos, `rofoagro-logo.svg`/`rofoagro-logo-marca.svg` logo completo,
+ambos transparentes y recortados) y se optimizaron con `svgo` (-68% de peso). Verificado
+renderizando sobre fondo claro/oscuro antes de reemplazar los archivos de producción.
+Assets renombrados `public/rfagro-*.svg` → `public/rofoagro-*.svg`. Verificado: lint/tsc/
+tests(201/201)/build ✅ · cero ocurrencias remanentes (incluidas las partidas) en el repo, en el
+HTML compilado y en el server corriendo de verdad.
+
+**Quedó pendiente (solo renames de plataforma, sin tool disponible para hacerlos desde acá, ver
+detalle en la sesión)**: (1) **Nombre del repo en GitHub** — queda como paso manual de Lautaro
+(Settings → Repository name) — ojo, hacerlo DESPUÉS de mergear este PR para no romper el remote de
+la sesión en curso. (2) **Nombre del proyecto en Vercel** — no bloquea nada (el dominio productivo
+ya es `rofoagro.com.ar`) pero el subdominio `*.vercel.app` de fallback seguirá diciendo
+`rfagro-research-web` hasta que lo cambie a mano. (3) **Resend** — si hay un remitente propio
+cargado como env var en Vercel con el nombre viejo, actualizarlo a mano (el default del código ya
+dice ROFO AGRO). **Sin acción en Supabase** (el proyecto se llama `lineup-argentina`, nunca tuvo
+el nombre de marca). Detalle completo:
+[`sesiones/2026-07-24-rebrand-rofo-agro.md`](sesiones/2026-07-24-rebrand-rofo-agro.md).
+
+## Anterior (24/07/2026 — 🧪 A6: probando el uploader real → 1 bug encontrado y arreglado + feature nueva, TRABADO en el login)
 
 **🧪 A6 EN VIVO CON LAUTARO — historial editable de "Datos del día" + bug real de la DEA
 encontrado y arreglado — PR #77 (mergeado).** Arrancó como el repaso conversacional del bloque A
@@ -504,7 +549,7 @@ de `/produccion` junto a USDA/CONAB/BCR/DEA, 2000/01→2025/26. Detalle:
 REBRANDING DEL SITIO (próxima sesión dedicada) — misma tarde del 23/07.** Retomado en la misma
 sesión (Lautaro: "ya registré el dominio"). Research previo (research de nombre/SRL, ver detalle
 abajo) llevó a la decisión de **pivotar la marca a "ROFO AGRO"** — esquiva del todo la duda legal
-de **RF AGRO SRL** (CUIT 30712631208, activa desde 2013, transporte de granel) sin necesitar
+de **ROFO AGRO SRL** (CUIT 30712631208, activa desde 2013, transporte de granel) sin necesitar
 consulta con gestor/abogado. **Dominio `rofoagro.com.ar` registrado y CONECTADO**: nameservers de
 Vercel (`ns1`/`ns2.vercel-dns.com`) delegados desde nic.ar (Mis dominios → Delegar → Agregar nueva
 delegación), propagado y en `Valid Configuration`. **Verificado LIVE desde el sandbox** (curl):
@@ -516,9 +561,9 @@ resolvió eso) — quedan 2, y los 2 son consecuencia directa de que **el códig
 AGRO" en todos lados** mientras el nombre cargado en el OAuth ya es "ROFO AGRO": (1) nombre de la
 app no coincide con la marca de la página principal, (2) la página principal no explica el
 propósito (puede resolverse solo o necesitar retoque una vez que el wordmark diga "ROFO AGRO").
-**Pendiente concreto para la próxima sesión — REBRANDING "RF AGRO" → "ROFO AGRO" en TODO el
-sitio**: wordmark/logo (`public/rfagro-*.svg` y su uso en header/footer/auth/admin/landing),
-`<title>`/metadata de cada página (la mayoría trae "· RF AGRO" en el título), textos de la landing
+**Pendiente concreto para la próxima sesión — REBRANDING "ROFO AGRO" → "ROFO AGRO" en TODO el
+sitio**: wordmark/logo (`public/rofoagro-*.svg` y su uso en header/footer/auth/admin/landing),
+`<title>`/metadata de cada página (la mayoría trae "· ROFO AGRO" en el título), textos de la landing
 (`/bienvenida`), las placas de los informes diario/semanal (llevan el logo), favicon, y cualquier
 otra mención de marca visible al cliente — auditar con un grep amplio antes de tocar nada. **NO
 tocar**: nombres internos de tablas/repo/skills (son identificadores técnicos, no marca visible),
@@ -586,7 +631,7 @@ informes (deduplicando los hallazgos vistos por más de una etapa, con la decisi
 arrastrada — nada aprobado se perdió, nada rechazado reaparece), se armó la **matriz impacto ×
 esfuerzo** de todo lo aprobado-y-pendiente, y quedó el **BACKLOG MAESTRO ÚNICO** en
 **[`auditoria/E7-sintesis.md`](auditoria/E7-sintesis.md) §4** — reemplaza a las 3 listas paralelas
-(absorbe el checklist «Plan RF AGRO» de abajo, que queda como histórico, y el tablero de
+(absorbe el checklist «Plan ROFO AGRO» de abajo, que queda como histórico, y el tablero de
 `PLAN_BACKLOG.md`; los prompts P1–P12/MP1–MP4 siguen siendo los prompts de ejecución). El informe
 abre con el **resumen ejecutivo de TODA la auditoría** (~71 hallazgos, ~30 decisiones, qué se
 corrigió y qué queda) escrito para leerse de una sentada. Trae además **6 prompts de lote listos**
@@ -695,7 +740,7 @@ sesión**, al mergear ambas ramas. Informe: [`auditoria/E4-codigo.md`](auditoria
 **Veredicto: el sitio muy bien en lo grueso.** Informe con 11 hallazgos + 6 dudas:
 **[`auditoria/E3-ux.md`](auditoria/E3-ux.md)**. **Lautaro aprobó y se implementó la FASE 2 en la misma rama:**
 **H2** header mobile colapsa (fin del scroll horizontal ~95px en todas las `(site)`) · **H3** sacado "ISA
-Agents" de los sellos de line-up (puertos → "Elaboración propia RF AGRO") · **H4** cinta con **pizarra real
+Agents" de los sellos de line-up (puertos → "Elaboración propia ROFO AGRO") · **H4** cinta con **pizarra real
 de CAC** (soja 339,7, fin del ejemplo hardcodeado) · **H5** sacada la serie "Granos (ej.)" de Implícitas ·
 **noindex global QUITADO** (ya no hay dato de ejemplo a la vista; las páginas de mesa mantienen el suyo) ·
 **H7** DJVE oculta los ~70 productos sin actividad · **H8** `/produccion` en **pestañas Calendario/
@@ -937,7 +982,7 @@ marca de agua. **Fundaciones**: `ChartTabla` (`chart-tabla.tsx`, tabla genérica
 gráfico — sin toggle, decisión 20/07 —, reusa `.tbl` con header sticky + scroll propio, el caller formatea
 es-AR) y `ChartMarca` (`chart-marca.tsx`, overlay server-safe del logo; opacidad y tamaño centralizados en
 `.cm-marca` de `globals.css`, debajo del tooltip — subida a **.20/.22 claro/oscuro** a pedido de Lautaro para
-que se note más) + asset **`public/rfagro-logo-marca.svg`** (logo completo limpiado de los halos del
+que se note más) + asset **`public/rofoagro-logo-marca.svg`** (logo completo limpiado de los halos del
 auto-trace SOLO en la zona del isotipo — los blancos del wordmark son los contadores de las letras, se
 conservan). **Integrado en todos los gráficos**: `/graficos` (los 2 modos; la tabla sale de las MISMAS rows
 que dibuja Recharts, X con el formato del tooltip, banda mín/med/máx) · `/produccion` (evolución: fecha ×
@@ -1109,20 +1154,20 @@ claro/oscuro real. **Falta**: Fases 2-4 (empresas, mesa de embarque, temperatura
 ## Anterior (17/07/2026 — Landing institucional)
 
 **🏛️ LANDING INSTITUCIONAL (ítem 3 del backlog) HECHA — rama `claude/desarrollos-pendientes-dbq59w`, PR #32.**
-`/bienvenida` dejó de ser la landing mínima de login y pasó a ser la **página de venta** de RF AGRO (enfoque de
+`/bienvenida` dejó de ser la landing mínima de login y pasó a ser la **página de venta** de ROFO AGRO (enfoque de
 venta, estilo [Praxis](https://praxis.chetech.com.ar/)). Se **movió fuera de `(auth)`** a `src/app/bienvenida/`
 con layout propio (topbar + footer); la URL sigue siendo `/bienvenida`. Secciones: hero ("Dejá de tomar decisiones
 a ciegas") → problema → cómo funciona (01·02·03) → servicios (6) → **vistazo al tablero** (mockups ilustrativos,
-sin datos reales, chip "Vista previa") → por qué RF AGRO → **para acopios** (replicá el correacopio) → equipo (sin
+sin datos reales, chip "Vista previa") → por qué ROFO AGRO → **para acopios** (replicá el correacopio) → equipo (sin
 nombres, "más de 10 años") → FAQ ("no reemplaza a tu corredor") → **formulario de contacto** (Resend a
-`ADMIN_EMAILS`, honeypot, degrada sin key). Link "Conocé RF AGRO →" en el footer del dashboard. **Textos = borrador
+`ADMIN_EMAILS`, honeypot, degrada sin key). Link "Conocé ROFO AGRO →" en el footer del dashboard. **Textos = borrador
 que Lautaro edita.** Estilos `lp-*` nuevos, claro/oscuro. lint/tsc/build ✅; navegador claro+oscuro + formulario
 end-to-end ✅. Detalle: [`sesiones/2026-07-17-landing-institucional.md`](sesiones/2026-07-17-landing-institucional.md).
 
 **🎨 LOGO REAL INTEGRADO (ítem 2 del backlog) HECHO — rama `claude/desarrollos-pendientes-dbq59w`.** La marca
 dejó de ser 100% tipográfica: Lautaro pasó el logo real (isotipo de 3 símbolos — trigo amarillo · trigo verde
-con espiga dorada · gota de soja — + wordmark "RF AGRO" + "Consultora de agronegocios"). Se guardó como assets
-en **`public/`** (`rfagro-isotipo.svg` 34 KB · `rfagro-logo.svg` completo). El **isotipo real** reemplaza el
+con espiga dorada · gota de soja — + wordmark "ROFO AGRO" + "Consultora de agronegocios"). Se guardó como assets
+en **`public/`** (`rofoagro-isotipo.svg` 34 KB · `rofoagro-logo.svg` completo). El **isotipo real** reemplaza el
 glifo `WheatMark` en header, landing, auth, admin y footer; el wordmark sigue en **texto** (así se adapta al
 tema claro/oscuro — el logo del cliente es un auto-trace con fondo blanco y verde oscuro que en el tema "rueda"
 quedaba apagado). **Fondo transparente** (pedido de Lautaro) quitando la 1ª ruta del trazado. **Favicon nuevo**
@@ -1198,7 +1243,7 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
 
 ---
 
-## Plan RF AGRO (backlog priorizado por Lautaro, registrado 13/07/2026)
+## Plan ROFO AGRO (backlog priorizado por Lautaro, registrado 13/07/2026)
 
 > ⚠️ **REEMPLAZADO POR EL BACKLOG MAESTRO (22/07/2026, auditoría E7).** Esta lista queda como
 > **registro histórico** de los 21 ítems originales y su estado al cierre de la auditoría. La lista
@@ -1229,13 +1274,13 @@ en vivo; refresh por poll cada 30s con rueda abierta (`refresh-on-focus.tsx` + `
   `healthcheck.yml`, rojo+mail si algo se atrasa); y **descongelado de GEA** por dispatch (live #196 julio
   + backfill Wayback mayo). Detalle: [`sesiones/2026-07-13-verificacion-bases-datos.md`](sesiones/2026-07-13-verificacion-bases-datos.md).
 - [x] 2. **Logo real integrado — HECHO (17/07, rama `claude/desarrollos-pendientes-dbq59w`).** Assets en
-  `public/` (`rfagro-isotipo.svg` = 3 símbolos · `rfagro-logo.svg` = logo completo). Header/landing/auth/
+  `public/` (`rofoagro-isotipo.svg` = 3 símbolos · `rofoagro-logo.svg` = logo completo). Header/landing/auth/
   admin/footer usan el isotipo real + wordmark en texto; favicon nuevo; fondo transparente; halos de borde
   del tema oscuro limpiados. Detalle: [`sesiones/2026-07-17-logo-real-integrado.md`](sesiones/2026-07-17-logo-real-integrado.md).
 - [x] 3. **Landing institucional — HECHO (17/07, rama `claude/desarrollos-pendientes-dbq59w`, PR #32).**
   `/bienvenida` reconvertida en página de venta (hero → problema → cómo funciona → servicios →
   vistazo al tablero → por qué → acopios → equipo → FAQ → formulario). Enfoque de venta, estilo Praxis,
-  mockups llamador (sin datos reales), formulario por Resend, link "Conocé RF AGRO" en el footer. Textos
+  mockups llamador (sin datos reales), formulario por Resend, link "Conocé ROFO AGRO" en el footer. Textos
   = borrador editable. Detalle: [`sesiones/2026-07-17-landing-institucional.md`](sesiones/2026-07-17-landing-institucional.md).
 - [x] 4. **Home = novedades del día — HECHO (20/07, rama `claude/desarrollos-pendientes-unm9cg`).** `/` pasó
   a: **Novedades del día** (titular destacado + hasta 7) → **El mercado hoy** (Chicago en USD/tn, reusa

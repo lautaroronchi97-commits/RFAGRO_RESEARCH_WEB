@@ -1,4 +1,4 @@
--- Vista de las últimas dos ruedas del line-up para la web RF AGRO (panel Puertos).
+-- Vista de las últimas dos ruedas del line-up para la web ROFO AGRO (panel Puertos).
 -- Devuelve TODAS las filas de las dos fechas de consulta más recientes, con un
 -- `rueda_rank` (1 = la más reciente, 2 = la anterior) para armar la foto operativa
 -- y el "qué cambió vs la rueda anterior". Como cada snapshot tiene ~500 filas, dos
@@ -24,6 +24,6 @@ from public.lineup l
 where l.fecha_consulta in (select fecha_consulta from fechas);
 
 comment on view public.lineup_ultimas_ruedas is
-  'Últimas 2 ruedas del line-up de ISA (rueda_rank 1=última, 2=anterior) para el panel Puertos de RF AGRO. security_invoker respeta el RLS de lineup; lectura anon.';
+  'Últimas 2 ruedas del line-up de ISA (rueda_rank 1=última, 2=anterior) para el panel Puertos de ROFO AGRO. security_invoker respeta el RLS de lineup; lectura anon.';
 
 grant select on public.lineup_ultimas_ruedas to anon;

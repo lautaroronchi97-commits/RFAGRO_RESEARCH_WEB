@@ -10,7 +10,7 @@
 - Guía a Lautaro para los pasos de Vercel: **Branch Tracking → `main`** (Settings → Environments →
   Production) y **Promote to Production** del deployment del merge del PR #8 (cambiar el tracking
   NO redeploya solo — solo aplica a los próximos pushes).
-- Verificación programática de producción (https://rfagro-research-web.vercel.app): el CSS servido
+- Verificación programática de producción (https://rofoagro-research-web.vercel.app): el CSS servido
   pasó de los colores del tema oscuro viejo (`#080c09`…) a los tokens premium (`#060A07`/`#0C130D`),
   y el HTML contiene todos los paneles (Arbitrajes, Pases, Noticias, Calculadoras, Dólar futuro,
   Dólar linked, Capacidad, LECAPs).

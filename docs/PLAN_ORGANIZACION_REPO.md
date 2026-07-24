@@ -77,7 +77,7 @@ Vercel → tu proyecto → **Settings** → **Environments** → **Production** 
 **Redeploy**).
 
 **Paso 4 — Verificar la web.**
-https://rfagro-research-web.vercel.app tiene que mostrar el diseño premium con todos los paneles de
+https://rofoagro-research-web.vercel.app tiene que mostrar el diseño premium con todos los paneles de
 datos reales. Si algo se ve mal, avisame en una sesión nueva ANTES del paso 5.
 
 **Paso 5 — Borrar las ramas viejas.**

@@ -22,7 +22,7 @@
  */
 
 const API = "https://api.bcra.gob.ar/estadisticas/v4.0/monetarias/78";
-const UA = "Mozilla/5.0 (RFAGRO research)";
+const UA = "Mozilla/5.0 (ROFOAGRO research)";
 const PAGE = 3000;
 
 const SUPABASE_URL = process.env.SUPABASE_URL;

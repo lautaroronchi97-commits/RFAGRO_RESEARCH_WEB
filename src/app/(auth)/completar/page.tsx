@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getAuthUser, getPerfil } from "@/lib/auth/dal";
 import { CompletarForm } from "./completar-form";
 
-export const metadata: Metadata = { title: "Completar registro · RF AGRO" };
+export const metadata: Metadata = { title: "Completar registro · ROFO AGRO" };
 
 /**
  * Paso posterior al OAuth de Google: Google nos da nombre y email, pero faltan la

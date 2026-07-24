@@ -13,7 +13,7 @@ import { requireSeccion } from "@/lib/auth/dal";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Gráficos de spreads · RF AGRO",
+  title: "Gráficos de spreads · ROFO AGRO",
   description: "Comparador histórico de spreads entre cosechas: A3, Chicago y pizarra, campañas superpuestas.",
 };
 
@@ -23,7 +23,7 @@ export default async function GraficosPage() {
 
   return (
     <>
-      <h1 className="sr">RF AGRO — Gráficos de spreads entre cosechas</h1>
+      <h1 className="sr">ROFO AGRO — Gráficos de spreads entre cosechas</h1>
       <main className="wrap">
         <div className="col">
           <h2 className="sec-title">Gráficos de spreads entre cosechas</h2>

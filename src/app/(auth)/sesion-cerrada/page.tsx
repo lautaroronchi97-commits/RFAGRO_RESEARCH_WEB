@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Sesión cerrada · RF AGRO" };
+export const metadata: Metadata = { title: "Sesión cerrada · ROFO AGRO" };
 
 /**
  * Pantalla a la que el proxy manda cuando la sesión de este dispositivo dejó de ser
