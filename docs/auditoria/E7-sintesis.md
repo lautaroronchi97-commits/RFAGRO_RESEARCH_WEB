@@ -234,7 +234,10 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
   `ingest-bcra-mulc.mjs` + workflow + healthcheck, panel nuevo en `panel-cambiario.tsx`
   ("Compras netas BCRA (MULC)", KPIs + gráfico de barras), backfill real 5.770 filas 2003→hoy
   cargado a la base (verificado 1:1 contra la API), `compras_bcra` pasó a pública (mismo criterio
-  que camiones/DJVE). `sesiones/2026-07-23-c4-compras-bcra.md`.
+  que camiones/DJVE). **Verificación visual + primer cron real: HECHO 24/07** (panel confirmado en
+  navegador claro/oscuro con datos reales, primer `workflow_dispatch` disparado y verificado 1:1
+  contra la API). `sesiones/2026-07-23-c4-compras-bcra.md` +
+  `sesiones/2026-07-24-verificacion-panel-bcra.md`.
 - [x] **C5. P4 build — camiones en puerto** — hecho 23/07, **pivotó de fuente**: en vez de SAGyP
   diario automático, Williams Entregas (vía Agrochat) por carga manual — zona Y producto, cero
   dependencia de SAGyP (Williams confirmado como servicio pago sin API). Panel público + señal
