@@ -58,7 +58,7 @@
 | P8 | Feed A3 Fase 2 — histórico intradiario | — | Sonnet | **DESCARTADO (24/07)** — Lautaro lo descartó directamente. Ver `auditoria/E7-sintesis.md` §5 |
 | P9 | Sintéticos TIR | tabla IAMC de Lautaro (paso 1) | Fable/Opus (validación de fórmulas financieras) | **HECHO (24/07, PR #75)** — fórmula validada vs Excel, panel /dolar + carga manual de pago final (BYMA) en /admin/datos |
 | P10 | Estrategias avanzadas | primas/decisiones de Lautaro (paso 1) | Fable/Opus (ídem P9) | **sin prioridad por ahora (24/07)** — Lautaro no quiere sumar estrategias con costos por el momento; sigue pendiente, no descartado |
-| P11 | Modelo propio de capacidad de pago | fórmula de Lautaro (paso 1) | Fable/Opus (ídem P9) | pendiente |
+| P11 | Modelo propio de capacidad de pago | fórmula de Lautaro (paso 1) | Fable/Opus (ídem P9) | **HECHO (24/07)** — paso 1 sustituido por research profundo con Fable (pedido de Lautaro) en vez de su fórmula a mano; BCR/Nuestro/Pizarra + diferenciales, FOB oficial SAGyP/MAGyP. `sesiones/2026-07-24-c16-capacidad-pago.md` |
 | P12 | Scoring de clientes | datos de fijaciones (paso 1) | Fable/Opus (diseño de producto + modelo AHP + privacidad) | **DESCARTADO (24/07)** — Lautaro: "tampoco me interesa, descartalo". Ver `auditoria/E7-sintesis.md` §5 |
 
 > Regla de modelos (igual que en los otros planes): **juicio → Fable mientras dure, después Opus;

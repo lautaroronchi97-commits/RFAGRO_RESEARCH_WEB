@@ -288,7 +288,12 @@ en la tabla «Fase 2» de cada informe). Los únicos abiertos están en la matri
 - [ ] **C14. P10 — estrategias avanzadas** 🔒 (primas reales/costos: tus decisiones como paso 1).
   **Sin prioridad por ahora (24/07)**: Lautaro no quiere sumar estrategias con costos por el
   momento — sigue pendiente, no descartado, se retoma cuando él lo pida.
-- [ ] **C15. P11 — modelo propio de capacidad de pago** 🔒 (tu fórmula como paso 1).
+- [x] **C15. P11 — modelo propio de capacidad de pago** — hecho 24/07 (Lautaro le dijo "C16" al
+  pedirlo — la sesión y el PR quedaron con ese nombre; es este ítem, no el C16 real de abajo).
+  En vez del paso 1 original (fórmula de Lautaro a mano), pidió research profundo con Fable +
+  construir el modelo con eso. BCR/Nuestro/Pizarra + diferenciales, FOB oficial de SAGyP/MAGyP
+  (fuente propia, homologada empíricamente), gastos sembrados de BCR y editables.
+  `sesiones/2026-07-24-c16-capacidad-pago.md`.
 - [x] ~~**C16. P12 — scoring de clientes**~~ → **DESCARTADO 24/07** (Lautaro: "tampoco me
   interesa, descartalo"). Ver §5.
 - [x] ~~**C17. Gráficos intradía**~~ → **DESCARTADO 24/07** (cae con C12: consumía la tabla
@@ -348,8 +353,8 @@ C1 (MP1) ──→ C2 (MP2) y C3 (MP4)
 C12 (P8) y C17 (gráficos intradía) — cayeron ambos, descartados (§5)
 D4 (L1) ──→ D5 (L3 más barato) · conviene antes de C7/C10
 D6 (L2) ──→ conviene antes de C7 (chart nuevo del USD semanal)
-D2 (L4) 🔒 valores de Lautaro;  C13 hecho (PR #75) · C14 sin prioridad (pendiente) · C15 🔒
-insumo de Lautaro · C16 cayó, descartado (§5)
+D2 (L4) 🔒 valores de Lautaro;  C13 hecho (PR #75) · C14 sin prioridad (pendiente) · C15 hecho
+(PR #76) · C16 cayó, descartado (§5)
 noindex→index: ✅ YA RESUELTO (E3/E4) — la dependencia que citaba PLAN_BACKLOG quedó caída
 ```
 

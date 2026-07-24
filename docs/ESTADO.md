@@ -19,7 +19,73 @@
 5. **Prohibido**: pushear a `main` directo · abrir PRs contra ramas `claude/*` · duplicar apuntes de
    sesión en `CONTEXTO.md` (van en `sesiones/`).
 
-## Ahora (última actualización: 24/07/2026 — 🧮 C13 (P9) sintéticos LECAP + dólar futuro con TIR HECHO)
+## Ahora (última actualización: 24/07/2026 — 💰 C16/P11 (capacidad de pago: BCR vs Nuestro vs Pizarra) HECHO)
+
+**💰 C16/P11 — CAPACIDAD DE PAGO: BCR vs NUESTRO vs PIZARRA, con research profundo (Fable) —
+HECHO — rama `claude/c16-payment-capacity-formulas-0de77e`, PR #_.** Pedido explícito de Lautaro,
+distinto al paso 1 original del prompt P11 (que esperaba SU fórmula a mano): investigar con
+profundidad las metodologías de capacidad de pago/FAS teórico (tema que él mismo calificó de
+"controversial"), qué otros organismos la calculan, y construir un modelo propio usando FOB de
+MAGyP — con el tablero mostrando BCR / Nuestro / Pizarra y el diferencial de cada uno. Adjuntó el
+PDF de metodología de BCR (26/10/2021) como insumo. **Research (agente Fable, WebSearch/WebFetch +
+reconocimiento propio con requests reales)**: homologó una **API JSON pública de FOB oficial de
+SAGyP/MAGyP** (`ws/ssma/precios_fob.php`, alcanzable desde el mismo dominio que ya usa
+`ingest-compras.mjs` — no el subdominio bloqueado) — es la fuente independiente que alimenta
+"Nuestro"; confirmó que SAGyP publica su propio FAS teórico (Res. 42/2007, sin API); relevó otros
+organismos (Bahía Blanca, Cámara Arbitral Rosario, BCBA, Bolsa Córdoba, consultoras) sin hallar
+ninguno con metodología propia distinta a BCR salvo el oficial; confirmó reintegro 0% vigente para
+grano sin procesar; documentó la controversia real (expectativa de baja de retenciones adelantada
+al precio — fyo/Infocampo oct-2025 — y que BCR excluye por diseño cualquier margen de riesgo del
+exportador). **Homologación empírica de posiciones NCM** (sin nomenclador legible): cruce numérico
+por fecha entre la API y el dataset con nombres de datos.gob.ar — desambiguó maíz estándar (no
+pisingallo, pese a compartir prefijo NCM), trigo pan (no candeal/durum) y girasol aceitero (no
+confitero), los 3 casos donde un mapeo ingenuo por texto hubiera fallado. **Build**:
+`fob-oficial.ts` (FOB oficial diario, con reintento T-1 hasta 7 días) · `capacidad-modelo.ts`
+(cálculo propio puro: misma estructura que BCR + margen de riesgo EXPLÍCITO default 0, la
+controversia hecha perilla) · `capacidad-bcr-parse.ts` (parser de BCR REESCRITO — el viejo perdía
+sorgo/girasol enteros al mezclar 2 granos por bloque HTML; regla nueva verificada por consistencia
+aritmética real: impuestos÷FOB = alícuota DEX vigente, exacto) · panel extendido a los 5 granos
+que BCR calcula (sumó sorgo y girasol) con tabla BCR|Nuestro|Pizarra|Dif.BCR|Dif.Nuestro coloreada
+sobrepagado/subpagado + desplegable de supuestos editables (retenciones/reintegro/gastos
+portuarios/gastos comerciales/margen de riesgo) que recalcula "Nuestro" en vivo en el navegador.
+`semaforo.ts` (`/comercio/senal`) se dejó anclado a `fasBcr` a propósito (esa señal ya estaba
+calibrada contra ese número; no se le cambia la fuente como efecto secundario). **Bug real
+encontrado y corregido antes de mostrarlo**: la siembra de gastos comerciales desde BCR quedaba en
+unidades de USD/tn en vez de convertir a fracción del FOB — el FAS "Nuestro" daba disparates
+(−821 soja, −8.998 girasol) hasta que se probó con datos reales en el navegador; nunca lo hubiera
+agarrado un test que arma el `cfg` a mano. **Verificado**: 181/181 tests (30 nuevos, 2 fixtures
+reales — HTML de BCR del 22/07 + respuesta real de la API de FOB del 23/07, con checks de
+consistencia aritmética) · lint/tsc/build ✅ · navegador con datos reales (Playwright, claro/oscuro,
+desktop/mobile): BCR≈Nuestro el día 1 (misma fuente+gastos sembrados), diferenciales plausibles
+(soja +3,1% sobrepagado, sorgo −7,0% subpagado, girasol +19,4%); edición en vivo probada a mano
+(retenciones soja 24%→30% recalculó 337,10→308,90, exacto) + botón de reset. **PR #76.**
+
+**Follow-up en el mismo PR (mismo día): FAS Teórico INDUSTRIA (soja), 4ª lectura.** Lautaro
+compartió un Google Sheet de un tercero que entiende la materia ("parámetros vigente 04/2026")
+pidiendo verificar su modelo. Verificado: internamente consistente, rindes de molienda coinciden
+casi al decimal con el Anexo 2 del PDF de BCR 2021, retenciones aceite/harina 22,5% coinciden con
+`docs/negocio/05`, y confirma independientemente la misma decisión de diseño ya tomada acá
+(retenciones sobre FOB SAGyP, nunca sobre FOB mercado). **El hallazgo real**: ese documento
+calcula el FAS Teórico INDUSTRIA de BCR (complejo aceite+harina que crushea la industria), NO el
+de EXPORTACIÓN (poroto) que ya habíamos construido — en la práctica argentina el de industria
+suele ser el que más mueve el precio al productor de soja. Por `AskUserQuestion`, Lautaro eligió
+sumarlo como 4ª lectura sin tocar el cálculo de grano. Build: `parseBcrIndustria()` (nueva sección
+de la misma planilla de BCR, con un chequeo de columnas nuevo — `contarColumnas()` — que evitó un
+bug real: un typo de BCR en la celda de pellets de girasol corría el índice y le asignaba a
+girasol un valor de soja) · `capacidad-industria-modelo.ts` (fórmula pura, reproduce exacto el
+modelo de referencia salvo cáscara, omitida por no tener FOB oficial verificado) · 2 posiciones
+NCM más homologadas (aceite/harina de soja) · fila nueva "Soja (industria)" en el panel con su
+propio bloque editable. Verificado: 194/194 tests (20 nuevos, con el typo real de girasol en el
+fixture) · lint/tsc/build ✅ · navegador con datos reales (BCR=340,40 / Nuestro=335,85 /
+Pizarra=347,64, ambos modelos bien por debajo de la pizarra, consistente con la controversia
+documentada) · edición en vivo verificada a mano. **Pendiente**: Lautaro confirma la homologación
+de posiciones NCM; girasol (industria) queda sin "Nuestro" por falta de parámetros propios; FAS
+teórico propio de SAGyP (Res. 42/2007) relevado pero no sumado (no hay API). Detalle completo
+(research de las 5 preguntas, tabla de homologación con la evidencia numérica, y el follow-up de
+industria):
+[`sesiones/2026-07-24-c16-capacidad-pago.md`](sesiones/2026-07-24-c16-capacidad-pago.md).
+
+## Anterior (24/07/2026 — 🧮 C13 (P9) sintéticos LECAP + dólar futuro con TIR HECHO)
 
 **🧮 C13 / P9 — SINTÉTICOS LECAP + DÓLAR FUTURO CON TIR — HECHO — rama `claude/backlog-p9-sinteticos`,
 PR #75 (mergeado).** Cierra el ítem del backlog maestro (`auditoria/E7-sintesis.md` §4 / PROMPT P9 de
