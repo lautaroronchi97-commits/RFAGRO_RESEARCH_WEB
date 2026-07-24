@@ -55,4 +55,26 @@ describe("calendario.ts — ficha E2 6.3", () => {
     const eventos = getEventos("2020-01-01", "2020-01-01");
     expect(eventos.find((e) => e.informe === "WASDE + Crop Production")).toBeUndefined();
   });
+
+  // L6 (auditoría E7 §6): WASDE/Grain Stocks/Crop Progress ahora salen del ICS de NASS
+  // (calendario-seed-nass.json), no de arrays hardcodeados. Estas fichas fijan el contrato.
+  it("NASS (seed generado): trae el WASDE de julio, que el array a mano nunca tuvo (solo 'restantes')", () => {
+    // El seed viejo (WASDE_2026 hardcodeado) arrancaba en agosto porque se escribió a mitad de año
+    // — el ICS real SÍ tiene el WASDE del 10/07/2026, y el generador lo trae sin filtrar por "hoy".
+    const eventos = getEventos("2026-07-10", "2026-07-10");
+    const wasde = eventos.find((e) => e.informe === "WASDE + Crop Production");
+    expect(wasde?.fechaISO).toBe("2026-07-10");
+  });
+
+  it("NASS (seed generado): Grain Stocks trimestral completo (no solo el de septiembre)", () => {
+    const marzo = getEventos("2026-03-31", "2026-03-31");
+    expect(marzo.find((e) => e.informe === "Grain Stocks + Small Grains Summary")?.fechaISO).toBe(
+      "2026-03-31",
+    );
+  });
+
+  it("sin seed para un año (ej. 2027, NASS todavía no lo publicó) -> degrada sin romper, sin eventos NASS", () => {
+    const eventos = getEventos("2027-01-01", "2027-01-31");
+    expect(eventos.find((e) => e.organismo === "USDA")).toBeUndefined();
+  });
 });

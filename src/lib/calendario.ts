@@ -15,6 +15,8 @@
  */
 
 import { FERIADOS_AR, ymd } from "./habiles";
+import calendarioSeedNassRaw from "./calendario-seed-nass.json" with { type: "json" };
+import type { SeedNassAnio } from "./calendario-nass";
 
 export type Organismo = "USDA" | "CONAB" | "BCR" | "BCBA" | "DEA" | "CFTC" | "EIA" | "NOPA";
 export type Importancia = "alta" | "media" | "baja";
@@ -97,28 +99,32 @@ function ev(
 }
 
 /* ------------------------------------------------------------------ */
-/* Seed de fechas OFICIALES 2026 (verificadas — ver plan §1/§2)        */
+/* Seed de fechas OFICIALES (verificadas — ver plan §1/§2)             */
 /* ------------------------------------------------------------------ */
 
 // Todas las fechas están en hora local del organismo, que coincide con el día AR
 // (12:00 ET = 13:00/14:00 AR mismo día; 09:00 BR = 09:00 AR mismo día).
 
-/** WASDE + Crop Production (NASS) — mismo día y hora. 12:00 ET. */
-const WASDE_2026 = ["2026-08-12", "2026-09-11", "2026-10-09", "2026-11-10", "2026-12-10"];
+// WASDE + Crop Production, Grain Stocks (+ Small Grains Summary) y Crop Progress (NASS) YA NO se
+// hardcodean a mano: se generan desde el ICS oficial de NASS por año — ver `calendario-nass.ts`
+// (parser puro) + `scripts/generar-calendario-nass.mjs` (lo escribe a `calendario-seed-nass.json`,
+// versionado en el repo — el fetch nunca corre en runtime, /produccion es ISR).
+// L6 (auditoría E7, docs/auditoria/E7-sintesis.md §6): reemplaza los arrays WASDE_2026/
+// GRAIN_STOCKS_2026/CROP_PROGRESS_2026 que existían hasta el 24/07/2026 (verificado 1:1 contra el
+// ICS real antes de este cambio — ver doc de sesión). Cuando NASS publique el ICS del año
+// siguiente (~oct-nov, ver `refresh-calendario.mjs`), correr el generador con ese año agrega el
+// seed nuevo SIN tocar código acá.
+const SEED_NASS = calendarioSeedNassRaw as { anios: Record<string, SeedNassAnio> };
 
-/** Grain Stocks + Small Grains Summary (NASS) — trimestral. 12:00 ET. */
-const GRAIN_STOCKS_2026 = ["2026-09-30"];
+/** Todas las fechas de una clave del seed NASS (wasde/grainStocks/cropProgress), de TODOS los años
+ *  versionados — el filtro por rango lo hace el caller de siempre (`inRange`), como con CONAB. */
+function fechasNass(clave: keyof SeedNassAnio): string[] {
+  return Object.values(SEED_NASS.anios).flatMap((a) => a[clave] ?? []);
+}
 
-/** Crop Progress (NASS) — lunes 16:00 ET (con corrimiento a martes por feriado US, ya aplicado). */
-const CROP_PROGRESS_2026 = [
-  "2026-07-13", "2026-07-20", "2026-07-27",
-  "2026-08-03", "2026-08-10", "2026-08-17", "2026-08-24", "2026-08-31",
-  "2026-09-08", "2026-09-14", "2026-09-21", "2026-09-28", // 08-sep martes (Labor Day)
-  "2026-10-05", "2026-10-13", "2026-10-19", "2026-10-26", // 13-oct martes (Columbus Day)
-  "2026-11-02", "2026-11-09", "2026-11-16", "2026-11-23", "2026-11-30",
-];
-
-/** CONAB — Levantamento da Safra de Grãos. 09:00 Brasília. */
+/** CONAB — Levantamento da Safra de Grãos. 09:00 Brasília. NASS no cubre este organismo (Brasil no
+ *  publica un ICS/calendario máquina-legible verificado — PLAN_CALENDARIO_PRODUCCION §8) → sigue a
+ *  mano, renovar una vez al año con las fechas oficiales del boletín. */
 const CONAB_2026 = ["2026-07-14", "2026-08-13", "2026-09-15", "2026-10-15", "2026-11-13", "2026-12-15"];
 
 const U = {
@@ -176,7 +182,7 @@ export function getEventos(desdeISO: string, hastaISO: string): EventoCalendario
   const out: EventoCalendario[] = [];
 
   // --- OFICIALES ---
-  for (const f of WASDE_2026) {
+  for (const f of fechasNass("wasde")) {
     if (!inRange(f, desdeISO, hastaISO)) continue;
     out.push(
       ev(
@@ -196,7 +202,7 @@ export function getEventos(desdeISO: string, hastaISO: string): EventoCalendario
       ),
     );
   }
-  for (const f of GRAIN_STOCKS_2026) {
+  for (const f of fechasNass("grainStocks")) {
     if (!inRange(f, desdeISO, hastaISO)) continue;
     out.push(
       ev(
@@ -216,7 +222,7 @@ export function getEventos(desdeISO: string, hastaISO: string): EventoCalendario
       ),
     );
   }
-  for (const f of CROP_PROGRESS_2026) {
+  for (const f of fechasNass("cropProgress")) {
     if (!inRange(f, desdeISO, hastaISO)) continue;
     out.push(
       ev(
