@@ -6,7 +6,7 @@ import { Uploader } from "./uploader";
 import { PromptAgrochat } from "./prompt-agrochat";
 import { UploaderCamiones } from "./uploader-camiones";
 import { PromptCamiones } from "./prompt-camiones";
-import { DatosDia } from "./datos-dia";
+import { DatosDia, type DiaColor } from "./datos-dia";
 import { BcraManual, type PuntoReciente } from "./bcra-manual";
 import { DeaUploader } from "./dea-uploader";
 import { PasUploader } from "./pas-uploader";
@@ -40,8 +40,9 @@ export default async function DatosPage() {
   const fechaHoy = hoyCordobaISO();
   const desde14 = isoMenosDias(fechaHoy, 14);
   const supabase = await createSupabaseServerClient();
-  const [{ data: colorRows }, { data: bcraRows }, { data: lecapRows }] = await Promise.all([
-    supabase.from("mesa_color").select("fecha,texto").order("fecha", { ascending: false }).limit(6),
+  const [{ data: colorRows }, { data: informesDiarios }, { data: bcraRows }, { data: lecapRows }] = await Promise.all([
+    supabase.from("mesa_color").select("fecha,texto").gte("fecha", desde14).order("fecha", { ascending: false }),
+    supabase.from("informes_generados").select("fecha").eq("tipo", "diario").gte("fecha", desde14),
     supabase
       .from("compras_bcra")
       .select("fecha,monto_musd,fuente")
@@ -52,9 +53,23 @@ export default async function DatosPage() {
       .select("ticker,pago_final,fecha_vencimiento")
       .order("fecha_vencimiento", { ascending: true, nullsFirst: false }),
   ]);
-  const filas = (colorRows ?? []) as { fecha: string; texto: string }[];
-  const deHoy = filas.find((f) => f.fecha === fechaHoy);
-  const recientes = filas.filter((f) => f.fecha !== fechaHoy).slice(0, 3);
+  // Historial de "color de la rueda" (últimos 14 días con dato + hoy siempre presente, aunque
+  // esté vacío) con el flag "tomado" = ya existe el registro del informe diario de esa fecha
+  // (informes_generados.tipo='diario') → esa fila queda de solo lectura.
+  const coloresPorFecha = new Map(
+    ((colorRows ?? []) as { fecha: string; texto: string }[]).map((f) => [f.fecha, f.texto]),
+  );
+  const fechasTomadas = new Set(
+    ((informesDiarios ?? []) as { fecha: string }[]).map((f) => f.fecha),
+  );
+  const fechasColor = new Set([fechaHoy, ...coloresPorFecha.keys()]);
+  const diasColor: DiaColor[] = Array.from(fechasColor)
+    .sort((a, b) => (a < b ? 1 : -1))
+    .map((fecha) => ({
+      fecha,
+      texto: coloresPorFecha.get(fecha) ?? "",
+      tomado: fechasTomadas.has(fecha),
+    }));
 
   const bcraRecientes = (bcraRows ?? []) as { fecha: string; monto_musd: number; fuente: "manual" | "api" }[];
   const bcraPuntos: PuntoReciente[] = bcraRecientes.map((r) => ({ fecha: r.fecha, montoMusd: r.monto_musd, fuente: r.fuente }));
@@ -92,7 +107,7 @@ export default async function DatosPage() {
       <PromptCamiones />
       <UploaderCamiones />
 
-      <DatosDia fechaHoy={fechaHoy} colorHoy={deHoy?.texto ?? ""} recientes={recientes} />
+      <DatosDia fechaHoy={fechaHoy} dias={diasColor} />
       <BcraManual fechaDefault={bcraFechaDefault} recientes={bcraPuntos.slice(0, 8)} faltantes={bcraFaltantes} />
       <DeaUploader hoy={fechaHoy} />
       <PasUploader hoy={fechaHoy} />

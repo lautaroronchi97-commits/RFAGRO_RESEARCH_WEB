@@ -24,6 +24,21 @@ export async function guardarDatosDelDia(_prev: DatosDiaState, formData: FormDat
 
   const supabase = await createSupabaseServerClient();
 
+  // Guard: una vez que el informe diario (MP1) ya generó su registro para esta fecha, ya leyó y
+  // redactó con el texto que había en ese momento — editarlo después no cambia la placa que salió,
+  // solo desincroniza el registro. Se bloquea acá (no solo en la UI) para que valga también si
+  // alguien pega el POST a mano.
+  const { data: yaTomado, error: eTomado } = await supabase
+    .from("informes_generados")
+    .select("id")
+    .eq("tipo", "diario")
+    .eq("fecha", fecha)
+    .limit(1);
+  if (eTomado) return { error: eTomado.message };
+  if (yaTomado && yaTomado.length > 0) {
+    return { error: `El informe diario del ${fecha.slice(8, 10)}/${fecha.slice(5, 7)} ya tomó este dato — queda fijo, no se puede editar.` };
+  }
+
   const { error: eColor } = await supabase.rpc("admin_upsert_mesa_color", {
     p_fecha: fecha,
     p_texto: texto,
