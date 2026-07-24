@@ -23,7 +23,9 @@ import type { Meta } from "./market";
 const URL_BCR =
   "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-1";
 const SOURCE = "Bolsa de Comercio de Rosario";
-const NOMBRES: Record<string, string> = { SOJ: "Soja", MAI: "Maíz", TRI: "Trigo" };
+// Claves literales (no Record<string,string>): evita que noUncheckedIndexedAccess agregue
+// "| undefined" a NOMBRES[u] cuando `u` ya es el union literal "SOJ"|"MAI"|"TRI".
+const NOMBRES = { SOJ: "Soja", MAI: "Maíz", TRI: "Trigo" } as const;
 const GRANOS: Record<string, string> = { Trigo: "TRI", Maíz: "MAI", Maiz: "MAI", Soja: "SOJ" };
 
 export type CapGrano = {
@@ -49,14 +51,14 @@ function parseFas(html: string): { fas: Record<string, number>; fecha: string | 
   let cur: string | null = null;
   for (const rowHtml of seg.split(/<\/tr>/)) {
     const cells = [...rowHtml.matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/g)]
-      .map((m) => m[1].replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim())
+      .map((m) => (m[1] ?? "").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim()) // grupo obligatorio del regex
       .filter(Boolean);
     if (cells.length === 0) continue;
-    const head = cells[0];
+    const head = cells[0]!; // cells.length===0 ya salió arriba
     if (head.startsWith("Commodity")) {
       cur = null;
       for (const c of cells.slice(1)) {
-        const key = c.split("/")[0].trim();
+        const key = c.split("/")[0]!.trim(); // split() nunca da array vacío
         if (GRANOS[key]) {
           cur = GRANOS[key];
           break;
